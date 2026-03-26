@@ -94,15 +94,65 @@
 
   /* Ambient orbs */
   .orb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script>
+    (function(){
+        function applyDesktopFix(){
+            if(window.innerWidth < 768) return;
+            var frame = document.querySelector('.app-frame');
+            if(!frame) return;
+            // Make frame the scroll container
+            frame.style.overflowY = 'auto';
+            frame.style.overflowX = 'hidden';
+            // Convert fixed bottom elements to sticky
+            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.bottom = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+            // Convert fixed top elements to sticky
+            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTopEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.top = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+        }
+        // Run on load and resize
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', applyDesktopFix);
+        } else {
+            applyDesktopFix();
+        }
+        window.addEventListener('resize', applyDesktopFix);
+    })();
+    </script>
+    <script src="engine/router.js"></script>
 </head>
-<body class="text-white pb-32">
+<body class="app-shell text-white pb-32">
+<div class="app-frame">
 
 <!-- Ambient orbs -->
 <div class="orb w-64 h-64 -top-20 -right-20" style="background:rgba(19,236,214,0.08)"></div>
@@ -153,7 +203,7 @@
   </div>
 
   <!-- ─── GAME 1: RULETA ─── -->
-  <div class="game-card game-card-roulette p-6" onclick="SGRouter.navigate('game-roulette', 'games')">
+  <div class="game-card game-card-roulette p-6" onclick="SGRouter.requirePremium('Ruleta de la Suerte')">
     <div class="flex items-start justify-between mb-4">
       <div>
         <span class="premium-badge">Premium</span>
@@ -190,7 +240,7 @@
   </div>
 
   <!-- ─── GAME 2: CARTAS ─── -->
-  <div class="game-card game-card-cards p-6" onclick="SGRouter.navigate('game-cards', 'games')">
+  <div class="game-card game-card-cards p-6" onclick="SGRouter.requirePremium('La Carta Más Alta')">
     <div class="flex items-start justify-between mb-4">
       <div>
         <span class="premium-badge">Premium</span>
@@ -317,16 +367,57 @@
   </button>
 </nav>
 
-<script src="engine/router.js"></script>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(r => console.log('[SW] Registered:', r.scope))
-                    .catch(e => console.warn('[SW] Registration failed:', e));
+        <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
             });
-        }
+        });
+    }
     </script>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p>Mando</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+                <span class="material-icons-round">groups_3</span>
+                <p>Grupos</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+                <span class="material-icons-round">casino</span>
+                <p>Juegos</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p>Perfil</p>
+            </button>
+        </div>
+    </nav>
+</div>
 </body>
 </html>

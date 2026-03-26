@@ -154,3 +154,82 @@ h1, h2, h3, .font-accent {
     text-transform: uppercase;
     letter-spacing: 2px;
 }
+
+/* 8. RESPONSIVE DESKTOP WRAPPER — App pages (mobile-first design) */
+/*
+ * On desktop (>=768px), mobile app pages are centered like a phone frame.
+ * On mobile (<768px), they fill the full viewport normally.
+ * Usage: add class="app-shell" to <body> and wrap content with <div class="app-frame">
+ */
+
+.app-shell {
+    background: #000;
+    min-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+    .app-shell {
+        background: radial-gradient(ellipse at 20% 50%, rgba(19,236,214,0.04) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.04) 0%, transparent 50%),
+                    #0a0a0a;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 2rem 1rem;
+        min-height: 100dvh;
+    }
+
+    .app-frame {
+        width: 430px !important;
+        max-width: 430px !important;
+        min-height: calc(100dvh - 4rem);
+        border-radius: 2rem;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
+                    0 30px 80px rgba(0,0,0,0.8),
+                    0 0 120px rgba(19,236,214,0.04);
+        position: relative;
+        background: #000;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-frame {
+        width: 100%;
+        min-height: 100dvh;
+    }
+}
+
+
+/* 9. APP-FRAME SCROLL FIX for desktop (fixed nav containment) */
+/* On desktop: body is the scroll container; fixed children of app-frame 
+   must be repositioned. We make the frame overflow:hidden and use sticky nav. */
+@media (min-width: 768px) {
+    /* The app-frame contains all scrolling */
+    .app-frame {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Body does NOT scroll on desktop */
+    body.app-shell {
+        overflow: hidden !important;
+    }
+
+    /* Fixed bottom nav becomes sticky inside the frame */
+    .app-frame nav.fixed,
+    .app-frame footer.fixed,
+    .app-frame .bottom-nav-fixed {
+        position: sticky !important;
+        bottom: 0 !important;
+    }
+    
+    /* Fixed top header becomes sticky inside the frame */  
+    .app-frame header.fixed,
+    .app-frame .top-header-fixed {
+        position: sticky !important;
+        top: 0 !important;
+    }
+}
+/* app-frame-scroll-fix */

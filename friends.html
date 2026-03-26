@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es" style="background-color:#000">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Mis Amigos | SplitGasto 2026</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#13ecd6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@700;900&display=swap');
+        html,body{background:#000;color:#fff;font-family:'Inter',sans-serif;margin:0;padding:0;overscroll-behavior:none}
+        .glass-panel{background:rgba(255,255,255,.02);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);border-radius:20px}
+        .friend-card{background:#0a0a0a;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s}
+        .friend-card:active{transform:scale(.98)}
+        .friend-card:hover{background:#111}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+        .nav-item span{font-size:20px;color:#4a4a4a;transition:color .2s}
+        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+        .nav-item.active span,.nav-item.active p{color:#13ecd6}
+        .nav-item:hover span,.nav-item:hover p{color:#fff}
+        .balance-pos{color:#13ecd6}
+        .balance-neg{color:#FF9D42}
+        .balance-zero{color:#4a4a4a}
+        .search-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px 16px 14px 46px;color:#fff;font-size:14px;font-weight:500;outline:none;transition:border-color .3s;box-sizing:border-box}
+        .search-input:focus{border-color:rgba(19,236,214,.3)}
+        .search-input::placeholder{color:#3a3a3a}
+    </style>
+
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script>
+    (function(){
+        function applyDesktopFix(){
+            if(window.innerWidth < 768) return;
+            var frame = document.querySelector('.app-frame');
+            if(!frame) return;
+            // Make frame the scroll container
+            frame.style.overflowY = 'auto';
+            frame.style.overflowX = 'hidden';
+            // Convert fixed bottom elements to sticky
+            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.bottom = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+            // Convert fixed top elements to sticky
+            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTopEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.top = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+        }
+        // Run on load and resize
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', applyDesktopFix);
+        } else {
+            applyDesktopFix();
+        }
+        window.addEventListener('resize', applyDesktopFix);
+    })();
+    </script>
+    <script src="engine/router.js"></script>
+</head>
+<body class="app-shell min-h-screen pb-28">
+<div class="app-frame">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-5">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4 py-3">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-400">arrow_back_ios</span>
+            </button>
+            <div class="text-center">
+                <h1 class="text-sm font-black uppercase tracking-wider">Mis Amigos</h1>
+                <p class="text-[9px] text-zinc-500">24 contactos</p>
+            </div>
+            <button onclick="SGRouter.navigate('invite','friends')" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-[#13ecd6]">person_add</span>
+            </button>
+        </header>
+
+        <!-- Search -->
+        <div class="relative">
+            <span class="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 text-lg">search</span>
+            <input type="search" class="search-input" placeholder="Buscar amigo..." inputmode="search">
+        </div>
+
+        <!-- Summary chips -->
+        <div class="grid grid-cols-3 gap-3">
+            <div class="glass-panel p-4 text-center">
+                <p class="text-[#13ecd6] text-lg font-black font-['Space_Grotesk']">+45,50€</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Te deben</p>
+            </div>
+            <div class="glass-panel p-4 text-center">
+                <p class="text-[#FF9D42] text-lg font-black font-['Space_Grotesk']">-28,00€</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Debes</p>
+            </div>
+            <div class="glass-panel p-4 text-center">
+                <p class="text-white text-lg font-black font-['Space_Grotesk']">24</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Amigos</p>
+            </div>
+        </div>
+
+        <!-- Friends list -->
+        <div class="space-y-2">
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1">Deudas Pendientes</p>
+            
+            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=AM&backgroundColor=1a2a1a&fontSize=40" class="size-11 rounded-xl" alt="">
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Ana Martínez</p>
+                    <p class="text-[10px] text-zinc-500">Sushi Kyoto · hace 2h</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-sm balance-pos">+25,00€</p>
+                    <p class="text-[9px] text-zinc-600">te debe</p>
+                </div>
+            </div>
+
+            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=LR&backgroundColor=0d1f2d&fontSize=40" class="size-11 rounded-xl" alt="">
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Luis Rodríguez</p>
+                    <p class="text-[10px] text-zinc-500">Piso Alpha · ayer</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-sm balance-neg">-28,00€</p>
+                    <p class="text-[9px] text-zinc-600">debes</p>
+                </div>
+            </div>
+
+            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=MV&backgroundColor=1a0d1f&fontSize=40" class="size-11 rounded-xl" alt="">
+                <div class="flex-1">
+                    <p class="font-bold text-sm">María Vega</p>
+                    <p class="text-[10px] text-zinc-500">Pirineos · hace 3 días</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-sm balance-pos">+20,50€</p>
+                    <p class="text-[9px] text-zinc-600">te debe</p>
+                </div>
+            </div>
+
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1 pt-4">Sin deudas</p>
+
+            <div class="friend-card">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=CP&backgroundColor=1a1a0d&fontSize=40" class="size-11 rounded-xl" alt="">
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Carlos Pérez</p>
+                    <p class="text-[10px] text-zinc-500">Último pago: hace 1 semana</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-sm balance-zero">0,00€</p>
+                    <p class="text-[9px] text-zinc-600">saldo</p>
+                </div>
+            </div>
+
+            <div class="friend-card">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=SR&backgroundColor=0d1a1a&fontSize=40" class="size-11 rounded-xl" alt="">
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Sara Ruiz</p>
+                    <p class="text-[10px] text-zinc-500">Sin gastos recientes</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-sm balance-zero">0,00€</p>
+                    <p class="text-[9px] text-zinc-600">saldo</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invite CTA -->
+        <div class="glass-panel p-5 border-dashed border-[#13ecd6]/20 text-center space-y-3" style="border-style:dashed">
+            <span class="material-icons-round text-[#13ecd6] text-3xl">group_add</span>
+            <div>
+                <p class="font-bold text-sm">Invita a tus amigos</p>
+                <p class="text-[11px] text-zinc-500 mt-1">Gana 1 mes Premium por cada amigo que se una</p>
+            </div>
+            <button onclick="SGRouter.navigate('invite','friends')" class="w-full py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 text-[#13ecd6] text-[11px] font-black uppercase tracking-wider hover:bg-[#13ecd6]/20 transition-all active:scale-95">
+                Invitar amigos →
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+        <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p>Mando</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+                <span class="material-icons-round">groups_3</span>
+                <p>Grupos</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+                <span class="material-icons-round">receipt_long</span>
+                <p>Gastos</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+                <span class="material-icons-round">query_stats</span>
+                <p>Métricas</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p>Perfil</p>
+            </button>
+        </div>
+    </nav>
+
+            <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
+        });
+    }
+    </script>
+</div>
+</body>
+</html>

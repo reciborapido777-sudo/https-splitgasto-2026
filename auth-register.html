@@ -58,9 +58,53 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script>
+    (function(){
+        function applyDesktopFix(){
+            if(window.innerWidth < 768) return;
+            var frame = document.querySelector('.app-frame');
+            if(!frame) return;
+            // Make frame the scroll container
+            frame.style.overflowY = 'auto';
+            frame.style.overflowX = 'hidden';
+            // Convert fixed bottom elements to sticky
+            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.bottom = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+            // Convert fixed top elements to sticky
+            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTopEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.top = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+        }
+        // Run on load and resize
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', applyDesktopFix);
+        } else {
+            applyDesktopFix();
+        }
+        window.addEventListener('resize', applyDesktopFix);
+    })();
+    </script>
+    <script src="engine/router.js"></script>
 </head>
-<body class="p-6 md:p-12">
+<body class="app-shell p-6 md:p-12">
+<div class="app-frame">
 
     <header class="flex items-center gap-6 mb-16 reveal-node">
         <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 transition-all active:scale-90 shadow-xl">
@@ -98,16 +142,31 @@
         </div>
     </main>
 
-    <script src="engine/router.js"></script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(r => console.log('[SW] Registered:', r.scope))
-                    .catch(e => console.warn('[SW] Registration failed:', e));
+    
+        <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
             });
-        }
+        });
+    }
     </script>
+</div>
 </body>
 </html>

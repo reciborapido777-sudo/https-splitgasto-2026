@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es" style="background-color:#000">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Nueva Cuenta | SplitGasto 2026</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#13ecd6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@700;900&display=swap');
+        html,body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;margin:0;padding:0;overscroll-behavior:none}
+        .auth-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 20px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:all .3s;box-sizing:border-box}
+        .auth-input:focus{border-color:rgba(19,236,214,.4);background:rgba(19,236,214,.04);box-shadow:0 0 0 3px rgba(19,236,214,.1)}
+        .auth-input::placeholder{color:#4a4a4a;font-weight:400}
+        .auth-btn{width:100%;background:linear-gradient(135deg,#13ecd6,#10b981);border:none;border-radius:16px;padding:18px;color:#000;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;cursor:pointer;transition:all .3s;outline:none}
+        .auth-btn:active{transform:scale(.98)}
+        .auth-btn:hover{box-shadow:0 0 30px rgba(19,236,214,.4)}
+        .glass-card{background:rgba(255,255,255,.02);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);border-radius:32px}
+        .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+        label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:#4a4a4a;display:block;margin-bottom:8px}
+        .benefit-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:6px 12px;font-size:10px;font-weight:700;color:#9a9a9a}
+    </style>
+
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script>
+    (function(){
+        function applyDesktopFix(){
+            if(window.innerWidth < 768) return;
+            var frame = document.querySelector('.app-frame');
+            if(!frame) return;
+            // Make frame the scroll container
+            frame.style.overflowY = 'auto';
+            frame.style.overflowX = 'hidden';
+            // Convert fixed bottom elements to sticky
+            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.bottom = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+            // Convert fixed top elements to sticky
+            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTopEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.top = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+        }
+        // Run on load and resize
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', applyDesktopFix);
+        } else {
+            applyDesktopFix();
+        }
+        window.addEventListener('resize', applyDesktopFix);
+    })();
+    </script>
+    <script src="engine/router.js"></script>
+</head>
+<body class="app-shell flex flex-col min-h-screen items-center justify-center px-4 py-8 relative overflow-hidden">
+<div class="app-frame">
+
+    <div class="orb" style="width:300px;height:300px;top:-80px;left:-80px;background:rgba(168,85,247,.08)"></div>
+    <div class="orb" style="width:200px;height:200px;bottom:10%;right:-60px;background:rgba(19,236,214,.06)"></div>
+
+    <div class="w-full max-w-sm relative z-10 space-y-5">
+
+        <!-- Back -->
+        <button onclick="SGRouter.back()" class="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors active:scale-95">
+            <span class="material-icons-round text-lg">arrow_back_ios</span>
+            <span class="text-[10px] font-black uppercase tracking-widest">Volver</span>
+        </button>
+
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <div class="inline-flex size-16 rounded-2xl bg-gradient-to-br from-[#a855f7]/20 to-[#13ecd6]/10 border border-[#a855f7]/20 items-center justify-center mx-auto">
+                <span class="material-icons-round text-[#a855f7] text-3xl">person_add</span>
+            </div>
+            <div>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] mb-1">Únete gratis</p>
+                <h1 class="text-2xl font-black font-['Space_Grotesk'] italic uppercase tracking-tighter">Iniciación Alpha</h1>
+            </div>
+        </div>
+
+        <!-- Benefits chips -->
+        <div class="flex gap-2 flex-wrap justify-center">
+            <span class="benefit-chip"><span class="material-icons-round text-[#13ecd6] text-sm">check_circle</span> Gratis para siempre</span>
+            <span class="benefit-chip"><span class="material-icons-round text-[#13ecd6] text-sm">check_circle</span> Sin tarjeta</span>
+            <span class="benefit-chip"><span class="material-icons-round text-[#13ecd6] text-sm">check_circle</span> 3 grupos gratis</span>
+        </div>
+
+        <!-- Form -->
+        <div class="glass-card p-6 space-y-4">
+            <div>
+                <label for="name">Nombre completo</label>
+                <input id="name" type="text" class="auth-input" placeholder="Tu nombre" autocomplete="name">
+            </div>
+            <div>
+                <label for="email">Email</label>
+                <input id="email" type="email" class="auth-input" placeholder="tu@email.com" autocomplete="email" inputmode="email">
+            </div>
+            <div>
+                <label for="password">Contraseña</label>
+                <div class="relative">
+                    <input id="password" type="password" class="auth-input" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    <button type="button" onclick="togglePwd()" class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors">
+                        <span class="material-icons-round text-lg" id="eye-icon">visibility</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="flex items-start gap-3">
+                <div class="relative mt-0.5">
+                    <input type="checkbox" id="terms" class="sr-only peer">
+                    <div class="w-5 h-5 rounded-md border border-white/10 bg-white/3 peer-checked:bg-[#13ecd6] peer-checked:border-[#13ecd6] transition-all cursor-pointer flex items-center justify-center" onclick="this.previousElementSibling.click()">
+                        <span class="material-icons-round text-black text-xs hidden peer-checked:block" id="check-icon" style="display:none">check</span>
+                    </div>
+                </div>
+                <label for="terms" class="normal-case text-[10px] text-zinc-500 font-normal leading-relaxed cursor-pointer">
+                    Acepto los <button onclick="SGRouter.navigate('legal','register')" class="text-[#13ecd6] underline font-bold">Términos</button> y la <button onclick="SGRouter.navigate('legal','register')" class="text-[#13ecd6] underline font-bold">Política de Privacidad</button>
+                </label>
+            </div>
+
+            <button class="auth-btn" onclick="doRegister()">
+                Crear Cuenta Gratis
+            </button>
+        </div>
+
+        <!-- Login link -->
+        <p class="text-center text-[11px] text-zinc-500">
+            ¿Ya tienes cuenta?
+            <button onclick="SGRouter.navigate('auth','register')" class="text-[#13ecd6] font-black hover:underline ml-1">
+                Iniciar sesión →
+            </button>
+        </p>
+    </div>
+
+        <script>
+        function togglePwd() {
+            const inp = document.getElementById('password');
+            const icon = document.getElementById('eye-icon');
+            const chk = document.getElementById('check-icon');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            icon.textContent = inp.type === 'password' ? 'visibility' : 'visibility_off';
+        }
+        function doRegister() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pwd = document.getElementById('password').value;
+            if (!name || !email || !pwd) {
+                SGRouter.showToast('Completa todos los campos', 'error');
+                return;
+            }
+            if (pwd.length < 8) {
+                SGRouter.showToast('La contraseña debe tener 8 caracteres', 'error');
+                return;
+            }
+            SGRouter.showToast('¡Bienvenido a SplitGasto!', 'success');
+            setTimeout(() => SGRouter.navigate('onboarding', 'register'), 1000);
+        }
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                    .then(reg => {
+                        reg.update().catch(() => {});
+                        reg.addEventListener('updatefound', () => {
+                            const sw = reg.installing;
+                            if (!sw) return;
+                            sw.addEventListener('statechange', () => {
+                                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                    sw.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    }).catch(() => {});
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) { refreshing = true; window.location.reload(); }
+                });
+            });
+        }
+    </script>
+</div>
+</body>
+</html>

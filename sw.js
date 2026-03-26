@@ -1,160 +1,136 @@
 /**
- * SplitGasto 2026 - Service Worker v1.0 Gold
- * PWA: Cache-first para assets estáticos, network-first para datos
+ * SplitGasto 2026 - Service Worker v5.2
+ * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
+ * v5.2: SKIP_WAITING message handler, favicon PNG incluido, cache limpio
  */
 
-const CACHE_NAME = 'splitgasto-v2-2026';
+const CACHE_NAME = 'splitgasto-v5-2026';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/dashboard.html',
-  '/games.html',
-  '/game-roulette.html',
-  '/game-cards.html',
-  '/game-coin.html',
-  '/game-darts.html',
-  '/add-expense.html',
-  '/create-group.html',
-  '/groups.html',
-  '/activity.html',
-  '/analytics.html',
-  '/profile.html',
-  '/membership.html',
-  '/rankings.html',
-  '/settings.html',
-  '/notifications.html',
-  '/split.html',
-  '/vault.html',
-  '/scanner.html',
-  '/security.html',
-  '/receipt-view.html',
-  '/liquidation.html',
-  '/manual.html',
-  '/success.html',
-  '/support.html',
-  '/legal.html',
-  '/investors.html',
-  '/onboarding.html',
-  '/auth-login.html',
-  '/auth-register.html',
-  '/engine/router.js',
-  '/engine/global.css',
-  '/engine/resilience.html',
-  '/favicon.svg',
-  '/manifest.json'
+    'engine/router.js',
+    'engine/global.css',
+    'favicon.svg',
+    'favicon-32.png',
+    'favicon-16.png',
+    'apple-touch-icon.png',
+    'manifest.json',
+    'icons/icon-72.png',
+    'icons/icon-96.png',
+    'icons/icon-128.png',
+    'icons/icon-144.png',
+    'icons/icon-192.png',
+    'icons/icon-512.png'
 ];
 
-// ─── Install: Pre-cache all static assets ─────────────────────────────────
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing SplitGasto v2.0...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[SW] Some assets failed to cache:', err);
-      });
-    }).then(() => {
-      console.log('[SW] Installation complete');
-      return self.skipWaiting();
-    })
-  );
+// ── Install: pre-cache static assets ───────────────────────────────────────
+self.addEventListener('install', event => {
+    console.log('[SW] Installing v5.2…');
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {
+                console.warn('[SW] Some assets failed to pre-cache:', err);
+            }))
+            // NOTE: skipWaiting here means the SW activates immediately.
+            // The page will also send SKIP_WAITING message as a backup.
+            .then(() => self.skipWaiting())
+    );
 });
 
-// ─── Activate: Clean old caches ───────────────────────────────────────────
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating SplitGasto v2.0...');
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
-          })
-      );
-    }).then(() => self.clients.claim())
-  );
+// ── Activate: delete ALL old caches, claim clients ──────────────────────────
+self.addEventListener('activate', event => {
+    console.log('[SW] Activating v5.2…');
+    event.waitUntil(
+        caches.keys()
+            .then(keys => Promise.all(
+                keys.filter(key => key !== CACHE_NAME)
+                    .map(key => {
+                        console.log('[SW] Deleting old cache:', key);
+                        return caches.delete(key);
+                    })
+            ))
+            .then(() => {
+                console.log('[SW] Active. Claiming clients…');
+                return self.clients.claim();
+            })
+    );
 });
 
-// ─── Fetch: Cache-first for static, network-first for API ─────────────────
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip cross-origin requests (CDN fonts, Tailwind, etc.) - let them go through
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached, but also update in background
-        const fetchPromise = fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, networkResponse.clone());
-            });
-          }
-          return networkResponse;
-        }).catch(() => cachedResponse);
-
-        return cachedResponse;
-      }
-
-      // Not in cache: fetch from network
-      return fetch(request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200) {
-          return networkResponse;
-        }
-
-        // Cache the new response
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseToCache);
-        });
-
-        return networkResponse;
-      }).catch(() => {
-        // Offline fallback
-        return caches.match('/engine/resilience.html');
-      });
-    })
-  );
+// ── Message: handle SKIP_WAITING from page ──────────────────────────────────
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        console.log('[SW] SKIP_WAITING received → skipWaiting()');
+        self.skipWaiting();
+    }
 });
 
-// ─── Background Sync (placeholder for future API sync) ────────────────────
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-expenses') {
-    console.log('[SW] Background sync: expenses');
-  }
+// ── Fetch: network-first for HTML, cache-first for assets ──────────────────
+self.addEventListener('fetch', event => {
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Only handle same-origin GET requests
+    if (url.origin !== location.origin) return;
+    if (request.method !== 'GET') return;
+
+    const isHTMLPage = (
+        request.mode === 'navigate' ||
+        request.headers.get('accept')?.includes('text/html') ||
+        url.pathname.endsWith('.html') ||
+        url.pathname === '/' ||
+        url.pathname === ''
+    );
+
+    if (isHTMLPage) {
+        // ── Network-first for HTML: always try to get latest ─────────────
+        event.respondWith(
+            fetch(request, { cache: 'no-store' })
+                .then(response => {
+                    if (response.ok) {
+                        // Cache a copy for offline fallback
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    // Offline fallback: serve cached version or dashboard
+                    return caches.match(request)
+                        .then(cached => cached || caches.match('dashboard.html'));
+                })
+        );
+    } else {
+        // ── Cache-first for static assets ────────────────────────────────
+        event.respondWith(
+            caches.match(request)
+                .then(cached => {
+                    if (cached) return cached;
+                    return fetch(request).then(response => {
+                        if (response.ok) {
+                            const clone = response.clone();
+                            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                        }
+                        return response;
+                    });
+                })
+        );
+    }
 });
 
-// ─── Push Notifications (placeholder) ─────────────────────────────────────
-self.addEventListener('push', (event) => {
-  const data = event.data?.json() || {
-    title: 'SplitGasto',
-    body: 'Tienes una nueva notificación',
-    icon: '/favicon.svg'
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon || '/favicon.svg',
-      badge: '/favicon.svg',
-      vibrate: [200, 100, 200],
-      data: { url: data.url || '/' }
-    })
-  );
+// ── Push Notifications ──────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+    const data = event.data?.json() || {};
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'SplitGasto', {
+            body: data.body || 'Nueva notificación',
+            icon: 'icons/icon-192.png',
+            badge: 'favicon-32.png',
+            data: { url: data.url || 'dashboard.html' }
+        })
+    );
 });
 
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow(event.notification.data?.url || '/')
-  );
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow(event.notification.data?.url || 'dashboard.html')
+    );
 });

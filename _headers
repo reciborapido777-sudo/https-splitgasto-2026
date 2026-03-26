@@ -1,6 +1,8 @@
-# SplitGasto 2026 - Cloudflare Pages Headers
+# ─────────────────────────────────────────────────────────────────
+# SplitGasto 2026 - Cloudflare Pages Headers (v4.3)
+# ─────────────────────────────────────────────────────────────────
 
-# Security headers for all pages
+# ── Security headers for ALL paths ──────────────────────────────
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
@@ -8,29 +10,38 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-XSS-Protection: 1; mode=block
 
-# Cache HTML pages (short cache)
+# ── HTML — never cache (always fresh on every visit) ─────────────
 /*.html
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
 
-# Cache assets (long cache)
-/icons/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/favicon.svg
-  Cache-Control: public, max-age=31536000, immutable
-
-# Service Worker (no cache)
+# ── Service Worker — never cache ─────────────────────────────────
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
 
-# Manifest
-/manifest.json
-  Cache-Control: public, max-age=86400
-
-# Engine assets
+# ── Engine assets (router.js, global.css) — no cache ─────────────
 /engine/*
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: no-cache, must-revalidate
 
-# PWA headers
-/*.html
-  Link: </manifest.json>; rel="manifest"
+# ── Manifest ─────────────────────────────────────────────────────
+/manifest.json
+  Cache-Control: public, max-age=86400, must-revalidate
+
+# ── Favicon files ────────────────────────────────────────────────
+/favicon.svg
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/favicon-32.png
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/favicon-16.png
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400, must-revalidate
+
+# ── Static icons (long cache — immutable) ────────────────────────
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable

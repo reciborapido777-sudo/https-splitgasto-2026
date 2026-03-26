@@ -1,179 +1,290 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color:#000">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Elite Lounge | SplitGasto 2026</title>
-    
-    <link rel="stylesheet" href="engine/global.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box;
-            overscroll-behavior: none;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateZ(0); 
-        }
-
-        .game-card {
-            position: relative;
-            height: 240px;
-            border-radius: 3rem;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            transform: translateZ(0);
-        }
-
-        .game-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            border-color: rgba(255, 157, 66, 0.4);
-            box-shadow: 0 30px 60px -15px rgba(255, 157, 66, 0.2);
-        }
-
-        .game-overlay { 
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 20%, rgba(0,0,0,0.2) 100%); 
-        }
-        
-        .reveal-node { 
-            animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            opacity: 0; 
-        }
-        
-        @keyframes revealUp { 
-            from { transform: translateY(30px); opacity: 0; } 
-            to { transform: translateY(0); opacity: 1; } 
-        }
-
-        .premium-glow {
-            box-shadow: 0 0 30px rgba(255, 157, 66, 0.1);
-            border: 1px solid rgba(255, 157, 66, 0.2);
-        }
-
-        /* Corrección de Visibilidad de Fondos */
-        .bg-fallback {
-            background-color: #0a0a0a;
-        }
-    </style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#D4AF37">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-</head>
-<body class="min-h-screen pb-32">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@700;900&display=swap');
+        html,body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;margin:0;padding:0;overscroll-behavior:none}
+        .gold-gradient{background:linear-gradient(135deg,#D4AF37 0%,#F9E076 50%,#B8860B 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .gold-bg{background:linear-gradient(135deg,#D4AF37 0%,#F9E076 50%,#B8860B 100%)}
+        .glass-card{background:rgba(255,255,255,.03);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.06);border-radius:24px}
+        .plan-card{background:#0d0d0d;border:2px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+        .plan-card.selected{border-color:#D4AF37;background:rgba(212,175,55,.05);box-shadow:0 0 30px rgba(212,175,55,.15)}
+        .plan-card.selected-cyan{border-color:#13ecd6;background:rgba(19,236,214,.05);box-shadow:0 0 30px rgba(19,236,214,.15)}
+        .benefit-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+        .benefit-row:last-child{border-bottom:none}
+        .benefit-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2)}
+        .cta-btn{width:100%;padding:18px;border-radius:16px;border:none;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;transition:all .3s;font-family:'Inter',sans-serif}
+        .cta-primary{background:linear-gradient(135deg,#D4AF37,#F9E076);color:#000}
+        .cta-primary:hover{box-shadow:0 0 30px rgba(212,175,55,.5)}
+        .cta-primary:active{transform:scale(.98)}
+        .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+        .founder-card{background:linear-gradient(135deg,#1a1400,#0d0d0d);border:1px solid rgba(212,175,55,.3);border-radius:24px;padding:24px;position:relative;overflow:hidden}
+        .badge-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.2em}
+    </style>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-6">
-                <button onclick="SGRouter.back()" class="group flex items-center justify-center size-14 rounded-2xl glass-panel hover:bg-white/10 transition-all active:scale-90 shadow-xl">
-                    <span class="material-icons-round text-zinc-600 group-hover:text-[#FF9D42] transition-colors text-3xl">arrow_back</span>
-                </button>
-                <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Estatus Élite</p>
-                    <h1 class="text-3xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Lounge</h1>
-                </div>
-            </div>
-            
-            <div class="size-14 glass-panel rounded-2xl flex items-center justify-center text-[#FF9D42] shadow-[0_0_20px_rgba(255,157,66,0.2)]">
-                <span class="material-icons-round">workspace_premium</span>
-            </div>
-        </header>
-
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 reveal-node">
-            
-            <div class="game-card group bg-fallback" onclick="SGRouter.navigate('game-roulette', 'membership')">
-                <img src="https://images.unsplash.com/photo-1596838132731-179709759672?q=80&w=600" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt="Ruleta">
-                <div class="absolute inset-0 game-overlay flex flex-col justify-end p-8 space-y-2">
-                    <span class="material-icons-round text-[#FF9D42]">autorenew</span>
-                    <h3 class="text-xl font-black font-['Space_Grotesk'] uppercase italic leading-none text-white">Ruleta</h3>
-                    <p class="text-[8px] font-black uppercase tracking-widest text-zinc-500">Protocolo de Azar</p>
-                </div>
-            </div>
-
-            <div class="game-card group bg-fallback" onclick="SGRouter.navigate('game-coin', 'membership')">
-                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt="Dardos">
-                <div class="absolute inset-0 game-overlay flex flex-col justify-end p-8 space-y-2">
-                    <span class="material-icons-round text-[#13ecd6]">track_changes</span>
-                    <h3 class="text-xl font-black font-['Space_Grotesk'] uppercase italic leading-none text-white">Dardos</h3>
-                    <p class="text-[8px] font-black uppercase tracking-widest text-zinc-500">Calibración Precisa</p>
-                </div>
-            </div>
-
-            <div class="game-card group bg-fallback" onclick="SGRouter.navigate('game-cards', 'membership')">
-                <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=600" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt="Cartas">
-                <div class="absolute inset-0 game-overlay flex flex-col justify-end p-8 space-y-2">
-                    <span class="material-icons-round text-[#a855f7]">style</span>
-                    <h3 class="text-xl font-black font-['Space_Grotesk'] uppercase italic leading-none text-white">Carta Alta</h3>
-                    <p class="text-[8px] font-black uppercase tracking-widest text-zinc-500">Lógica de Naipes</p>
-                </div>
-            </div>
-
-            <div class="game-card group premium-glow bg-fallback" onclick="SGRouter.navigate('games', 'membership')">
-                <img src="https://images.unsplash.com/photo-1621504450181-5d356f63d3ee?q=80&w=600" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt="Moneda">
-                <div class="absolute inset-0 game-overlay flex flex-col justify-end p-8 space-y-2">
-                    <span class="material-icons-round text-[#FF9D42] animate-bounce">monetization_on</span>
-                    <h3 class="text-xl font-black font-['Space_Grotesk'] uppercase italic text-[#FF9D42] leading-none">Moneda Alpha</h3>
-                    <p class="text-[8px] font-black uppercase tracking-widest text-orange-500/60">Socio Fundador Exclusive</p>
-                </div>
-            </div>
-
-        </main>
-    </div>
-    <script src="engine/router.js"></script>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50" style="background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06)">
-        <div class="max-w-7xl mx-auto px-4 flex justify-around items-center py-3 pb-6">
-            <button onclick="SGRouter.navigate('dashboard')" class="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <span class="material-icons-round text-xl">grid_view</span>
-                <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em">Mando</span>
-            </button>
-            <button onclick="SGRouter.navigate('groups')" class="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <span class="material-icons-round text-xl">groups_3</span>
-                <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em">Grupos</span>
-            </button>
-            <button onclick="SGRouter.navigate('games')" class="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <span class="material-icons-round text-xl">casino</span>
-                <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em">Juegos</span>
-            </button>
-            <button onclick="SGRouter.navigate('analytics')" class="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <span class="material-icons-round text-xl">query_stats</span>
-                <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em">Métricas</span>
-            </button>
-            <button onclick="SGRouter.navigate('profile')" class="flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
-                <span class="material-icons-round text-xl">person</span>
-                <span style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em">Perfil</span>
-            </button>
-        </div>
-    </nav>
-
-
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script>
+    (function(){
+        function applyDesktopFix(){
+            if(window.innerWidth < 768) return;
+            var frame = document.querySelector('.app-frame');
+            if(!frame) return;
+            // Make frame the scroll container
+            frame.style.overflowY = 'auto';
+            frame.style.overflowX = 'hidden';
+            // Convert fixed bottom elements to sticky
+            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.bottom = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+            // Convert fixed top elements to sticky
+            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTopEls.forEach(function(el){
+                el.style.position = 'sticky';
+                el.style.top = '0';
+                el.style.left = 'auto';
+                el.style.width = '100%';
+                el.style.zIndex = '50';
+            });
+        }
+        // Run on load and resize
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', applyDesktopFix);
+        } else {
+            applyDesktopFix();
+        }
+        window.addEventListener('resize', applyDesktopFix);
+    })();
+    </script>
+    <script src="engine/router.js"></script>
+</head>
+<body class="app-shell min-h-screen pb-10 relative overflow-x-hidden">
+<div class="app-frame">
+
+    <div class="orb" style="width:400px;height:400px;top:-100px;right:-100px;background:rgba(212,175,55,.06)"></div>
+    <div class="orb" style="width:250px;height:250px;bottom:20%;left:-60px;background:rgba(19,236,214,.04)"></div>
+
+    <div class="max-w-sm mx-auto px-4 py-6 relative z-10 space-y-6">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-card flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-400">close</span>
+            </button>
+            <h2 class="text-base font-black uppercase tracking-wider">SplitGasto Premium</h2>
+            <button class="text-[#D4AF37] text-[11px] font-black uppercase tracking-wider hover:text-[#F9E076]">Restaurar</button>
+        </div>
+
+        <!-- Hero -->
+        <div class="founder-card text-center space-y-4">
+            <div class="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/5 via-transparent to-transparent pointer-events-none rounded-3xl"></div>
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+                    <span class="material-icons-round text-[#D4AF37] text-sm">workspace_premium</span>
+                    <span class="text-[9px] font-black text-[#D4AF37] uppercase tracking-[.3em]">Socio Fundador</span>
+                </div>
+                <h1 class="text-3xl font-black font-['Space_Grotesk'] tracking-tighter italic mb-2">
+                    Desbloquea el<br><span class="gold-gradient">Poder Total</span>
+                </h1>
+                <p class="text-zinc-400 text-sm leading-relaxed">Lleva el control de tus gastos grupales al siguiente nivel con herramientas de élite.</p>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="glass-card p-4">
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">casino</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Juegos de Decisión</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Ruleta, Cartas, Moneda y Dardos para ver quién paga.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">block</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Sin Publicidad</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Experiencia fluida, limpia y sin interrupciones.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">bar_chart</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Analíticas Avanzadas</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Gráficos dinámicos y reportes detallados.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">picture_as_pdf</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Exportación PDF</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Descarga recibos y resúmenes en un clic.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">groups</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Grupos Ilimitados</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Sin límite de grupos ni participantes.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">support_agent</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Soporte Prioritario VIP</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Atención directa para resolver tus dudas.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+            <div class="benefit-row">
+                <div class="benefit-icon"><span class="material-icons-round text-[#D4AF37]">palette</span></div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">Temas Personalizados</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Colores y estilos exclusivos para tu app.</p>
+                </div>
+                <span class="material-icons-round text-[#D4AF37] text-base">auto_awesome</span>
+            </div>
+        </div>
+
+        <!-- Pricing Plans -->
+        <div class="space-y-3">
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] text-center mb-4">Elige tu plan</p>
+
+            <!-- Monthly -->
+            <div class="plan-card" id="plan-monthly" onclick="selectPlan('monthly')">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-1">Mensual</p>
+                        <p class="text-2xl font-black font-['Space_Grotesk']">2,99€<span class="text-sm font-normal text-zinc-500">/mes</span></p>
+                        <p class="text-[10px] text-zinc-600 mt-1">Cancela cuando quieras</p>
+                    </div>
+                    <div class="size-6 rounded-full border-2 border-zinc-700 flex items-center justify-center" id="check-monthly">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yearly — RECOMMENDED -->
+            <div class="plan-card selected-cyan" id="plan-yearly" onclick="selectPlan('yearly')">
+                <div class="absolute top-0 right-0 bg-[#13ecd6] px-3 py-1 rounded-bl-2xl rounded-tr-2xl">
+                    <p class="text-[9px] font-black text-black uppercase tracking-wide">-17% · Mejor valor</p>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-[#13ecd6] text-xs font-bold uppercase tracking-widest mb-1">Anual</p>
+                        <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6]">29,99€<span class="text-sm font-normal text-zinc-500">/año</span></p>
+                        <p class="text-[10px] text-[#13ecd6]/70 mt-1">= 2,50€/mes · 7 días gratis</p>
+                    </div>
+                    <div class="size-6 rounded-full border-2 border-[#13ecd6] bg-[#13ecd6] flex items-center justify-center" id="check-yearly">
+                        <span class="material-icons-round text-black text-sm">check</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="space-y-3">
+            <button class="cta-btn" id="cta-btn" style="background:linear-gradient(135deg,#13ecd6,#10b981);color:#000" onclick="subscribe()">
+                Prueba 7 días gratis
+            </button>
+            <p class="text-zinc-600 text-[10px] text-center px-4 leading-tight">
+                Después de la prueba, se cargará el plan elegido. Cancela en cualquier momento desde los ajustes.
+            </p>
+            <div class="flex justify-center gap-6">
+                <button onclick="SGRouter.navigate('legal','membership')" class="text-[11px] text-zinc-500 hover:text-zinc-300 underline">Términos</button>
+                <button onclick="SGRouter.navigate('legal','membership')" class="text-[11px] text-zinc-500 hover:text-zinc-300 underline">Privacidad</button>
+                <button class="text-[11px] text-zinc-500 hover:text-zinc-300 underline">Ayuda</button>
+            </div>
+        </div>
+    </div>
+
+        <script>
+        let selectedPlan = 'yearly';
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            const monthly = document.getElementById('plan-monthly');
+            const yearly = document.getElementById('plan-yearly');
+            const checkM = document.getElementById('check-monthly');
+            const checkY = document.getElementById('check-yearly');
+            const btn = document.getElementById('cta-btn');
+
+            if (plan === 'monthly') {
+                monthly.className = 'plan-card selected';
+                yearly.className = 'plan-card';
+                checkM.innerHTML = '<span class="material-icons-round text-[#D4AF37] text-sm">check</span>';
+                checkM.style.borderColor = '#D4AF37';
+                checkM.style.background = 'rgba(212,175,55,.2)';
+                checkY.innerHTML = '';
+                checkY.style.borderColor = '#4a4a4a';
+                checkY.style.background = 'transparent';
+                btn.style.background = 'linear-gradient(135deg,#D4AF37,#F9E076)';
+                btn.style.color = '#000';
+                btn.textContent = 'Suscribirme · 2,99€/mes';
+            } else {
+                yearly.className = 'plan-card selected-cyan';
+                monthly.className = 'plan-card';
+                checkY.innerHTML = '<span class="material-icons-round text-black text-sm">check</span>';
+                checkY.style.borderColor = '#13ecd6';
+                checkY.style.background = '#13ecd6';
+                checkM.innerHTML = '';
+                checkM.style.borderColor = '#4a4a4a';
+                checkM.style.background = 'transparent';
+                btn.style.background = 'linear-gradient(135deg,#13ecd6,#10b981)';
+                btn.style.color = '#000';
+                btn.textContent = 'Prueba 7 días gratis';
+            }
+        }
+
+        function subscribe() {
+            SGRouter.showToast('¡Bienvenido a Premium! 🎉', 'premium');
+            setTimeout(() => SGRouter.navigate('dashboard'), 1500);
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(r => console.log('[SW] Registered:', r.scope))
-                    .catch(e => console.warn('[SW] Registration failed:', e));
+                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                    .then(reg => {
+                        reg.update().catch(() => {});
+                        reg.addEventListener('updatefound', () => {
+                            const sw = reg.installing;
+                            if (!sw) return;
+                            sw.addEventListener('statechange', () => {
+                                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                    sw.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    }).catch(() => {});
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) { refreshing = true; window.location.reload(); }
+                });
             });
         }
     </script>
+</div>
 </body>
 </html>
