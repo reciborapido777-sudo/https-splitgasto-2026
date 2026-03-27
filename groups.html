@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Mis Grupos | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -10,44 +10,15 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box;
-            overscroll-behavior: none;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateZ(0);
-        }
-
+        /* Estilos específicos de Groups que no están en global.css */
         .group-card { 
             position: relative; height: 260px; border-radius: 3rem; 
-            overflow: hidden; border: 1px solid rgba(255,255,255,0.05); 
-            cursor: pointer; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden; cursor: pointer; 
+            transition: var(--transition-alpha);
             transform: translateZ(0);
         }
-        .group-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
-        }
+        .group-card:hover { transform: translateY(-10px) scale(1.02); }
         .group-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.3) 100%); }
-
-        .money-display { 
-            padding-right: 0.55em !important; 
-            white-space: nowrap; 
-            font-family: 'Space Grotesk', sans-serif;
-            display: inline-block;
-        }
 
         .summary-pill {
             background: rgba(255,255,255,0.02);
@@ -56,265 +27,108 @@
             padding: 0.9rem 1.4rem;
         }
 
-        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         .event-placeholder {
             border: 2px dashed rgba(255, 255, 255, 0.05);
             background: transparent;
         }
-        .event-placeholder:hover {
-            border-color: rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.02);
-            transform: translateY(-6px);
-        }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+    </style>
+
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-28">
-
+<body class="app-shell">
 <div class="app-frame">
+
     <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
         
-        <!-- Header -->
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-400 text-2xl">arrow_back</span>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
                 </button>
-                <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nodos de Activos</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mis Grupos</h1>
+                <div>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nodos de Activos</p>
+                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mis Grupos</h1>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="SGRouter.showToast('Crear grupo: próximamente disponible', 'info')" 
-                        class="px-5 py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 hover:bg-[#13ecd6]/15 transition-all active:scale-95">
-                    <span class="material-icons-round text-[#13ecd6] text-sm">add</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hidden sm:inline">Nuevo</span>
-                </button>
-            </div>
+            <button onclick="SGRouter.showToast('Crear grupo: próximamente disponible', 'info')" 
+                    class="px-4 py-2.5 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 text-[#13ecd6] active:scale-95 transition-all">
+                <span class="material-icons-round text-sm">add</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Nuevo</span>
+            </button>
         </header>
 
-        <!-- Resumen rápido -->
-        <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
+        <section class="grid grid-cols-3 gap-3 reveal-node">
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Grupos Activos</p>
-                <p class="text-2xl font-black font-['Space_Grotesk'] text-white">3</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Grupos</p>
+                <p class="text-xl font-black font-['Space_Grotesk'] text-white">3</p>
             </div>
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance Neto</p>
-                <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6]">+83,50€</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance</p>
+                <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]">+83,50€</p>
             </div>
             <div class="summary-pill flex flex-col gap-1">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Socios</p>
-                <p class="text-2xl font-black font-['Space_Grotesk'] text-white">8</p>
+                <p class="text-xl font-black font-['Space_Grotesk'] text-white">8</p>
             </div>
         </section>
 
-        <!-- Grid de grupos -->
-        <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <main class="space-y-4">
             
-            <!-- Grupo 1: Sushi Kyoto -->
             <div class="group-card group reveal-node" onclick="SGRouter.navigate('split', 'groups')">
                 <img src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Sushi">
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-700" alt="Sushi">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest">Activo</span>
+                        <span class="status-tag bg-[#13ecd6]/10 text-[#13ecd6] border border-[#13ecd6]/20">Activo</span>
                         <div class="flex -space-x-2">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Mario&backgroundColor=0a7a4a&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Mario">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Elena&backgroundColor=6d28d9&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Elena">
+                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Mario&backgroundColor=0d1f0d" class="size-7 rounded-full border-2 border-black" alt="">
+                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Elena&backgroundColor=1a0d1f" class="size-7 rounded-full border-2 border-black" alt="">
                             <div class="size-7 rounded-full border-2 border-black bg-zinc-800 flex items-center justify-center">
                                 <span class="text-[7px] font-black text-zinc-400">+2</span>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-0.5">
+                    <div>
                         <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Sushi Kyoto Pro</h3>
-                        <div class="flex justify-between items-center">
-                            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="text-[#13ecd6] money-display">+125,50€</span></p>
-                            <p class="text-[8px] text-zinc-600 uppercase">12 socios</p>
-                        </div>
+                        <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Balance: <span class="text-[#13ecd6] money-display">+125,50€</span></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Grupo 2: Viaje Pirineos -->
             <div class="group-card group reveal-node" style="animation-delay: 0.1s" onclick="SGRouter.navigate('split', 'groups')">
                 <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-1000" alt="Pirineos">
+                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-all duration-700" alt="Pirineos">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="px-3 py-1 bg-[#a855f7]/10 text-[#a855f7] text-[8px] font-black uppercase rounded-full border border-[#a855f7]/20 tracking-widest">Auditando IA</span>
-                        <div class="flex -space-x-2">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Laura&backgroundColor=6d28d9&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Laura">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Carlos&backgroundColor=1a3a7a&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Carlos">
-                            <div class="size-7 rounded-full border-2 border-black bg-zinc-800 flex items-center justify-center">
-                                <span class="text-[7px] font-black text-zinc-400">+3</span>
-                            </div>
-                        </div>
+                        <span class="status-tag bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20">Auditando IA</span>
                     </div>
-                    <div class="space-y-0.5">
+                    <div>
                         <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Viaje Pirineos</h3>
-                        <div class="flex justify-between items-center">
-                            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="text-white money-display">-42,00€</span></p>
-                            <p class="text-[8px] text-zinc-600 uppercase">5 socios</p>
-                        </div>
+                        <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Balance: <span class="text-white money-display">-42,00€</span></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Grupo 3: Piso Alpha -->
-            <div class="group-card group reveal-node" style="animation-delay: 0.2s" onclick="SGRouter.navigate('split', 'groups')">
-                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt="Piso">
-                <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="px-3 py-1 bg-[#FF9D42]/10 text-[#FF9D42] text-[8px] font-black uppercase rounded-full border border-[#FF9D42]/20 tracking-widest">Recurrente</span>
-                        <div class="flex -space-x-2">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Ana&backgroundColor=7a1a1a&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Ana">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Pedro&backgroundColor=0a4a7a&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Pedro">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Sofia&backgroundColor=4a1a7a&fontFamily=Arial&fontSize=40" 
-                                 class="size-7 rounded-full border-2 border-black bg-zinc-800" alt="Sofia">
-                        </div>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Piso Alpha 2026</h3>
-                        <div class="flex justify-between items-center">
-                            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="text-[#FF9D42] money-display">840,00€</span></p>
-                            <p class="text-[8px] text-zinc-600 uppercase">3 socios</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Crear grupo CTA -->
-            <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-5 transition-all" 
-                 style="animation-delay: 0.3s" 
-                 onclick="SGRouter.showToast('Protocolo de Creación · Próximamente', 'info')">
-                <div class="size-16 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
-                    <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl transition-colors">add</span>
+            <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-4 active:scale-95 transition-all" 
+                 style="animation-delay: 0.2s" onclick="SGRouter.showToast('Protocolo de Creación · Próximamente', 'info')">
+                <div class="size-14 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
+                    <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-2xl">add</span>
                 </div>
                 <div class="text-center">
-                    <h4 class="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 group-hover:text-zinc-400 transition-colors">Nuevo Grupo</h4>
-                    <p class="text-[8px] font-bold uppercase text-zinc-800 tracking-widest mt-1">Añadir Nodo</p>
+                    <h4 class="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-zinc-400">Nuevo Grupo</h4>
                 </div>
             </div>
-
         </main>
-
-        <!-- Actividad reciente del grupo -->
-        <section class="glass-panel p-6 sm:p-10 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.35s">
-            <div class="flex items-center justify-between">
-                <div class="space-y-0.5">
-                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em]">Últimos Movimientos</p>
-                    <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Actividad Reciente</h3>
-                </div>
-                <button onclick="SGRouter.navigate('activity', 'groups')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline">Ver todo</button>
-            </div>
-            <div class="space-y-1">
-                <div class="flex justify-between items-center py-3.5 border-b border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="size-9 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/15 flex items-center justify-center">
-                            <span class="material-icons-round text-[#a855f7] text-sm">restaurant</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-black uppercase">Sushi Kyoto Pro</p>
-                            <p class="text-[8px] text-zinc-600 uppercase tracking-widest">Hoy · Mario pagó</p>
-                        </div>
-                    </div>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">+7,50€</p>
-                </div>
-                <div class="flex justify-between items-center py-3.5 border-b border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="size-9 rounded-xl bg-yellow-500/10 border border-yellow-500/15 flex items-center justify-center">
-                            <span class="material-icons-round text-yellow-400 text-sm">bolt</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-black uppercase">Factura Luz</p>
-                            <p class="text-[8px] text-zinc-600 uppercase tracking-widest">Ayer · Piso Alpha</p>
-                        </div>
-                    </div>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-red-400 money-display">-84,16€</p>
-                </div>
-                <div class="flex justify-between items-center py-3.5">
-                    <div class="flex items-center gap-4">
-                        <div class="size-9 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/15 flex items-center justify-center">
-                            <span class="material-icons-round text-[#13ecd6] text-sm">shopping_cart</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-black uppercase">Compra Semanal</p>
-                            <p class="text-[8px] text-zinc-600 uppercase tracking-widest">Lunes · Pirineos</p>
-                        </div>
-                    </div>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-white money-display">45,20€</p>
-                </div>
-            </div>
-        </section>
-
     </div>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
@@ -322,46 +136,21 @@
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
 
-    
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
