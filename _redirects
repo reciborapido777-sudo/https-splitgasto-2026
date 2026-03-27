@@ -1,13 +1,14 @@
 # ─────────────────────────────────────────────────────────────────
-# SplitGasto 2026 - Cloudflare Pages Redirects (v4.3 Clean URLs)
+# SplitGasto 2026 - Cloudflare Pages Redirects (v4.4 Clean URLs)
 # ─────────────────────────────────────────────────────────────────
 # STRATEGY: Clean URLs — router uses /auth, /dashboard, etc.
 # Each route is EXPLICIT. No wildcard /* catch-all (avoids loops).
+# CF Pages serves index.html for / automatically — NO rule needed.
 # CF Pages serves .html files directly if accessed with extension.
 # ─────────────────────────────────────────────────────────────────
 
-# ── Landing ───────────────────────────────────────────────────────
-/                   /index.html               200
+# NOTE: / → index.html is handled natively by Cloudflare Pages.
+# Adding an explicit rule causes an infinite-loop error. Omitted.
 
 # ── Auth & Onboarding ─────────────────────────────────────────────
 /auth               /auth.html                200

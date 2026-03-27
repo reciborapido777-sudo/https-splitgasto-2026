@@ -1,18 +1,23 @@
 /**
  * SplitGasto 2026 - Master Navigation Router
- * Versión: 4.3 — Clean URLs + Cloudflare Pages Optimized
+ * Versión: 4.4 — Clean URLs + Cloudflare Pages Optimized
  *
  * STRATEGY: Routes use absolute clean paths (/auth, /dashboard, /groups).
  * CF Pages _redirects maps /auth → /auth.html [200], etc.
  * Absolute paths work from ANY page depth — no relative-path bugs.
  * No /* catch-all in _redirects = no infinite loops possible.
+ *
+ * LANDING: uses /index.html directly — CF Pages serves it natively.
+ * DO NOT use '/' as a route target — it triggers an infinite redirect
+ * loop on Cloudflare Pages (CF tries to rewrite / → /index.html which
+ * is already the request, causing ERR_TOO_MANY_REDIRECTS).
  */
 const SGRouter = {
 
     // ─── Route map: routeId → clean absolute path ────────────────────
     routes: {
-        // Landing
-        'landing':       '/',
+        // Landing — direct file reference, no redirect rule needed
+        'landing':       '/index.html',
         // Auth
         'auth':          '/auth',
         'auth-login':    '/auth',
@@ -76,8 +81,13 @@ const SGRouter = {
         const target = this.routes[routeId];
 
         // Anti-loop: compare current pathname (strip trailing slash)
-        const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-        const cleanTarget = target.replace(/\/+$/, '') || '/';
+        // Treat '/' and '/index.html' as equivalent to avoid unnecessary hop
+        const normalisePath = p => {
+            const s = (p || '/').replace(/\/+$/, '') || '/';
+            return s === '/index.html' ? '/' : s;
+        };
+        const currentPath = normalisePath(window.location.pathname);
+        const cleanTarget  = normalisePath(target);
 
         if (cleanTarget === currentPath) {
             console.log('[SG Router] Already here. Reload.');
@@ -203,4 +213,4 @@ window.addEventListener('pageshow', (event) => {
 
 // ─── Freeze: prevent accidental mutations ────────────────────────────────────
 Object.freeze(SGRouter);
-console.log('[SG Router] v4.3 ready ✓ —', Object.keys(SGRouter.routes).length, 'routes (clean URLs)');
+console.log('[SG Router] v4.4 ready ✓ —', Object.keys(SGRouter.routes).length, 'routes (clean URLs, no loop)');
