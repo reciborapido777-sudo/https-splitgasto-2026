@@ -17,7 +17,7 @@ const SGRouter = {
     // ─── Route map: routeId → clean absolute path ────────────────────
     routes: {
         // Landing — direct file reference, no redirect rule needed
-        'landing':       '/index.html',
+        'landing': '/',
         // Auth
         'auth':          '/auth',
         'auth-login':    '/auth',
