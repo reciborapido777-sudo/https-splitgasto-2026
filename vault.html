@@ -10,28 +10,31 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Estilos de Bóveda: Densidad de Activos Alpha */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow:hidden; }
+
         .asset-card {
-            position: relative; aspect-ratio: 4/5; border-radius: 2rem;
+            position: relative; aspect-ratio: 4/5; border-radius: 2.2rem;
             overflow: hidden; border: 1px solid var(--glass-border);
-            transition: var(--transition-alpha); background: #0a0a0a;
+            transition: var(--transition-alpha); background: #050505;
             transform: translateZ(0);
         }
         .asset-card:active { transform: scale(0.96); }
-        .asset-card:hover { border-color: var(--cian-tech); }
+        .asset-card:hover { border-color: var(--cian-tech); box-shadow: 0 0 30px rgba(19, 236, 214, 0.05); }
         
         .asset-overlay { 
-            background: linear-gradient(to top, rgba(0,0,0,1) 5%, rgba(0,0,0,0.4) 50%, transparent 100%); 
+            background: linear-gradient(to top, rgba(0,0,0,1) 5%, rgba(0,0,0,0.5) 50%, transparent 100%); 
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .filter-btn {
-            padding: 10px 20px; border-radius: 14px; font-size: 9px; font-weight: 900;
+            padding: 10px 22px; border-radius: 14px; font-size: 9px; font-weight: 900;
             text-transform: uppercase; letter-spacing: 0.15em; border: 1px solid var(--glass-border);
             color: #52525b; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            white-space: nowrap;
+            white-space: nowrap; background: rgba(255,255,255,0.01);
         }
         .filter-btn.active { 
             border-color: var(--cian-tech); color: var(--cian-tech); 
@@ -41,13 +44,18 @@
 
         .status-tag {
             font-size: 7px; font-weight: 900; text-transform: uppercase;
-            letter-spacing: 0.1em; padding: 4px 10px; border-radius: 8px;
+            letter-spacing: 0.15em; padding: 4px 10px; border-radius: 8px;
             backdrop-filter: blur(10px);
         }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
     </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell flex flex-col h-screen">
 <div class="app-frame flex flex-col h-full">
 
     <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
@@ -84,7 +92,7 @@
             <button class="filter-btn" onclick="setFilter(this,'viajes')">Viajes</button>
         </nav>
 
-        <div id="vaultGrid" class="grid grid-cols-2 gap-4 pb-24">
+        <div id="vaultGrid" class="grid grid-cols-2 gap-4 pb-28">
             <div class="asset-card group reveal-node" data-cat="alimentacion" data-name="mercadona" onclick="SGRouter.navigate('receipt')">
                 <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:scale-110 transition-all duration-700">
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 space-y-2">
