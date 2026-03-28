@@ -1,423 +1,193 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#0a0a0a">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Games Premium | SplitGasto 2026</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link rel="stylesheet" href="engine/global.css"/>
-<style>
-  :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; --gold:#D4AF37; }
-  * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Casino Alpha | SplitGasto 2026</title>
+    
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow-x:hidden; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
 
-  .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.07); border-radius:24px; }
+        .glass { background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.06); border-radius:24px; }
 
-  /* Game cards */
-  .game-card {
-    border-radius:24px;
-    overflow:hidden;
-    position:relative;
-    cursor:pointer;
-    transition:transform 0.3s, box-shadow 0.3s;
-    border:1px solid rgba(255,255,255,0.06);
-  }
-  .game-card:hover { transform:translateY(-4px); }
-  .game-card:active { transform:scale(0.97); }
-
-  .game-card-roulette {
-    background:linear-gradient(135deg, #102221 0%, #0a0a0a 100%);
-    box-shadow:0 8px 32px rgba(19,236,214,0.15);
-  }
-  .game-card-roulette:hover { box-shadow:0 16px 48px rgba(19,236,214,0.3); border-color:rgba(19,236,214,0.3); }
-
-  .game-card-cards {
-    background:linear-gradient(135deg, #1a0a2e 0%, #0a0a0a 100%);
-    box-shadow:0 8px 32px rgba(168,85,247,0.15);
-  }
-  .game-card-cards:hover { box-shadow:0 16px 48px rgba(168,85,247,0.3); border-color:rgba(168,85,247,0.3); }
-
-  .game-card-coin {
-    background:linear-gradient(135deg, #1a1200 0%, #0a0a0a 100%);
-    box-shadow:0 8px 32px rgba(212,175,55,0.15);
-  }
-  .game-card-coin:hover { box-shadow:0 16px 48px rgba(212,175,55,0.3); border-color:rgba(212,175,55,0.3); }
-
-  /* Canvas previews */
-  .mini-canvas { border-radius:16px; overflow:hidden; }
-
-  /* Icon wheels */
-  @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  .spin-slow { animation:spin-slow 8s linear infinite; }
-
-  @keyframes card-float { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-8px) rotate(5deg)} }
-  .card-float { animation:card-float 3s ease infinite; }
-
-  @keyframes coin-flip { 0%,100%{transform:rotateY(0deg)} 50%{transform:rotateY(180deg)} }
-  .coin-flip { animation:coin-flip 2s ease infinite; }
-
-  /* Premium badge */
-  .premium-badge {
-    background:linear-gradient(90deg, #d4af37, #f0c060);
-    color:#0a0a0a;
-    font-size:0.65rem;
-    font-weight:900;
-    letter-spacing:0.1em;
-    padding:2px 8px;
-    border-radius:50px;
-    text-transform:uppercase;
-  }
-
-  /* Stats */
-  .stat-chip {
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:50px;
-    padding:4px 12px;
-    font-size:0.75rem;
-    font-weight:700;
-  }
-
-  /* Play button */
-  .play-btn {
-    border-radius:50px;
-    font-weight:800;
-    font-size:0.85rem;
-    padding:10px 20px;
-    transition:all 0.2s;
-    display:inline-flex; align-items:center; gap:6px;
-  }
-
-  .bottom-nav { background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); }
-
-  /* Ambient orbs */
-  .orb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
-
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
+        .game-card {
+            border-radius:2.5rem; overflow:hidden; position:relative; cursor:pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border:1px solid rgba(255,255,255,0.05); transform: translateZ(0);
         }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
+        .game-card:active { transform:scale(0.97); }
+
+        .card-roulette { background:linear-gradient(135deg, #0a1a1a 0%, #000 100%); }
+        .card-cards { background:linear-gradient(135deg, #150a25 0%, #000 100%); }
+        .card-coin { background:linear-gradient(135deg, #1a1205 0%, #000 100%); }
+        .card-darts { background:linear-gradient(135deg, #051a0a 0%, #000 100%); }
+
+        .premium-badge {
+            background: linear-gradient(90deg, #D4AF37, #F9E076);
+            color:#000; font-size:7px; font-weight:900; letter-spacing:0.15em;
+            padding:3px 10px; border-radius:50px; text-transform:uppercase;
         }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
-    <script src="engine/router.js"></script>
+
+        .play-btn {
+            border-radius:50px; font-weight:900; font-size:9px; padding:12px 24px;
+            transition:all 0.2s; display:inline-flex; align-items:center; gap:8px;
+            text-transform: uppercase; letter-spacing: 0.1em;
+        }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; background:none; border:none; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
+        @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .spin-slow { animation:spin-slow 12s linear infinite; }
+        
+        .orb { position:fixed; border-radius:50%; filter:blur(100px); pointer-events:none; z-index:0; opacity: 0.4; }
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell text-white pb-32">
+<body class="app-shell pb-32 bg-black">
 <div class="app-frame">
 
-<!-- Ambient orbs -->
-<div class="orb w-64 h-64 -top-20 -right-20" style="background:rgba(19,236,214,0.08)"></div>
-<div class="orb w-48 h-48 bottom-40 -left-20" style="background:rgba(168,85,247,0.08)"></div>
+    <div class="orb w-64 h-64 -top-20 -right-20" style="background:rgba(19,236,214,0.15)"></div>
+    <div class="orb w-48 h-48 bottom-40 -left-20" style="background:rgba(168,85,247,0.12)"></div>
 
-<!-- Header -->
-<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
-  <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
-    <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
-  </button>
-  <div class="text-center">
-    <h1 class="font-bold text-base">SplitGasto Games</h1>
-    <p class="text-xs opacity-50">Decide quién paga</p>
-  </div>
-  <button onclick="SGRouter.navigate('membership')" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3)">
-    <span class="material-icons-round text-sm" style="color:var(--gold)">workspace_premium</span>
-  </button>
-</header>
-
-<main class="max-w-md mx-auto px-4 pt-6 space-y-6 relative z-10">
-
-  <!-- Hero -->
-  <div class="text-center pt-2 pb-2">
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style="background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.25)">
-      <span class="material-icons-round text-sm" style="color:var(--gold)">auto_awesome</span>
-      <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--gold)">4 Juegos Premium</span>
-    </div>
-    <h2 class="text-3xl font-black leading-tight">Decide quién paga<br/><span style="color:var(--cyan)">de forma épica</span></h2>
-    <p class="text-sm opacity-50 mt-2">4 juegos 3D interactivos para tu grupo</p>
-  </div>
-
-  <!-- Live stats bar -->
-  <div class="glass p-4 flex justify-around">
-    <div class="text-center">
-      <p class="font-black text-lg" style="color:var(--cyan)">2.4K</p>
-      <p class="text-xs opacity-40">Partidas hoy</p>
-    </div>
-    <div class="w-px bg-white/10"></div>
-    <div class="text-center">
-      <p class="font-black text-lg text-white">847</p>
-      <p class="text-xs opacity-40">Grupos activos</p>
-    </div>
-    <div class="w-px bg-white/10"></div>
-    <div class="text-center">
-      <p class="font-black text-lg" style="color:var(--orange)">€ 18.2K</p>
-      <p class="text-xs opacity-40">Decididos</p>
-    </div>
-  </div>
-
-  <!-- ─── GAME 1: RULETA ─── -->
-  <div class="game-card game-card-roulette p-6" onclick="SGRouter.requirePremium('Ruleta de la Suerte')">
-    <div class="flex items-start justify-between mb-4">
-      <div>
-        <span class="premium-badge">Premium</span>
-        <h3 class="text-xl font-black mt-2">Ruleta de la Suerte</h3>
-        <p class="text-sm opacity-50 mt-1">Gira la rueda 3D y deja que el azar elija al pagador</p>
-      </div>
-      <div class="w-20 h-20 flex items-center justify-center flex-shrink-0">
-        <!-- Mini SVG roulette -->
-        <svg width="72" height="72" viewBox="0 0 72 72">
-          <circle cx="36" cy="36" r="34" fill="none" stroke="rgba(19,236,214,0.2)" stroke-width="2"/>
-          <path d="M36 2 A34 34 0 0 1 70 36" fill="rgba(19,236,214,0.3)" class="spin-slow" style="transform-origin:36px 36px"/>
-          <path d="M36 36 L36 2 A34 34 0 0 1 54.4 7.2 Z" fill="rgba(19,236,214,0.4)"/>
-          <path d="M36 36 L54.4 7.2 A34 34 0 0 1 69.2 47.9 Z" fill="rgba(19,236,214,0.2)"/>
-          <path d="M36 36 L69.2 47.9 A34 34 0 0 1 42.8 70.8 Z" fill="rgba(168,85,247,0.3)"/>
-          <path d="M36 36 L42.8 70.8 A34 34 0 0 1 2 36 Z" fill="rgba(255,157,66,0.3)"/>
-          <path d="M36 36 L2 36 A34 34 0 0 1 36 2 Z" fill="rgba(236,72,153,0.3)"/>
-          <circle cx="36" cy="36" r="8" fill="#0a0a0a" stroke="rgba(19,236,214,0.6)" stroke-width="2"/>
-          <circle cx="36" cy="36" r="3" fill="#13ecd6"/>
-          <!-- Pointer -->
-          <polygon points="36,0 40,12 32,12" fill="#13ecd6"/>
-        </svg>
-      </div>
-    </div>
-    <div class="flex items-center justify-between">
-      <div class="flex gap-2">
-        <span class="stat-chip" style="color:var(--cyan)">⚡ 2-8 jugadores</span>
-        <span class="stat-chip">🎯 3D Canvas</span>
-      </div>
-      <button class="play-btn" style="background:linear-gradient(135deg,var(--cyan),#0fbfaf);color:#0a0a0a">
-        <span class="material-icons-round text-sm">casino</span>
-        Girar
-      </button>
-    </div>
-  </div>
-
-  <!-- ─── GAME 2: CARTAS ─── -->
-  <div class="game-card game-card-cards p-6" onclick="SGRouter.requirePremium('La Carta Más Alta')">
-    <div class="flex items-start justify-between mb-4">
-      <div>
-        <span class="premium-badge">Premium</span>
-        <h3 class="text-xl font-black mt-2">La Carta Más Alta</h3>
-        <p class="text-sm opacity-50 mt-1">Robar una carta – quien saque la más alta paga</p>
-      </div>
-      <div class="w-20 h-20 flex items-center justify-center flex-shrink-0 relative">
-        <!-- Cards stack visualization -->
-        <div style="position:relative;width:60px;height:80px">
-          <div style="position:absolute;top:8px;left:8px;width:50px;height:70px;background:#1a0a2e;border:2px solid rgba(168,85,247,0.3);border-radius:8px;transform:rotate(-8deg)"></div>
-          <div style="position:absolute;top:4px;left:4px;width:50px;height:70px;background:#1a0a2e;border:2px solid rgba(168,85,247,0.4);border-radius:8px;transform:rotate(-4deg)"></div>
-          <div class="card-float" style="position:absolute;top:0;left:0;width:50px;height:70px;background:linear-gradient(135deg,#2a0a4e,#1a0a2e);border:2px solid rgba(168,85,247,0.6);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
-            <span style="color:#a855f7;font-size:1.4rem;font-weight:900">A</span>
-            <span style="color:#a855f7;font-size:1rem">♠</span>
-          </div>
+    <header class="flex justify-between items-center px-6 py-4 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
+            <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+        </button>
+        <div class="text-center">
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Azar</p>
+            <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-white leading-none">Casino Alpha</h1>
         </div>
-      </div>
-    </div>
-    <div class="flex items-center justify-between">
-      <div class="flex gap-2">
-        <span class="stat-chip" style="color:var(--purple)">🃏 Baraja 52</span>
-        <span class="stat-chip">✨ 3D Flip</span>
-      </div>
-      <button class="play-btn" style="background:linear-gradient(135deg,var(--purple),#8b5cf6);color:white">
-        <span class="material-icons-round text-sm">style</span>
-        Jugar
-      </button>
-    </div>
-  </div>
+        <button onclick="SGRouter.navigate('membership')" class="size-11 rounded-2xl flex items-center justify-center bg-[#D4AF37]/10 border border-[#D4AF37]/30 active:scale-90 transition-all">
+            <span class="material-icons-round text-[#D4AF37] text-lg">workspace_premium</span>
+        </button>
+    </header>
 
-  <!-- ─── GAME 3: CARA O CRUZ ─── -->
-  <div class="game-card game-card-coin p-6" onclick="SGRouter.navigate('game-coin', 'games')">
-    <div class="flex items-start justify-between mb-4">
-      <div>
-        <span class="premium-badge">Incluido</span>
-        <h3 class="text-xl font-black mt-2">Cara o Cruz</h3>
-        <p class="text-sm opacity-50 mt-1">La decisión clásica – moneda 3D personalizada SplitGasto</p>
-      </div>
-      <div class="w-20 h-20 flex items-center justify-center flex-shrink-0">
-        <!-- 3D Coin visualization -->
-        <div class="coin-flip" style="width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f0c060 0%,#d4af37 50%,#8b7320 100%);border:3px solid rgba(212,175,55,0.4);box-shadow:0 0 20px rgba(212,175,55,0.3);display:flex;align-items:center;justify-content:center;">
-          <span class="material-icons-round" style="color:rgba(0,0,0,0.7);font-size:28px">account_balance_wallet</span>
+    <main class="max-w-md mx-auto px-5 pt-6 space-y-6 relative z-10">
+
+        <div class="glass p-5 flex justify-around reveal-node">
+            <div class="text-center">
+                <p class="font-black tech-font text-lg text-[#13ecd6]">2.4K</p>
+                <p class="text-[7px] font-black uppercase tracking-widest opacity-40">Partidas</p>
+            </div>
+            <div class="w-px bg-white/5"></div>
+            <div class="text-center">
+                <p class="font-black tech-font text-lg text-white">847</p>
+                <p class="text-[7px] font-black uppercase tracking-widest opacity-40">Nodos</p>
+            </div>
+            <div class="w-px bg-white/5"></div>
+            <div class="text-center">
+                <p class="font-black tech-font text-lg text-[#FF9D42]">18.2K</p>
+                <p class="text-[7px] font-black uppercase tracking-widest opacity-40">Decidido</p>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="flex items-center justify-between">
-      <div class="flex gap-2">
-        <span class="stat-chip" style="color:var(--gold)">🪙 50/50</span>
-        <span class="stat-chip">⚡ Instantáneo</span>
-      </div>
-      <button class="play-btn" style="background:linear-gradient(135deg,var(--gold),#f0c060);color:#0a0a0a">
-        <span class="material-icons-round text-sm">toll</span>
-        Lanzar
-      </button>
-    </div>
-  </div>
 
-  <!-- ─── GAME 4: DARDOS ─── -->
-  <div class="game-card p-6" style="background:linear-gradient(135deg,#001a0a 0%,#0a0a0a 100%);box-shadow:0 8px 32px rgba(34,197,94,0.15);border:1px solid rgba(255,255,255,0.06)" onclick="SGRouter.navigate('game-darts', 'games')" onmouseover="this.style.boxShadow='0 16px 48px rgba(34,197,94,0.3)';this.style.borderColor='rgba(34,197,94,0.3)'" onmouseout="this.style.boxShadow='0 8px 32px rgba(34,197,94,0.15)';this.style.borderColor='rgba(255,255,255,0.06)'">
-    <div class="flex items-start justify-between mb-4">
-      <div>
-        <span class="premium-badge" style="background:linear-gradient(90deg,#22c55e,#16a34a)">Alpha</span>
-        <h3 class="text-xl font-black mt-2">Dardos Alpha</h3>
-        <p class="text-sm opacity-50 mt-1">5 rondas en el tablero 3D – mayor puntaje paga menos</p>
-      </div>
-      <div class="w-20 h-20 flex items-center justify-center flex-shrink-0">
-        <svg width="72" height="72" viewBox="0 0 72 72">
-          <circle cx="36" cy="36" r="34" fill="none" stroke="rgba(34,197,94,0.2)" stroke-width="2"/>
-          <circle cx="36" cy="36" r="26" fill="none" stroke="rgba(34,197,94,0.3)" stroke-width="2"/>
-          <circle cx="36" cy="36" r="18" fill="rgba(239,68,68,0.2)" stroke="rgba(239,68,68,0.4)" stroke-width="2"/>
-          <circle cx="36" cy="36" r="10" fill="rgba(34,197,94,0.3)" stroke="rgba(34,197,94,0.6)" stroke-width="2"/>
-          <circle cx="36" cy="36" r="4" fill="#22c55e"/>
-          <line x1="36" y1="2" x2="36" y2="14" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-          <line x1="70" y1="36" x2="58" y2="36" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-          <line x1="36" y1="70" x2="36" y2="58" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-          <line x1="2" y1="36" x2="14" y2="36" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-          <polygon points="20,14 22,20 18,20" fill="#22c55e" transform="rotate(45 36 36)"/>
-        </svg>
-      </div>
-    </div>
-    <div class="flex items-center justify-between">
-      <div class="flex gap-2">
-        <span class="stat-chip" style="color:#22c55e">🎯 5 Rondas</span>
-        <span class="stat-chip">👥 2-4 jugadores</span>
-      </div>
-      <button class="play-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:white">
-        <span class="material-icons-round text-sm">ads_click</span>
-        Lanzar
-      </button>
-    </div>
-  </div>
+        <div class="game-card card-roulette p-7 reveal-node" style="animation-delay: 0.1s" onclick="SGRouter.requirePremium('Ruleta')">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <span class="premium-badge">Élite</span>
+                    <h3 class="text-xl font-black tech-font mt-3 uppercase italic">Ruleta Alpha</h3>
+                    <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-1">Decisión por rotación 3D</p>
+                </div>
+                <div class="w-16 h-16 flex items-center justify-center flex-shrink-0">
+                    <svg width="64" height="64" viewBox="0 0 72 72" class="spin-slow">
+                        <circle cx="36" cy="36" r="34" fill="none" stroke="rgba(19,236,214,0.2)" stroke-width="2"/>
+                        <path d="M36 36 L36 2 A34 34 0 0 1 70 36 Z" fill="rgba(19,236,214,0.3)"/>
+                        <path d="M36 36 L70 36 A34 34 0 0 1 36 70 Z" fill="rgba(168,85,247,0.3)"/>
+                        <circle cx="36" cy="36" r="6" fill="#13ecd6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex gap-2">
+                    <span class="text-[7px] font-black uppercase tracking-widest px-2 py-1 rounded bg-white/5 text-zinc-500">2-12 Socios</span>
+                </div>
+                <button class="play-btn bg-[#13ecd6] text-black">
+                    <span class="material-icons-round text-sm">casino</span> Girar
+                </button>
+            </div>
+        </div>
 
-  <!-- Games tip -->
-  <div class="glass p-4 flex items-start gap-3" style="border-color:rgba(19,236,214,0.15)">
-    <span class="material-icons-round text-sm mt-0.5" style="color:var(--cyan)">lightbulb</span>
-    <p class="text-xs opacity-70 leading-relaxed">
-      <strong class="text-white">Consejo Alpha:</strong> Los juegos están vinculados a tu grupo activo. Después de la partida, puedes registrar el gasto directamente al perdedor con un solo toque.
-    </p>
-  </div>
+        <div class="game-card card-cards p-7 reveal-node" style="animation-delay: 0.2s" onclick="SGRouter.requirePremium('Cartas')">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <span class="premium-badge">Élite</span>
+                    <h3 class="text-xl font-black tech-font mt-3 uppercase italic">Carta Alta</h3>
+                    <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-1">Quien saque la más alta, paga</p>
+                </div>
+                <div class="size-14 bg-[#a855f7]/20 rounded-xl flex items-center justify-center border border-[#a855f7]/30 rotate-6">
+                    <span class="material-icons-round text-[#a855f7] text-3xl">style</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex gap-2">
+                    <span class="text-[7px] font-black uppercase tracking-widest px-2 py-1 rounded bg-white/5 text-zinc-500">Baraja Pro</span>
+                </div>
+                <button class="play-btn bg-[#a855f7] text-white">
+                    <span class="material-icons-round text-sm">layers</span> Jugar
+                </button>
+            </div>
+        </div>
 
-</main>
+        <div class="game-card card-coin p-7 reveal-node" style="animation-delay: 0.3s" onclick="SGRouter.navigate('game-coin')">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <span class="text-[7px] font-black uppercase tracking-widest px-2 py-1 rounded bg-zinc-800 text-zinc-400">Incluido</span>
+                    <h3 class="text-xl font-black tech-font mt-3 uppercase italic">Cara o Cruz</h3>
+                    <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-1">La decisión binaria clásica</p>
+                </div>
+                <div class="size-16 rounded-full bg-gradient-to-br from-[#f0c060] to-[#d4af37] flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+                    <span class="material-icons-round text-black/70 text-3xl">toll</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex gap-2">
+                    <span class="text-[7px] font-black uppercase tracking-widest px-2 py-1 rounded bg-white/5 text-zinc-500">Física 3D</span>
+                </div>
+                <button class="play-btn bg-[#D4AF37] text-black">
+                    <span class="material-icons-round text-sm">history_edu</span> Lanzar
+                </button>
+            </div>
+        </div>
 
-<!-- Bottom Nav -->
-<nav class="bottom-nav fixed bottom-0 left-0 right-0 flex justify-around items-center px-4 py-3 pb-6">
-  <button onclick="SGRouter.navigate('dashboard')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">home</span>
-    <span class="text-[10px]">Inicio</span>
-  </button>
-  <button onclick="SGRouter.navigate('groups')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">group</span>
-    <span class="text-[10px]">Grupos</span>
-  </button>
-  <button class="flex flex-col items-center gap-1" style="color:var(--cyan)">
-    <span class="material-icons-round text-xl">casino</span>
-    <span class="text-[10px]">Juegos</span>
-  </button>
-  <button onclick="SGRouter.navigate('vault')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">account_balance_wallet</span>
-    <span class="text-[10px]">Bóveda</span>
-  </button>
-  <button onclick="SGRouter.navigate('profile')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">person</span>
-    <span class="text-[10px]">Perfil</span>
-  </button>
-</nav>
+    </main>
 
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
-
-    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+            <button class="nav-item active">
                 <span class="material-icons-round">casino</span>
                 <p>Juegos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('vault')">
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
                 <span class="material-icons-round">auto_stories</span>
                 <p>Bóveda</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
+
 </div>
 </body>
 </html>
