@@ -155,13 +155,7 @@ h1, h2, h3, .font-accent {
     letter-spacing: 2px;
 }
 
-/* 8. RESPONSIVE DESKTOP WRAPPER — App pages (mobile-first design) */
-/*
- * On desktop (>=768px), mobile app pages are centered like a phone frame.
- * On mobile (<768px), they fill the full viewport normally.
- * Usage: add class="app-shell" to <body> and wrap content with <div class="app-frame">
- */
-
+/* 8. RESPONSIVE DESKTOP WRAPPER */
 .app-shell {
     background: #000;
     min-height: 100dvh;
@@ -201,23 +195,17 @@ h1, h2, h3, .font-accent {
     }
 }
 
-
-/* 9. APP-FRAME SCROLL FIX for desktop (fixed nav containment) */
-/* On desktop: body is the scroll container; fixed children of app-frame 
-   must be repositioned. We make the frame overflow:hidden and use sticky nav. */
+/* 9. APP-FRAME SCROLL FIX FOR DESKTOP */
 @media (min-width: 768px) {
-    /* The app-frame contains all scrolling */
     .app-frame {
         overflow-y: auto !important;
         overflow-x: hidden !important;
     }
     
-    /* Body does NOT scroll on desktop */
     body.app-shell {
         overflow: hidden !important;
     }
 
-    /* Fixed bottom nav becomes sticky inside the frame */
     .app-frame nav.fixed,
     .app-frame footer.fixed,
     .app-frame .bottom-nav-fixed {
@@ -225,11 +213,9 @@ h1, h2, h3, .font-accent {
         bottom: 0 !important;
     }
     
-    /* Fixed top header becomes sticky inside the frame */  
     .app-frame header.fixed,
     .app-frame .top-header-fixed {
         position: sticky !important;
         top: 0 !important;
     }
 }
-/* app-frame-scroll-fix */
