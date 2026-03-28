@@ -14,7 +14,7 @@
         .chart-frame { 
             height: 280px; display: flex; align-items: flex-end; 
             justify-content: space-around; padding-bottom: 25px; 
-            border-bottom: 1px solid var(--glass-border); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
         }
         .bar-entity { 
             width: 45px; border-radius: 14px 14px 4px 4px; 
@@ -23,24 +23,24 @@
         }
         @keyframes growBar { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
 
-        .bg-purple-gradient { background: linear-gradient(to top, var(--purple-deep), rgba(168, 85, 247, 0.1)); }
-        .bg-cyan-gradient { background: linear-gradient(to top, var(--cian-tech), rgba(19, 236, 214, 0.1)); }
+        .bg-purple-gradient { background: linear-gradient(to top, #a855f7, rgba(168, 85, 247, 0.1)); }
+        .bg-cyan-gradient { background: linear-gradient(to top, #13ecd6, rgba(19, 236, 214, 0.1)); }
 
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
         .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
     </style>
 
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell bg-black">
 <div class="app-frame flex flex-col h-full">
 
-    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50 border-b border-white/5">
         <div class="flex items-center gap-4">
             <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
-                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
             </button>
             <div class="text-left">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Capital Intelligence</p>
@@ -53,12 +53,12 @@
         </button>
     </header>
 
-    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-8 pb-28">
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-8 pb-32">
 
         <section class="glass-panel p-10 rounded-[3.5rem] space-y-10 reveal-node">
             <div class="space-y-2">
                 <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Crecimiento Alpha</p>
-                <h2 class="text-5xl font-black font-['Space_Grotesk'] tracking-tighter italic text-white money-display">+326,45€</h2>
+                <h2 class="text-5xl font-black font-['Space_Grotesk'] tracking-tighter italic text-white">+326,45€</h2>
             </div>
 
             <div class="chart-frame">
@@ -88,8 +88,9 @@
         </div>
 
         <section class="space-y-5 reveal-node" style="animation-delay:0.5s">
-            <h2 class="text-sm font-black font-['Space_Grotesk'] uppercase italic tracking-widest px-2">Gasto por Nodo</h2>
-            <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-6">
+            <h2 class="text-sm font-black font-['Space_Grotesk'] uppercase italic tracking-widest px-2 text-white">Gasto por Nodo</h2>
+            
+            <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-6 border-white/5">
                 <div class="size-12 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0">
                     <span class="material-icons-round text-[#FF9D42]">restaurant</span>
                 </div>
@@ -99,7 +100,22 @@
                         <p class="text-sm font-black text-white font-['Space_Grotesk']">312,40€</p>
                     </div>
                     <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-[#FF9D42] rounded-full shadow-[0_0_10px_rgba(255,157,66,0.2)]" style="width:37%"></div>
+                        <div class="h-full bg-[#FF9D42] rounded-full" style="width:37%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-6 border-white/5">
+                <div class="size-12 rounded-2xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20 flex-shrink-0">
+                    <span class="material-icons-round text-[#a855f7]">directions_car</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between mb-3">
+                        <p class="text-[9px] font-black uppercase text-zinc-500 tracking-widest">Logística</p>
+                        <p class="text-sm font-black text-white font-['Space_Grotesk']">145,20€</p>
+                    </div>
+                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-[#a855f7] rounded-full" style="width:15%"></div>
                     </div>
                 </div>
             </div>
@@ -121,9 +137,9 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item active">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
+            <button class="nav-item active" onclick="SGRouter.navigate('analytics')">
+                <span class="material-icons-round">query_stats</span>
+                <p>Métricas</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
