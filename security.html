@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -10,62 +10,90 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Estilos de Control de Seguridad */
-        .security-status { padding: 6px 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: var(--purple-deep); border-radius: 10px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
+        .security-status { 
+            padding: 6px 12px; background: rgba(168, 85, 247, 0.1); 
+            border: 1px solid rgba(168, 85, 247, 0.2); color: #a855f7; 
+            border-radius: 10px; font-size: 8px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 1px; 
+        }
         
         /* Toggles Mecánicos Alpha */
-        .toggle-box { width: 44px; height: 24px; background: rgba(255,255,255,0.05); border-radius: 50px; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: var(--transition-alpha); }
+        .toggle-box { 
+            width: 44px; height: 24px; background: rgba(255,255,255,0.05); 
+            border-radius: 50px; position: relative; cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
         .toggle-knob { width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 4px; transition: inherit; }
-        .toggle-active { background: rgba(19, 236, 214, 0.15); border-color: var(--cian-tech); }
-        .toggle-active .toggle-knob { left: 22px; background: var(--cian-tech); box-shadow: 0 0 10px var(--cian-tech); }
+        .toggle-active { background: rgba(19, 236, 214, 0.15); border-color: #13ecd6; }
+        .toggle-active .toggle-knob { left: 22px; background: #13ecd6; box-shadow: 0 0 10px #13ecd6; }
 
-        .score-ring { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--cian-tech) 0% 85%, rgba(255,255,255,0.05) 85% 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+        .score-ring { 
+            width: 80px; height: 80px; border-radius: 50%; 
+            background: conic-gradient(#13ecd6 0% 85%, rgba(255,255,255,0.05) 85% 100%); 
+            display: flex; align-items: center; justify-content: center; position: relative; 
+        }
         .score-ring::after { content: ''; position: absolute; width: 66px; height: 66px; background: #000; border-radius: 50%; }
-        .score-value { position: relative; z-index: 1; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.25rem; color: var(--cian-tech); }
+        .score-value { position: relative; z-index: 1; font-weight: 900; font-size: 1.25rem; color: #13ecd6; }
 
-        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .log-entry:last-child { border-bottom: none; }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; background:none; border:none; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell">
-<div class="app-frame">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
+<body class="app-shell bg-black">
+<div class="app-frame flex flex-col h-full">
 
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
-            <div class="flex items-center gap-4">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
-                </button>
-                <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault Security</p>
-                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-[#a855f7] leading-none">Blindaje</h1>
-                </div>
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50 border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
+                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+            </button>
+            <div class="text-left">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault Security</p>
+                <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-[#a855f7] leading-none">Blindaje</h1>
             </div>
-            <div class="security-status">AES-256</div>
-        </header>
+        </div>
+        <div class="security-status tech-font">AES-256</div>
+    </header>
 
-        <section class="glass-panel p-8 rounded-[2.5rem] border-[#a855f7]/10 flex items-center gap-6 reveal-node">
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-8 pb-32 no-scrollbar">
+
+        <section class="glass-panel p-8 rounded-[2.5rem] border-[#a855f7]/15 flex items-center gap-6 reveal-node bg-gradient-to-br from-[#a855f7]/5 to-transparent">
             <div class="score-ring">
-                <span class="score-value">85</span>
+                <span class="score-value tech-font">85</span>
             </div>
             <div class="space-y-1">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Índice Alpha</p>
-                <h2 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Protección Élite</h2>
-                <p class="text-[10px] text-zinc-500 leading-tight">Cifrado de grado militar activo en todos los nodos de capital.</p>
+                <h2 class="text-lg font-black tech-font uppercase italic">Protección Élite</h2>
+                <p class="text-[10px] text-zinc-500 leading-tight font-bold uppercase tracking-tight">Cifrado de grado militar activo en todos los nodos.</p>
             </div>
         </section>
 
-        <section class="glass-panel p-6 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay: 0.1s">
-            <div class="flex justify-between items-center py-4 border-bottom-alpha">
+        <section class="glass-panel p-6 rounded-[2.5rem] space-y-1 reveal-node border-white/5" style="animation-delay: 0.1s">
+            <div class="flex justify-between items-center py-4 border-b border-white/5">
                 <div class="flex items-center gap-4">
                     <div class="size-10 rounded-xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20">
                         <span class="material-icons-round text-[#a855f7] text-lg">fingerprint</span>
                     </div>
                     <div>
                         <h4 class="text-[11px] font-black uppercase tracking-wide">Biometría</h4>
-                        <p class="text-[8px] text-zinc-600 uppercase">FaceID / TouchID</p>
+                        <p class="text-[8px] text-zinc-600 font-black uppercase tracking-widest">FaceID / TouchID</p>
                     </div>
                 </div>
                 <div class="toggle-box toggle-active" onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Protocolo actualizado', 'info')">
@@ -73,55 +101,55 @@
                 </div>
             </div>
 
-            <div class="flex justify-between items-center py-4 border-bottom-alpha">
+            <div class="flex justify-between items-center py-4">
                 <div class="flex items-center gap-4">
                     <div class="size-10 rounded-xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20">
                         <span class="material-icons-round text-[#13ecd6] text-lg">verified_user</span>
                     </div>
                     <div>
                         <h4 class="text-[11px] font-black uppercase tracking-wide">Doble Factor</h4>
-                        <p class="text-[8px] text-zinc-600 uppercase">Verificación 2FA</p>
+                        <p class="text-[8px] text-zinc-600 font-black uppercase tracking-widest">Verificación 2FA</p>
                     </div>
                 </div>
-                <div class="toggle-box" onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Configure 2FA en Ajustes', 'warning')">
+                <div class="toggle-box" onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Active 2FA en Ajustes', 'warning')">
                     <div class="toggle-knob"></div>
                 </div>
             </div>
         </section>
 
-        <section class="glass-panel p-8 rounded-[2.5rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
+        <section class="glass-panel p-8 rounded-[2.5rem] space-y-6 reveal-node border-white/5" style="animation-delay: 0.2s">
             <div class="flex items-center gap-3">
                 <span class="material-icons-round text-zinc-600 text-sm">history</span>
-                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Log de Auditoría</p>
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Log de Auditoría Alpha</p>
             </div>
             <div class="space-y-1">
                 <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-1.5 bg-[#13ecd6] rounded-full"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-tight">Login Exitoso · Madrid</p>
+                    <div class="flex items-center gap-4">
+                        <span class="size-1.5 bg-[#13ecd6] rounded-full shadow-[0_0_10px_#13ecd6]"></span>
+                        <p class="text-[10px] font-black uppercase tracking-tight">Login Exitoso · Madrid</p>
                     </div>
-                    <p class="text-[8px] font-black text-zinc-700 uppercase">Hoy, 04:00</p>
+                    <p class="text-[8px] font-black text-zinc-700 uppercase tech-font">Hoy, 04:00</p>
                 </div>
                 <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-1.5 bg-[#a855f7] rounded-full"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-tight">Cifrado Sincronizado</p>
+                    <div class="flex items-center gap-4">
+                        <span class="size-1.5 bg-[#a855f7] rounded-full shadow-[0_0_10px_#a855f7]"></span>
+                        <p class="text-[10px] font-black uppercase tracking-tight">Cifrado Sincronizado</p>
                     </div>
-                    <p class="text-[8px] font-black text-zinc-700 uppercase">Ayer, 23:15</p>
+                    <p class="text-[8px] font-black text-zinc-700 uppercase tech-font">Ayer, 23:15</p>
                 </div>
             </div>
         </section>
 
         <div class="flex flex-col gap-3 reveal-node" style="animation-delay: 0.3s">
-            <button onclick="SGRouter.showToast('Enlace enviado', 'success')" class="w-full py-4 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:bg-white/5 active:scale-95 transition-all">
+            <button onclick="SGRouter.showToast('Enlace enviado', 'success')" class="w-full py-5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:bg-white/5 active:scale-95 transition-all border-white/5">
                 Actualizar Credenciales
             </button>
-            <button onclick="SGRouter.showToast('Sesiones cerradas', 'info')" class="w-full py-4 border border-red-500/20 rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] text-red-500/60 hover:bg-red-500/5 active:scale-95 transition-all">
+            <button onclick="SGRouter.showToast('Sesiones cerradas', 'info')" class="w-full py-5 border border-red-500/20 rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] text-red-500/60 hover:bg-red-500/5 active:scale-95 transition-all">
                 Cierre Global de Sesión
             </button>
         </div>
 
-    </div>
+    </main>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
@@ -141,7 +169,7 @@
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('profile')">
+            <button class="nav-item active">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
