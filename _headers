@@ -1,47 +1,58 @@
 # ─────────────────────────────────────────────────────────────────
-# SplitGasto 2026 - Cloudflare Pages Headers (v4.3)
+# SplitGasto 2026 - Cloudflare Pages Headers (v4.4 Gold)
+# Protocolo: Inmutabilidad de Motor y Frescura de Rutas Limpias
 # ─────────────────────────────────────────────────────────────────
 
-# ── Security headers for ALL paths ──────────────────────────────
+# ── 1. Seguridad Universal (Todos los paths) ─────────────────────
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-XSS-Protection: 1; mode=block
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
-# ── HTML — never cache (always fresh on every visit) ─────────────
+# ── 2. Rutas Limpias & HTML (Sincronización con Router v4.4) ─────
+# Forzamos frescura total en las rutas virtuales para evitar BFcache bugs
+/dashboard
+  Cache-Control: no-cache, no-store, must-revalidate
+/groups
+  Cache-Control: no-cache, no-store, must-revalidate
+/activity
+  Cache-Control: no-cache, no-store, must-revalidate
+/vault
+  Cache-Control: no-cache, no-store, must-revalidate
+/analytics
+  Cache-Control: no-cache, no-store, must-revalidate
+/profile
+  Cache-Control: no-cache, no-store, must-revalidate
+/add-expense
+  Cache-Control: no-cache, no-store, must-revalidate
+/split
+  Cache-Control: no-cache, no-store, must-revalidate
+/notifications
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Comodín para archivos físicos .html
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
 
-# ── Service Worker — never cache ─────────────────────────────────
+# ── 3. Motor Operativo (Service Worker & Engine) ─────────────────
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
+  Service-Worker-Allowed: /
 
-# ── Engine assets (router.js, global.css) — no cache ─────────────
 /engine/*
   Cache-Control: no-cache, must-revalidate
 
-# ── Manifest ─────────────────────────────────────────────────────
+# ── 4. Activos de Identidad (Caché Media) ────────────────────────
 /manifest.json
   Cache-Control: public, max-age=86400, must-revalidate
-
-# ── Favicon files ────────────────────────────────────────────────
 /favicon.svg
   Cache-Control: public, max-age=86400, must-revalidate
 
-/favicon-32.png
-  Cache-Control: public, max-age=86400, must-revalidate
-
-/favicon-16.png
-  Cache-Control: public, max-age=86400, must-revalidate
-
-/apple-touch-icon.png
-  Cache-Control: public, max-age=86400, must-revalidate
-
-# ── Static icons (long cache — immutable) ────────────────────────
+# ── 5. Librerías e Iconografía (Inmutables) ──────────────────────
 /icons/*
   Cache-Control: public, max-age=31536000, immutable
