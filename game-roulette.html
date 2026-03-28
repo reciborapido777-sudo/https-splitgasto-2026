@@ -10,183 +10,116 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Renderizado 3D de la Ruleta */
+        /* Motor de Físicas y Estética */
         #roulette-wrapper {
-            position: relative; width: 300px; height: 300px;
-            margin: 0 auto; perspective: 1000px;
+            position: relative; width: 320px; height: 320px;
+            margin: 0 auto; perspective: 1200px;
         }
         #wheel-3d {
-            width: 100%; height: 100%; position: relative;
-            transform-style: preserve-3d; transform: rotateX(15deg);
-            transition: transform 0.5s var(--transition-alpha);
+            width: 100%; height: 100%; transform-style: preserve-3d;
+            transform: rotateX(20deg); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         canvas#wheel {
-            border-radius: 50%; box-shadow: 0 0 50px rgba(168, 85, 247, 0.2);
-            display: block; transition: box-shadow 0.4s;
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.05);
+            box-shadow: 0 0 60px rgba(168, 85, 247, 0.15);
         }
-        canvas#wheel.spinning { box-shadow: 0 0 80px rgba(19, 236, 214, 0.4); }
-
         #pointer {
-            position: absolute; top: -15px; left: 50%;
+            position: absolute; top: -20px; left: 50%;
             transform: translateX(-50%); z-index: 50;
-            filter: drop-shadow(0 0 10px var(--cian-tech));
+            filter: drop-shadow(0 0 15px var(--cian-tech));
         }
-
-        /* Banner de Victoria */
-        #result-banner {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(19, 236, 214, 0.05));
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 2rem;
-            backdrop-filter: blur(20px);
-        }
-
-        /* Chips de Jugador */
-        .player-chip {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem; padding: 8px 16px;
-            font-size: 10px; font-weight: 800; text-transform: uppercase;
-            transition: var(--transition-alpha);
-        }
-        .player-chip.active { border-color: var(--cian-tech); color: var(--cian-tech); background: rgba(19, 236, 214, 0.05); }
-
         .spin-btn {
-            background: var(--cian-tech); color: #000;
-            font-weight: 900; letter-spacing: 0.2em;
-            box-shadow: 0 0 30px rgba(19, 236, 214, 0.3);
+            background: linear-gradient(135deg, var(--cian-tech) 0%, #0dbfb0 100%);
+            color: #000; font-weight: 900; letter-spacing: 0.25em;
+            box-shadow: 0 10px 40px rgba(19, 236, 214, 0.25);
             transition: var(--transition-alpha);
         }
-        .spin-btn:active { transform: scale(0.95); filter: brightness(1.2); }
+        .spin-btn:active { transform: scale(0.94) rotate(-1deg); }
     </style>
-
     <script src="engine/router.js"></script>
 </head>
 <body class="app-shell">
 <div class="app-frame">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-10">
 
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+        <header class="flex justify-between items-center py-4">
             <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
                 <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
             </button>
             <div class="text-center">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Azar</p>
-                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic">Ruleta Alpha</h1>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo de Azar</p>
+                <h1 class="text-lg font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Ruleta Alpha</h1>
             </div>
-            <button onclick="openModal()" class="size-12 glass-panel rounded-2xl flex items-center justify-center text-[#13ecd6] border-[#13ecd6]/20 active:scale-90 transition-all">
-                <span class="material-icons-round text-xl">person_add</span>
-            </button>
+            <div class="size-12"></div>
         </header>
 
-        <section class="flex flex-col items-center py-6 reveal-node">
+        <section class="flex flex-col items-center py-4 reveal-node">
             <div id="roulette-wrapper">
                 <div id="pointer">
-                    <svg width="30" height="30" viewBox="0 0 32 32">
+                    <svg width="32" height="32" viewBox="0 0 32 32">
                         <path d="M16 0 L30 24 L16 18 L2 24 Z" fill="#13ecd6"/>
                     </svg>
                 </div>
                 <div id="wheel-3d">
-                    <canvas id="wheel" width="300" height="300"></canvas>
+                    <canvas id="wheel" width="320" height="320"></canvas>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-8 mt-12 w-full max-w-xs text-center">
+            <div class="grid grid-cols-3 gap-6 mt-12 w-full glass-panel p-6 rounded-[2.5rem] text-center border-[#a855f7]/10">
                 <div>
                     <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="spin-count">0</p>
-                    <p class="text-[8px] font-black text-zinc-600 uppercase">Giros</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Giros</p>
                 </div>
-                <div>
+                <div class="border-x border-white/5">
                     <p class="text-xl font-black font-['Space_Grotesk'] text-white" id="last-winner">—</p>
-                    <p class="text-[8px] font-black text-zinc-600 uppercase">Último</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Último</p>
                 </div>
                 <div>
                     <p class="text-xl font-black font-['Space_Grotesk'] text-[#FF9D42]">84,20€</p>
-                    <p class="text-[8px] font-black text-zinc-600 uppercase">En Juego</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">En Juego</p>
                 </div>
             </div>
         </section>
 
-        <div id="result-banner" class="hidden p-8 text-center reveal-node">
-            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Objetivo Detectado</p>
-            <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic text-[#13ecd6] mb-6" id="result-name"></h2>
-            <div class="flex gap-3">
-                <button onclick="confirmPayment()" class="flex-1 py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Confirmar</button>
-                <button onclick="eliminateWinner()" class="px-6 py-4 glass-panel rounded-2xl text-[9px] font-black uppercase text-zinc-500">Eliminar</button>
-            </div>
-        </div>
-
-        <section class="glass-panel p-6 rounded-[2.5rem] space-y-4 reveal-node" style="animation-delay: 0.1s">
-            <div class="flex justify-between items-center px-2">
-                <h3 class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Participantes</h3>
-                <span class="text-[8px] font-black text-zinc-700" id="player-count">4 SOCIOS</span>
-            </div>
-            <div id="players-container" class="flex flex-wrap gap-2"></div>
-        </section>
-
-        <button id="spin-btn" class="spin-btn w-full py-6 rounded-2xl reveal-node" style="animation-delay: 0.2s" onclick="spinWheel()">
+        <button id="spin-btn" class="spin-btn w-full py-6 rounded-[2rem] reveal-node" style="animation-delay: 0.1s" onclick="spinWheel()">
             <span class="flex items-center justify-center gap-3">
                 <span class="material-icons-round">bolt</span>
-                EJECUTAR GIRO
+                EJECUTAR GIRO ALPHA
             </span>
         </button>
 
     </div>
 
-    <div id="add-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-6">
-        <div class="glass-panel p-8 w-full max-w-xs rounded-[2.5rem] space-y-6">
-            <h3 class="text-sm font-black uppercase tracking-widest">Inyectar Socio</h3>
-            <input id="new-player-input" type="text" placeholder="NOMBRE..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xs font-bold text-white outline-none focus:border-[#13ecd6]/40 transition-all">
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-4 text-[9px] font-black uppercase text-zinc-600">Cancelar</button>
-                <button onclick="addPlayerFromModal()" class="flex-1 py-4 bg-[#13ecd6] text-black rounded-xl text-[9px] font-black uppercase">Añadir</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const COLORS = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#3b82f6'];
-        let players = [
-            {name:'Commander', color:'#13ecd6', active:true},
-            {name:'Mario', color:'#a855f7', active:true},
-            {name:'Elena', color:'#FF9D42', active:true},
-            {name:'Sofia', color:'#ec4899', active:true}
+        const players = [
+            {name:'Commander', color:'#13ecd6'}, {name:'Mario', color:'#a855f7'},
+            {name:'Elena', color:'#FF9D42'}, {name:'Sofia', color:'#ec4899'}
         ];
         let currentAngle = 0;
         let isSpinning = false;
-        let lastWinner = null;
-
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
 
         function drawWheel(angle = 0) {
-            const active = players.filter(p => p.active);
-            if (!active.length) return;
-            ctx.clearRect(0,0,300,300);
-            const slice = (Math.PI*2)/active.length;
-            
-            active.forEach((p, i) => {
+            ctx.clearRect(0,0,320,320);
+            const slice = (Math.PI*2)/players.length;
+            players.forEach((p, i) => {
                 const start = angle + i * slice;
                 ctx.beginPath();
-                ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 145, start, start + slice);
-                ctx.fillStyle = p.color + '15';
+                ctx.moveTo(160, 160);
+                ctx.arc(160, 160, 155, start, start + slice);
+                ctx.fillStyle = p.color + '10';
                 ctx.fill();
-                ctx.strokeStyle = p.color + '40';
+                ctx.strokeStyle = p.color + '30';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-
-                // Dots de perímetro
-                ctx.beginPath();
-                ctx.arc(150 + Math.cos(start + slice/2)*130, 150 + Math.sin(start + slice/2)*130, 3, 0, Math.PI*2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-
-                // Texto
+                
+                // Texto y Adornos
                 ctx.save();
-                ctx.translate(150 + Math.cos(start + slice/2)*90, 150 + Math.sin(start + slice/2)*90);
+                ctx.translate(160 + Math.cos(start + slice/2)*100, 160 + Math.sin(start + slice/2)*100);
                 ctx.rotate(start + slice/2 + Math.PI/2);
                 ctx.fillStyle = p.color;
-                ctx.font = '900 10px Space Grotesk';
+                ctx.font = '900 11px Space Grotesk';
                 ctx.textAlign = 'center';
                 ctx.fillText(p.name.toUpperCase(), 0, 0);
                 ctx.restore();
@@ -196,88 +129,28 @@
         function spinWheel() {
             if (isSpinning) return;
             isSpinning = true;
-            const active = players.filter(p => p.active);
-            const winnerIdx = Math.floor(Math.random() * active.length);
-            const slice = (Math.PI*2)/active.length;
-            const targetAngle = (Math.PI*2*8) + (Math.PI*1.5 - (winnerIdx*slice + slice/2));
-            
+            const winnerIdx = Math.floor(Math.random() * players.length);
+            const slice = (Math.PI*2)/players.length;
+            const targetAngle = (Math.PI*2*10) + (Math.PI*1.5 - (winnerIdx*slice + slice/2));
             const startTime = performance.now();
             const duration = 5000;
 
             function animate(now) {
                 const elapsed = now - startTime;
                 const t = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - t, 4);
+                const ease = 1 - Math.pow(1 - t, 5); // Ease-out quint para mayor realismo
                 drawWheel(targetAngle * ease);
-
                 if (t < 1) requestAnimationFrame(animate);
                 else {
                     isSpinning = false;
-                    lastWinner = active[winnerIdx].name;
-                    showResult(active[winnerIdx]);
+                    document.getElementById('last-winner').innerText = players[winnerIdx].name;
+                    SGRouter.showToast(`OBJETIVO: ${players[winnerIdx].name}`, 'premium');
                 }
             }
             requestAnimationFrame(animate);
         }
-
-        function showResult(winner) {
-            document.getElementById('result-name').innerText = winner.name.toUpperCase();
-            document.getElementById('result-banner').classList.remove('hidden');
-            document.getElementById('last-winner').innerText = winner.name;
-            SGRouter.showToast(`OBJETIVO: ${winner.name}`, 'premium');
-        }
-
-        function renderPlayers() {
-            const container = document.getElementById('players-container');
-            container.innerHTML = players.map((p, i) => `
-                <div class="player-chip ${p.active?'active':''}" onclick="togglePlayer(${i})">
-                    ${p.name}
-                </div>
-            `).join('');
-            document.getElementById('player-count').innerText = `${players.filter(p=>p.active).length} SOCIOS`;
-        }
-
-        function togglePlayer(i) {
-            if (isSpinning) return;
-            players[i].active = !players[i].active;
-            renderPlayers(); drawWheel(0);
-        }
-
-        function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
-        function addPlayerFromModal() {
-            const name = document.getElementById('new-player-input').value;
-            if (name) players.push({name, color: COLORS[players.length % COLORS.length], active: true});
-            renderPlayers(); drawWheel(0); closeModal();
-        }
-
-        renderPlayers(); drawWheel(0);
+        drawWheel(0);
     </script>
-
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('games')">
-                <span class="material-icons-round">casino</span>
-                <p>Juegos</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('vault')">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
 </div>
 </body>
 </html>
