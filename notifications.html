@@ -10,35 +10,38 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Densidad de Alertas */
-        .notif-row { transition: var(--transition-alpha); cursor: pointer; border-left: 0px solid transparent; }
+        /* Densidad de Alertas Alpha */
+        .notif-row { 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            cursor: pointer; 
+            border-left: 0px solid transparent; 
+        }
         .notif-row:hover { background: rgba(255,255,255,0.04); transform: translateX(4px); }
         .notif-row.unread { border-left-width: 4px !important; }
         
-        /* Nav Sync */
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
         .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+        /* No hay clase active aquí para indicar que estamos en una subpantalla */
     </style>
 
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell bg-black">
 <div class="app-frame">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8 pb-32">
 
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4 border-b border-white/5">
             <div class="flex items-center gap-4">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all border border-white/5">
+                    <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
                 </button>
                 <div>
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Sistema de Alertas</p>
-                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Notificaciones</h1>
+                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white">Notificaciones</h1>
                 </div>
             </div>
-            <button onclick="markAllRead()" class="px-4 py-2.5 glass-panel rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all">
+            <button onclick="markAllRead()" class="px-4 py-2.5 glass-panel rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all border border-white/5">
                 Limpiar
             </button>
         </header>
@@ -46,28 +49,28 @@
         <section class="space-y-3 reveal-node">
             <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">Hoy</p>
 
-            <div class="notif-row unread glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 border-[#FF9D42]" onclick="SGRouter.navigate('split')">
+            <div class="notif-row unread glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 border-[#FF9D42]/40" onclick="SGRouter.navigate('split')">
                 <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 mt-0.5">
                     <span class="material-icons-round text-[#FF9D42] text-lg">pending_actions</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start gap-2">
-                        <p class="text-sm font-bold leading-tight">Reparto pendiente: Hotel Pirineos</p>
-                        <span class="size-2 bg-[#FF9D42] rounded-full flex-shrink-0 mt-1.5 animate-pulse"></span>
+                        <p class="text-sm font-bold leading-tight text-white">Reparto pendiente: Hotel Pirineos</p>
+                        <span class="size-2 bg-[#FF9D42] rounded-full flex-shrink-0 mt-1.5 animate-pulse shadow-[0_0_8px_#FF9D42]"></span>
                     </div>
                     <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">210,00€ sin dividir · Toca para repartir</p>
                     <p class="text-[8px] text-zinc-700 uppercase mt-2">hace 2 horas</p>
                 </div>
             </div>
 
-            <div class="notif-row unread glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 border-[#13ecd6]" onclick="SGRouter.navigate('receipt')">
+            <div class="notif-row unread glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 border-[#13ecd6]/40" onclick="SGRouter.navigate('activity')">
                 <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0 mt-0.5">
                     <span class="material-icons-round text-[#13ecd6] text-lg">payments</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start gap-2">
-                        <p class="text-sm font-bold leading-tight">Mario te ha pagado 8,52€</p>
-                        <span class="size-2 bg-[#13ecd6] rounded-full flex-shrink-0 mt-1.5 animate-pulse"></span>
+                        <p class="text-sm font-bold leading-tight text-white">Mario te ha pagado 8,52€</p>
+                        <span class="size-2 bg-[#13ecd6] rounded-full flex-shrink-0 mt-1.5 animate-pulse shadow-[0_0_8px_#13ecd6]"></span>
                     </div>
                     <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">Liquidación: Sushi Kyoto Central</p>
                     <p class="text-[8px] text-zinc-700 uppercase mt-2">hace 4 horas</p>
@@ -78,12 +81,12 @@
         <section class="space-y-3 reveal-node" style="animation-delay:0.1s">
             <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">Ayer</p>
 
-            <div class="notif-row glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 opacity-60" onclick="SGRouter.navigate('analytics')">
+            <div class="notif-row glass-panel p-5 rounded-[2.5rem] flex items-start gap-5 opacity-60 border-white/5" onclick="SGRouter.navigate('analytics')">
                 <div class="size-11 rounded-2xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20 flex-shrink-0 mt-0.5">
                     <span class="material-icons-round text-[#a855f7] text-lg">trending_up</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold leading-tight">Alerta IA: Gasto en Ocio +4%</p>
+                    <p class="text-sm font-bold leading-tight text-white">Alerta IA: Gasto en Ocio +4%</p>
                     <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">Detección de incremento anómalo · Ver métricas</p>
                     <p class="text-[8px] text-zinc-700 uppercase mt-2">ayer, 08:00</p>
                 </div>
@@ -99,7 +102,7 @@
                 row.style.opacity = '0.6';
                 row.querySelectorAll('.animate-pulse').forEach(dot => dot.remove());
             });
-            SGRouter.showToast('Buzón procesado', 'success');
+            if(window.SGRouter) SGRouter.showToast('BUZÓN PROCESADO ✓', 'success');
         }
     </script>
 
