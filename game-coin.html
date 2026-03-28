@@ -10,27 +10,45 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Motor de Rotación de Moneda */
-        .coin-container { perspective: 1000px; width: 200px; height: 200px; }
+        .coin-container { perspective: 1000px; width: 220px; height: 220px; }
         #coin {
             width: 100%; height: 100%;
             position: relative; transform-style: preserve-3d;
-            transition: transform 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 2s cubic-bezier(0.1, 0.8, 0.3, 1);
         }
         .coin-face {
             position: absolute; inset: 0; border-radius: 50%;
             backface-visibility: hidden; display: flex;
             align-items: center; justify-content: center;
-            border: 4px solid rgba(255,255,255,0.1);
+            border: 4px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3);
         }
-        .heads { background: linear-gradient(135deg, #13ecd6 0%, #0a0a0a 100%); color: #000; }
-        .tails { background: linear-gradient(135deg, #a855f7 0%, #000 100%); color: #fff; transform: rotateY(180deg); }
+        /* Cara: Cian Tech / Cruz: Púrpura Deep */
+        .heads { background: radial-gradient(circle at 30% 30%, #13ecd6 0%, #064e47 100%); color: #000; }
+        .tails { background: radial-gradient(circle at 30% 30%, #a855f7 0%, #3b0764 100%); color: #fff; transform: rotateY(180deg); }
         
-        @keyframes flip-heads { from { transform: rotateY(0); } to { transform: rotateY(1800deg); } }
-        @keyframes flip-tails { from { transform: rotateY(0); } to { transform: rotateY(1980deg); } }
+        /* Animaciones de Alta Densidad */
+        @keyframes flip-heads { 
+            0% { transform: rotateY(0) translateY(0); }
+            50% { transform: rotateY(900deg) translateY(-150px); }
+            100% { transform: rotateY(1800deg) translateY(0); }
+        }
+        @keyframes flip-tails { 
+            0% { transform: rotateY(0) translateY(0); }
+            50% { transform: rotateY(990deg) translateY(-150px); }
+            100% { transform: rotateY(1980deg) translateY(0); }
+        }
         
-        .flipping-heads { animation: flip-heads 2s forwards cubic-bezier(0.1, 0.8, 0.3, 1); }
-        .flipping-tails { animation: flip-tails 2s forwards cubic-bezier(0.1, 0.8, 0.3, 1); }
+        .flipping-heads { animation: flip-heads 2s forwards cubic-bezier(0.2, 0, 0.3, 1); }
+        .flipping-tails { animation: flip-tails 2s forwards cubic-bezier(0.2, 0, 0.3, 1); }
+
+        .coin-btn {
+            background: #fff; color: #000; font-weight: 900; letter-spacing: 0.25em;
+            box-shadow: 0 10px 40px rgba(255,255,255,0.1);
+            transition: var(--transition-alpha);
+        }
+        .coin-btn:active { transform: scale(0.95); }
+        .coin-btn:disabled { opacity: 0.5; filter: grayscale(1); }
     </style>
     <script src="engine/router.js"></script>
 </head>
@@ -38,52 +56,78 @@
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-4 py-8 space-y-12">
         
-        <header class="flex justify-between items-center">
-            <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center">
-                <span class="material-icons-round text-zinc-500">arrow_back</span>
+        <header class="flex justify-between items-center py-4">
+            <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
             </button>
-            <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-[0.3em] uppercase italic">Moneda Alpha</h1>
+            <div class="text-center">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Decisión Rápida</p>
+                <h1 class="text-lg font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Moneda Alpha</h1>
+            </div>
             <div class="size-12"></div>
         </header>
 
-        <div class="flex flex-col items-center justify-center space-y-12 py-10">
+        <div class="flex flex-col items-center justify-center space-y-12 py-10 reveal-node">
             <div class="coin-container">
                 <div id="coin">
                     <div class="coin-face heads">
-                        <span class="material-icons-round text-6xl">account_balance</span>
+                        <span class="material-icons-round text-7xl">account_balance</span>
                     </div>
                     <div class="coin-face tails">
-                        <span class="material-icons-round text-6xl">Bolt</span>
+                        <span class="material-icons-round text-7xl">bolt</span>
                     </div>
                 </div>
             </div>
 
             <div id="result-text" class="h-8 text-center">
-                <p class="text-[10px] font-black uppercase tracking-[0.5em] text-[#13ecd6] opacity-0 transition-opacity" id="res-label">¡CARA!</p>
+                <p class="text-[12px] font-black uppercase tracking-[0.6em] transition-all duration-500 scale-150 opacity-0" id="res-label">¡CARA!</p>
             </div>
         </div>
 
-        <div class="space-y-4">
-            <button id="flip-btn" onclick="tossCoin()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">
-                LANZAR MONEDA
+        <div class="space-y-6 reveal-node" style="animation-delay: 0.2s">
+            <button id="flip-btn" onclick="tossCoin()" class="coin-btn w-full py-6 rounded-2xl text-[10px] uppercase">
+                EJECUTAR LANZAMIENTO
             </button>
-            <p class="text-center text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Cara: Paga Socio A • Cruz: Paga Socio B</p>
+            <div class="glass-panel p-4 rounded-xl border-white/5 text-center">
+                <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
+                    <span class="text-[#13ecd6]">Cara: Paga Socio A</span> • <span class="text-[#a855f7]">Cruz: Paga Socio B</span>
+                </p>
+            </div>
         </div>
     </div>
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
+        // Síntesis de Sonido Metálico (FM Synthesis Lite)
         function playCoinSound() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const now = audioCtx.currentTime;
+            const masterGain = audioCtx.createGain();
+            masterGain.connect(audioCtx.destination);
+
+            // Oscilador de tintineo (Alta frecuencia)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(2400, now);
+            osc1.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
+            gain1.gain.setValueAtTime(0.15, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            osc1.connect(gain1); gain1.connect(masterGain);
+
+            // Armónico metálico
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(440, now);
+            gain2.gain.setValueAtTime(0.05, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc2.connect(gain2); gain2.connect(masterGain);
+
+            osc1.start(); osc2.start();
+            osc1.stop(now + 0.5); osc2.stop(now + 0.5);
         }
 
         function tossCoin() {
@@ -91,26 +135,30 @@
             const btn = document.getElementById('flip-btn');
             const label = document.getElementById('res-label');
             
-            if(audioCtx.state === 'suspended') audioCtx.resume();
             playCoinSound();
-
             btn.disabled = true;
             label.classList.add('opacity-0');
-            coin.className = '';
+            label.classList.remove('scale-100');
+            label.classList.add('scale-150');
+            
+            coin.style.animation = 'none';
+            void coin.offsetWidth; // Force reflow
             
             const isHeads = Math.random() > 0.5;
+            coin.classList.remove('flipping-heads', 'flipping-tails');
             
             setTimeout(() => {
                 coin.classList.add(isHeads ? 'flipping-heads' : 'flipping-tails');
-            }, 50);
+            }, 10);
 
             setTimeout(() => {
                 label.innerText = isHeads ? '¡CARA!' : '¡CRUZ!';
                 label.style.color = isHeads ? '#13ecd6' : '#a855f7';
-                label.classList.remove('opacity-0');
+                label.classList.remove('opacity-0', 'scale-150');
+                label.classList.add('scale-100');
                 btn.disabled = false;
-                SGRouter.showToast(isHeads ? 'CARA' : 'CRUZ', 'premium');
-            }, 2100);
+                if(window.SGRouter) SGRouter.showToast(isHeads ? 'RESULTADO: CARA' : 'RESULTADO: CRUZ', 'premium');
+            }, 2000);
         }
     </script>
 </div>
