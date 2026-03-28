@@ -1,64 +1,56 @@
 # ─────────────────────────────────────────────────────────────────
 # SplitGasto 2026 - Cloudflare Pages Redirects (v4.4 Clean URLs)
 # ─────────────────────────────────────────────────────────────────
-# STRATEGY: Clean URLs — router uses /auth, /dashboard, etc.
-# Each route is EXPLICIT. No wildcard /* catch-all (avoids loops).
-# CF Pages serves index.html for / automatically — NO rule needed.
-# CF Pages serves .html files directly if accessed with extension.
-# ─────────────────────────────────────────────────────────────────
 
-# NOTE: / → index.html is handled natively by Cloudflare Pages.
-# Adding an explicit rule causes an infinite-loop error. Omitted.
+# Auth & Onboarding
+/auth                /auth.html                200
+/login               /auth.html                200
+/register            /register.html            200
+/signup              /register.html            200
+/onboarding          /onboarding.html          200
 
-# ── Auth & Onboarding ─────────────────────────────────────────────
-/auth               /auth.html                200
-/login              /auth.html                200
-/register           /register.html            200
-/signup             /register.html            200
-/onboarding         /onboarding.html          200
+# Main App Pages
+/dashboard           /dashboard.html           200
+/groups              /groups.html              200
+/profile             /profile.html             200
+/activity            /activity.html            200
+/vault               /vault.html               200
+/scanner             /scanner.html             200
+/notifications       /notifications.html       200
+/settings            /settings.html            200
+/security            /security.html            200
+/membership          /membership.html          200
+/rankings            /rankings.html            200
 
-# ── Main App Pages ────────────────────────────────────────────────
-/dashboard          /dashboard.html           200
-/groups             /groups.html              200
-/profile            /profile.html             200
-/activity           /activity.html            200
-/vault              /vault.html               200
-/scanner            /scanner.html             200
-/notifications      /notifications.html       200
-/settings           /settings.html            200
-/security           /security.html            200
-/membership         /membership.html          200
-/rankings           /rankings.html            200
+# Analytics & Metrics
+/analytics           /analytics.html           200
+/metrics             /analytics.html           200
 
-# ── Analytics & Metrics ───────────────────────────────────────────
-/analytics          /analytics.html           200
-/metrics            /analytics.html           200
+# Expenses & Groups
+/add-expense         /add-expense.html         200
+/create-group        /create-group.html        200
+/split               /split.html               200
+/liquidation         /liquidation.html         200
+/success             /success.html             200
+/receipt             /receipt-view.html        200
 
-# ── Expenses & Groups ─────────────────────────────────────────────
-/add-expense        /add-expense.html         200
-/create-group       /create-group.html        200
-/split              /split.html               200
-/liquidation        /liquidation.html         200
-/success            /success.html             200
-/receipt            /receipt-view.html        200
+# Games Ecosystem
+/games               /games.html               200
+/game-roulette       /game-roulette.html       200
+/game-cards          /game-cards.html          200
+/game-coin           /game-coin.html           200
+/game-darts          /game-darts.html          200
 
-# ── Games Ecosystem ───────────────────────────────────────────────
-/games              /games.html               200
-/game-roulette      /game-roulette.html       200
-/game-cards         /game-cards.html          200
-/game-coin          /game-coin.html           200
-/game-darts         /game-darts.html          200
+# Social & Support
+/friends             /friends.html             200
+/invite              /invite.html              200
+/support             /support.html             200
+/manual              /manual.html              200
 
-# ── Social & Support ──────────────────────────────────────────────
-/friends            /friends.html             200
-/invite             /invite.html              200
-/support            /support.html             200
-/manual             /manual.html              200
+# Legal & Investors
+/legal               /legal.html               200
+/privacy             /legal.html               200
+/investors           /investors.html           200
 
-# ── Legal & Investors ─────────────────────────────────────────────
-/legal              /legal.html               200
-/privacy            /legal.html               200
-/investors          /investors.html           200
-
-# ── Engine & Assets (pass-through) ───────────────────────────────
-/engine/*           /engine/:splat            200
+# Engine & Assets (pass-through)
+/engine/* /engine/:splat            200
