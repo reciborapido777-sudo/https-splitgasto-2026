@@ -40,13 +40,13 @@
     </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell pb-32">
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
 
         <header class="flex justify-between items-center py-4">
             <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
-                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
             </button>
             <div class="text-center">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.3em]">Protocolo Balístico</p>
@@ -85,6 +85,27 @@
         </div>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Mando</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('activity')">
+                <span class="material-icons-round">receipt_long</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Gastos</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+                <span class="material-icons-round text-[#13ecd6]">casino</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1 text-[#13ecd6]">Juegos</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Perfil</p>
+            </button>
+        </div>
+    </nav>
+
     <div id="winnerModal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-xl items-center justify-center p-6">
         <div class="glass-panel p-10 w-full max-w-xs rounded-[3rem] text-center border-[#13ecd6]/20">
             <span class="material-icons-round text-6xl text-[#13ecd6] mb-4">emoji_events</span>
@@ -102,7 +123,6 @@
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const now = audioCtx.currentTime;
             
-            // Impacto base (thud)
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'triangle';
@@ -140,12 +160,10 @@
             ctx.clearRect(0,0,320,320);
             ctx.translate(160, 160);
             
-            // Diana principal
             ctx.beginPath(); ctx.arc(0,0,150,0,Math.PI*2);
             ctx.fillStyle = '#0a0a0a'; ctx.fill();
             ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 4; ctx.stroke();
 
-            // Segmentos
             for(let i=0; i<20; i++) {
                 const angle = (i * Math.PI * 2 / 20) - Math.PI/2;
                 ctx.beginPath();
@@ -157,11 +175,9 @@
                 ctx.lineWidth = 1; ctx.stroke();
             }
             
-            // Anillos (Double/Triple)
             ctx.beginPath(); ctx.arc(0,0,145,0,Math.PI*2); ctx.strokeStyle = 'rgba(168, 85, 247, 0.1)'; ctx.stroke();
             ctx.beginPath(); ctx.arc(0,0,80,0,Math.PI*2); ctx.stroke();
 
-            // Bullseye
             ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2);
             ctx.fillStyle = 'rgba(19, 236, 214, 0.1)'; ctx.fill();
             ctx.strokeStyle = '#13ecd6'; ctx.lineWidth = 2; ctx.stroke();
@@ -176,7 +192,7 @@
             const y = e.clientY - rect.top;
             
             const dist = Math.sqrt((x-160)**2 + (y-160)**2);
-            if(dist > 155) return; // Fuera de la diana
+            if(dist > 155) return;
 
             let pts = Math.max(0, Math.floor(60 - (dist/2.6)));
             const isBull = dist < 15;
