@@ -10,26 +10,26 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Estilos específicos de Groups que no están en global.css */
         .group-card { 
             position: relative; height: 260px; border-radius: 3rem; 
             overflow: hidden; cursor: pointer; 
             transition: var(--transition-alpha);
             transform: translateZ(0);
         }
-        .group-card:hover { transform: translateY(-10px) scale(1.02); }
-        .group-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.3) 100%); }
+        .group-card:active { transform: scale(0.97); }
+        .group-card:hover { border-color: var(--cian-tech); }
+        .group-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,0.3) 100%); }
 
         .summary-pill {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.06);
             border-radius: 1.5rem;
-            padding: 0.9rem 1.4rem;
+            padding: 1rem 1.4rem;
         }
 
         .event-placeholder {
             border: 2px dashed rgba(255, 255, 255, 0.05);
-            background: transparent;
+            background: rgba(255,255,255,0.01);
         }
         
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
@@ -41,33 +41,33 @@
     <script src="engine/router.js"></script>
 </head>
 <body class="app-shell">
-<div class="app-frame">
+<div class="app-frame flex flex-col h-full">
 
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
-        
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
-            <div class="flex items-center gap-4">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-                    <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
-                </button>
-                <div>
-                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nodos de Activos</p>
-                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mis Grupos</h1>
-                </div>
-            </div>
-            <button onclick="SGRouter.showToast('Crear grupo: próximamente disponible', 'info')" 
-                    class="px-4 py-2.5 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 text-[#13ecd6] active:scale-95 transition-all">
-                <span class="material-icons-round text-sm">add</span>
-                <span class="text-[9px] font-black uppercase tracking-widest">Nuevo</span>
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+        <div class="flex items-center gap-4">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
             </button>
-        </header>
+            <div class="text-left">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Activos Sociales</p>
+                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Mis Grupos</h1>
+            </div>
+        </div>
+        <button onclick="SGRouter.showToast('Protocolo de Creación: Próximamente', 'info')" 
+                class="px-5 py-2.5 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 text-[#13ecd6] active:scale-95 transition-all shadow-[0_0_20px_rgba(19,236,214,0.1)]">
+            <span class="material-icons-round text-sm">add</span>
+            <span class="text-[9px] font-black uppercase tracking-widest">Nuevo</span>
+        </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-6 pb-28">
 
         <section class="grid grid-cols-3 gap-3 reveal-node">
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Grupos</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Nodos</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-white">3</p>
             </div>
-            <div class="summary-pill flex flex-col gap-1">
+            <div class="summary-pill flex flex-col gap-1 border-[#13ecd6]/10">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]">+83,50€</p>
             </div>
@@ -77,54 +77,51 @@
             </div>
         </section>
 
-        <main class="space-y-4">
-            
+        <div class="space-y-4">
             <div class="group-card group reveal-node" onclick="SGRouter.navigate('split', 'groups')">
                 <img src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-all duration-700" alt="Sushi">
+                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-all duration-700">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="status-tag bg-[#13ecd6]/10 text-[#13ecd6] border border-[#13ecd6]/20">Activo</span>
-                        <div class="flex -space-x-2">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Mario&backgroundColor=0d1f0d" class="size-7 rounded-full border-2 border-black" alt="">
-                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=Elena&backgroundColor=1a0d1f" class="size-7 rounded-full border-2 border-black" alt="">
-                            <div class="size-7 rounded-full border-2 border-black bg-zinc-800 flex items-center justify-center">
-                                <span class="text-[7px] font-black text-zinc-400">+2</span>
+                        <span class="status-tag bg-[#13ecd6]/10 text-[#13ecd6] border border-[#13ecd6]/20">Auditado IA</span>
+                        <div class="flex -space-x-3">
+                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=M1&backgroundColor=050505" class="size-8 rounded-full border-2 border-black">
+                            <img src="https://api.dicebear.com/9.x/initials/svg?seed=E2&backgroundColor=050505" class="size-8 rounded-full border-2 border-black">
+                            <div class="size-8 rounded-full border-2 border-black bg-zinc-900 flex items-center justify-center">
+                                <span class="text-[8px] font-black text-zinc-500">+2</span>
                             </div>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Sushi Kyoto Pro</h3>
-                        <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Balance: <span class="text-[#13ecd6] money-display">+125,50€</span></p>
+                        <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white">Sushi Kyoto Pro</h3>
+                        <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Balance Socio: <span class="text-[#13ecd6] font-black">+125,50€</span></p>
                     </div>
                 </div>
             </div>
 
             <div class="group-card group reveal-node" style="animation-delay: 0.1s" onclick="SGRouter.navigate('split', 'groups')">
                 <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-all duration-700" alt="Pirineos">
+                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="status-tag bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20">Auditando IA</span>
+                        <span class="status-tag bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20">Sincronizando</span>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Viaje Pirineos</h3>
-                        <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Balance: <span class="text-white money-display">-42,00€</span></p>
+                        <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white">Viaje Pirineos</h3>
+                        <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Balance Socio: <span class="text-white font-black">-42,00€</span></p>
                     </div>
                 </div>
             </div>
 
-            <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-4 active:scale-95 transition-all" 
+            <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-4 transition-all" 
                  style="animation-delay: 0.2s" onclick="SGRouter.showToast('Protocolo de Creación · Próximamente', 'info')">
-                <div class="size-14 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
-                    <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-2xl">add</span>
+                <div class="size-16 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
+                    <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl">add_circle_outline</span>
                 </div>
-                <div class="text-center">
-                    <h4 class="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-zinc-400">Nuevo Grupo</h4>
-                </div>
+                <h4 class="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-600 group-hover:text-zinc-400">Nuevo Nodo</h4>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
@@ -132,7 +129,7 @@
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('groups')">
+            <button class="nav-item active">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
@@ -140,9 +137,9 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
