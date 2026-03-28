@@ -10,33 +10,33 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Arquitectura de Diana Alpha */
         #dartCanvas { cursor: crosshair; touch-action: none; transition: transform 0.1s; }
         .throwing { transform: scale(0.98); filter: brightness(1.2); }
 
-        .hit-ring {
-            position: absolute; border-radius: 50%;
-            border: 2px solid var(--cian-tech);
-            width: 20px; height: 20px;
-            animation: hitRing 0.5s ease-out forwards;
-            pointer-events: none;
-        }
-        @keyframes hitRing { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(4); opacity: 0; } }
-
         .score-popup {
             position: absolute; pointer-events: none;
-            animation: scorePopup 1s ease-out forwards;
+            animation: scorePopup 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
             font-weight: 900; font-family: 'Space Grotesk';
             z-index: 50;
         }
         @keyframes scorePopup { 
             0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
-            50% { opacity: 1; transform: translate(-50%, -40px) scale(1.2); }
-            100% { transform: translate(-50%, -80px) scale(1); opacity: 0; }
+            30% { opacity: 1; transform: translate(-50%, -60px) scale(1.5); }
+            100% { transform: translate(-50%, -100px) scale(1); opacity: 0; }
         }
 
-        .player-card { border: 1px solid var(--glass-border); transition: var(--transition-alpha); }
-        .player-card.active { border-color: var(--cian-tech); background: rgba(19, 236, 214, 0.05); }
+        .player-card { border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s ease; }
+        .player-card.active { 
+            border-color: #13ecd6; 
+            background: rgba(19, 236, 214, 0.05);
+            box-shadow: 0 0 20px rgba(19, 236, 214, 0.1);
+        }
+
+        .board-glow {
+            position: absolute; inset: 0; border-radius: 50%;
+            box-shadow: 0 0 60px rgba(168, 85, 247, 0.1);
+            pointer-events: none;
+        }
     </style>
     <script src="engine/router.js"></script>
 </head>
@@ -62,59 +62,72 @@
                 <p class="text-[9px] font-black text-[#a855f7] uppercase tracking-widest" id="roundLabel">RONDA 1/5</p>
             </div>
             <div class="px-4 py-2 glass-panel rounded-full">
-                <p class="text-[10px] text-[#13ecd6]" id="dartsLeft">⦿ ⦿ ⦿</p>
+                <p class="text-[10px] text-[#13ecd6] tracking-tighter" id="dartsLeft">⦿ ⦿ ⦿</p>
             </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3" id="playersGrid"></div>
 
-        <div class="relative flex justify-center items-center py-4">
-            <canvas id="dartCanvas" width="320" height="320" class="rounded-full shadow-2xl"></canvas>
-            <div id="hitRings" class="absolute inset-0 pointer-events-none"></div>
+        <div class="relative flex justify-center items-center py-4 reveal-node">
+            <div class="board-glow"></div>
+            <canvas id="dartCanvas" width="320" height="320" class="rounded-full shadow-2xl bg-zinc-950"></canvas>
+            <div id="hitContainer" class="absolute inset-0 pointer-events-none"></div>
         </div>
 
-        <div class="glass-panel rounded-[2rem] overflow-hidden">
-            <div class="px-6 py-3 border-b border-white/5 flex justify-between items-center">
-                <span class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Telemetría de Impacto</span>
-                <span class="text-[8px] font-bold text-zinc-500" id="potLabel">EN JUEGO: 84,20€</span>
+        <div class="glass-panel rounded-[2rem] overflow-hidden border-white/5 reveal-node" style="animation-delay: 0.1s">
+            <div class="px-6 py-3 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <span class="text-[8px] font-black text-zinc-400 uppercase tracking-widest">Telemetría de Impacto</span>
+                <span class="text-[8px] font-bold text-[#FF9D42]" id="potLabel">EN JUEGO: 84,20€</span>
             </div>
-            <div id="sessionLog" class="p-4 space-y-1 h-24 overflow-y-auto text-[10px] font-bold text-zinc-400">
-                <p class="text-center opacity-30 italic">Esperando primer impacto...</p>
+            <div id="sessionLog" class="p-4 space-y-2 h-24 overflow-y-auto text-[10px] font-mono text-zinc-500">
+                <p class="text-center opacity-30 italic font-sans uppercase tracking-tighter">Esperando primer impacto...</p>
             </div>
         </div>
-
     </div>
 
     <div id="winnerModal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-xl items-center justify-center p-6">
-        <div class="glass-panel p-10 w-full max-w-xs rounded-[3rem] text-center border-[#13ecd6]/30">
-            <span class="material-icons-round text-6xl text-[#13ecd6] mb-4">stars</span>
-            <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Misión Cumplida</p>
+        <div class="glass-panel p-10 w-full max-w-xs rounded-[3rem] text-center border-[#13ecd6]/20">
+            <span class="material-icons-round text-6xl text-[#13ecd6] mb-4">emoji_events</span>
+            <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Misión Finalizada</p>
             <h2 id="winnerName" class="text-3xl font-black font-['Space_Grotesk'] italic uppercase text-white my-4"></h2>
-            <p id="winnerScore" class="text-xs text-zinc-400 mb-8"></p>
-            <button onclick="SGRouter.navigate('split')" class="w-full py-5 bg-[#13ecd6] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest">Registrar Gasto</button>
+            <p id="winnerScore" class="text-xs text-zinc-400 mb-8 uppercase tracking-widest font-bold"></p>
+            <button onclick="SGRouter.navigate('split')" class="w-full py-5 bg-[#13ecd6] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Registrar Gasto</button>
         </div>
     </div>
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        function playImpactSound(vol = 0.2) {
+        function playImpact(isBullseye = false) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            // Impacto base (thud)
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(isBullseye ? 200 : 120, now);
+            osc.frequency.exponentialRampToValueAtTime(10, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(now + 0.1);
+
+            if(isBullseye) {
+                const click = audioCtx.createOscillator();
+                const clickGain = audioCtx.createGain();
+                click.type = 'sine';
+                click.frequency.setValueAtTime(1200, now);
+                clickGain.gain.setValueAtTime(0.1, now);
+                clickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                click.connect(clickGain); clickGain.connect(audioCtx.destination);
+                click.start(); click.stop(now + 0.2);
+            }
         }
 
         const PLAYERS = [
-            { name: 'Socio 1', color: '#13ecd6', score: 0 },
-            { name: 'Socio 2', color: '#a855f7', score: 0 }
+            { name: 'Socio A', score: 0 },
+            { name: 'Socio B', score: 0 }
         ];
 
         let currentPlayer = 0;
@@ -125,70 +138,78 @@
 
         function drawBoard() {
             ctx.clearRect(0,0,320,320);
-            // Círculo base
-            ctx.beginPath(); ctx.arc(160,160,155,0,Math.PI*2);
-            ctx.fillStyle = '#0f0f0f'; ctx.fill();
+            ctx.translate(160, 160);
+            
+            // Diana principal
+            ctx.beginPath(); ctx.arc(0,0,150,0,Math.PI*2);
+            ctx.fillStyle = '#0a0a0a'; ctx.fill();
             ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 4; ctx.stroke();
 
-            // Dibujar zonas (simplificado para rendimiento Alpha)
+            // Segmentos
             for(let i=0; i<20; i++) {
                 const angle = (i * Math.PI * 2 / 20) - Math.PI/2;
                 ctx.beginPath();
-                ctx.moveTo(160,160);
-                ctx.arc(160,160,150, angle, angle + (Math.PI*2/20));
-                ctx.fillStyle = i % 2 === 0 ? '#111' : '#0a0a0a';
+                ctx.moveTo(0,0);
+                ctx.arc(0,0,145, angle, angle + (Math.PI*2/20));
+                ctx.fillStyle = i % 2 === 0 ? '#111' : '#070707';
                 ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 1; ctx.stroke();
             }
             
+            // Anillos (Double/Triple)
+            ctx.beginPath(); ctx.arc(0,0,145,0,Math.PI*2); ctx.strokeStyle = 'rgba(168, 85, 247, 0.1)'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(0,0,80,0,Math.PI*2); ctx.stroke();
+
             // Bullseye
-            ctx.beginPath(); ctx.arc(160,160,15,0,Math.PI*2);
-            ctx.fillStyle = '#13ecd620'; ctx.fill();
+            ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2);
+            ctx.fillStyle = 'rgba(19, 236, 214, 0.1)'; ctx.fill();
             ctx.strokeStyle = '#13ecd6'; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.translate(-160, -160);
         }
 
         canvas.addEventListener('click', (e) => {
             if(round > 5) return;
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            // Audio de impacto inmediato
-            playImpactSound();
-            
-            // Lógica de puntos (simplificada)
             const dist = Math.sqrt((x-160)**2 + (y-160)**2);
-            let pts = Math.max(0, Math.floor(60 - (dist/3)));
-            if(dist < 15) pts = 100; // Bullseye
+            if(dist > 155) return; // Fuera de la diana
+
+            let pts = Math.max(0, Math.floor(60 - (dist/2.6)));
+            const isBull = dist < 15;
+            if(isBull) pts = 100;
+
+            playImpact(isBull);
+            showHit(x, y, pts);
             
             PLAYERS[currentPlayer].score += pts;
-            showPopup(x, y, pts);
-            updateUI();
-            
             dartsThisRound++;
+            
             if(dartsThisRound >= 3) {
                 dartsThisRound = 0;
                 currentPlayer = (currentPlayer + 1) % PLAYERS.length;
                 if(currentPlayer === 0) round++;
             }
             
-            if(round > 5) endGame();
+            updateUI();
+            if(round > 5) setTimeout(endGame, 800);
         });
 
-        function showPopup(x, y, pts) {
-            const container = document.getElementById('hitRings');
-            const p = document.createElement('div');
-            p.className = 'score-popup text-[#13ecd6]';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.innerText = `+${pts}`;
-            container.appendChild(p);
-            setTimeout(() => p.remove(), 1000);
-            
+        function showHit(x, y, pts) {
+            const popup = document.createElement('div');
+            popup.className = 'score-popup text-[#13ecd6]';
+            popup.style.left = x + 'px'; popup.style.top = y + 'px';
+            popup.innerText = `+${pts}`;
+            document.getElementById('hitContainer').appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+
             const log = document.getElementById('sessionLog');
+            if(log.children[0]?.style.opacity === "0.3") log.innerHTML = "";
             const entry = document.createElement('p');
-            entry.innerText = `> IMPACTO: ${pts} PTS [${PLAYERS[currentPlayer].name}]`;
+            entry.innerHTML = `<span class="text-zinc-600">>></span> IMPACTO <span class="text-[#13ecd6]">${pts}</span> <span class="text-zinc-700">|</span> ${PLAYERS[currentPlayer].name}`;
             log.prepend(entry);
         }
 
@@ -196,7 +217,7 @@
             const grid = document.getElementById('playersGrid');
             grid.innerHTML = PLAYERS.map((p, i) => `
                 <div class="player-card rounded-2xl p-4 ${i === currentPlayer ? 'active' : ''}">
-                    <p class="text-[8px] font-black uppercase text-zinc-500 mb-1">${p.name}</p>
+                    <p class="text-[8px] font-black uppercase text-zinc-600 mb-1 tracking-widest">${p.name}</p>
                     <p class="text-2xl font-black font-['Space_Grotesk'] text-white">${p.score}</p>
                 </div>
             `).join('');
@@ -208,8 +229,9 @@
         function endGame() {
             const winner = PLAYERS.reduce((a, b) => a.score > b.score ? a : b);
             document.getElementById('winnerName').innerText = winner.name;
-            document.getElementById('winnerScore').innerText = `PUNTUACIÓN FINAL: ${winner.score} PTS`;
+            document.getElementById('winnerScore').innerText = `PUNTUACIÓN: ${winner.score} PTS`;
             document.getElementById('winnerModal').classList.remove('hidden');
+            document.getElementById('winnerModal').classList.add('flex');
         }
 
         function resetGame() { location.reload(); }
