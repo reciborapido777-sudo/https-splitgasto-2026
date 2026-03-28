@@ -13,11 +13,12 @@
         .group-card { 
             position: relative; height: 260px; border-radius: 3rem; 
             overflow: hidden; cursor: pointer; 
-            transition: var(--transition-alpha);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             transform: translateZ(0);
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .group-card:active { transform: scale(0.97); }
-        .group-card:hover { border-color: var(--cian-tech); }
+        .group-card:hover { border-color: #13ecd6; }
         .group-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 15%, rgba(0,0,0,0.3) 100%); }
 
         .summary-pill {
@@ -35,39 +36,44 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
         .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
+        .status-tag {
+            padding: 4px 10px; border-radius: 999px; font-size: 8px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.1em;
+        }
     </style>
 
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell bg-black">
 <div class="app-frame flex flex-col h-full">
 
-    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50 border-b border-white/5">
         <div class="flex items-center gap-4">
             <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
-                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
             </button>
             <div class="text-left">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Activos Sociales</p>
                 <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Mis Grupos</h1>
             </div>
         </div>
-        <button onclick="SGRouter.showToast('Protocolo de Creación: Próximamente', 'info')" 
+        <button onclick="SGRouter.navigate('create-group')" 
                 class="px-5 py-2.5 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 text-[#13ecd6] active:scale-95 transition-all shadow-[0_0_20px_rgba(19,236,214,0.1)]">
             <span class="material-icons-round text-sm">add</span>
             <span class="text-[9px] font-black uppercase tracking-widest">Nuevo</span>
         </button>
     </header>
 
-    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-6 pb-28">
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-6 pb-32">
 
         <section class="grid grid-cols-3 gap-3 reveal-node">
             <div class="summary-pill flex flex-col gap-1">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Nodos</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-white">3</p>
             </div>
-            <div class="summary-pill flex flex-col gap-1 border-[#13ecd6]/10">
+            <div class="summary-pill flex flex-col gap-1 border-[#13ecd6]/20">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]">+83,50€</p>
             </div>
@@ -78,7 +84,7 @@
         </section>
 
         <div class="space-y-4">
-            <div class="group-card group reveal-node" onclick="SGRouter.navigate('split', 'groups')">
+            <div class="group-card group reveal-node" onclick="SGRouter.navigate('activity', 'groups')">
                 <img src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?q=80&w=800" 
                      class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-all duration-700">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
@@ -99,7 +105,7 @@
                 </div>
             </div>
 
-            <div class="group-card group reveal-node" style="animation-delay: 0.1s" onclick="SGRouter.navigate('split', 'groups')">
+            <div class="group-card group reveal-node" style="animation-delay: 0.1s" onclick="SGRouter.navigate('activity', 'groups')">
                 <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800" 
                      class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700">
                 <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
@@ -114,7 +120,7 @@
             </div>
 
             <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-4 transition-all" 
-                 style="animation-delay: 0.2s" onclick="SGRouter.showToast('Protocolo de Creación · Próximamente', 'info')">
+                 style="animation-delay: 0.2s" onclick="SGRouter.navigate('create-group')">
                 <div class="size-16 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
                     <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl">add_circle_outline</span>
                 </div>
