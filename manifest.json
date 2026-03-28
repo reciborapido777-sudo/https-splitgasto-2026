@@ -1,82 +1,83 @@
 {
   "name": "SplitGasto 2026",
   "short_name": "SplitGasto",
-  "description": "Divide gastos con tu grupo de forma inteligente. Juegos 3D, IA y liquidación instantánea.",
-  "start_url": "/index.html",
+  "description": "División inteligente de gastos con IA, Juegos 3D y Liquidación Alpha.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#13ecd6",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "lang": "es",
+  "id": "com.splitgasto.alpha.2026",
   "icons": [
     {
       "src": "icons/icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "icons/icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "icons/icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Dashboard",
+      "name": "Mando Central",
       "short_name": "Mando",
-      "description": "Ir al panel de control",
-      "url": "/dashboard.html",
+      "description": "Acceder al Dashboard Alpha",
+      "url": "/dashboard",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Añadir Gasto",
+      "name": "Registrar Gasto",
       "short_name": "Gasto",
-      "description": "Registrar nuevo gasto",
-      "url": "/add-expense.html",
+      "description": "Inyectar nuevo gasto al nodo",
+      "url": "/add-expense",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Juegos",
-      "short_name": "Games",
-      "description": "Juegos 3D Premium",
-      "url": "/games.html",
+      "name": "Protocolos de Azar",
+      "short_name": "Juegos",
+      "description": "Ejecutar Juegos de Decisión",
+      "url": "/games",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ],
-  "categories": ["finance", "lifestyle"],
+  "categories": ["finance", "lifestyle", "productivity"],
   "screenshots": [
     {
       "src": "screenshots/dashboard.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Dashboard SplitGasto"
+      "label": "Mando Central SplitGasto"
     }
   ]
 }
