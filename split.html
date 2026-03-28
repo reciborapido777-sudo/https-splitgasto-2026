@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -10,63 +10,78 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
         .control-display {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(19, 236, 214, 0.04) 100%);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 2.5rem;
-            transition: var(--transition-alpha);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .game-btn { 
             background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            transition: var(--transition-alpha); 
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
             cursor: pointer; 
         }
         .game-btn.active-glow {
-            border-color: var(--purple-deep) !important;
+            border-color: #a855f7 !important;
             box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
             background: rgba(168, 85, 247, 0.1) !important;
         }
-        .game-btn.active-glow span { color: #fff !important; }
+        .game-btn.active-glow p { color: #fff !important; }
 
         .participant-row { 
             background: rgba(255,255,255,0.01);
-            border: 1px solid var(--glass-border);
-            transition: var(--transition-alpha); 
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s ease; 
         }
         .participant-row:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.04); }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; background:none; border:none; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell pb-32">
+<body class="app-shell pb-32 bg-black">
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-6 py-8 space-y-8">
         
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-6 px-6 border-b border-white/5">
             <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
                     <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
                 </button>
-                <div>
+                <div class="text-left">
                     <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Algoritmo de División</p>
-                    <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Reparto</h1>
+                    <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-white leading-none">Motor de Reparto</h1>
                 </div>
             </div>
-            <div class="size-11 rounded-2xl border border-[#FF9D42]/20 flex items-center justify-center overflow-hidden" onclick="SGRouter.navigate('profile')">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=050505" class="size-full">
+            <div class="size-11 rounded-2xl border border-[#FF9D42]/20 flex items-center justify-center overflow-hidden cursor-pointer" onclick="SGRouter.navigate('profile')">
+                <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=0d1f0d" class="size-full">
             </div>
         </header>
 
         <section class="space-y-4">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] px-2">Estrategia de Azar</p>
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] px-2">Estrategia de Azar Alpha</p>
             <div class="grid grid-cols-4 gap-3 reveal-node">
                 <div onclick="updateControl(this, 'Ruleta')" class="game-btn p-5 flex flex-col items-center gap-2 rounded-2xl">
                     <span class="material-icons-round text-[#a855f7] text-xl">autorenew</span>
                     <p class="text-[7px] font-black uppercase text-zinc-600">Ruleta</p>
                 </div>
-                <div onclick="updateControl(this, 'Carta Alta')" class="game-btn p-5 flex flex-col items-center gap-2 rounded-2xl">
+                <div onclick="updateControl(this, 'Cartas')" class="game-btn p-5 flex flex-col items-center gap-2 rounded-2xl">
                     <span class="material-icons-round text-[#a855f7] text-xl">style</span>
                     <p class="text-[7px] font-black uppercase text-zinc-600">Cartas</p>
                 </div>
@@ -88,44 +103,48 @@
                 </div>
                 <div>
                     <p class="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em]">Estado del Motor</p>
-                    <h4 id="active-game-label" class="text-sm font-black font-['Space_Grotesk'] uppercase italic text-white tracking-widest">Esperando Selección...</h4>
+                    <h4 id="active-game-label" class="text-sm font-black tech-font uppercase italic text-white tracking-widest">Esperando Selección...</h4>
                 </div>
             </div>
             <button id="execBtn" onclick="executeSplit()" class="w-full py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] active:scale-95 transition-all shadow-xl">
-                Ejecutar Reparto
+                Ejecutar Reparto Alpha
             </button>
         </div>
 
-        <main class="glass-panel p-8 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
+        <main class="glass-panel p-8 rounded-[3rem] space-y-6 reveal-node border-white/5" style="animation-delay: 0.2s">
             <div class="flex justify-between items-end border-b border-white/5 pb-6">
                 <div>
-                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Concepto Activo</p>
-                    <h2 class="text-xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter text-white">Sushi Kyoto Pro</h2>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Concepto Auditado</p>
+                    <h2 class="text-xl font-black tech-font uppercase italic tracking-tighter text-white">Sushi Kyoto Pro</h2>
                 </div>
-                <p class="text-3xl font-black font-['Space_Grotesk'] text-[#13ecd6] italic">25,56€</p>
+                <p class="text-3xl font-black tech-font text-[#13ecd6] italic">25,56€</p>
             </div>
             
             <div class="space-y-3">
                 <div class="participant-row flex items-center justify-between p-5 rounded-[1.8rem]">
                     <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=050505" class="size-11 rounded-xl border border-[#FF9D42]/30">
+                        <div class="size-11 rounded-xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20">
+                            <span class="material-icons-round text-[#FF9D42] text-sm">verified</span>
+                        </div>
                         <div>
                             <p class="text-[7px] font-black text-[#FF9D42] uppercase tracking-widest">Usted (CMD)</p>
                             <p class="text-xs font-black uppercase text-white tracking-tight">Comandante</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-black font-['Space_Grotesk'] text-white">8,52€</p>
+                        <p class="font-black tech-font text-white">8,52€</p>
                         <span class="text-[7px] font-black text-[#13ecd6] uppercase tracking-[0.2em]">Auditado</span>
                     </div>
                 </div>
 
                 <div class="participant-row flex items-center justify-between p-5 rounded-[1.8rem] opacity-40">
                     <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=M1&backgroundColor=050505" class="size-11 rounded-xl">
+                        <div class="size-11 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                            <span class="material-icons-round text-zinc-500 text-sm">person</span>
+                        </div>
                         <p class="text-xs font-black uppercase text-zinc-300">Mario García</p>
                     </div>
-                    <p class="font-black font-['Space_Grotesk'] text-zinc-500">8,52€</p>
+                    <p class="font-black tech-font text-zinc-500">8,52€</p>
                 </div>
             </div>
         </main>
@@ -142,8 +161,8 @@
                 <p>Grupos</p>
             </button>
             <button class="nav-item active">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <span class="material-icons-round">call_split</span>
+                <p>Reparto</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('vault')">
                 <span class="material-icons-round">auto_stories</span>
@@ -159,8 +178,8 @@
 
 <script>
     let selectedGame = null;
-    const gameIcons = { 'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on' };
-    const gameRoutes = { 'Ruleta': 'game-roulette', 'Carta Alta': 'game-cards', 'Dardos': 'game-darts', 'Moneda': 'game-coin' };
+    const gameIcons = { 'Ruleta': 'autorenew', 'Cartas': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on' };
+    const gameRoutes = { 'Ruleta': 'game-roulette', 'Cartas': 'game-cards', 'Dardos': 'game-darts', 'Moneda': 'game-coin' };
 
     function updateControl(element, game) {
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
@@ -184,7 +203,9 @@
         btn.disabled = true;
         btn.textContent = 'INICIALIZANDO MOTOR...';
         SGRouter.showToast(`Ejecutando ${selectedGame}`, 'premium');
-        setTimeout(() => SGRouter.navigate(gameRoutes[selectedGame], 'split'), 800);
+        
+        // Navegación limpia v4.4 sin parámetros de origen redundantes
+        setTimeout(() => SGRouter.navigate(gameRoutes[selectedGame]), 800);
     }
 </script>
 </body>
