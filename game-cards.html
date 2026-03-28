@@ -21,13 +21,13 @@
         
         .card-face {
             position: absolute; inset: 0; border-radius: 1rem;
-            backface-visibility: hidden; border: 1px solid var(--glass-border);
+            backface-visibility: hidden; border: 1px solid rgba(255,255,255,0.05);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
         .card-back {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            color: var(--cian-tech);
+            color: #13ecd6;
         }
         
         .card-front {
@@ -37,25 +37,25 @@
 
         /* Estados de Auditoría */
         .card-3d.winner .card-front { 
-            box-shadow: 0 0 30px var(--cian-tech); 
-            border: 2px solid var(--cian-tech);
+            box-shadow: 0 0 30px #13ecd6; 
+            border: 2px solid #13ecd6;
         }
         .card-3d.loser { opacity: 0.3; filter: grayscale(1); }
 
-        /* Tapete Táctico */
         #tapete {
             background: radial-gradient(circle at center, #112221 0%, #000 70%);
-            border-radius: 2.5rem; border: 1px solid var(--glass-border);
+            border-radius: 2.5rem; border: 1px solid rgba(255,255,255,0.05);
             padding: 2rem; min-height: 220px;
         }
 
         .deal-btn {
-            background: var(--cian-tech); color: #000;
+            background: #13ecd6; color: #000;
             font-weight: 900; letter-spacing: 0.2em;
             box-shadow: 0 0 30px rgba(19, 236, 214, 0.2);
-            transition: var(--transition-alpha);
+            transition: all 0.3s ease;
         }
         .deal-btn:active { transform: scale(0.95); }
+        .deal-btn:disabled { opacity: 0.5; filter: grayscale(1); }
     </style>
     <script src="engine/router.js"></script>
 </head>
@@ -69,7 +69,7 @@
             </button>
             <div class="text-center">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Azar</p>
-                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic">Carta Alta</h1>
+                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Carta Alta</h1>
             </div>
             <div class="size-12"></div>
         </header>
@@ -89,7 +89,7 @@
             </div>
         </section>
 
-        <section id="tapete" class="flex flex-wrap justify-center gap-4 items-center reveal-node" style="animation-delay: 0.1s">
+        <section id="tapete" class="flex flex-wrap justify-center gap-4 items-center reveal-node">
             <div id="cards-grid" class="flex flex-wrap justify-center gap-6">
                 <p class="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Esperando Reparto Alpha...</p>
             </div>
@@ -104,23 +104,62 @@
             </div>
         </div>
 
-        <button id="deal-btn" class="deal-btn w-full py-6 rounded-2xl reveal-node" style="animation-delay: 0.2s" onclick="dealCards()">
+        <button id="deal-btn" class="deal-btn w-full py-6 rounded-2xl reveal-node" onclick="dealCards()">
             <span class="flex items-center justify-center gap-3">
                 <span class="material-icons-round">style</span>
                 REPARTIR CARTAS
             </span>
         </button>
-
     </div>
 
     <script>
         const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
         const players = [
-            {name:'Commander', color:'#13ecd6', initials:'C'},
-            {name:'Mario', color:'#a855f7', initials:'M'},
-            {name:'Elena', color:'#FF9D42', initials:'E'}
+            {name:'Commander', color:'#13ecd6'},
+            {name:'Mario', color:'#a855f7'},
+            {name:'Elena', color:'#FF9D42'}
         ];
         let isDealing = false;
+        let roundCounter = 1;
+
+        // Motor Sónico Alpha para Naipes
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playCardSnap() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const noise = audioCtx.createBufferSource();
+            const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+            
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            
+            noise.buffer = buffer;
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        function playWinFanfare() {
+            [523, 659, 784].forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, audioCtx.currentTime + i * 0.1);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + i * 0.1); osc.stop(audioCtx.currentTime + i * 0.1 + 0.2);
+            });
+        }
 
         function dealCards() {
             if (isDealing) return;
@@ -150,7 +189,10 @@
                 `;
                 grid.appendChild(card);
                 
-                setTimeout(() => document.getElementById(`card-${i}`).classList.add('flipped'), i * 300);
+                setTimeout(() => {
+                    document.getElementById(`card-${i}`).classList.add('flipped');
+                    playCardSnap();
+                }, i * 350);
             });
 
             setTimeout(() => {
@@ -165,38 +207,18 @@
                 document.getElementById('result-box').classList.remove('hidden');
                 document.getElementById('deal-btn').disabled = false;
                 isDealing = false;
-                SGRouter.showToast(`CARTA ALTA: ${winner.player.name}`, 'success');
-            }, (players.length * 300) + 500);
+                playWinFanfare();
+                if(window.SGRouter) SGRouter.showToast(`CARTA ALTA: ${winner.player.name}`, 'success');
+            }, (players.length * 350) + 500);
         }
 
         function confirmPay() { SGRouter.navigate('split'); }
-        function nextRound() { dealCards(); }
+        function nextRound() { 
+            roundCounter++;
+            document.getElementById('round-num').innerText = roundCounter;
+            dealCards(); 
+        }
     </script>
-
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('games')">
-                <span class="material-icons-round">casino</span>
-                <p>Juegos</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('vault')">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
 </div>
 </body>
 </html>
