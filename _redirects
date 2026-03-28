@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────────
-# SplitGasto 2026 - Cloudflare Pages Redirects (v4.4 Clean URLs)
-# Protocolo: Resolución Atómica sin Bucles
+# SplitGasto 2026 - Cloudflare Pages Redirects (v4.6)
+# Protocolo: Resolución Atómica - ZERO LOOP CORE
 # ─────────────────────────────────────────────────────────────────
 
 # --- Auth & Onboarding ---
@@ -53,12 +53,10 @@
 /privacy             /legal.html               200
 /investors           /investors.html           200
 
-# --- Engine & Assets Protection ---
+# --- Engine & Assets Protection (Splat rules at the end) ---
 /engine/* /engine/:splat            200
 /assets/* /assets/:splat            200
-/favicon.svg         /favicon.svg              200
-/manifest.json       /manifest.json            200
 
 # --- 404 Resilience ---
-# Cualquier ruta no definida arriba caerá aquí
+# Captura cualquier ruta no definida arriba para el sistema de resiliencia
 /* /engine/resilience.html   404
