@@ -1,8 +1,7 @@
 /**
  * SplitGasto 2026 - Master Navigation Router
  * Versión: 4.4 — Clean URLs + Cloudflare Pages Optimized
- *
- * STRATEGY: Routes use absolute clean paths (/auth, /dashboard, /groups).
+ * * STRATEGY: Routes use absolute clean paths (/auth, /dashboard, /groups).
  * CF Pages _redirects maps /auth → /auth.html [200], etc.
  * Absolute paths work from ANY page depth — no relative-path bugs.
  * No /* catch-all in _redirects = no infinite loops possible.
@@ -17,14 +16,14 @@ const SGRouter = {
     // ─── Route map: routeId → clean absolute path ────────────────────
     routes: {
         // Landing — direct file reference, no redirect rule needed
-        'landing': '/',
-        // Auth
+        'landing':       '/',
+        // Auth & Onboarding
         'auth':          '/auth',
         'auth-login':    '/auth',
         'register':      '/register',
         'auth-register': '/register',
         'onboarding':    '/onboarding',
-        // Main App
+        // Main App Core
         'dashboard':     '/dashboard',
         'groups':        '/groups',
         'activity':      '/activity',
@@ -40,27 +39,25 @@ const SGRouter = {
         'scanner':       '/scanner',
         'vault':         '/vault',
         'settings':      '/settings',
-        // Legal & Investors
+        // Legal & Corporate
         'legal':         '/legal',
         'investors':     '/investors',
-        // Games
+        // Gamification Alpha
         'games':         '/games',
         'game-roulette': '/game-roulette',
         'game-cards':    '/game-cards',
         'game-coin':     '/game-coin',
         'game-darts':    '/game-darts',
-        // Expenses & Groups
+        // Actions & Logic
         'add-expense':   '/add-expense',
         'create-group':  '/create-group',
         'liquidation':   '/liquidation',
-        // Rankings & Settings
         'rankings':      '/rankings',
-        // Support
+        // Support & Social
         'support':       '/support',
-        // Social
         'friends':       '/friends',
         'invite':        '/invite',
-        // Error
+        // Error & Resilience
         'error':         '/engine/resilience.html'
     },
 
@@ -90,7 +87,7 @@ const SGRouter = {
         const cleanTarget  = normalisePath(target);
 
         if (cleanTarget === currentPath) {
-            console.log('[SG Router] Already here. Reload.');
+            console.log('[SG Router] Already here. Reloading node.');
             window.location.reload();
             return;
         }
@@ -102,14 +99,14 @@ const SGRouter = {
 
         console.log('[SG Router] → ', finalTarget);
 
-        // Visual transition: blur + fade out
-        document.body.style.transition = 'filter 0.2s ease, opacity 0.2s ease';
-        document.body.style.filter = 'blur(16px)';
+        // Visual transition: blur + fade out (GPU Accelerated)
+        document.body.style.transition = 'filter 0.25s ease, opacity 0.25s ease';
+        document.body.style.filter = 'blur(20px)';
         document.body.style.opacity = '0';
 
         setTimeout(() => {
             window.location.href = finalTarget;
-        }, 180);
+        }, 200);
     },
 
     /**
@@ -120,11 +117,11 @@ const SGRouter = {
         const urlParams = new URLSearchParams(window.location.search);
         const from = urlParams.get('from');
 
-        console.log('[SG Router] back() from=', from || 'none');
+        console.log('[SG Router] back() execution from=', from || 'history_stack');
 
         document.body.style.transition = 'filter 0.15s ease, opacity 0.15s ease';
         document.body.style.opacity = '0';
-        document.body.style.filter = 'blur(10px)';
+        document.body.style.filter = 'blur(12px)';
 
         setTimeout(() => {
             if (from && this.routes[from]) {
@@ -141,7 +138,7 @@ const SGRouter = {
      * Premium gate — show toast then redirect to membership.
      */
     requirePremium(feature = '') {
-        console.log('[SG Router] requirePremium:', feature || 'generic');
+        console.log('[SG Router] premium_gate_triggered:', feature || 'generic');
         this.showToast(
             feature ? `${feature} es Premium 👑` : '¡Función Premium! Desbloquea todo por 2,99€/mes',
             'premium'
@@ -152,7 +149,7 @@ const SGRouter = {
     },
 
     /**
-     * Toast notification.
+     * Toast notification Alpha (System UI)
      */
     showToast(message, type = 'success') {
         const colors = {
@@ -170,47 +167,49 @@ const SGRouter = {
         const toast = document.createElement('div');
         toast.className = 'sg-toast';
         toast.style.cssText = `
-            position:fixed; bottom:100px; left:50%; transform:translate(-50%,20px);
-            z-index:9999; padding:14px 28px; border-radius:999px;
-            background:rgba(10,10,10,0.97); border:1px solid rgba(255,255,255,0.1);
-            box-shadow:0 20px 50px rgba(0,0,0,0.6); backdrop-filter:blur(24px);
-            transition:opacity 0.35s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
-            opacity:0; white-space:nowrap; pointer-events:none; max-width:90vw;
+            position:fixed; bottom:110px; left:50%; transform:translate(-50%,25px);
+            z-index:9999; padding:16px 32px; border-radius:999px;
+            background:rgba(5,5,5,0.98); border:1px solid rgba(255,255,255,0.08);
+            box-shadow:0 25px 60px rgba(0,0,0,0.7); backdrop-filter:blur(30px);
+            transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
+            opacity:0; white-space:nowrap; pointer-events:none; max-width:92vw;
         `;
         toast.innerHTML = `
-            <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
                 <span style="width:8px;height:8px;border-radius:50%;background:${color};
-                    box-shadow:0 0 8px ${color};flex-shrink:0"></span>
+                    box-shadow:0 0 10px ${color};flex-shrink:0"></span>
                 <span style="font-size:11px;font-weight:800;text-transform:uppercase;
-                    letter-spacing:0.2em;color:#fff">${message}</span>
+                    letter-spacing:0.25em;color:#fff;font-family:'Plus Jakarta Sans',sans-serif">${message}</span>
             </div>`;
 
         document.body.appendChild(toast);
+        
+        // Render cycle trigger
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 toast.style.opacity = '1';
                 toast.style.transform = 'translate(-50%, 0)';
-            });
+            }, 10);
         });
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translate(-50%, 10px)';
+            toast.style.transform = 'translate(-50%, 15px)';
             setTimeout(() => toast.remove(), 400);
-        }, 3200);
+        }, 3500);
     }
 };
 
-// ─── Restore page on bfcache restore ────────────────────────────────────────
+// ─── Persistence & BFcache Fix ──────────────────────────────────────────────
 window.addEventListener('pageshow', (event) => {
     document.body.style.opacity   = '1';
     document.body.style.filter    = 'none';
     document.body.style.transition = '';
     if (event.persisted) {
-        console.log('[SG Router] pageshow: bfcache restore');
+        console.log('[SG Router] pageshow: bfcache_restore_success');
     }
 });
 
-// ─── Freeze: prevent accidental mutations ────────────────────────────────────
+// ─── Freeze & Initialise ─────────────────────────────────────────────────────
 Object.freeze(SGRouter);
-console.log('[SG Router] v4.4 ready ✓ —', Object.keys(SGRouter.routes).length, 'routes (clean URLs, no loop)');
+console.log('[SG Router] v4.4 Gold ready ✓ —', Object.keys(SGRouter.routes).length, 'nodes operative');
