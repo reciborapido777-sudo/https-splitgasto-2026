@@ -1,241 +1,105 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scanner Alpha 2026 | Perímetro Limpio</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Scanner Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
+        /* Visor Táctico: Configuración de Cámara */
+        body, html { height: 100vh; overflow: hidden !important; display: flex; flex-direction: column; background: #000; }
         
-        body, html { 
-            background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; overflow: hidden !important; margin: 0; padding: 0; 
-            display: flex; flex-direction: column; 
-        }
-
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.02); 
-            backdrop-filter: blur(40px); 
-            -webkit-backdrop-filter: blur(40px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-        }
-
-        .ui-layer { 
-            position: relative; z-index: 50; 
-            background: rgba(0,0,0,0.7); 
-            backdrop-filter: blur(25px); 
-        }
-
         .viewfinder-master { 
-            flex: 1; position: relative; 
-            background: #020202; overflow: hidden; 
-            margin: 0 20px; border-radius: 3.5rem; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.9); 
+            flex: 1; position: relative; margin: 0 16px; 
+            background: #050505; border-radius: 3rem; 
+            border: 1px solid rgba(255,255,255,0.05); overflow: hidden;
             transform: translateZ(0);
         }
 
-        .frame-guides { position: absolute; inset: 80px 40px; pointer-events: none; }
-        
+        /* Guías de Encuadre Alpha */
+        .frame-guides { position: absolute; inset: 60px 30px; pointer-events: none; }
         .corner { 
-            position: absolute; width: 45px; height: 45px; 
-            border: 4px solid #13ecd6; 
-            filter: drop-shadow(0 0 10px rgba(19,236,214,0.4)); 
-            transform: translateZ(0);
+            position: absolute; width: 40px; height: 40px; 
+            border: 3px solid var(--cian-tech); 
+            filter: drop-shadow(0 0 12px rgba(19,236,214,0.3)); 
         }
-
-        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 1.8rem 0 0 0; }
-        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-radius: 0 1.8rem 0 0; }
-        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 1.8rem; }
-        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 1.8rem 0; }
+        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 1.5rem 0 0 0; }
+        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-radius: 0 1.5rem 0 0; }
+        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 1.5rem; }
+        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 1.5rem 0; }
 
         .scan-pulse { 
             position: absolute; width: 100%; height: 2px; 
-            background: linear-gradient(to right, transparent, #13ecd6, transparent); 
-            box-shadow: 0 0 30px #13ecd6; 
-            animation: moveScan 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1); 
-            transform: translateZ(0);
+            background: linear-gradient(to right, transparent, var(--cian-tech), transparent); 
+            box-shadow: 0 0 25px var(--cian-tech); 
+            animation: moveScan 3s infinite cubic-bezier(0.4, 0, 0.2, 1); 
         }
-
         @keyframes moveScan { 0% { top: 10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
 
-        .shutter-alpha { 
-            background: #FF9D42; 
-            box-shadow: 0 0 50px rgba(255, 157, 66, 0.3); 
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        /* Interfaz de Disparo */
+        .ui-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 50; }
+        .shutter-btn { 
+            background: var(--orange-socio); 
+            box-shadow: 0 0 40px rgba(255, 157, 66, 0.25);
+            transition: var(--transition-alpha);
         }
+        .shutter-btn:active { transform: scale(0.85); filter: brightness(1.2); }
+    </style>
 
-        .shutter-alpha:active { transform: scale(0.9) rotate(2deg); filter: brightness(1.2); }
-        .reveal-node { animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
-<div class="app-frame">
+<body class="app-shell">
+<div class="app-frame flex flex-col h-full">
 
-    <header class="ui-layer p-8 flex justify-between items-center">
-        <button onclick="SGRouter.back()" class="size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-            <span class="material-icons-round text-white text-3xl">close</span>
+    <header class="ui-overlay p-6 flex justify-between items-center">
+        <button onclick="SGRouter.back()" class="size-12 glass-panel rounded-2xl flex items-center justify-center active:scale-90 transition-all">
+            <span class="material-icons-round text-white text-2xl">close</span>
         </button>
-        <div class="flex flex-col items-end">
-            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.5em] mb-1 leading-none">AI Vision Alpha</p>
-            <div class="flex items-center gap-2 px-3 py-1 bg-[#a855f7]/10 rounded-full border border-[#a855f7]/20">
-                <span class="material-icons-round text-[#a855f7] text-[10px]">verified_user</span>
-                <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Cifrado AES-256</p>
-            </div>
+        <div class="text-right">
+            <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.4em]">AI Vision Alpha</p>
+            <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-widest">Digitalización Activa</p>
         </div>
     </header>
 
     <main class="viewfinder-master reveal-node">
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2000')] bg-cover bg-center opacity-30 scale-105"></div>
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1200')] bg-cover bg-center opacity-40 scale-105"></div>
         
         <div class="frame-guides">
             <div class="corner tl"></div><div class="corner tr"></div>
             <div class="corner bl"></div><div class="corner br"></div>
             <div class="scan-pulse"></div>
             
-            <div class="absolute bottom-10 w-full text-center space-y-2">
-                <p class="text-[10px] font-black text-white uppercase tracking-[0.6em]">Alineación Requerida</p>
-                <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Encuadre el ticket para auditoría</p>
+            <div class="absolute bottom-12 w-full text-center">
+                <p class="text-[9px] font-black text-white uppercase tracking-[0.5em] animate-pulse">Alinee el Ticket</p>
             </div>
         </div>
     </main>
 
-    <footer class="ui-layer p-10 flex flex-col items-center gap-10 reveal-node" style="animation-delay: 0.2s">
-        <div class="flex justify-between items-center w-full max-w-sm px-4">
-            <button class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
-                <span class="material-icons-round text-3xl text-white">flash_on</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Flash</span>
+    <footer class="ui-overlay p-8 pb-12 flex flex-col items-center gap-8 reveal-node" style="animation-delay: 0.2s">
+        <div class="flex justify-around items-center w-full max-w-xs">
+            <button class="flex flex-col items-center gap-2 opacity-40 hover:opacity-100 transition-all">
+                <span class="material-icons-round text-2xl text-white">flash_on</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">Flash</span>
             </button>
             
-            <button onclick="SGRouter.navigate('receipt', 'scanner')" class="size-24 shutter-alpha rounded-full flex items-center justify-center border-8 border-black/30 group">
-                <div class="size-20 rounded-full border-2 border-white/20 flex items-center justify-center">
-                    <span class="material-icons-round text-black text-4xl">qr_code_scanner</span>
+            <button onclick="SGRouter.navigate('receipt')" class="size-20 shutter-btn rounded-full flex items-center justify-center border-4 border-black/50">
+                <div class="size-16 rounded-full border border-white/20 flex items-center justify-center">
+                    <span class="material-icons-round text-black text-3xl">qr_code_scanner</span>
                 </div>
             </button>
             
-            <button class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
-                <span class="material-icons-round text-3xl text-white">photo_library</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Galería</span>
+            <button class="flex flex-col items-center gap-2 opacity-40 hover:opacity-100 transition-all">
+                <span class="material-icons-round text-2xl text-white">photo_library</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">Galería</span>
             </button>
         </div>
-        <p class="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em]">Digitalización de <span class="text-[#13ecd6]">Grado Militar</span></p>
+        <p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em]">Procesamiento <span class="text-[#13ecd6]">Grado Militar</span></p>
     </footer>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
