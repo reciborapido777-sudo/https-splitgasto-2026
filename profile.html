@@ -12,7 +12,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
         
-        :root { --cyan: #13ecd6; --purple: #a855f7; --orange: #FF9D42; }
+        :root { --cian-tech: #13ecd6; --purple-deep: #a855f7; --orange-socio: #FF9D42; }
         
         body, html { 
             background: #000 !important; 
@@ -25,7 +25,6 @@
 
         .tech-font { font-family: 'Space Grotesk', sans-serif; }
 
-        /* Contenedor Maestro con Scroll */
         .scroll-container {
             height: 100%;
             overflow-y: auto;
@@ -45,7 +44,7 @@
         .status-badge {
             background: rgba(255, 157, 66, 0.15);
             border: 1px solid rgba(255, 157, 66, 0.4);
-            color: var(--orange);
+            color: var(--orange-socio);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 8px;
@@ -61,6 +60,7 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
+        .action-tile:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.05); }
 
         .metric-mini {
             padding: 24px;
@@ -72,7 +72,7 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; background:none; border:none; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
         .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cyan); }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
 
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -90,14 +90,14 @@
         <header class="flex justify-between items-center p-6 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
             <div class="flex items-center gap-4">
                 <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
-                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                    <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
                 </button>
                 <div class="text-left">
                     <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Identity</p>
                     <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-white leading-none">Perfil Socio</h1>
                 </div>
             </div>
-            <button onclick="SGRouter.navigate('landing')" class="size-11 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 active:scale-90 transition-all border border-red-500/10">
+            <button onclick="SGRouter.navigate('landing')" class="size-11 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 active:scale-90 transition-all border border-red-500/10 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
                 <span class="material-icons-round text-lg">logout</span>
             </button>
         </header>
@@ -181,9 +181,9 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
             </button>
             <button class="nav-item active">
                 <span class="material-icons-round">person</span>
