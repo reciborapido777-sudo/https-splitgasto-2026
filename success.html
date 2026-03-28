@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell" style="background-color: #000 !important;">
+<html lang="es" class="app-shell" style="background-color:#000 !important">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Operación Exitosa | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -12,119 +12,113 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
         
-        body, html { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            height: 100vh; overflow: hidden !important; 
-        }
+        :root { --cian-tech: #13ecd6; }
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow:hidden; }
 
         .success-glow {
-            position: relative;
-            size: 140px;
-            background: rgba(19, 236, 214, 0.05);
-            border-radius: 50%;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 300px; height: 300px; background: radial-gradient(circle, rgba(19,236,214,0.15) 0%, transparent 70%);
+            z-index: 0; pointer-events: none;
+        }
+
+        .success-icon-container {
+            position: relative; width: 120px; height: 120px;
             display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(19, 236, 214, 0.2);
-            box-shadow: 0 0 60px rgba(19, 236, 214, 0.1);
-            animation: pulseSuccess 4s infinite ease-in-out;
+            background: rgba(19,236,214,0.05); border: 1px solid rgba(19,236,214,0.2);
+            border-radius: 3rem; margin: 0 auto; z-index: 1;
         }
 
-        @keyframes pulseSuccess {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 80px rgba(19, 236, 214, 0.2); }
+        .check-anim {
+            font-size: 60px; color: var(--cian-tech);
+            animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .amount-highlight {
-            font-family: 'Space Grotesk', sans-serif;
-            background: linear-gradient(135deg, #13ecd6 0%, #10b981 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            padding-right: 0.2em;
+        @keyframes checkPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            70% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
-        .nav-item span { font-size: 20px; color: #4a4a4a; }
-        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+        .receipt-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 2.5rem; padding: 2.5rem;
+            position: relative; overflow: hidden;
+        }
+
+        .receipt-line {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 0; border-bottom: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        .btn-finish {
+            background: var(--cian-tech); color: #000;
+            font-family: 'Space Grotesk'; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.3em;
+            transition: var(--transition-alpha);
+        }
+        .btn-finish:active { transform: scale(0.95); box-shadow: 0 0 30px rgba(19,236,214,0.2); }
     </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell flex flex-col items-center justify-center p-6 text-center">
-<div class="app-frame flex flex-col items-center justify-center w-full max-w-lg">
+<body class="app-shell bg-black">
+<div class="app-frame flex flex-col items-center justify-center h-screen px-6">
+    
+    <div class="success-glow"></div>
 
-    <div class="reveal-node flex flex-col items-center space-y-10 mb-12">
-        <div class="success-glow size-32">
-            <span class="material-icons-round text-[#13ecd6] text-6xl">verified</span>
+    <div class="w-full max-w-sm space-y-10 text-center">
+        
+        <div class="success-icon-container reveal-node">
+            <span class="material-icons-round check-anim">check_circle</span>
         </div>
-        <div class="space-y-4">
-            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.6em]">Protocolo Finalizado</p>
-            <h1 class="text-5xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-white leading-none">
-                Éxito Total
-            </h1>
+
+        <div class="space-y-2 reveal-node" style="animation-delay:0.1s">
+            <h1 class="text-3xl font-black font-['Space_Grotesk'] italic tracking-tighter uppercase text-white">Misión Cumplida</h1>
+            <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.4em]">Transacción Auditada y Firmada</p>
         </div>
+
+        <div class="receipt-card reveal-node border-white/5" style="animation-delay:0.2s">
+            <div class="space-y-1">
+                <div class="receipt-line">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Importe</span>
+                    <span class="text-lg font-black font-['Space_Grotesk'] text-white">84,50€</span>
+                </div>
+                <div class="receipt-line">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Destino</span>
+                    <span class="text-[11px] font-black text-white uppercase italic">Mario García</span>
+                </div>
+                <div class="receipt-line border-none">
+                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Protocolo</span>
+                    <span class="text-[10px] font-black text-[#13ecd6] uppercase">Instant Alpha Pay</span>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-center gap-2">
+                <span class="material-icons-round text-zinc-700 text-sm">verified_user</span>
+                <span class="text-[8px] font-black text-zinc-700 uppercase tracking-widest">TXID: SG-2026-8842-AX</span>
+            </div>
+        </div>
+
+        <div class="space-y-4 reveal-node" style="animation-delay:0.3s">
+            <button onclick="SGRouter.navigate('dashboard')" class="btn-finish w-full py-6 rounded-[2rem] text-xs">
+                Volver al Mando
+            </button>
+            <button onclick="window.print()" class="w-full py-4 text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] hover:text-white transition-colors">
+                Descargar Comprobante
+            </button>
+        </div>
+
     </div>
-
-    <section class="w-full glass-panel p-10 rounded-[3.5rem] border-white/5 space-y-10 reveal-node" style="animation-delay: 0.1s">
-        <div class="flex justify-between items-center border-b border-white/5 pb-8">
-            <div class="text-left">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Activo</p>
-                <p class="text-sm font-black font-['Space_Grotesk'] uppercase tracking-tight">Sushi Kyoto Pro</p>
-            </div>
-            <div class="text-right">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Importe</p>
-                <p class="text-3xl font-black font-['Space_Grotesk'] amount-highlight leading-none italic">25,56€</p>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                <span>Auditoría IA</span>
-                <span class="text-[#13ecd6] flex items-center gap-2">
-                    <span class="size-1.5 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    SELLADA
-                </span>
-            </div>
-            <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
-                <span>Distribución</span>
-                <span class="text-white">Simétrica Alpha</span>
-            </div>
-        </div>
-    </section>
-
-    <footer class="w-full mt-12 space-y-4 reveal-node" style="animation-delay: 0.2s">
-        <button onclick="SGRouter.navigate('dashboard')" class="w-full py-7 bg-white text-black rounded-[2.2rem] font-black text-xs uppercase tracking-[0.5em] transition-all active:scale-95 shadow-[0_20px_40px_rgba(255,255,255,0.1)]">
-            Volver al Mando
-        </button>
-        <button onclick="SGRouter.navigate('activity')" class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-            Ver Log de Auditoría
-        </button>
-    </footer>
-
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('vault')">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
-
 </div>
+
+<script>
+    // Protocolo de limpieza de estado de pago si fuera necesario
+    window.onload = () => {
+        if(window.SGRouter) {
+            console.log("[Alpha System] Pago registrado en el Ledger local.");
+        }
+    };
+</script>
 </body>
 </html>
