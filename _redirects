@@ -3,8 +3,6 @@
 # Protocolo: Resolución Atómica sin Bucles
 # ─────────────────────────────────────────────────────────────────
 
-# [ROOT] La landing se sirve desde /index.html por defecto en CF.
-
 # --- Auth & Onboarding ---
 /auth                /auth.html                200
 /login               /auth.html                200
@@ -55,10 +53,12 @@
 /privacy             /legal.html               200
 /investors           /investors.html           200
 
-# --- Engine & Assets ---
-# Asegura que los archivos en /engine/ (js, css, etc) se sirvan directamente
+# --- Engine & Assets Protection ---
 /engine/* /engine/:splat            200
+/assets/* /assets/:splat            200
+/favicon.svg         /favicon.svg              200
+/manifest.json       /manifest.json            200
 
 # --- 404 Resilience ---
-# Redirige cualquier ruta no mapeada al sistema de resiliencia
+# Cualquier ruta no definida arriba caerá aquí
 /* /engine/resilience.html   404
