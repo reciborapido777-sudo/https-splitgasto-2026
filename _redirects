@@ -1,15 +1,18 @@
 # ─────────────────────────────────────────────────────────────────
 # SplitGasto 2026 - Cloudflare Pages Redirects (v4.4 Clean URLs)
+# Protocolo: Resolución Atómica sin Bucles
 # ─────────────────────────────────────────────────────────────────
 
-# Auth & Onboarding
+# [ROOT] La landing se sirve desde /index.html por defecto en CF.
+
+# --- Auth & Onboarding ---
 /auth                /auth.html                200
 /login               /auth.html                200
 /register            /register.html            200
 /signup              /register.html            200
 /onboarding          /onboarding.html          200
 
-# Main App Pages
+# --- Main App Pages ---
 /dashboard           /dashboard.html           200
 /groups              /groups.html              200
 /profile             /profile.html             200
@@ -22,35 +25,40 @@
 /membership          /membership.html          200
 /rankings            /rankings.html            200
 
-# Analytics & Metrics
+# --- Analytics & Metrics ---
 /analytics           /analytics.html           200
 /metrics             /analytics.html           200
 
-# Expenses & Groups
+# --- Expenses & Groups Logic ---
 /add-expense         /add-expense.html         200
 /create-group        /create-group.html        200
 /split               /split.html               200
 /liquidation         /liquidation.html         200
 /success             /success.html             200
-/receipt             /receipt-view.html        200
+/receipt             /receipt.html             200
 
-# Games Ecosystem
+# --- Games Ecosystem ---
 /games               /games.html               200
 /game-roulette       /game-roulette.html       200
 /game-cards          /game-cards.html          200
 /game-coin           /game-coin.html           200
 /game-darts          /game-darts.html          200
 
-# Social & Support
+# --- Social & Support ---
 /friends             /friends.html             200
 /invite              /invite.html              200
 /support             /support.html             200
 /manual              /manual.html              200
 
-# Legal & Investors
+# --- Legal & Corporate ---
 /legal               /legal.html               200
 /privacy             /legal.html               200
 /investors           /investors.html           200
 
-# Engine & Assets (pass-through)
+# --- Engine & Assets ---
+# Asegura que los archivos en /engine/ (js, css, etc) se sirvan directamente
 /engine/* /engine/:splat            200
+
+# --- 404 Resilience ---
+# Redirige cualquier ruta no mapeada al sistema de resiliencia
+/* /engine/resilience.html   404
