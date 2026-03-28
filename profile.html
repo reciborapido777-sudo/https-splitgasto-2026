@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell" style="background:#000 !important">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -10,131 +10,164 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Arquitectura de Perfil: Estándar Oro Socio */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        
+        :root { --cyan: #13ecd6; --purple: #a855f7; --orange: #FF9D42; }
+        
+        body, html { 
+            background: #000 !important; 
+            color: #fff; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            height: 100dvh; 
+            margin: 0; 
+            overflow: hidden; 
+        }
+
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Contenedor Maestro con Scroll */
+        .scroll-container {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 120px;
+        }
+
         .elite-card {
-            background: linear-gradient(135deg, rgba(255, 157, 66, 0.08) 0%, rgba(0,0,0,1) 100%);
-            border: 1px solid rgba(255, 157, 66, 0.2);
+            background: linear-gradient(135deg, rgba(255, 157, 66, 0.15) 0%, rgba(0,0,0,1) 100%);
+            border: 1px solid rgba(255, 157, 66, 0.3);
             border-radius: 3.5rem;
             position: relative;
             overflow: hidden;
         }
 
         .status-badge {
-            background: rgba(255, 157, 66, 0.1);
-            border: 1px solid rgba(255, 157, 66, 0.3);
-            color: var(--orange-socio);
-            padding: 4px 12px;
+            background: rgba(255, 157, 66, 0.15);
+            border: 1px solid rgba(255, 157, 66, 0.4);
+            color: var(--orange);
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 8px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.25em;
         }
 
         .action-tile {
             background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 2rem;
-            transition: var(--transition-alpha);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
-        .action-tile:active { transform: scale(0.97); background: rgba(255,255,255,0.05); }
-        .action-tile:hover { border-color: var(--cian-tech); }
 
         .metric-mini {
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.01);
-            border-radius: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.03);
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
         }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; background:none; border:none; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cyan); }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
-    <script src="engine/router.js"></script>
+
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell">
+<body class="bg-black">
+
 <div class="app-frame flex flex-col h-full">
-
-    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <div class="flex items-center gap-4">
-            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
-                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+    
+    <div class="scroll-container no-scrollbar">
+        <header class="flex justify-between items-center p-6 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                </button>
+                <div class="text-left">
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Identity</p>
+                    <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-white leading-none">Perfil Socio</h1>
+                </div>
+            </div>
+            <button onclick="SGRouter.navigate('landing')" class="size-11 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 active:scale-90 transition-all border border-red-500/10">
+                <span class="material-icons-round text-lg">logout</span>
             </button>
-            <div class="text-left">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Identity</p>
-                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Perfil Socio</h1>
-            </div>
-        </div>
-        <button onclick="SGRouter.navigate('landing')" class="size-11 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 hover:text-red-500 active:scale-90 transition-all">
-            <span class="material-icons-round text-lg">logout</span>
-        </button>
-    </header>
+        </header>
 
-    <main class="flex-1 overflow-y-auto px-6 py-6 space-y-8">
-
-        <section class="elite-card p-10 reveal-node shadow-[0_20px_50px_rgba(255,157,66,0.05)]">
-            <div class="absolute top-0 right-0 p-8 opacity-[0.05] pointer-events-none">
-                <span class="material-icons-round text-[12rem] text-[#FF9D42]">military_tech</span>
-            </div>
-            
-            <div class="flex flex-col items-center gap-6 relative z-10 text-center">
-                <div class="relative">
-                    <div class="absolute -inset-4 bg-[#FF9D42]/10 rounded-full blur-2xl animate-pulse"></div>
-                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=1a1a1a" class="relative size-32 rounded-[3rem] border-2 border-[#FF9D42]/40 shadow-2xl" alt="Socio Fundador">
+        <main class="px-6 py-6 space-y-8">
+            <section class="elite-card p-10 reveal-node shadow-[0_30px_60px_rgba(255,157,66,0.1)]">
+                <div class="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+                    <span class="material-icons-round text-[12rem] text-[#FF9D42]">military_tech</span>
                 </div>
                 
-                <div class="space-y-3">
-                    <div class="flex justify-center"><span class="status-badge">Socio Fundador Élite</span></div>
-                    <h2 class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white">Comandante</h2>
-                    <p class="text-zinc-600 text-[9px] font-black uppercase tracking-[0.3em]">ID: ALPHA-001 · Grado Maestro</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="grid grid-cols-2 gap-4 reveal-node" style="animation-delay:0.1s">
-            <div class="metric-mini" onclick="SGRouter.navigate('vault')">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Bóveda Alpha</p>
-                <div class="flex items-center justify-between">
-                    <span class="text-xl font-black font-['Space_Grotesk'] text-white">128</span>
-                    <span class="material-icons-round text-[#13ecd6] text-sm">auto_stories</span>
-                </div>
-            </div>
-            <div class="metric-mini" onclick="SGRouter.navigate('analytics')">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Eficiencia</p>
-                <div class="flex items-center justify-between">
-                    <span class="text-xl font-black font-['Space_Grotesk'] text-[#a855f7]">98%</span>
-                    <span class="material-icons-round text-[#a855f7] text-sm">insights</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="space-y-3 reveal-node" style="animation-delay:0.2s">
-            <div onclick="SGRouter.navigate('security')" class="action-tile p-5 flex justify-between items-center group">
-                <div class="flex items-center gap-4">
-                    <div class="size-10 rounded-xl bg-[#13ecd6]/10 flex items-center justify-center">
-                        <span class="material-icons-round text-[#13ecd6] text-lg">verified_user</span>
+                <div class="flex flex-col items-center gap-6 relative z-10 text-center">
+                    <div class="relative">
+                        <div class="absolute -inset-6 bg-[#FF9D42]/10 rounded-full blur-3xl animate-pulse"></div>
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=050505" class="relative size-32 rounded-[3.5rem] border-2 border-[#FF9D42]/40 shadow-2xl">
                     </div>
-                    <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] group-hover:text-white transition-colors">Seguridad Alpha</span>
-                </div>
-                <span class="material-icons-round text-zinc-700 text-sm">chevron_right</span>
-            </div>
-
-            <div onclick="SGRouter.navigate('settings')" class="action-tile p-5 flex justify-between items-center group">
-                <div class="flex items-center gap-4">
-                    <div class="size-10 rounded-xl bg-[#a855f7]/10 flex items-center justify-center">
-                        <span class="material-icons-round text-[#a855f7] text-lg">settings</span>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-center"><span class="status-badge">Socio Fundador Élite</span></div>
+                        <h2 class="text-4xl font-black tech-font tracking-tighter uppercase italic leading-none text-white">Comandante</h2>
+                        <p class="text-zinc-600 text-[9px] font-black uppercase tracking-[0.4em] tech-font">ID: ALPHA-001 · GRADO MAESTRO</p>
                     </div>
-                    <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] group-hover:text-white transition-colors">Configuración</span>
                 </div>
-                <span class="material-icons-round text-zinc-700 text-sm">chevron_right</span>
-            </div>
+            </section>
 
-            <button onclick="SGRouter.navigate('membership')" class="w-full py-6 mt-4 bg-white/5 border border-white/10 rounded-[2rem] text-[9px] font-black uppercase tracking-[0.5em] text-white hover:bg-[#FF9D42]/10 transition-all">
-                Gestionar Membresía Élite
-            </button>
-        </section>
+            <section class="grid grid-cols-2 gap-4 reveal-node" style="animation-delay:0.1s">
+                <div class="metric-mini cursor-pointer" onclick="SGRouter.navigate('vault')">
+                    <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-2">Bóveda Alpha</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-2xl font-black tech-font text-white">128</span>
+                        <span class="material-icons-round text-[#13ecd6] text-sm">auto_stories</span>
+                    </div>
+                </div>
+                <div class="metric-mini cursor-pointer" onclick="SGRouter.navigate('analytics')">
+                    <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-2">Eficiencia</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-2xl font-black tech-font text-[#a855f7]">98%</span>
+                        <span class="material-icons-round text-[#a855f7] text-sm">insights</span>
+                    </div>
+                </div>
+            </section>
 
-    </main>
+            <section class="space-y-3 reveal-node" style="animation-delay:0.2s">
+                <div onclick="SGRouter.navigate('security')" class="action-tile p-6 flex justify-between items-center group">
+                    <div class="flex items-center gap-5">
+                        <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20">
+                            <span class="material-icons-round text-[#13ecd6] text-xl">verified_user</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.25em] group-hover:text-white transition-colors">Seguridad Alpha</span>
+                    </div>
+                    <span class="material-icons-round text-zinc-700 text-base">chevron_right</span>
+                </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+                <div onclick="SGRouter.navigate('settings')" class="action-tile p-6 flex justify-between items-center group">
+                    <div class="flex items-center gap-5">
+                        <div class="size-11 rounded-2xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20">
+                            <span class="material-icons-round text-[#a855f7] text-xl">settings</span>
+                        </div>
+                        <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.25em] group-hover:text-white transition-colors">Configuración</span>
+                    </div>
+                    <span class="material-icons-round text-zinc-700 text-base">chevron_right</span>
+                </div>
+
+                <button onclick="SGRouter.navigate('membership')" class="w-full py-6 mt-6 bg-white/5 border border-white/10 rounded-[2.5rem] text-[10px] font-black uppercase tracking-[0.5em] text-white hover:bg-[#FF9D42]/10 transition-all shadow-xl active:scale-95">
+                    Gestionar Membresía Élite
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-[100] bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
