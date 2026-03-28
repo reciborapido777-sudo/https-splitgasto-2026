@@ -1,235 +1,144 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#000">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Invitar Amigos | SplitGasto 2026</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@700;900&display=swap');
-        html,body{background:#000;color:#fff;font-family:'Inter',sans-serif;margin:0;padding:0;overscroll-behavior:none}
-        .glass-panel{background:rgba(255,255,255,.02);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);border-radius:20px}
-        .share-btn{display:flex;align-items:center;gap:14px;background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;cursor:pointer;transition:all .2s;width:100%}
-        .share-btn:active{transform:scale(.98)}
-        .share-btn:hover{background:#111}
-        .share-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-center;flex-shrink:0}
-        .code-box{background:#0a0a0a;border:2px dashed rgba(19,236,214,.2);border-radius:20px;padding:20px;text-align:center}
-        .reward-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);font-size:10px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:.15em}
     
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
+    <style>
+        .share-btn {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 1.5rem; padding: 1.25rem;
+            cursor: pointer; transition: var(--transition-alpha); width: 100%;
+        }
+        .share-btn:active { transform: scale(.98); background: rgba(255,255,255,0.05); }
+        
+        .share-icon {
+            width: 44px; height: 44px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        
+        .code-box {
+            background: rgba(19,236,214,0.02);
+            border: 2px dashed rgba(19,236,214,0.15);
+            border-radius: 2rem; padding: 2rem; text-align: center;
+        }
+        
+        .reward-chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+            border-radius: 999px; background: rgba(212,175,55,0.1);
+            border: 1px solid rgba(212,175,55,0.2);
+            font-size: 10px; font-weight: 900; color: #D4AF37;
+            text-transform: uppercase; letter-spacing: .15em;
+        }
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+    </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-10">
-<div class="app-frame">
-    <div class="max-w-sm mx-auto px-4 py-6 space-y-6">
+<body class="app-shell bg-black">
+<div class="app-frame flex flex-col h-full">
 
-        <!-- Header -->
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl z-50 border-b border-white/5">
         <div class="flex items-center gap-4">
-            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90">
-                <span class="material-icons-round text-zinc-400">arrow_back_ios</span>
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
+                <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
             </button>
-            <h1 class="text-base font-black uppercase tracking-wider">Invitar Amigos</h1>
-        </div>
-
-        <!-- Hero -->
-        <div class="glass-panel p-8 text-center space-y-4" style="border-color:rgba(212,175,55,.15)">
-            <div class="text-5xl">🎁</div>
-            <div>
-                <div class="reward-chip mb-4">1 mes Premium gratis</div>
-                <h2 class="text-xl font-black font-['Space_Grotesk'] italic tracking-tighter">Comparte y Gana</h2>
-                <p class="text-zinc-500 text-sm mt-2 leading-relaxed">
-                    Por cada amigo que se una con tu código y complete su primer gasto grupal, tú y tu amigo recibís <strong class="text-[#D4AF37]">1 mes Premium gratis</strong>.
-                </p>
+            <div class="text-left">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Expansión</p>
+                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Invitar</h1>
             </div>
         </div>
+    </header>
 
-        <!-- Invite code -->
-        <div class="code-box">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] mb-3">Tu código personal</p>
-            <p class="text-3xl font-black font-['Space_Grotesk'] tracking-widest text-[#13ecd6] mb-3">SPLIT-4520</p>
-            <button onclick="copyCode()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 text-[#13ecd6] text-[11px] font-black uppercase tracking-wider hover:bg-[#13ecd6]/20 transition-all active:scale-95">
-                <span class="material-icons-round text-sm">content_copy</span>
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-6 pb-32 no-scrollbar">
+        
+        <section class="glass-panel p-10 text-center space-y-4 reveal-node" style="border-color:rgba(212,175,55,0.15)">
+            <div class="text-5xl mb-2">🎁</div>
+            <div class="reward-chip">1 mes Premium gratis</div>
+            <h2 class="text-3xl font-black font-['Space_Grotesk'] italic tracking-tighter text-white">Comparte y Gana</h2>
+            <p class="text-zinc-500 text-xs leading-relaxed font-bold uppercase tracking-tight">
+                Por cada amigo que complete su primer gasto grupal, ambos recibís <span class="text-[#D4AF37]">1 mes Premium</span>.
+            </p>
+        </section>
+
+        <section class="code-box reveal-node" style="animation-delay: 0.1s">
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[.4em] mb-4">Tu código de Socio</p>
+            <p class="text-4xl font-black font-['Space_Grotesk'] tracking-[0.2em] text-[#13ecd6] mb-6">SPLIT-4520</p>
+            <button onclick="copyCode()" class="w-full py-4 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 text-[#13ecd6] text-[10px] font-black uppercase tracking-widest hover:bg-[#13ecd6]/20 transition-all active:scale-95">
+                <span class="material-icons-round text-sm align-middle mr-2">content_copy</span>
                 Copiar código
             </button>
-        </div>
+        </section>
 
-        <!-- Progress -->
-        <div class="glass-panel p-5 space-y-4">
+        <section class="glass-panel p-6 space-y-4 reveal-node border-white/5" style="animation-delay: 0.2s">
             <div class="flex justify-between items-center">
-                <p class="text-sm font-bold">Amigos invitados</p>
-                <p class="text-[#13ecd6] font-black text-sm">2 / 5</p>
+                <p class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Amigos invitados</p>
+                <p class="text-[#13ecd6] font-black text-sm tech-font">2 / 5</p>
             </div>
-            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div class="h-full rounded-full bg-gradient-to-r from-[#13ecd6] to-[#10b981]" style="width:40%"></div>
             </div>
-            <p class="text-[10px] text-zinc-500">3 invitaciones más para desbloquear <span class="text-[#D4AF37] font-bold">Socio Fundador Élite</span></p>
-        </div>
+            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-tight">
+                Faltan 3 para <span class="text-[#FF9D42]">Socio Fundador Élite</span>
+            </p>
+        </section>
 
-        <!-- Share options -->
-        <div class="space-y-3">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em]">Compartir por</p>
+        <div class="space-y-3 reveal-node" style="animation-delay: 0.3s">
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[.4em] px-2">Canales de Difusión</p>
 
             <button class="share-btn" onclick="shareWhatsApp()">
-                <div class="share-icon" style="background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                <div class="share-icon bg-[#25D366]/10 border border-[#25D366]/20">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 </div>
                 <div class="flex-1 text-left">
-                    <p class="font-bold text-sm">WhatsApp</p>
-                    <p class="text-[10px] text-zinc-500">Envía el enlace por mensaje</p>
+                    <p class="font-black text-[11px] uppercase tracking-wider text-white">WhatsApp</p>
+                    <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Envío directo de enlace</p>
                 </div>
-                <span class="material-icons-round text-zinc-600">chevron_right</span>
+                <span class="material-icons-round text-zinc-700">chevron_right</span>
             </button>
 
             <button class="share-btn" onclick="shareGeneral()">
-                <div class="share-icon" style="background:rgba(19,236,214,.1);border:1px solid rgba(19,236,214,.2)">
-                    <span class="material-icons-round text-[#13ecd6] text-2xl" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">share</span>
+                <div class="share-icon bg-[#13ecd6]/10 border border-[#13ecd6]/20">
+                    <span class="material-icons-round text-[#13ecd6] text-xl">share</span>
                 </div>
                 <div class="flex-1 text-left">
-                    <p class="font-bold text-sm">Compartir enlace</p>
-                    <p class="text-[10px] text-zinc-500">Usa cualquier app de mensajería</p>
+                    <p class="font-black text-[11px] uppercase tracking-wider text-white">Sistema Nativo</p>
+                    <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Cualquier plataforma</p>
                 </div>
-                <span class="material-icons-round text-zinc-600">chevron_right</span>
-            </button>
-
-            <button class="share-btn" onclick="copyLink()">
-                <div class="share-icon" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2)">
-                    <span class="material-icons-round text-[#a855f7] text-2xl" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">link</span>
-                </div>
-                <div class="flex-1 text-left">
-                    <p class="font-bold text-sm">Copiar enlace</p>
-                    <p class="text-[10px] text-zinc-500">splitgasto.com/join/SPLIT-4520</p>
-                </div>
-                <span class="material-icons-round text-zinc-600">chevron_right</span>
+                <span class="material-icons-round text-zinc-700">chevron_right</span>
             </button>
         </div>
 
-        <!-- T&C note -->
-        <p class="text-center text-[10px] text-zinc-600 px-4 leading-relaxed">
-            El premio se aplica cuando el amigo complete su primer gasto grupal. Máximo 5 premios acumulables. <button onclick="SGRouter.navigate('legal','invite')" class="text-[#13ecd6] underline">Ver términos</button>
+        <p class="text-center text-[9px] text-zinc-700 px-8 leading-relaxed font-bold uppercase tracking-tighter pt-4">
+            Máximo 5 premios acumulables. <button onclick="SGRouter.navigate('legal')" class="text-[#13ecd6] underline">Ver términos</button>
         </p>
-    </div>
+    </main>
 
-        <script>
-        const inviteCode = 'SPLIT-4520';
-        const inviteLink = `https://splitgasto.com/join/${inviteCode}`;
-        const inviteMsg = `¡Únete a SplitGasto y divide gastos sin dramas! Usa mi código ${inviteCode} y los dos conseguimos 1 mes Premium gratis 🎉 → ${inviteLink}`;
-
-        function copyCode() {
-            navigator.clipboard.writeText(inviteCode).then(() => {
-                SGRouter.showToast('Código copiado 📋', 'success');
-            }).catch(() => {
-                SGRouter.showToast('Código: ' + inviteCode, 'info');
-            });
-        }
-        function copyLink() {
-            navigator.clipboard.writeText(inviteLink).then(() => {
-                SGRouter.showToast('Enlace copiado 🔗', 'success');
-            }).catch(() => SGRouter.showToast('¡Link copiado!', 'success'));
-        }
-        function shareWhatsApp() {
-            window.open(`https://wa.me/?text=${encodeURIComponent(inviteMsg)}`, '_blank');
-        }
-        function shareGeneral() {
-            if (navigator.share) {
-                navigator.share({ title: 'SplitGasto', text: inviteMsg, url: inviteLink });
-            } else {
-                copyLink();
-            }
-        }
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                    .then(reg => {
-                        reg.update().catch(() => {});
-                        reg.addEventListener('updatefound', () => {
-                            const sw = reg.installing;
-                            if (!sw) return;
-                            sw.addEventListener('statechange', () => {
-                                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                    sw.postMessage({ type: 'SKIP_WAITING' });
-                                }
-                            });
-                        });
-                    }).catch(() => {});
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing) { refreshing = true; window.location.reload(); }
-                });
-            });
-        }
-    </script>
-
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+    <nav class="fixed bottom-0 left-0 right-0 z-[100] bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
@@ -240,5 +149,41 @@
         </div>
     </nav>
 </div>
+
+<script>
+    const inviteCode = 'SPLIT-4520';
+    const inviteLink = `https://splitgasto.com/join/${inviteCode}`;
+    const inviteMsg = `¡Únete a SplitGasto! Usa mi código ${inviteCode} y ambos conseguimos 1 mes Premium 🎉 → ${inviteLink}`;
+
+    function copyCode() {
+        navigator.clipboard.writeText(inviteCode).then(() => {
+            if (window.SGRouter) SGRouter.showToast('CÓDIGO COPIADO 📋', 'success');
+        }).catch(() => {
+            alert('Código: ' + inviteCode);
+        });
+    }
+
+    function shareWhatsApp() {
+        window.open(`https://wa.me/?text=${encodeURIComponent(inviteMsg)}`, '_blank');
+    }
+
+    async function shareGeneral() {
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'SplitGasto', text: inviteMsg, url: inviteLink });
+            } catch (err) {
+                copyLinkManual();
+            }
+        } else {
+            copyLinkManual();
+        }
+    }
+
+    function copyLinkManual() {
+        navigator.clipboard.writeText(inviteLink).then(() => {
+            if (window.SGRouter) SGRouter.showToast('ENLACE COPIADO 🔗', 'success');
+        });
+    }
+</script>
 </body>
 </html>
