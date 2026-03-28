@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login Alpha | SplitGasto 2026</title>
+    <title>Acceso Socio | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space_Grotesk:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
         
         html, body { 
             background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             height: 100vh; overflow: hidden !important;
             overscroll-behavior: none;
         }
@@ -48,64 +48,16 @@
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell min-h-screen flex items-center justify-center">
-<div class="app-frame">
 
     <div class="w-full max-w-md mx-auto px-8 py-10 space-y-12">
         
         <header class="text-center space-y-6 reveal-node">
             <div class="flex justify-start">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-lg">
+                <button onclick="SGRouter.navigate('home')" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-lg">
                     <span class="material-icons-round text-zinc-500">arrow_back</span>
                 </button>
             </div>
@@ -132,7 +84,7 @@
                 </div>
             </div>
 
-            <button onclick="SGRouter.navigate('dashboard', 'auth')" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
+            <button onclick="SGRouter.navigate('dashboard')" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
                 Sincronizar Nodo
             </button>
         </main>
@@ -140,37 +92,20 @@
         <footer class="text-center space-y-4 reveal-node" style="animation-delay: 0.2s">
             <p class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
                 ¿Nuevo en la red? 
-                <button onclick="SGRouter.navigate('register', 'auth')" class="text-[#13ecd6] ml-2 font-black hover:underline">Solicitar Registro</button>
+                <button onclick="SGRouter.navigate('register')" class="text-[#13ecd6] ml-2 font-black hover:underline">Solicitar Registro</button>
             </p>
         </footer>
 
     </div>
 
-    
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
+    <script>
+        // Saneamiento de Service Worker: Registro simplificado sin bucles de recarga
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .catch(e => console.warn('[SW] Offline protocol bypass.'));
             });
-        });
-    }
+        }
     </script>
-</div>
 </body>
 </html>
