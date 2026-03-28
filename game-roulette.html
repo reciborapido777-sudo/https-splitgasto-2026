@@ -1,656 +1,266 @@
 <!DOCTYPE html>
-<html lang="es" class="dark" style="background-color:#0a0a0a">
+<html lang="es" class="app-shell">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Ruleta de la Suerte | SplitGasto 2026</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link rel="stylesheet" href="engine/global.css"/>
-<style>
-  :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
-  * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; }
-
-  /* 3D Canvas Wrapper */
-  #roulette-wrapper {
-    position:relative;
-    width:320px; height:320px;
-    margin:0 auto;
-    perspective:800px;
-  }
-  #wheel-3d {
-    width:100%; height:100%;
-    position:relative;
-    transform-style:preserve-3d;
-    transform: rotateX(20deg);
-    transition: transform 0.3s ease;
-  }
-  canvas#wheel {
-    border-radius:50%;
-    box-shadow:0 0 60px rgba(19,236,214,0.4), 0 20px 40px rgba(0,0,0,0.8);
-    display:block;
-    transition:box-shadow 0.3s;
-  }
-  canvas#wheel.spinning {
-    box-shadow:0 0 120px rgba(19,236,214,0.8), 0 30px 60px rgba(0,0,0,0.9);
-  }
-  #wheel-shadow {
-    position:absolute;
-    bottom:-20px; left:50%;
-    transform:translateX(-50%);
-    width:80%; height:30px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%);
-    filter:blur(10px);
-  }
-  #pointer {
-    position:absolute;
-    top:-18px; left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    filter:drop-shadow(0 4px 8px rgba(19,236,214,0.8));
-  }
-  #center-hub {
-    position:absolute;
-    top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    width:56px; height:56px;
-    background:radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%);
-    border:3px solid var(--cyan);
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    z-index:5;
-    box-shadow:0 0 20px rgba(19,236,214,0.6);
-  }
-
-  /* Glass panels */
-  .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
-
-  /* Result banner */
-  #result-banner {
-    background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(168,85,247,0.1));
-    border:1px solid rgba(19,236,214,0.4);
-    border-radius:20px;
-    animation:pulse-glow 2s ease infinite;
-  }
-  @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(19,236,214,0.3)} 50%{box-shadow:0 0 40px rgba(19,236,214,0.6)} }
-
-  /* Spin button */
-  #spin-btn {
-    background:linear-gradient(135deg, var(--cyan), #0fbfaf);
-    color:#0a0a0a;
-    border-radius:50px;
-    font-weight:800;
-    font-size:1.1rem;
-    letter-spacing:0.05em;
-    transition:all 0.2s;
-    box-shadow:0 8px 32px rgba(19,236,214,0.4);
-  }
-  #spin-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(19,236,214,0.6); }
-  #spin-btn:active:not(:disabled) { transform:scale(0.97); }
-  #spin-btn:disabled { opacity:0.5; cursor:not-allowed; }
-
-  /* Player chips */
-  .player-chip {
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:50px;
-    padding:6px 14px;
-    font-size:0.8rem;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.2s;
-    display:flex; align-items:center; gap:8px;
-  }
-  .player-chip:hover { background:rgba(255,255,255,0.1); }
-  .player-chip.active { border-color:var(--cyan); background:rgba(19,236,214,0.12); color:var(--cyan); }
-  .player-chip .dot { width:8px; height:8px; border-radius:50%; }
-
-  /* Bottom nav */
-  .bottom-nav { background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); }
-
-  /* Confetti */
-  .confetti-piece {
-    position:fixed;
-    width:10px; height:10px;
-    top:-20px;
-    border-radius:2px;
-    animation:confetti-fall linear forwards;
-    z-index:100;
-    pointer-events:none;
-  }
-  @keyframes confetti-fall {
-    0% { transform:translateY(0) rotate(0deg); opacity:1; }
-    100% { transform:translateY(110vh) rotate(720deg); opacity:0; }
-  }
-
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Ruleta Alpha | SplitGasto 2026</title>
+    
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        /* Renderizado 3D de la Ruleta */
+        #roulette-wrapper {
+            position: relative; width: 300px; height: 300px;
+            margin: 0 auto; perspective: 1000px;
         }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
+        #wheel-3d {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d; transform: rotateX(15deg);
+            transition: transform 0.5s var(--transition-alpha);
         }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        canvas#wheel {
+            border-radius: 50%; box-shadow: 0 0 50px rgba(168, 85, 247, 0.2);
+            display: block; transition: box-shadow 0.4s;
+        }
+        canvas#wheel.spinning { box-shadow: 0 0 80px rgba(19, 236, 214, 0.4); }
+
+        #pointer {
+            position: absolute; top: -15px; left: 50%;
+            transform: translateX(-50%); z-index: 50;
+            filter: drop-shadow(0 0 10px var(--cian-tech));
+        }
+
+        /* Banner de Victoria */
+        #result-banner {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(19, 236, 214, 0.05));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 2rem;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Chips de Jugador */
+        .player-chip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem; padding: 8px 16px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            transition: var(--transition-alpha);
+        }
+        .player-chip.active { border-color: var(--cian-tech); color: var(--cian-tech); background: rgba(19, 236, 214, 0.05); }
+
+        .spin-btn {
+            background: var(--cian-tech); color: #000;
+            font-weight: 900; letter-spacing: 0.2em;
+            box-shadow: 0 0 30px rgba(19, 236, 214, 0.3);
+            transition: var(--transition-alpha);
+        }
+        .spin-btn:active { transform: scale(0.95); filter: brightness(1.2); }
+    </style>
+
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell text-white pb-32">
+<body class="app-shell">
 <div class="app-frame">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
 
-<!-- Header -->
-<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
-  <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
-    <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
-  </button>
-  <div class="text-center">
-    <h1 class="font-bold text-base">Ruleta de la Suerte</h1>
-    <p class="text-xs opacity-50">¿Quién paga hoy?</p>
-  </div>
-  <button id="add-player-btn" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(19,236,214,0.15);border:1px solid rgba(19,236,214,0.3)">
-    <span class="material-icons-round text-sm" style="color:var(--cyan)">person_add</span>
-  </button>
-</header>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+            <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+            </button>
+            <div class="text-center">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Azar</p>
+                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic">Ruleta Alpha</h1>
+            </div>
+            <button onclick="openModal()" class="size-12 glass-panel rounded-2xl flex items-center justify-center text-[#13ecd6] border-[#13ecd6]/20 active:scale-90 transition-all">
+                <span class="material-icons-round text-xl">person_add</span>
+            </button>
+        </header>
 
-<!-- Main content -->
-<main class="max-w-md mx-auto px-4 pt-6 space-y-6">
+        <section class="flex flex-col items-center py-6 reveal-node">
+            <div id="roulette-wrapper">
+                <div id="pointer">
+                    <svg width="30" height="30" viewBox="0 0 32 32">
+                        <path d="M16 0 L30 24 L16 18 L2 24 Z" fill="#13ecd6"/>
+                    </svg>
+                </div>
+                <div id="wheel-3d">
+                    <canvas id="wheel" width="300" height="300"></canvas>
+                </div>
+            </div>
 
-  <!-- Group selector -->
-  <div class="glass p-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:rgba(168,85,247,0.2)">🍣</div>
-      <div>
-        <p class="font-bold text-sm">Sushi Kyoto Pro</p>
-        <p class="text-xs opacity-50">4 participantes activos</p>
-      </div>
-    </div>
-    <span class="material-icons-round text-sm opacity-40">expand_more</span>
-  </div>
+            <div class="grid grid-cols-3 gap-8 mt-12 w-full max-w-xs text-center">
+                <div>
+                    <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="spin-count">0</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase">Giros</p>
+                </div>
+                <div>
+                    <p class="text-xl font-black font-['Space_Grotesk'] text-white" id="last-winner">—</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase">Último</p>
+                </div>
+                <div>
+                    <p class="text-xl font-black font-['Space_Grotesk'] text-[#FF9D42]">84,20€</p>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase">En Juego</p>
+                </div>
+            </div>
+        </section>
 
-  <!-- 3D Roulette Wheel -->
-  <div class="flex flex-col items-center py-4">
-    <div id="roulette-wrapper">
-      <!-- Pointer arrow -->
-      <div id="pointer">
-        <svg width="32" height="32" viewBox="0 0 32 32">
-          <polygon points="16,0 28,24 16,18 4,24" fill="#13ecd6" filter="drop-shadow(0 0 8px #13ecd6)"/>
-        </svg>
-      </div>
-      <!-- 3D tilt container -->
-      <div id="wheel-3d">
-        <canvas id="wheel" width="300" height="300"></canvas>
-        <div id="wheel-shadow"></div>
-        <div id="center-hub">
-          <span class="material-icons-round" style="color:var(--cyan);font-size:24px">payments</span>
+        <div id="result-banner" class="hidden p-8 text-center reveal-node">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Objetivo Detectado</p>
+            <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic text-[#13ecd6] mb-6" id="result-name"></h2>
+            <div class="flex gap-3">
+                <button onclick="confirmPayment()" class="flex-1 py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Confirmar</button>
+                <button onclick="eliminateWinner()" class="px-6 py-4 glass-panel rounded-2xl text-[9px] font-black uppercase text-zinc-500">Eliminar</button>
+            </div>
         </div>
-      </div>
+
+        <section class="glass-panel p-6 rounded-[2.5rem] space-y-4 reveal-node" style="animation-delay: 0.1s">
+            <div class="flex justify-between items-center px-2">
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Participantes</h3>
+                <span class="text-[8px] font-black text-zinc-700" id="player-count">4 SOCIOS</span>
+            </div>
+            <div id="players-container" class="flex flex-wrap gap-2"></div>
+        </section>
+
+        <button id="spin-btn" class="spin-btn w-full py-6 rounded-2xl reveal-node" style="animation-delay: 0.2s" onclick="spinWheel()">
+            <span class="flex items-center justify-center gap-3">
+                <span class="material-icons-round">bolt</span>
+                EJECUTAR GIRO
+            </span>
+        </button>
+
     </div>
 
-    <!-- Spin stats -->
-    <div class="flex gap-4 mt-4 text-center">
-      <div>
-        <p class="text-lg font-bold" style="color:var(--cyan)" id="spin-count">0</p>
-        <p class="text-xs opacity-40">Giros</p>
-      </div>
-      <div class="w-px bg-white/10"></div>
-      <div>
-        <p class="text-lg font-bold text-white" id="last-winner">—</p>
-        <p class="text-xs opacity-40">Último</p>
-      </div>
-      <div class="w-px bg-white/10"></div>
-      <div>
-        <p class="text-lg font-bold" style="color:var(--orange)" id="group-total">84,20 €</p>
-        <p class="text-xs opacity-40">En juego</p>
-      </div>
+    <div id="add-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-6">
+        <div class="glass-panel p-8 w-full max-w-xs rounded-[2.5rem] space-y-6">
+            <h3 class="text-sm font-black uppercase tracking-widest">Inyectar Socio</h3>
+            <input id="new-player-input" type="text" placeholder="NOMBRE..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xs font-bold text-white outline-none focus:border-[#13ecd6]/40 transition-all">
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-4 text-[9px] font-black uppercase text-zinc-600">Cancelar</button>
+                <button onclick="addPlayerFromModal()" class="flex-1 py-4 bg-[#13ecd6] text-black rounded-xl text-[9px] font-black uppercase">Añadir</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Result banner (hidden initially) -->
-  <div id="result-banner" class="hidden p-5 text-center">
-    <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">¡RESULTADO!</p>
-    <p class="text-2xl font-extrabold" id="result-name" style="color:var(--cyan)">—</p>
-    <p class="text-sm opacity-60 mt-1" id="result-sub">paga la cuenta de esta noche</p>
-    <div class="flex justify-center gap-3 mt-4">
-      <button onclick="confirmPayment()" class="px-5 py-2 rounded-full font-bold text-sm" style="background:var(--cyan);color:#0a0a0a">
-        Confirmar Pago
-      </button>
-      <button onclick="eliminateWinner()" class="px-5 py-2 rounded-full font-bold text-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15)">
-        Eliminar
-      </button>
-    </div>
-  </div>
+    <script>
+        const COLORS = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#3b82f6'];
+        let players = [
+            {name:'Commander', color:'#13ecd6', active:true},
+            {name:'Mario', color:'#a855f7', active:true},
+            {name:'Elena', color:'#FF9D42', active:true},
+            {name:'Sofia', color:'#ec4899', active:true}
+        ];
+        let currentAngle = 0;
+        let isSpinning = false;
+        let lastWinner = null;
 
-  <!-- Players list -->
-  <div class="glass p-5 space-y-3">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-sm">Participantes</h3>
-      <span class="text-xs opacity-40" id="player-count">4 jugadores</span>
-    </div>
-    <div id="players-container" class="flex flex-wrap gap-2">
-      <!-- Players rendered by JS -->
-    </div>
-  </div>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
 
-  <!-- Spin button -->
-  <button id="spin-btn" class="w-full py-5" onclick="spinWheel()">
-    <span class="flex items-center justify-center gap-2">
-      <span class="material-icons-round">casino</span>
-      ¡GIRAR RULETA!
-    </span>
-  </button>
+        function drawWheel(angle = 0) {
+            const active = players.filter(p => p.active);
+            if (!active.length) return;
+            ctx.clearRect(0,0,300,300);
+            const slice = (Math.PI*2)/active.length;
+            
+            active.forEach((p, i) => {
+                const start = angle + i * slice;
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 145, start, start + slice);
+                ctx.fillStyle = p.color + '15';
+                ctx.fill();
+                ctx.strokeStyle = p.color + '40';
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
-  <!-- History -->
-  <div class="glass p-5">
-    <h3 class="font-bold text-sm mb-4">Historial de la Sesión</h3>
-    <div id="history-list" class="space-y-2">
-      <p class="text-xs opacity-30 text-center py-2">Sin giros aún</p>
-    </div>
-  </div>
+                // Dots de perímetro
+                ctx.beginPath();
+                ctx.arc(150 + Math.cos(start + slice/2)*130, 150 + Math.sin(start + slice/2)*130, 3, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
 
-</main>
-
-<!-- Bottom Nav -->
-<nav class="bottom-nav fixed bottom-0 left-0 right-0 flex justify-around items-center px-4 py-3 pb-6">
-  <button onclick="SGRouter.navigate('dashboard')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">home</span>
-    <span class="text-[10px]">Inicio</span>
-  </button>
-  <button onclick="SGRouter.navigate('groups')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">group</span>
-    <span class="text-[10px]">Grupos</span>
-  </button>
-  <button class="flex flex-col items-center gap-1" style="color:var(--cyan)">
-    <span class="material-icons-round text-xl">casino</span>
-    <span class="text-[10px]">Juegos</span>
-  </button>
-  <button onclick="SGRouter.navigate('vault')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">account_balance_wallet</span>
-    <span class="text-[10px]">Bóveda</span>
-  </button>
-  <button onclick="SGRouter.navigate('profile')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">person</span>
-    <span class="text-[10px]">Perfil</span>
-  </button>
-</nav>
-
-<!-- Add Player Modal -->
-<div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
-  <div class="glass p-6 mx-4 w-full max-w-sm">
-    <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
-    <input id="new-player-input" type="text" placeholder="Nombre del jugador" class="w-full px-4 py-3 rounded-xl font-medium text-white" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1)"/>
-    <div class="flex gap-3 mt-4">
-      <button onclick="closeModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:rgba(255,255,255,0.07)">Cancelar</button>
-      <button onclick="addPlayerFromModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:var(--cyan);color:#0a0a0a">Añadir</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
-const COLORS = [
-  '#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e',
-  '#f59e0b','#ef4444','#8b5cf6','#06b6d4'
-];
-
-let players = [
-  {name:'Commander', color:'#13ecd6', active:true},
-  {name:'Mario', color:'#a855f7', active:true},
-  {name:'Elena', color:'#FF9D42', active:true},
-  {name:'Sofia', color:'#ec4899', active:true},
-];
-
-let currentAngle = 0;
-let spinCount = 0;
-let isSpinning = false;
-let lastWinner = null;
-let history = [];
-
-// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
-const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const SIZE = 300;
-canvas.width = SIZE;
-canvas.height = SIZE;
-
-function getActivePlayers() { return players.filter(p => p.active); }
-
-function drawWheel(angle = 0) {
-  const active = getActivePlayers();
-  if (active.length === 0) return;
-  ctx.clearRect(0, 0, SIZE, SIZE);
-  const cx = SIZE/2, cy = SIZE/2, r = SIZE/2 - 4;
-  const slice = (Math.PI * 2) / active.length;
-
-  active.forEach((p, i) => {
-    const start = angle + i * slice;
-    const end = start + slice;
-
-    // Segment
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-
-    // Gradient fill
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    grad.addColorStop(0, p.color + '33');
-    grad.addColorStop(0.5, p.color + '22');
-    grad.addColorStop(1, p.color + '44');
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Highlight arc (rim)
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, start, end);
-    ctx.strokeStyle = p.color + '88';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Text
-    ctx.save();
-    const midAngle = start + slice / 2;
-    const tx = cx + Math.cos(midAngle) * (r * 0.68);
-    const ty = cy + Math.sin(midAngle) * (r * 0.68);
-    ctx.translate(tx, ty);
-    ctx.rotate(midAngle + Math.PI/2);
-    ctx.fillStyle = p.color;
-    ctx.font = 'bold 12px Manrope, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur = 8;
-    ctx.fillText(p.name.length > 8 ? p.name.substring(0,7)+'…' : p.name, 0, 0);
-    ctx.restore();
-
-    // Dots near rim
-    ctx.beginPath();
-    const dotR = r - 10;
-    const dotAngle = start + slice/2;
-    ctx.arc(cx + Math.cos(dotAngle)*dotR, cy + Math.sin(dotAngle)*dotR, 4, 0, Math.PI*2);
-    ctx.fillStyle = p.color;
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur = 12;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  });
-
-  // Outer ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.3)';
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  // Inner ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.5)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-}
-
-// ─── SPIN LOGIC ──────────────────────────────────────────────────────────────
-function spinWheel() {
-  const active = getActivePlayers();
-  if (active.length < 2) { SGRouter.showToast('Añade al menos 2 jugadores', 'warning'); return; }
-  if (isSpinning) return;
-
-  isSpinning = true;
-  document.getElementById('spin-btn').disabled = true;
-  document.getElementById('result-banner').classList.add('hidden');
-  canvas.classList.add('spinning');
-
-  // Pick random winner
-  const winnerIdx = Math.floor(Math.random() * active.length);
-  const slice = (Math.PI * 2) / active.length;
-
-  // Target angle: winner segment center at top (pointer = -π/2)
-  const targetSliceCenter = winnerIdx * slice + slice/2;
-  const spins = 5 + Math.random() * 3; // 5-8 full rotations
-  const totalAngle = spins * Math.PI * 2 + (- Math.PI/2 - targetSliceCenter - currentAngle);
-  const finalAngle = currentAngle + totalAngle;
-
-  const duration = 4000 + Math.random() * 1500;
-  const start = performance.now();
-  const startAngle = currentAngle;
-
-  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
-
-  function animate(now) {
-    const elapsed = now - start;
-    const t = Math.min(elapsed / duration, 1);
-    currentAngle = startAngle + totalAngle * easeOut(t);
-    drawWheel(currentAngle);
-
-    if (t < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      currentAngle = finalAngle % (Math.PI * 2);
-      isSpinning = false;
-      canvas.classList.remove('spinning');
-      document.getElementById('spin-btn').disabled = false;
-      showResult(active[winnerIdx]);
-    }
-  }
-  requestAnimationFrame(animate);
-}
-
-function showResult(winner) {
-  spinCount++;
-  lastWinner = winner.name;
-  document.getElementById('spin-count').textContent = spinCount;
-  document.getElementById('last-winner').textContent = winner.name;
-
-  const banner = document.getElementById('result-banner');
-  document.getElementById('result-name').textContent = '🎯 ' + winner.name;
-  document.getElementById('result-name').style.color = winner.color;
-  document.getElementById('result-sub').textContent = 'paga la cuenta de esta noche';
-  banner.classList.remove('hidden');
-
-  // Add to history
-  const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-  history.unshift({name: winner.name, color: winner.color, time});
-  renderHistory();
-
-  // Confetti!
-  launchConfetti(winner.color);
-
-  SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
-}
-
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  if (history.length === 0) {
-    list.innerHTML = '<p class="text-xs opacity-30 text-center py-2">Sin giros aún</p>';
-    return;
-  }
-  list.innerHTML = history.slice(0,5).map((h,i) => `
-    <div class="flex items-center justify-between py-2 ${i>0?'border-t border-white/5':''}">
-      <div class="flex items-center gap-3">
-        <div class="w-2 h-2 rounded-full" style="background:${h.color}"></div>
-        <span class="text-sm font-semibold">${h.name}</span>
-      </div>
-      <span class="text-xs opacity-40">${h.time}</span>
-    </div>`).join('');
-}
-
-function confirmPayment() {
-  if (!lastWinner) return;
-  SGRouter.showToast(`Pago confirmado para ${lastWinner} ✓`, 'success');
-  document.getElementById('result-banner').classList.add('hidden');
-  setTimeout(() => SGRouter.navigate('split', 'game-roulette'), 1200);
-}
-
-function eliminateWinner() {
-  if (!lastWinner) return;
-  const p = players.find(pl => pl.name === lastWinner);
-  if (p) p.active = false;
-  renderPlayers();
-  drawWheel(currentAngle);
-  document.getElementById('result-banner').classList.add('hidden');
-  SGRouter.showToast(`${lastWinner} eliminado de la ruleta`, 'info');
-  updatePlayerCount();
-}
-
-// ─── PLAYERS ─────────────────────────────────────────────────────────────────
-function renderPlayers() {
-  const container = document.getElementById('players-container');
-  container.innerHTML = players.map((p, i) => `
-    <div class="player-chip ${p.active?'active':''}" onclick="togglePlayer(${i})">
-      <div class="dot" style="background:${p.color}"></div>
-      <span>${p.name}</span>
-      ${!p.active ? '<span style="opacity:0.4;font-size:10px">OFF</span>' : ''}
-    </div>`).join('');
-  updatePlayerCount();
-}
-
-function togglePlayer(idx) {
-  if (isSpinning) return;
-  const active = getActivePlayers();
-  if (active.length <= 2 && players[idx].active) {
-    SGRouter.showToast('Mínimo 2 jugadores', 'warning');
-    return;
-  }
-  players[idx].active = !players[idx].active;
-  renderPlayers();
-  drawWheel(currentAngle);
-}
-
-function updatePlayerCount() {
-  const n = getActivePlayers().length;
-  document.getElementById('player-count').textContent = `${n} jugador${n!==1?'es':''}`;
-}
-
-// ─── MODAL ───────────────────────────────────────────────────────────────────
-document.getElementById('add-player-btn').addEventListener('click', () => {
-  document.getElementById('add-modal').style.display = 'flex';
-});
-function closeModal() {
-  document.getElementById('add-modal').style.display = 'none';
-  document.getElementById('new-player-input').value = '';
-}
-function addPlayerFromModal() {
-  const name = document.getElementById('new-player-input').value.trim();
-  if (!name) return;
-  const color = COLORS[players.length % COLORS.length];
-  players.push({name, color, active:true});
-  renderPlayers();
-  drawWheel(currentAngle);
-  closeModal();
-  SGRouter.showToast(`${name} añadido`, 'success');
-}
-document.getElementById('new-player-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addPlayerFromModal();
-});
-
-// ─── CONFETTI ────────────────────────────────────────────────────────────────
-function launchConfetti(color) {
-  for (let i = 0; i < 40; i++) {
-    const p = document.createElement('div');
-    p.className = 'confetti-piece';
-    p.style.cssText = `
-      left:${Math.random()*100}vw;
-      background:${Math.random()>0.5?color:COLORS[Math.floor(Math.random()*COLORS.length)]};
-      width:${6+Math.random()*10}px;
-      height:${6+Math.random()*10}px;
-      animation-duration:${1.5+Math.random()*2}s;
-      animation-delay:${Math.random()*0.5}s;
-      border-radius:${Math.random()>0.5?'50%':'2px'};
-    `;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 4000);
-  }
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-renderPlayers();
-drawWheel(0);
-</script>
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
+                // Texto
+                ctx.save();
+                ctx.translate(150 + Math.cos(start + slice/2)*90, 150 + Math.sin(start + slice/2)*90);
+                ctx.rotate(start + slice/2 + Math.PI/2);
+                ctx.fillStyle = p.color;
+                ctx.font = '900 10px Space Grotesk';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.name.toUpperCase(), 0, 0);
+                ctx.restore();
             });
-        });
-    }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const active = players.filter(p => p.active);
+            const winnerIdx = Math.floor(Math.random() * active.length);
+            const slice = (Math.PI*2)/active.length;
+            const targetAngle = (Math.PI*2*8) + (Math.PI*1.5 - (winnerIdx*slice + slice/2));
+            
+            const startTime = performance.now();
+            const duration = 5000;
+
+            function animate(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - t, 4);
+                drawWheel(targetAngle * ease);
+
+                if (t < 1) requestAnimationFrame(animate);
+                else {
+                    isSpinning = false;
+                    lastWinner = active[winnerIdx].name;
+                    showResult(active[winnerIdx]);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function showResult(winner) {
+            document.getElementById('result-name').innerText = winner.name.toUpperCase();
+            document.getElementById('result-banner').classList.remove('hidden');
+            document.getElementById('last-winner').innerText = winner.name;
+            SGRouter.showToast(`OBJETIVO: ${winner.name}`, 'premium');
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('players-container');
+            container.innerHTML = players.map((p, i) => `
+                <div class="player-chip ${p.active?'active':''}" onclick="togglePlayer(${i})">
+                    ${p.name}
+                </div>
+            `).join('');
+            document.getElementById('player-count').innerText = `${players.filter(p=>p.active).length} SOCIOS`;
+        }
+
+        function togglePlayer(i) {
+            if (isSpinning) return;
+            players[i].active = !players[i].active;
+            renderPlayers(); drawWheel(0);
+        }
+
+        function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
+        function addPlayerFromModal() {
+            const name = document.getElementById('new-player-input').value;
+            if (name) players.push({name, color: COLORS[players.length % COLORS.length], active: true});
+            renderPlayers(); drawWheel(0); closeModal();
+        }
+
+        renderPlayers(); drawWheel(0);
     </script>
 
-    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
@@ -658,11 +268,11 @@ drawWheel(0);
                 <span class="material-icons-round">casino</span>
                 <p>Juegos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('vault')">
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
                 <span class="material-icons-round">auto_stories</span>
                 <p>Bóveda</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
