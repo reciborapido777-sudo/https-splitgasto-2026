@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>Actividad | SplitGasto 2026</title>
+    <title>Movimientos Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        /* Estilos específicos de Actividad que no están en global.css */
-        .filter-btn { transition: all 0.3s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
-        .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
+        .filter-btn { transition: all 0.3s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
+        .filter-btn.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         
         .tx-row { transition: var(--transition-alpha); cursor: pointer; }
-        .tx-row:hover { background: rgba(255,255,255,0.04); transform: translateX(4px); }
+        .tx-row:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
         .hidden-tx { display: none !important; }
 
-        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
@@ -29,112 +28,92 @@
     <script src="engine/router.js"></script>
 </head>
 <body class="app-shell">
-<div class="app-frame">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
+<div class="app-frame flex flex-col h-full">
 
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
-            <div class="flex items-center gap-4">
-                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
-                </button>
-                <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Audit Log</p>
-                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Movimientos</h1>
-                </div>
-            </div>
-            <button onclick="SGRouter.navigate('dashboard')" class="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 hover:bg-white/10 active:scale-95 transition-all">
-                <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Mando</span>
+    <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
             </button>
-        </header>
+            <div class="text-left">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Audit Log · v2.0</p>
+                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Movimientos</h1>
+            </div>
+        </div>
+        <button onclick="SGRouter.navigate('dashboard')" class="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 hover:bg-white/10 active:scale-95 transition-all border-white/5">
+            <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
+            <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Mando</span>
+        </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto px-6 py-4 space-y-6 pb-28">
 
         <section class="glass-panel p-6 rounded-[2.5rem] border-[#a855f7]/10 reveal-node">
             <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-1">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Gasto Total</p>
-                    <p class="text-2xl font-black money-display text-white">840,36€</p>
-                    <p class="text-[9px] text-[#FF9D42] font-black uppercase">+8% vs Feb</p>
+                    <p class="text-2xl font-black font-['Space_Grotesk'] text-white">840,36€</p>
+                    <p class="text-[9px] text-[#FF9D42] font-black uppercase tracking-tighter">+8% vs Periodo Anterior</p>
                 </div>
-                <div class="space-y-1">
+                <div class="space-y-1 border-l border-white/5 pl-6">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Pendientes</p>
-                    <p class="text-2xl font-black money-display text-[#FF9D42]">3</p>
-                    <p class="text-[9px] text-zinc-600 font-black uppercase">Acción requerida</p>
+                    <p class="text-2xl font-black font-['Space_Grotesk'] text-[#FF9D42]">3</p>
+                    <p class="text-[9px] text-zinc-600 font-black uppercase tracking-tighter text-glow-orange">Acción Requerida</p>
                 </div>
             </div>
         </section>
 
         <nav class="flex gap-2 overflow-x-auto no-scrollbar py-1 reveal-node" style="animation-delay:0.1s">
             <button class="filter-btn active px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest flex-shrink-0" onclick="filterTx('all', this)">Todos</button>
-            <button class="filter-btn glass-panel px-6 py-3 rounded-xl text-zinc-500 text-[9px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white" onclick="filterTx('income', this)">A cobrar</button>
-            <button class="filter-btn glass-panel px-6 py-3 rounded-xl text-zinc-500 text-[9px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white" onclick="filterTx('expense', this)">A pagar</button>
+            <button class="filter-btn glass-panel px-6 py-3 rounded-xl text-zinc-500 text-[9px] font-black uppercase tracking-widest flex-shrink-0" onclick="filterTx('income', this)">A Cobrar</button>
+            <button class="filter-btn glass-panel px-6 py-3 rounded-xl text-zinc-500 text-[9px] font-black uppercase tracking-widest flex-shrink-0" onclick="filterTx('expense', this)">A Pagar</button>
         </nav>
 
-        <main class="space-y-8">
+        <div class="space-y-8">
             <div class="space-y-3">
                 <div class="flex items-center gap-4 px-2 reveal-node" style="animation-delay:0.15s">
                     <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] flex-shrink-0">Hoy — 14 Mar 2026</p>
                     <div class="h-px flex-1 bg-white/5"></div>
                 </div>
                 
-                <div class="tx-row income settled glass-panel p-4 rounded-3xl flex items-center justify-between reveal-node" style="animation-delay:0.2s" onclick="SGRouter.navigate('receipt')">
+                <div class="tx-row income glass-panel p-5 rounded-[2rem] flex items-center justify-between reveal-node" style="animation-delay:0.2s" onclick="SGRouter.navigate('receipt')">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div class="size-11 rounded-xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0">
+                        <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0 shadow-[0_0_15px_rgba(19,236,214,0.05)]">
                             <span class="material-icons-round text-[#13ecd6] text-lg">restaurant</span>
                         </div>
                         <div class="truncate">
-                            <h4 class="text-sm font-bold truncate">Sushi Kyoto Central</h4>
+                            <h4 class="text-xs font-black uppercase italic tracking-tight truncate text-white">Sushi Kyoto Central</h4>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="status-pill bg-[#13ecd6]/20 text-[#13ecd6]">Auditado</span>
-                                <p class="text-[8px] text-zinc-600 font-bold uppercase tracking-tight">Mario</p>
+                                <span class="status-pill bg-[#13ecd6]/10 text-[#13ecd6] border border-[#13ecd6]/20">Auditado</span>
+                                <p class="text-[8px] text-zinc-500 font-black uppercase">Mario</p>
                             </div>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-lg font-black money-display text-[#13ecd6]">+7,50€</p>
+                        <p class="text-lg font-black font-['Space_Grotesk'] text-[#13ecd6]">+7,50€</p>
                     </div>
                 </div>
 
-                <div class="tx-row expense pending glass-panel p-4 rounded-3xl flex items-center justify-between reveal-node" style="animation-delay:0.25s" onclick="SGRouter.navigate('groups')">
+                <div class="tx-row expense glass-panel p-5 rounded-[2rem] flex items-center justify-between reveal-node" style="animation-delay:0.25s" onclick="SGRouter.navigate('groups')">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div class="size-11 rounded-xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0">
+                        <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 shadow-[0_0_15px_rgba(255,157,66,0.05)]">
                             <span class="material-icons-round text-[#FF9D42] text-lg">bolt</span>
                         </div>
                         <div class="truncate">
-                            <h4 class="text-sm font-bold truncate">Electricidad Piso</h4>
+                            <h4 class="text-xs font-black uppercase italic tracking-tight truncate text-white">Electricidad Piso</h4>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="status-pill bg-[#FF9D42]/20 text-[#FF9D42]">Pendiente</span>
-                                <p class="text-[8px] text-zinc-600 font-bold uppercase tracking-tight">Elena</p>
+                                <span class="status-pill bg-[#FF9D42]/10 text-[#FF9D42] border border-[#FF9D42]/20">Pendiente</span>
+                                <p class="text-[8px] text-zinc-500 font-black uppercase">Elena</p>
                             </div>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-lg font-black money-display text-[#FF9D42]">-84,16€</p>
+                        <p class="text-lg font-black font-['Space_Grotesk'] text-[#FF9D42]">-84,16€</p>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
-
-    <script>
-        function filterTx(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('active');
-                b.classList.add('glass-panel');
-                b.classList.add('text-zinc-500');
-            });
-            btn.classList.add('active');
-            btn.classList.remove('glass-panel');
-            btn.classList.remove('text-zinc-500');
-
-            document.querySelectorAll('.tx-row').forEach(row => {
-                if (type === 'all') {
-                    row.classList.remove('hidden-tx');
-                } else {
-                    row.classList.toggle('hidden-tx', !row.classList.contains(type));
-                }
-            });
-        }
-    </script>
+        </div>
+    </main>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
@@ -146,13 +125,13 @@
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item active">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
@@ -161,5 +140,24 @@
         </div>
     </nav>
 </div>
+
+<script>
+    function filterTx(type, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'bg-white', 'text-black');
+            b.classList.add('glass-panel', 'text-zinc-500');
+        });
+        btn.classList.add('active', 'bg-white', 'text-black');
+        btn.classList.remove('glass-panel', 'text-zinc-500');
+
+        document.querySelectorAll('.tx-row').forEach(row => {
+            if (type === 'all') {
+                row.classList.remove('hidden-tx');
+            } else {
+                row.classList.toggle('hidden-tx', !row.classList.contains(type));
+            }
+        });
+    }
+</script>
 </body>
 </html>
