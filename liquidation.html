@@ -1,279 +1,210 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#000 !important;overflow-x:hidden">
+<html lang="es" class="app-shell" style="background-color:#000 !important">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Liquidar Deuda | SplitGasto 2026</title>
-<link rel="stylesheet" href="engine/global.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
-html,body{background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0;overflow-x:hidden;min-height:100vh;box-sizing:border-box}
-.glass-panel{background:rgba(255,255,255,0.02);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.05);transition:all .5s cubic-bezier(.16,1,.3,1);transform:translateZ(0)}
-.money-display{font-family:'Space Grotesk',sans-serif;padding-right:.55em !important;display:inline-block;white-space:nowrap}
-.pay-method{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:1.5rem;padding:1.2rem 1.5rem;cursor:pointer;transition:all .3s}
-.pay-method.selected,.pay-method:hover{border-color:rgba(19,236,214,.4);background:rgba(19,236,214,.05)}
-.pay-method.selected .method-icon{color:#13ecd6}
-.amount-display{font-size:clamp(3rem,12vw,5rem);font-weight:900;font-family:'Space Grotesk',sans-serif;background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-right:.3em}
-.reveal-node{animation:revealUp .8s cubic-bezier(.16,1,.3,1) forwards;opacity:0}
-@keyframes revealUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.debt-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,0.05)}
-.debt-row:last-child{border-bottom:none}
-
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Liquidar Deuda | SplitGasto 2026</title>
+    
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
+        
+        body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow-x:hidden; }
+        
+        .amount-display {
+            font-size: clamp(3.5rem, 12vw, 5rem);
+            font-weight: 900;
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, var(--cian-tech), #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
         }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
+
+        .pay-method {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            transition: var(--transition-alpha);
+            cursor: pointer;
         }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        .pay-method.selected {
+            border-color: var(--cian-tech);
+            background: rgba(19, 236, 214, 0.05);
+            box-shadow: 0 0 30px rgba(19, 236, 214, 0.05);
+        }
+
+        .debt-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .shutter-btn {
+            background: #fff; color: #000;
+            font-family: 'Space Grotesk'; font-weight: 900;
+            letter-spacing: 0.4em; transition: var(--transition-alpha);
+        }
+        .shutter-btn:active { transform: scale(0.96); background: var(--cian-tech); }
+    </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
+<body class="app-shell pb-32">
 <div class="app-frame">
-<div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+    <div class="max-w-2xl mx-auto px-6 py-8 space-y-10">
 
-  <!-- Header -->
-  <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
-    <div class="flex items-center gap-5">
-      <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-        <span class="material-icons-round text-zinc-500">arrow_back</span>
-      </button>
-      <div>
-        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Operación Táctica</p>
-        <h1 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Liquidar</h1>
-      </div>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+            <div class="flex items-center gap-5">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                </button>
+                <div>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo de Cierre</p>
+                    <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Liquidar Deuda</h1>
+                </div>
+            </div>
+            <div class="px-4 py-2 bg-[#13ecd6]/10 border border-[#13ecd6]/20 rounded-full">
+                <p class="text-[7px] font-black text-[#13ecd6] uppercase tracking-widest animate-pulse">Secure Tx Active</p>
+            </div>
+        </header>
+
+        <section class="glass-panel p-10 rounded-[3.5rem] text-center space-y-4 reveal-node">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#13ecd6]/5 to-transparent pointer-events-none"></div>
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.6em]">Total a Transferir</p>
+            <div class="amount-display">84,50€</div>
+            <div class="flex flex-col items-center gap-2">
+                <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Destinatario</p>
+                <div class="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=MG&backgroundColor=050505" class="size-6 rounded-lg">
+                    <span class="text-xs font-black uppercase italic">Mario García</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel p-8 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:0.1s">
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-4">Auditoría de Conceptos</p>
+            <div class="debt-row">
+                <div class="flex items-center gap-4">
+                    <span class="material-icons-round text-[#a855f7] text-lg">restaurant</span>
+                    <p class="text-[10px] font-black uppercase tracking-tight text-zinc-300">Sushi Kyoto Pro</p>
+                </div>
+                <p class="text-sm font-black font-['Space_Grotesk'] text-white">42,30€</p>
+            </div>
+            <div class="debt-row">
+                <div class="flex items-center gap-4">
+                    <span class="material-icons-round text-[#13ecd6] text-lg">shopping_cart</span>
+                    <p class="text-[10px] font-black uppercase tracking-tight text-zinc-300">Compra Semanal</p>
+                </div>
+                <p class="text-sm font-black font-['Space_Grotesk'] text-white">30,20€</p>
+            </div>
+            <div class="debt-row border-none">
+                <div class="flex items-center gap-4">
+                    <span class="material-icons-round text-zinc-600 text-lg">local_taxi</span>
+                    <p class="text-[10px] font-black uppercase tracking-tight text-zinc-300">Uber Vuelta</p>
+                </div>
+                <p class="text-sm font-black font-['Space_Grotesk'] text-white">12,00€</p>
+            </div>
+        </section>
+
+        <section class="space-y-5 reveal-node" style="animation-delay:0.2s">
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Pasarela de Pago</p>
+            <div class="grid gap-3">
+                <div class="pay-method selected p-6 flex items-center justify-between group" onclick="selectMethod(this)">
+                    <div class="flex items-center gap-5">
+                        <span class="material-icons-round text-2xl text-[#13ecd6]">account_balance</span>
+                        <div>
+                            <p class="text-xs font-black uppercase italic text-white tracking-wider">Transferencia Alpha</p>
+                            <p class="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Instantánea · Sin Fee</p>
+                        </div>
+                    </div>
+                    <div class="size-6 rounded-full border-2 border-[#13ecd6] flex items-center justify-center">
+                        <div class="size-3 bg-[#13ecd6] rounded-full"></div>
+                    </div>
+                </div>
+                <div class="pay-method p-6 flex items-center justify-between group" onclick="selectMethod(this)">
+                    <div class="flex items-center gap-5">
+                        <span class="material-icons-round text-2xl text-zinc-600">contactless</span>
+                        <div>
+                            <p class="text-xs font-black uppercase italic text-zinc-400 tracking-wider">NFC Alpha</p>
+                            <p class="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mt-1">Pago por Proximidad</p>
+                        </div>
+                    </div>
+                    <div class="size-6 rounded-full border-2 border-zinc-800"></div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="space-y-4 reveal-node" style="animation-delay:0.3s">
+            <button id="confirmBtn" onclick="executeLiquidation()" class="shutter-btn w-full py-7 rounded-[2.5rem] text-xs uppercase italic shadow-[0_20px_40px_rgba(255,255,255,0.05)]">
+                Confirmar Pago
+            </button>
+            <button onclick="SGRouter.back()" class="w-full py-5 text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] hover:text-white transition-colors">
+                Cancelar Operación
+            </button>
+        </footer>
+
     </div>
-    <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Transferencia Segura</span>
-  </header>
 
-  <!-- Resumen de deuda -->
-  <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#13ecd6]/10 text-center space-y-6 reveal-node relative overflow-hidden">
-    <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
-    <div>
-      <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
-      <div class="amount-display">84,50€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span class="text-white">Mario García</span></p>
-    </div>
-    <div class="flex justify-center gap-3">
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Sushi Kyoto Pro</span>
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Compra Semanal</span>
-    </div>
-  </section>
-
-  <!-- Desglose de la deuda -->
-  <section class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
-    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3">Desglose</p>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-[#a855f7] text-sm">restaurant</span>
-        <p class="text-xs font-black uppercase">Sushi Kyoto Pro</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">42,30€</p>
-    </div>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-[#13ecd6] text-sm">shopping_cart</span>
-        <p class="text-xs font-black uppercase">Compra Semanal</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">30,20€</p>
-    </div>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-zinc-600 text-sm">local_taxi</span>
-        <p class="text-xs font-black uppercase">Uber Vuelta</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">12,00€</p>
-    </div>
-    <div class="flex justify-between items-center pt-4 border-t border-white/10">
-      <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total</p>
-      <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">84,50€</p>
-    </div>
-  </section>
-
-  <!-- Método de pago -->
-  <section class="space-y-4 reveal-node" style="animation-delay:.1s">
-    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Método de Pago</p>
-    <div class="space-y-3">
-      <div class="pay-method selected flex items-center gap-4" onclick="selectMethod(this)">
-        <span class="material-icons-round method-icon text-[#13ecd6] text-2xl">account_balance</span>
-        <div class="flex-1">
-          <p class="text-sm font-black uppercase">Transferencia Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Instantánea · Sin comisiones</p>
-        </div>
-        <span class="size-5 rounded-full border-2 border-[#13ecd6] flex items-center justify-center">
-          <span class="size-2.5 bg-[#13ecd6] rounded-full"></span>
-        </span>
-      </div>
-      <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
-        <span class="material-icons-round method-icon text-zinc-500 text-2xl">contactless</span>
-        <div class="flex-1">
-          <p class="text-sm font-black uppercase">NFC · Pago Contactless</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Requiere cercanía física</p>
-        </div>
-        <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
-      </div>
-      <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
-        <span class="material-icons-round method-icon text-zinc-500 text-2xl">qr_code</span>
-        <div class="flex-1">
-          <p class="text-sm font-black uppercase">QR Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Genera código para compartir</p>
-        </div>
-        <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Nota opcional -->
-  <section class="reveal-node" style="animation-delay:.15s">
-    <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
-      <span class="material-icons-round text-zinc-600">edit_note</span>
-      <input type="text" placeholder="Añadir nota opcional..." 
-        class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700 uppercase tracking-wider">
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div class="space-y-3 reveal-node" style="animation-delay:.2s">
-    <button onclick="executeLiquidation()" 
-      class="w-full py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
-      Confirmar Liquidación
-    </button>
-    <button onclick="SGRouter.back()" 
-      class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-      Cancelar
-    </button>
-  </div>
-
-</div>
-
-<script>
-function selectMethod(el) {
-  document.querySelectorAll('.pay-method').forEach(m => {
-    m.classList.remove('selected');
-    m.querySelector('.size-5').innerHTML = '';
-    m.querySelector('.size-5').className = 'size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center';
-    m.querySelector('.method-icon').classList.add('text-zinc-500');
-    m.querySelector('.method-icon').classList.remove('text-[#13ecd6]');
-  });
-  el.classList.add('selected');
-  const dot = el.querySelector('.size-5');
-  dot.className = 'size-5 rounded-full border-2 border-[#13ecd6] flex items-center justify-center';
-  dot.innerHTML = '<span class="size-2.5 bg-[#13ecd6] rounded-full"></span>';
-  const icon = el.querySelector('.method-icon');
-  icon.classList.remove('text-zinc-500');
-  icon.classList.add('text-[#13ecd6]');
-}
-
-function executeLiquidation() {
-  const btn = document.querySelector('button[onclick="executeLiquidation()"]');
-  btn.textContent = 'Procesando...';
-  btn.disabled = true;
-  btn.classList.add('opacity-70');
-  setTimeout(() => SGRouter.navigate('success', 'liquidation'), 1500);
-}
-</script>
-
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item active">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
+
+<script>
+function selectMethod(el) {
+    document.querySelectorAll('.pay-method').forEach(m => {
+        m.classList.remove('selected');
+        const icon = m.querySelector('.material-icons-round');
+        icon.classList.remove('text-[#13ecd6]');
+        icon.classList.add('text-zinc-600');
+        m.querySelector('.size-6').innerHTML = '';
+        m.querySelector('.size-6').classList.replace('border-[#13ecd6]', 'border-zinc-800');
+    });
+    
+    el.classList.add('selected');
+    const activeIcon = el.querySelector('.material-icons-round');
+    activeIcon.classList.remove('text-zinc-600');
+    activeIcon.classList.add('text-[#13ecd6]');
+    
+    const dot = el.querySelector('.size-6');
+    dot.classList.replace('border-zinc-800', 'border-[#13ecd6]');
+    dot.innerHTML = '<div class="size-3 bg-[#13ecd6] rounded-full"></div>';
+}
+
+function executeLiquidation() {
+    const btn = document.getElementById('confirmBtn');
+    btn.textContent = 'AUTORIZANDO...';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    setTimeout(() => {
+        SGRouter.showToast('Pago Autorizado con Éxito', 'success');
+        SGRouter.navigate('success', 'liquidation');
+    }, 1200);
+}
+</script>
 </body>
 </html>
