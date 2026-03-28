@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Evidencia Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -10,207 +10,111 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateZ(0); 
-        }
-
+        /* Contenedor de Evidencia Visual */
         .receipt-image-container {
-            position: relative; height: 380px; border-radius: 3.5rem;
-            overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
-            background: #050505;
-            transform: translateZ(0);
+            position: relative; height: 320px; border-radius: 3rem;
+            overflow: hidden; border: 1px solid var(--glass-border);
+            background: #050505; transform: translateZ(0);
         }
-
         .receipt-image {
-            width: 100%; height: 100%; object-fit: cover; opacity: 0.5;
-            mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.4;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
         }
 
+        /* Animación de Escaneo IA */
         .ocr-scanner-line {
             position: absolute; top: 20%; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent, #13ecd6, transparent);
-            box-shadow: 0 0 20px #13ecd6;
+            background: linear-gradient(to right, transparent, var(--cian-tech), transparent);
+            box-shadow: 0 0 20px var(--cian-tech);
             animation: scanMove 4s infinite ease-in-out; z-index: 20;
-            transform: translateZ(0); /* Aceleración GPU */
         }
-
         @keyframes scanMove {
             0% { top: 10%; opacity: 0; }
             50% { opacity: 1; }
-            100% { top: 70%; opacity: 0; }
+            100% { top: 80%; opacity: 0; }
         }
 
         .item-row {
             border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-            padding: 1.25rem 0.5rem; display: flex;
+            padding: 1rem 0; display: flex;
             justify-content: space-between; align-items: center;
         }
 
-        .money-display { 
-            display: inline-block; 
-            padding-right: 0.55em !important; /* Sincronizado v1.62 */
-            white-space: nowrap; 
-            font-family: 'Space Grotesk', sans-serif;
-        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+    </style>
 
-        .text-gradient-cyan { 
-            background: linear-gradient(135deg, #13ecd6 0%, #10b981 100%); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-        }
-
-        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
+<body class="app-shell">
 <div class="app-frame">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-10">
-        
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-500 text-3xl">arrow_back</span>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50 -mx-4 px-4">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
                 </button>
-                <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Socio Fundador</p>
+                <div>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Audit Evidence</p>
                     <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Evidencia Alpha</h1>
                 </div>
             </div>
-
-            <button onclick="SGRouter.navigate('dashboard', 'receipt')" class="size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all active:scale-95">
-                <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
+            <button onclick="SGRouter.navigate('dashboard')" class="size-12 glass-panel rounded-xl flex items-center justify-center text-[#13ecd6] border-white/5 active:scale-95 transition-all">
+                <span class="material-icons-round text-lg">dashboard</span>
             </button>
         </header>
 
-        <section class="receipt-image-container reveal-node" style="animation-delay: 0.1s">
+        <section class="receipt-image-container reveal-node">
             <div class="ocr-scanner-line"></div>
-            <img src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2000" class="receipt-image">
-            
-            <div class="absolute bottom-10 left-10 right-10 space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Verificado por IA</span>
-                    <p class="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">Hash: 0x8a...42f</p>
+            <img src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1200" class="receipt-image">
+            <div class="absolute bottom-8 left-8 right-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20">Verificado IA</span>
                 </div>
-                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Sushi Kyoto Pro</h2>
+                <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Sushi Kyoto Pro</h2>
             </div>
         </section>
 
-        <section class="glass-panel p-10 md:p-14 rounded-[4rem] border-[#13ecd6]/10 space-y-10 reveal-node" style="animation-delay: 0.2s">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div class="space-y-2">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Importe Reconocido</p>
-                    <h3 class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] text-gradient-cyan money-display italic tracking-tighter">25,56€</h3>
-                </div>
-                <div class="text-left md:text-right space-y-1">
-                    <p class="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Fecha Operativa</p>
-                    <p class="text-lg font-bold font-['Space_Grotesk'] text-white">05 MAR 2026</p>
-                </div>
+        <section class="glass-panel p-8 rounded-[3rem] border-[#13ecd6]/10 space-y-8 reveal-node" style="animation-delay: 0.1s">
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.5em]">Importe Reconocido</p>
+                <h3 class="text-6xl font-black font-['Space_Grotesk'] text-gradient-cyan money-display italic tracking-tighter">25,56€</h3>
             </div>
 
-            <div class="space-y-1 border-t border-white/5 pt-8">
+            <div class="space-y-1 border-t border-white/5 pt-6">
                 <div class="item-row">
-                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest">2x Combo Nigiri Alpha</p>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-white money-display">18,50€</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase">2x Combo Nigiri Alpha</p>
+                    <p class="text-sm font-black font-['Space_Grotesk'] text-white">18,50€</p>
                 </div>
                 <div class="item-row">
-                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest">1x Gyoza Auditoría</p>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-white money-display">7,06€</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase">1x Gyoza Auditoría</p>
+                    <p class="text-sm font-black font-['Space_Grotesk'] text-white">7,06€</p>
                 </div>
             </div>
         </section>
 
-        <footer class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal-node" style="animation-delay: 0.3s">
-            <button onclick="SGRouter.navigate('split', 'receipt')" class="py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
+        <footer class="flex flex-col gap-4 reveal-node" style="animation-delay: 0.2s">
+            <button onclick="SGRouter.navigate('split')" class="w-full py-5 bg-white text-black rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">
                 Ver Reparto Táctico
             </button>
-            <button onclick="SGRouter.back()" class="py-7 glass-panel text-zinc-500 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:text-white transition-all">
+            <button onclick="SGRouter.back()" class="w-full py-5 glass-panel text-zinc-500 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
                 Cerrar Evidencia
             </button>
         </footer>
 
     </div>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
@@ -218,42 +122,16 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
