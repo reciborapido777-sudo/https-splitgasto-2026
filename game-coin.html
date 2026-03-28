@@ -23,11 +23,9 @@
             border: 4px solid rgba(255,255,255,0.08);
             box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3);
         }
-        /* Cara: Cian Tech / Cruz: Púrpura Deep */
         .heads { background: radial-gradient(circle at 30% 30%, #13ecd6 0%, #064e47 100%); color: #000; }
         .tails { background: radial-gradient(circle at 30% 30%, #a855f7 0%, #3b0764 100%); color: #fff; transform: rotateY(180deg); }
         
-        /* Animaciones de Alta Densidad */
         @keyframes flip-heads { 
             0% { transform: rotateY(0) translateY(0); }
             50% { transform: rotateY(900deg) translateY(-150px); }
@@ -52,7 +50,7 @@
     </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell pb-32">
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-4 py-8 space-y-12">
         
@@ -88,7 +86,7 @@
             <button id="flip-btn" onclick="tossCoin()" class="coin-btn w-full py-6 rounded-2xl text-[10px] uppercase">
                 EJECUTAR LANZAMIENTO
             </button>
-            <div class="glass-panel p-4 rounded-xl border-white/5 text-center">
+            <div class="glass-panel p-4 rounded-xl border-white/5 text-center" onclick="SGRouter.navigate('split')">
                 <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
                     <span class="text-[#13ecd6]">Cara: Paga Socio A</span> • <span class="text-[#a855f7]">Cruz: Paga Socio B</span>
                 </p>
@@ -96,18 +94,36 @@
         </div>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Mando</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('activity')">
+                <span class="material-icons-round">receipt_long</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Gastos</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+                <span class="material-icons-round text-[#13ecd6]">casino</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1 text-[#13ecd6]">Juegos</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Perfil</p>
+            </button>
+        </div>
+    </nav>
+
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Síntesis de Sonido Metálico (FM Synthesis Lite)
         function playCoinSound() {
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            
             const now = audioCtx.currentTime;
             const masterGain = audioCtx.createGain();
             masterGain.connect(audioCtx.destination);
 
-            // Oscilador de tintineo (Alta frecuencia)
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
@@ -117,7 +133,6 @@
             gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
             osc1.connect(gain1); gain1.connect(masterGain);
 
-            // Armónico metálico
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'triangle';
@@ -138,11 +153,10 @@
             playCoinSound();
             btn.disabled = true;
             label.classList.add('opacity-0');
-            label.classList.remove('scale-100');
-            label.classList.add('scale-150');
+            label.classList.remove('scale-100', 'scale-150');
             
             coin.style.animation = 'none';
-            void coin.offsetWidth; // Force reflow
+            void coin.offsetWidth; 
             
             const isHeads = Math.random() > 0.5;
             coin.classList.remove('flipping-heads', 'flipping-tails');
@@ -154,7 +168,7 @@
             setTimeout(() => {
                 label.innerText = isHeads ? '¡CARA!' : '¡CRUZ!';
                 label.style.color = isHeads ? '#13ecd6' : '#a855f7';
-                label.classList.remove('opacity-0', 'scale-150');
+                label.classList.remove('opacity-0');
                 label.classList.add('scale-100');
                 btn.disabled = false;
                 if(window.SGRouter) SGRouter.showToast(isHeads ? 'RESULTADO: CARA' : 'RESULTADO: CRUZ', 'premium');
