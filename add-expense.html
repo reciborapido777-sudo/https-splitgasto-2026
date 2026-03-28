@@ -1,438 +1,316 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#0a0a0a">
+<html lang="es" class="app-shell" style="background-color:#000">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Añadir Gasto | SplitGasto 2026</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
-<link rel="stylesheet" href="engine/global.css"/>
-<style>
-  :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
-  * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Añadir Gasto | SplitGasto 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="engine/global.css">
 
-  .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
-
-  /* Amount input */
-  #amount-input {
-    background:transparent;
-    border:none;
-    outline:none;
-    color:white;
-    font-size:3.5rem;
-    font-weight:900;
-    text-align:center;
-    width:100%;
-    caret-color:var(--cyan);
-  }
-  #amount-input::placeholder { color:rgba(255,255,255,0.15); }
-
-  /* Category buttons */
-  .cat-btn {
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    padding:10px 14px;
-    border-radius:16px;
-    border:1px solid rgba(255,255,255,0.08);
-    background:rgba(255,255,255,0.04);
-    cursor:pointer;
-    transition:all 0.2s;
-    font-size:0.7rem;
-    font-weight:700;
-    min-width:72px;
-  }
-  .cat-btn.active { border-color:var(--cyan); background:rgba(19,236,214,0.1); color:var(--cyan); }
-  .cat-btn:hover { background:rgba(255,255,255,0.07); }
-
-  /* Form inputs */
-  .sg-input {
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:14px;
-    color:white;
-    padding:14px 16px;
-    width:100%;
-    font-size:0.9rem;
-    font-weight:600;
-    outline:none;
-    transition:border-color 0.2s;
-  }
-  .sg-input:focus { border-color:var(--cyan); }
-  .sg-input::placeholder { color:rgba(255,255,255,0.25); font-weight:400; }
-
-  /* Split toggle */
-  .split-option {
-    flex:1; text-align:center; padding:10px;
-    border-radius:12px;
-    font-size:0.8rem; font-weight:700;
-    cursor:pointer; transition:all 0.2s;
-  }
-  .split-option.active { background:var(--cyan); color:#0a0a0a; }
-  .split-option:not(.active) { color:rgba(255,255,255,0.4); }
-
-  /* Payer avatars */
-  .payer-chip {
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    cursor:pointer; min-width:56px;
-  }
-  .payer-avatar {
-    width:48px; height:48px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:800; font-size:0.85rem;
-    border:2px solid rgba(255,255,255,0.1);
-    transition:all 0.2s;
-  }
-  .payer-chip.selected .payer-avatar { border-color:var(--cyan); box-shadow:0 0 12px rgba(19,236,214,0.4); }
-  .payer-chip.selected .payer-name { color:var(--cyan); }
-  .payer-name { font-size:0.65rem; font-weight:700; opacity:0.6; }
-
-  /* Save button */
-  #save-btn {
-    background:linear-gradient(135deg, var(--cyan), #0fbfaf);
-    color:#0a0a0a; border-radius:50px;
-    font-weight:800; font-size:1rem;
-    box-shadow:0 8px 32px rgba(19,236,214,0.35);
-    transition:all 0.2s;
-  }
-  #save-btn:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(19,236,214,0.5); }
-  #save-btn:active { transform:scale(0.97); }
-  #save-btn:disabled { opacity:0.4; }
-
-  /* Scanner CTA */
-  .scanner-cta {
-    background:linear-gradient(135deg, rgba(19,236,214,0.08), rgba(168,85,247,0.08));
-    border:1px solid rgba(19,236,214,0.2);
-    border-radius:20px;
-    cursor:pointer;
-    transition:all 0.2s;
-  }
-  .scanner-cta:hover { border-color:rgba(19,236,214,0.4); background:rgba(19,236,214,0.12); }
-
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <style>
+        :root { --cian-tech: #13ecd6; --purple-deep: #a855f7; --orange-socio: #FF9D42; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { background: #000; min-height: 100dvh; color: #fff; }
+
+        /* Importe Dinámico */
+        #amount-input {
+            background: transparent; border: none; outline: none;
+            color: white; font-size: 4rem; font-weight: 900;
+            text-align: center; width: 100%; caret-color: var(--cian-tech);
+            font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.05em;
+        }
+        #amount-input::placeholder { color: rgba(255,255,255,0.05); }
+
+        /* Inputs de Precisión */
+        .sg-input {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; color: white; padding: 14px 18px; width: 100%;
+            font-size: 0.9rem; font-weight: 600; outline: none; transition: all 0.3s;
+        }
+        .sg-input:focus { border-color: var(--cian-tech); background: rgba(255,255,255,0.06); }
+        .sg-input::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
+
+        /* Categorías */
+        .cat-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 12px 16px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02);
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.7rem; font-weight: 800; min-width: 85px;
+        }
+        .cat-btn.active { border-color: var(--cian-tech); background: rgba(19, 236, 214, 0.1); color: var(--cian-tech); transform: translateY(-2px); }
+
+        /* Reparto Selector */
+        .split-option {
+            flex: 1; text-align: center; padding: 12px;
+            border-radius: 14px; font-size: 0.75rem; font-weight: 800;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+        }
+        .split-option.active { background: var(--cian-tech); color: #000; box-shadow: 0 4px 15px rgba(19, 236, 214, 0.3); }
+        .split-option:not(.active) { color: rgba(255,255,255,0.3); }
+
+        /* Payer Chip */
+        .payer-chip { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-width: 60px; }
+        .payer-avatar {
+            width: 52px; height: 52px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s; background: rgba(255,255,255,0.03);
+        }
+        .payer-chip.selected .payer-avatar { border-color: var(--cian-tech); box-shadow: 0 0 15px rgba(19, 236, 214, 0.2); transform: scale(1.1); }
+        .payer-name { font-size: 0.65rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; }
+
+        /* Gamificación Button */
+        .btn-luck {
+            background: rgba(168, 85, 247, 0.1); border: 1px dashed rgba(168, 85, 247, 0.4);
+            color: #d8b4fe; font-size: 9px; font-weight: 900; letter-spacing: 0.1em;
+            padding: 8px 16px; border-radius: 50px; transition: all 0.3s;
+        }
+        .btn-luck:active { transform: scale(0.9); background: rgba(168, 85, 247, 0.3); }
+    </style>
+
     <script>
     (function(){
         function applyDesktopFix(){
             if(window.innerWidth < 768) return;
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
-            // Make frame the scroll container
             frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
+            var fixedBottom = frame.querySelectorAll('[class*="fixed bottom"]');
+            fixedBottom.forEach(function(el){ el.style.position = 'sticky'; el.style.bottom = '0'; el.style.width = '100%'; });
+            var fixedTop = frame.querySelectorAll('[class*="fixed top"]');
+            fixedTop.forEach(function(el){ el.style.position = 'sticky'; el.style.top = '0'; el.style.width = '100%'; });
         }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
+        window.addEventListener('load', applyDesktopFix);
         window.addEventListener('resize', applyDesktopFix);
     })();
     </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell text-white pb-32">
-<div class="app-frame">
 
-<!-- Header -->
-<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
-  <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
-    <span class="material-icons-round text-white/60">close</span>
-  </button>
-  <h1 class="font-bold text-base">Nuevo Gasto</h1>
-  <button id="save-btn" class="px-5 py-2 text-sm" onclick="saveExpense()">Guardar</button>
-</header>
+<body class="app-shell pb-32">
+<div class="app-frame max-w-lg mx-auto">
 
-<main class="max-w-md mx-auto px-4 pt-4 space-y-5">
-
-  <!-- Scanner shortcut -->
-  <div class="scanner-cta p-4 flex items-center gap-4" onclick="SGRouter.navigate('scanner','add-expense')">
-    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(19,236,214,0.15)">
-      <span class="material-icons-round" style="color:var(--cyan)">document_scanner</span>
-    </div>
-    <div>
-      <p class="font-bold text-sm">Escanear Ticket con IA</p>
-      <p class="text-xs opacity-50">Extrae datos automáticamente</p>
-    </div>
-    <span class="material-icons-round ml-auto opacity-30">chevron_right</span>
-  </div>
-
-  <!-- Amount -->
-  <div class="glass p-6 text-center">
-    <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">Importe</p>
-    <div class="flex items-center justify-center gap-3">
-      <span class="text-2xl font-black opacity-40">€</span>
-      <input type="number" id="amount-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal"/>
-    </div>
-    <p class="text-xs opacity-30 mt-2" id="per-person-hint">— € por persona</p>
-  </div>
-
-  <!-- Description -->
-  <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Descripción</label>
-    <div class="relative">
-      <input type="text" id="desc-input" class="sg-input pl-12" placeholder="¿En qué se gastó?"/>
-      <span class="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 opacity-30">edit_note</span>
-    </div>
-  </div>
-
-  <!-- Categories -->
-  <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Categoría</label>
-    <div class="flex gap-2 overflow-x-auto pb-1" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣<span>Comida</span></button>
-      <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗<span>Transporte</span></button>
-      <button class="cat-btn" data-cat="leisure" onclick="selectCat(this)">🎬<span>Ocio</span></button>
-      <button class="cat-btn" data-cat="home" onclick="selectCat(this)">🏠<span>Hogar</span></button>
-      <button class="cat-btn" data-cat="travel" onclick="selectCat(this)">✈️<span>Viajes</span></button>
-      <button class="cat-btn" data-cat="health" onclick="selectCat(this)">💊<span>Salud</span></button>
-      <button class="cat-btn" data-cat="other" onclick="selectCat(this)">📦<span>Otro</span></button>
-    </div>
-  </div>
-
-  <!-- Date + Group -->
-  <div class="grid grid-cols-2 gap-3">
-    <div class="space-y-2">
-      <label class="text-xs font-bold uppercase tracking-widest opacity-40">Fecha</label>
-      <input type="date" id="date-input" class="sg-input"/>
-    </div>
-    <div class="space-y-2">
-      <label class="text-xs font-bold uppercase tracking-widest opacity-40">Grupo</label>
-      <select id="group-input" class="sg-input" style="appearance:none;cursor:pointer">
-        <option>🍣 Sushi Kyoto Pro</option>
-        <option>🏔️ Viaje Pirineos</option>
-        <option>🏠 Piso Alpha 2026</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Paid by -->
-  <div class="glass p-5 space-y-4">
-    <div class="flex justify-between items-center">
-      <h3 class="font-bold text-sm">Pagado por</h3>
-      <button class="text-xs font-bold" style="color:var(--cyan)">+ Múltiples</button>
-    </div>
-    <div class="flex gap-4 overflow-x-auto pb-1" id="payers-row" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <!-- rendered by JS -->
-    </div>
-  </div>
-
-  <!-- Split method -->
-  <div class="glass p-5 space-y-4">
-    <h3 class="font-bold text-sm">Método de reparto</h3>
-    <div class="flex p-1 rounded-xl" style="background:rgba(255,255,255,0.04)">
-      <div class="split-option active" onclick="selectSplit(this,'equal')">Igual</div>
-      <div class="split-option" onclick="selectSplit(this,'percentage')">%</div>
-      <div class="split-option" onclick="selectSplit(this,'exact')">Exacto</div>
-      <div class="split-option" onclick="selectSplit(this,'shares')">Partes</div>
-    </div>
-
-    <!-- Participants with amounts -->
-    <div id="split-details" class="space-y-3 mt-2">
-      <!-- rendered by JS -->
-    </div>
-  </div>
-
-  <!-- Notes -->
-  <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Nota (opcional)</label>
-    <textarea id="notes-input" class="sg-input resize-none" rows="2" placeholder="Añade una nota…"></textarea>
-  </div>
-
-  <!-- Save -->
-  <button id="save-btn-bottom" class="w-full py-5 rounded-full font-black text-lg" style="background:linear-gradient(135deg,var(--cyan),#0fbfaf);color:#0a0a0a;box-shadow:0 8px 32px rgba(19,236,214,0.35)" onclick="saveExpense()">
-    <span class="flex items-center justify-center gap-2">
-      <span class="material-icons-round">check_circle</span>
-      GUARDAR GASTO
-    </span>
-  </button>
-
-</main>
-
-<script>
-const members = [
-  {name:'Commander', initials:'C', color:'#13ecd6'},
-  {name:'Mario', initials:'M', color:'#a855f7'},
-  {name:'Elena', initials:'E', color:'#FF9D42'},
-  {name:'Sofia', initials:'S', color:'#ec4899'},
-];
-
-let selectedPayer = 0;
-let selectedCat = 'food';
-let splitMethod = 'equal';
-
-// Set today's date
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('date-input').value = today;
-
-function renderPayers() {
-  const row = document.getElementById('payers-row');
-  row.innerHTML = members.map((m, i) => `
-    <div class="payer-chip ${i === selectedPayer ? 'selected' : ''}" onclick="selectPayer(${i})">
-      <div class="payer-avatar" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.initials}</div>
-      <span class="payer-name">${m.name}</span>
-    </div>`).join('') + `
-    <div class="payer-chip" onclick="addPayer()">
-      <div class="payer-avatar" style="border:2px dashed rgba(255,255,255,0.2)">
-        <span class="material-icons-round text-sm opacity-30">add</span>
-      </div>
-      <span class="payer-name opacity-40">Añadir</span>
-    </div>`;
-}
-
-function selectPayer(idx) {
-  selectedPayer = idx;
-  renderPayers();
-}
-
-function addPayer() { SGRouter.showToast('Próximamente: múltiples pagadores', 'info'); }
-
-function selectCat(btn) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedCat = btn.dataset.cat;
-}
-
-function selectSplit(el, method) {
-  document.querySelectorAll('.split-option').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  splitMethod = method;
-  renderSplitDetails();
-}
-
-function renderSplitDetails() {
-  const amount = parseFloat(document.getElementById('amount-input').value) || 0;
-  const perPerson = splitMethod === 'equal' ? (amount / members.length).toFixed(2) : '—';
-  document.getElementById('per-person-hint').textContent = splitMethod === 'equal' ? `${perPerson} € por persona` : '— € por persona';
-
-  const container = document.getElementById('split-details');
-  container.innerHTML = members.map((m, i) => {
-    let valueContent;
-    if (splitMethod === 'equal') {
-      valueContent = `<span class="text-sm font-bold" style="color:var(--cyan)">${perPerson} €</span>`;
-    } else if (splitMethod === 'percentage') {
-      valueContent = `<div class="flex items-center gap-1"><input type="number" value="25" min="0" max="100" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">%</span></div>`;
-    } else if (splitMethod === 'exact') {
-      valueContent = `<input type="number" placeholder="0.00" class="sg-input w-24 text-center py-2 text-sm" style="padding:6px;"/>`;
-    } else {
-      valueContent = `<div class="flex items-center gap-1"><input type="number" value="1" min="1" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">parte</span></div>`;
-    }
-    return `
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div style="width:36px;height:36px;border-radius:50%;background:${m.color}22;color:${m.color};border:2px solid ${m.color}33;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem">${m.initials}</div>
-          <span class="text-sm font-semibold">${m.name}</span>
+    <header class="flex justify-between items-center px-6 py-5 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <button onclick="SGRouter.back()" class="size-10 rounded-xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+            <span class="material-icons-round text-zinc-400">arrow_back</span>
+        </button>
+        <div class="text-center">
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nueva Entrada</p>
+            <h1 class="text-[10px] font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Registro Alpha</h1>
         </div>
-        ${valueContent}
-      </div>`;
-  }).join('');
-}
+        <button onclick="saveExpense()" class="text-[10px] font-black uppercase tracking-widest text-[#13ecd6] hover:brightness-125">Guardar</button>
+    </header>
 
-// Live per-person update
-document.getElementById('amount-input').addEventListener('input', renderSplitDetails);
+    <main class="px-6 pt-8 space-y-8">
 
-function saveExpense() {
-  const amount = parseFloat(document.getElementById('amount-input').value);
-  const desc = document.getElementById('desc-input').value.trim();
+        <div class="glass-panel p-5 flex items-center gap-4 border-[#13ecd6]/20 bg-[#13ecd6]/05 cursor-pointer active:scale-95 transition-all" onclick="SGRouter.navigate('scanner')">
+            <div class="size-12 rounded-2xl flex items-center justify-center bg-[#13ecd6]/20 shadow-[0_0_20px_rgba(19,236,214,0.1)]">
+                <span class="material-icons-round text-[#13ecd6]">auto_awesome</span>
+            </div>
+            <div>
+                <p class="font-black text-[10px] uppercase tracking-wider text-white">Escanear Ticket con IA</p>
+                <p class="text-[9px] text-zinc-500 uppercase font-bold">Extrae datos de precisión</p>
+            </div>
+            <span class="material-icons-round ml-auto text-zinc-700">chevron_right</span>
+        </div>
 
-  if (!amount || amount <= 0) { SGRouter.showToast('Introduce un importe válido', 'warning'); return; }
-  if (!desc) { SGRouter.showToast('Añade una descripción', 'warning'); return; }
+        <div class="glass-panel p-8 text-center border-white/5">
+            <p class="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-600 mb-4">Importe Total</p>
+            <div class="flex items-center justify-center">
+                <span class="text-2xl font-black text-zinc-800 mr-2 italic">€</span>
+                <input type="number" id="amount-input" placeholder="0.00" step="0.01" inputmode="decimal">
+            </div>
+            <p id="per-person-hint" class="text-[9px] font-black text-[#13ecd6] tracking-[0.2em] mt-4 opacity-40 uppercase italic">Esperando telemetría...</p>
+        </div>
 
-  document.getElementById('save-btn').disabled = true;
-  SGRouter.showToast('Gasto guardado ✓', 'success');
-  setTimeout(() => SGRouter.navigate('split', 'add-expense'), 800);
-}
+        <div class="space-y-6">
+            <div class="space-y-3">
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Descripción del Activo</label>
+                <div class="relative">
+                    <input type="text" id="desc-input" class="sg-input pl-14" placeholder="¿En qué se gastó?">
+                    <span class="material-icons-round absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 text-lg">edit_note</span>
+                </div>
+            </div>
 
-renderPayers();
-renderSplitDetails();
-</script>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Fecha</label>
+                    <input type="date" id="date-input" class="sg-input font-mono text-xs">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Grupo</label>
+                    <select id="group-input" class="sg-input text-xs font-bold appearance-none cursor-pointer">
+                        <option>🍣 Sushi Kyoto Pro</option>
+                        <option>🏔️ Viaje Pirineos</option>
+                        <option>🏠 Piso Alpha 2026</option>
+                    </select>
+                </div>
+            </div>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <div class="space-y-3">
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Categoría</label>
+                <div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar" style="-webkit-overflow-scrolling:touch;">
+                    <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣 <span>Comida</span></button>
+                    <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗 <span>Viaje</span></button>
+                    <button class="cat-btn" data-cat="fun" onclick="selectCat(this)">🎬 <span>Ocio</span></button>
+                    <button class="cat-btn" data-cat="home" onclick="selectCat(this)">🏠 <span>Hogar</span></button>
+                    <button class="cat-btn" data-cat="travel" onclick="selectCat(this)">✈️ <span>Vuelos</span></button>
+                    <button class="cat-btn" data-cat="health" onclick="selectCat(this)">💊 <span>Salud</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 space-y-6 border-white/5">
+            <div class="flex justify-between items-center">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Pagado por</h3>
+                <button onclick="SGRouter.navigate('games')" class="btn-luck flex items-center gap-2">
+                    <span class="material-icons-round text-xs">casino</span>
+                    DECIDIR POR SUERTE
+                </button>
+            </div>
+            <div class="flex gap-6 overflow-x-auto py-2 no-scrollbar" id="payers-row">
+                </div>
+        </div>
+
+        <div class="glass-panel p-6 space-y-6 border-white/5">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Reparto de Deuda</h3>
+            <div class="flex p-1.5 rounded-2xl bg-white/5 border border-white/5">
+                <div class="split-option active" onclick="selectSplit(this,'equal')">Igual</div>
+                <div class="split-option" onclick="selectSplit(this,'percentage')">%</div>
+                <div class="split-option" onclick="selectSplit(this,'exact')">€</div>
+                <div class="split-option" onclick="selectSplit(this,'shares')">Partes</div>
+            </div>
+
+            <div id="split-details" class="space-y-4 mt-2">
+                </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Notas Alpha</label>
+            <textarea id="notes-input" class="sg-input resize-none h-24" placeholder="Anotaciones de la misión..."></textarea>
+        </div>
+
+        <button onclick="saveExpense()" class="w-full py-6 rounded-[2.5rem] bg-gradient-to-br from-[#13ecd6] to-[#0dbfb0] text-black font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(19,236,214,0.2)] active:scale-95 transition-all">
+            Confirmar Gasto Alpha
+        </button>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-3xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-4 pb-8">
+            <button class="nav-item opacity-30 flex flex-col items-center gap-1" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p class="text-[7px] font-black uppercase tracking-tighter">Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item text-[#13ecd6] flex flex-col items-center gap-1" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p class="text-[7px] font-black uppercase tracking-tighter">Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item opacity-30 flex flex-col items-center gap-1" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p class="text-[7px] font-black uppercase tracking-tighter">Perfil</p>
             </button>
         </div>
     </nav>
 
+</div>
 
-        <script>
+<script>
+    const members = [
+        {name:'Commander', color:'#13ecd6', init:'C'},
+        {name:'Mario', color:'#a855f7', init:'M'},
+        {name:'Elena', color:'#FF9D42', init:'E'},
+        {name:'Sofia', color:'#ec4899', init:'S'}
+    ];
+
+    let selectedPayer = 0;
+    let splitMethod = 'equal';
+
+    // Fecha actual
+    document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+
+    function renderPayers() {
+        const row = document.getElementById('payers-row');
+        row.innerHTML = members.map((m, i) => `
+            <div onclick="selectedPayer=${i}; renderPayers()" class="payer-chip ${i === selectedPayer ? 'selected' : ''}">
+                <div class="payer-avatar" style="color:${m.color}; border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.init}</div>
+                <span class="payer-name">${m.name}</span>
+            </div>
+        `).join('') + `
+            <div class="payer-chip opacity-30" onclick="SGRouter.showToast('Solo socios fundadores en esta versión')">
+                <div class="payer-avatar" style="border-style:dashed">+</div>
+                <span class="payer-name">Añadir</span>
+            </div>`;
+    }
+
+    function selectCat(btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function selectSplit(el, method) {
+        document.querySelectorAll('.split-option').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        splitMethod = method;
+        renderSplitDetails();
+    }
+
+    function renderSplitDetails() {
+        const amount = parseFloat(document.getElementById('amount-input').value) || 0;
+        const perPerson = (amount / members.length).toFixed(2);
+        document.getElementById('per-person-hint').innerText = amount > 0 ? `${perPerson}€ POR SOCIO ALPHA` : "ESPERANDO TELEMETRÍA...";
+
+        const container = document.getElementById('split-details');
+        container.innerHTML = members.map((m, i) => {
+            let inputUI = '';
+            if (splitMethod === 'equal') inputUI = `<span class="text-xs font-black text-[#13ecd6]">${perPerson} €</span>`;
+            else if (splitMethod === 'percentage') inputUI = `<div class="flex items-center gap-2"><input type="number" value="25" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">%</span></div>`;
+            else if (splitMethod === 'exact') inputUI = `<div class="flex items-center gap-2"><input type="number" placeholder="0.00" class="sg-input w-24 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">€</span></div>`;
+            else inputUI = `<div class="flex items-center gap-2"><input type="number" value="1" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">PARTES</span></div>`;
+
+            return `
+                <div class="flex items-center justify-between bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-full flex items-center justify-center font-black text-[10px]" style="background:${m.color}20; color:${m.color}">${m.init}</div>
+                        <span class="text-[11px] font-bold uppercase tracking-tight">${m.name}</span>
+                    </div>
+                    ${inputUI}
+                </div>`;
+        }).join('');
+    }
+
+    document.getElementById('amount-input').addEventListener('input', renderSplitDetails);
+
+    function saveExpense() {
+        const amt = document.getElementById('amount-input').value;
+        if(!amt) { SGRouter.showToast('IMPORTE REQUERIDO', 'warning'); return; }
+        SGRouter.showToast('GASTO REGISTRADO CON ÉXITO', 'success');
+        setTimeout(() => SGRouter.navigate('activity'), 1000);
+    }
+
+    // Inicializar
+    renderPayers();
+    renderSplitDetails();
+
+    // Service Worker Alpha Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
+            navigator.serviceWorker.register('sw.js').catch(e => console.warn('[SW] Fallo:', e));
         });
     }
-    </script>
-</div>
+</script>
 </body>
 </html>
