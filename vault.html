@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Bóveda Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -10,415 +10,130 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateZ(0);
-        }
-
+        /* Estilos específicos de Bóveda: Densidad de Activos */
         .asset-card {
-            position: relative;
-            aspect-ratio: 4/5;
-            border-radius: 2.5rem;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            background: #0a0a0a;
-            transform: translateZ(0);
-            will-change: transform, opacity;
+            position: relative; aspect-ratio: 4/5; border-radius: 2.5rem;
+            overflow: hidden; border: 1px solid var(--glass-border);
+            transition: var(--transition-alpha); background: #0a0a0a;
+            transform: translateZ(0); will-change: transform;
         }
-        .asset-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(19, 236, 214, 0.3);
-            box-shadow: 0 40px 80px -15px rgba(0,0,0,0.8);
-        }
-        .asset-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,1) 5%, rgba(0,0,0,0.4) 50%, transparent 100%);
-        }
-
-        .money-display {
-            font-family: 'Space Grotesk', sans-serif;
-            padding-right: 0.55em !important; 
-            display: inline-block;
-            white-space: nowrap;
-        }
-
-        .search-field:focus-within {
-            border-color: rgba(19, 236, 214, 0.4);
-            background: rgba(255, 255, 255, 0.04);
-            box-shadow: 0 0 20px rgba(19, 236, 214, 0.1);
-        }
+        .asset-card:hover { transform: translateY(-8px) scale(1.02); border-color: var(--cian-tech); }
+        .asset-overlay { background: linear-gradient(to top, rgba(0,0,0,0.9) 5%, rgba(0,0,0,0.2) 60%, transparent 100%); }
 
         .filter-btn {
-            padding: 8px 18px;
-            border-radius: 999px;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: transparent;
-            color: #71717a;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 8px 16px; border-radius: 999px; font-size: 9px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid var(--glass-border);
+            color: #71717a; transition: all 0.3s;
         }
-        .filter-btn.active, .filter-btn:hover {
-            border-color: #13ecd6;
-            color: #13ecd6;
-            background: rgba(19, 236, 214, 0.07);
-        }
+        .filter-btn.active { border-color: var(--cian-tech); color: var(--cian-tech); background: rgba(19, 236, 214, 0.05); }
 
-        .stat-pill {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 1.5rem;
-            padding: 1rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+    </style>
 
-        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
+<body class="app-shell">
 <div class="app-frame">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-        
-        <!-- Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sticky top-0 bg-black/80 backdrop-blur-xl z-50 py-4">
-            <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-500 text-2xl">arrow_back</span>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
                 </button>
-                <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault System · AES-256</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Bóveda</h1>
+                <div>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault · AES-256</p>
+                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Bóveda</h1>
                 </div>
             </div>
-            
-            <div class="flex gap-3 w-full sm:w-auto">
-                <div class="flex-1 sm:w-72 glass-panel search-field px-5 py-3 rounded-2xl flex items-center gap-3 transition-all border-white/5">
-                    <span class="material-icons-round text-zinc-500 text-lg">search</span>
-                    <input type="text" placeholder="Buscar en la bóveda..." class="bg-transparent border-none outline-none text-xs w-full text-zinc-300 font-bold placeholder:text-zinc-700" oninput="filterVault(this.value)">
-                </div>
-                <button onclick="SGRouter.navigate('dashboard', 'vault')" class="size-12 sm:size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/5 border-white/5 text-[#13ecd6] active:scale-90 transition-all shrink-0">
-                    <span class="material-icons-round text-lg">dashboard</span>
-                </button>
-            </div>
+            <button onclick="SGRouter.navigate('scanner')" class="size-12 glass-panel rounded-xl flex items-center justify-center text-[#FF9D42] border-[#FF9D42]/20 active:scale-90 transition-all">
+                <span class="material-icons-round">add_a_photo</span>
+            </button>
         </header>
 
-        <!-- Estadísticas -->
-        <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
-            <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Total Guardado</p>
-                <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]">156,47€</p>
-                <p class="text-[8px] text-zinc-600 uppercase">Este mes</p>
-            </div>
-            <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Tickets</p>
-                <p class="text-xl font-black font-['Space_Grotesk'] text-white">12</p>
-                <p class="text-[8px] text-zinc-600 uppercase">Digitalizados</p>
-            </div>
-            <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Cifrado</p>
-                <p class="text-xl font-black font-['Space_Grotesk'] text-[#a855f7]">AES</p>
-                <p class="text-[8px] text-zinc-600 uppercase">256-bit</p>
+        <section class="reveal-node">
+            <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
+                <span class="material-icons-round text-zinc-500 text-lg">search</span>
+                <input type="text" placeholder="BUSCAR ACTIVO..." class="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest w-full text-zinc-300 placeholder:text-zinc-700" oninput="filterVault(this.value)">
             </div>
         </section>
 
-        <!-- Filtros -->
-        <div class="flex gap-2 flex-wrap reveal-node" style="animation-delay: 0.05s">
+        <nav class="flex gap-2 overflow-x-auto no-scrollbar reveal-node" style="animation-delay: 0.1s">
             <button class="filter-btn active" onclick="setFilter(this,'todos')">Todos</button>
             <button class="filter-btn" onclick="setFilter(this,'alimentacion')">Alimentación</button>
-            <button class="filter-btn" onclick="setFilter(this,'gastronomia')">Gastronomía</button>
             <button class="filter-btn" onclick="setFilter(this,'ocio')">Ocio</button>
-            <button class="filter-btn" onclick="setFilter(this,'suministros')">Suministros</button>
-            <button class="filter-btn" onclick="setFilter(this,'transporte')">Transporte</button>
-        </div>
+        </nav>
 
-        <!-- Grid de activos -->
-        <main id="vaultGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7">
+        <main id="vaultGrid" class="grid grid-cols-2 gap-4 reveal-node" style="animation-delay: 0.2s">
             
-            <!-- Nuevo ticket CTA -->
-            <div onclick="SGRouter.navigate('scanner', 'vault')" 
-                 class="asset-card flex flex-col items-center justify-center gap-5 cursor-pointer group border-dashed border-zinc-800 bg-transparent hover:border-[#FF9D42]/40 reveal-node">
-                <div class="size-14 rounded-full bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/15 group-hover:scale-110 transition-transform">
-                    <span class="material-icons-round text-[#FF9D42] text-2xl">add_a_photo</span>
-                </div>
-                <div class="text-center px-3">
-                    <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-1">Digitalizar</p>
-                    <p class="text-[9px] font-bold text-zinc-700 uppercase">Nuevo Ticket</p>
+            <div class="asset-card group reveal-node" data-cat="alimentacion" data-name="mercadona" onclick="SGRouter.navigate('receipt')">
+                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700" alt="">
+                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 space-y-2">
+                    <span class="status-tag w-fit bg-[#13ecd6]/10 text-[#13ecd6] border-[#13ecd6]/20">Alimentación</span>
+                    <h3 class="text-sm font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mercadona</h3>
+                    <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">42,15€</p>
                 </div>
             </div>
 
-            <!-- Asset: Mercadona -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.05s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="alimentacion" data-name="mercadona">
-                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Mercadona">
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20">Alimentación</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">Hoy</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mercadona</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-[#13ecd6]">42,15€</p>
-                    </div>
+            <div class="asset-card group reveal-node" data-cat="ocio" data-name="netflix" onclick="SGRouter.navigate('receipt')">
+                <div class="absolute inset-0 bg-red-900/20 flex items-center justify-center">
+                    <span class="material-icons-round text-red-600/30 text-6xl">play_circle</span>
+                </div>
+                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 space-y-2">
+                    <span class="status-tag w-fit bg-red-500/10 text-red-400 border-red-500/20">Ocio</span>
+                    <h3 class="text-sm font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Netflix</h3>
+                    <p class="text-xl font-black font-['Space_Grotesk'] text-red-400 money-display">15,99€</p>
                 </div>
             </div>
-
-            <!-- Asset: Sushi Kyoto -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.1s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="gastronomia" data-name="sushi kyoto">
-                <img src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Sushi">
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#a855f7]/10 text-[#a855f7] text-[7px] font-black uppercase rounded-full border border-[#a855f7]/20">Gastronomía</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">Ayer</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Sushi Kyoto</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-[#a855f7]">25,56€</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Asset: Netflix -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.15s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="ocio" data-name="netflix">
-                <div class="absolute inset-0 bg-gradient-to-br from-red-950/60 to-black flex items-center justify-center">
-                    <span class="material-icons-round text-red-500 text-7xl opacity-30">play_circle</span>
-                </div>
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-red-500/10 text-red-400 text-[7px] font-black uppercase rounded-full border border-red-500/20">Ocio</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">12 Mar</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Netflix</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-red-400">15,99€</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Asset: Luz -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.2s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="suministros" data-name="factura luz">
-                <div class="absolute inset-0 bg-gradient-to-br from-yellow-950/50 to-black flex items-center justify-center">
-                    <span class="material-icons-round text-yellow-500 text-7xl opacity-25">bolt</span>
-                </div>
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[7px] font-black uppercase rounded-full border border-yellow-500/20">Suministros</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">10 Mar</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Factura Luz</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-yellow-400">84,16€</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Asset: Uber -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.25s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="transporte" data-name="uber">
-                <div class="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center">
-                    <span class="material-icons-round text-zinc-600 text-7xl opacity-30">local_taxi</span>
-                </div>
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-zinc-700/30 text-zinc-400 text-[7px] font-black uppercase rounded-full border border-zinc-700/40">Transporte</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">9 Mar</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Uber Alpha</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-zinc-300">18,40€</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Asset: Viaje Pirineos -->
-            <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.3s" 
-                 onclick="SGRouter.navigate('receipt', 'vault')" data-cat="ocio" data-name="pirineos">
-                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Pirineos">
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#FF9D42]/10 text-[#FF9D42] text-[7px] font-black uppercase rounded-full border border-[#FF9D42]/20">Ocio</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">5 Mar</p>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Pirineos</h3>
-                        <p class="text-2xl font-black font-['Space_Grotesk'] money-display text-[#FF9D42]">215,00€</p>
-                    </div>
-                </div>
-            </div>
-
         </main>
-
-        <!-- Sin resultados -->
-        <div id="emptyVault" class="hidden text-center py-20 space-y-4">
-            <span class="material-icons-round text-zinc-700 text-6xl">search_off</span>
-            <p class="text-zinc-600 font-black uppercase text-sm tracking-widest">Sin resultados</p>
-        </div>
-
     </div>
 
-        <script>
+    <script>
         let currentFilter = 'todos';
-
         function setFilter(btn, cat) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = cat;
             applyFilters();
         }
-
-        function filterVault(query) {
-            applyFilters(query);
-        }
-
+        function filterVault(query) { applyFilters(query); }
         function applyFilters(query = '') {
             const cards = document.querySelectorAll('#vaultGrid [data-cat]');
-            let visible = 0;
             cards.forEach(card => {
                 const matchCat = currentFilter === 'todos' || card.dataset.cat === currentFilter;
                 const matchName = !query || card.dataset.name.includes(query.toLowerCase());
-                if (matchCat && matchName) {
-                    card.style.display = '';
-                    visible++;
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = (matchCat && matchName) ? '' : 'none';
             });
-            document.getElementById('emptyVault').classList.toggle('hidden', visible > 0);
         }
     </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
