@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -10,37 +10,47 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
         .filter-btn { transition: all 0.3s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
         .filter-btn.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         
-        .tx-row { transition: var(--transition-alpha); cursor: pointer; }
+        .tx-row { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
         .tx-row:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
         .hidden-tx { display: none !important; }
 
         .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; background: none; border: none; }
         .nav-item span { font-size: 20px; color: #4a4a4a; }
         .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
-        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell">
+<body class="app-shell bg-black">
 <div class="app-frame flex flex-col h-full">
 
     <header class="flex justify-between items-center p-6 shrink-0 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div class="flex items-center gap-4">
-            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+            <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
                 <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
             </button>
             <div class="text-left">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Audit Log · v2.0</p>
-                <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white leading-none">Movimientos</h1>
+                <h1 class="text-sm font-black tech-font tracking-widest uppercase italic text-white leading-none">Movimientos</h1>
             </div>
         </div>
-        <button onclick="SGRouter.navigate('dashboard')" class="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 hover:bg-white/10 active:scale-95 transition-all border-white/5">
+        <button onclick="SGRouter.navigate('dashboard')" class="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 hover:bg-white/10 active:scale-95 transition-all border border-white/5">
             <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
             <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Mando</span>
         </button>
@@ -52,13 +62,13 @@
             <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-1">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Gasto Total</p>
-                    <p class="text-2xl font-black font-['Space_Grotesk'] text-white">840,36€</p>
+                    <p class="text-2xl font-black tech-font text-white">840,36€</p>
                     <p class="text-[9px] text-[#FF9D42] font-black uppercase tracking-tighter">+8% vs Periodo Anterior</p>
                 </div>
                 <div class="space-y-1 border-l border-white/5 pl-6">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Pendientes</p>
-                    <p class="text-2xl font-black font-['Space_Grotesk'] text-[#FF9D42]">3</p>
-                    <p class="text-[9px] text-zinc-600 font-black uppercase tracking-tighter text-glow-orange">Acción Requerida</p>
+                    <p class="text-2xl font-black tech-font text-[#FF9D42]">3</p>
+                    <p class="text-[9px] text-zinc-600 font-black uppercase tracking-tighter">Acción Requerida</p>
                 </div>
             </div>
         </section>
@@ -72,13 +82,13 @@
         <div class="space-y-8">
             <div class="space-y-3">
                 <div class="flex items-center gap-4 px-2 reveal-node" style="animation-delay:0.15s">
-                    <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] flex-shrink-0">Hoy — 14 Mar 2026</p>
+                    <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] flex-shrink-0">Hoy — 28 Mar 2026</p>
                     <div class="h-px flex-1 bg-white/5"></div>
                 </div>
                 
                 <div class="tx-row income glass-panel p-5 rounded-[2rem] flex items-center justify-between reveal-node" style="animation-delay:0.2s" onclick="SGRouter.navigate('receipt')">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0 shadow-[0_0_15px_rgba(19,236,214,0.05)]">
+                        <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0">
                             <span class="material-icons-round text-[#13ecd6] text-lg">restaurant</span>
                         </div>
                         <div class="truncate">
@@ -90,13 +100,13 @@
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-lg font-black font-['Space_Grotesk'] text-[#13ecd6]">+7,50€</p>
+                        <p class="text-lg font-black tech-font text-[#13ecd6]">+7,50€</p>
                     </div>
                 </div>
 
                 <div class="tx-row expense glass-panel p-5 rounded-[2rem] flex items-center justify-between reveal-node" style="animation-delay:0.25s" onclick="SGRouter.navigate('groups')">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 shadow-[0_0_15px_rgba(255,157,66,0.05)]">
+                        <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0">
                             <span class="material-icons-round text-[#FF9D42] text-lg">bolt</span>
                         </div>
                         <div class="truncate">
@@ -108,7 +118,7 @@
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-lg font-black font-['Space_Grotesk'] text-[#FF9D42]">-84,16€</p>
+                        <p class="text-lg font-black tech-font text-[#FF9D42]">-84,16€</p>
                     </div>
                 </div>
             </div>
