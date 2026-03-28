@@ -1,178 +1,152 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Legal | SplitGasto 2026</title>
+    
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        html, body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
-        .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
+        .glass-panel { 
+            background: rgba(255,255,255,0.02); 
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            transform: translateZ(0); 
+        }
+
+        .legal-section h3 { 
+            font-family: 'Space Grotesk', sans-serif; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-style: italic; 
+            letter-spacing: -0.03em; 
+        }
+
+        .legal-section p, .legal-section li { 
+            color: #71717a; 
+            font-size: 11px; 
+            line-height: 1.8; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+        }
+
+        .legal-section li { list-style: none; padding-left: 0; display: flex; align-items: flex-start; gap: 12px; }
+        .legal-section li::before { content: "arrow_right"; font-family: 'Material Icons Round'; color: #13ecd6; font-size: 14px; }
+
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; background:none; border:none; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: #13ecd6; }
+
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .legal-section h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 900; text-transform: uppercase; font-style: italic; letter-spacing: -0.03em; }
-        .legal-section p, .legal-section li { color: #52525b; font-size: 13px; line-height: 1.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
-        .legal-section li { list-style: none; padding-left: 1rem; }
-        .legal-section li::before { content: "—"; color: #13ecd6; margin-right: 0.75rem; }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
-    <script src="engine/router.js"></script>
-</head>
-<body class="app-shell min-h-screen pb-32">
-<div class="app-frame">
-    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
 
-        <header class="flex items-center gap-6 py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 reveal-node">
-            <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+    <script src="engine/router.js" defer></script>
+</head>
+<body class="app-shell pb-32 bg-black">
+<div class="app-frame">
+    <div class="max-w-lg mx-auto px-6 py-8 space-y-8">
+
+        <header class="flex items-center gap-6 py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-6 px-6 border-b border-white/5 reveal-node">
+            <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
                 <span class="material-icons-round text-zinc-500">arrow_back</span>
             </button>
             <div>
                 <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.5em] mb-1">Protocolo Legal</p>
-                <h1 class="text-3xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Marco Jurídico</h1>
+                <h1 class="text-2xl font-black tech-font tracking-tighter uppercase italic leading-none text-white">Marco Jurídico</h1>
             </div>
         </header>
 
         <section class="glass-panel p-10 rounded-[3.5rem] border-[#13ecd6]/10 reveal-node">
             <div class="flex items-center gap-4 mb-6">
                 <span class="material-icons-round text-[#13ecd6] text-3xl">verified_user</span>
-                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Última actualización: Marzo 2026</p>
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Sincronizado: Marzo 2026</p>
             </div>
-            <h2 class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none mb-4">Términos de <span style="background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Servicio</span></h2>
-            <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest leading-relaxed">SplitGasto 2026 es una plataforma de gestión financiera compartida. Al usar el servicio, aceptas los presentes términos y condiciones establecidos bajo el marco legal vigente en España y la Unión Europea.</p>
+            <h2 class="text-3xl font-black tech-font tracking-tighter uppercase italic leading-none mb-6">Términos de <span class="text-[#13ecd6]">Servicio</span></h2>
+            <p class="text-zinc-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">SplitGasto 2026 opera como una arquitectura de gestión financiera compartida. El uso del sistema implica la aceptación de los protocolos establecidos bajo la jurisdicción de España y la Unión Europea.</p>
         </section>
 
-        <main class="space-y-8 legal-section">
+        <main class="space-y-6 legal-section">
 
-            <div class="glass-panel p-10 rounded-[3rem] border-white/5 reveal-node" style="animation-delay:0.1s">
-                <h3 class="text-xl text-white mb-6">1. Uso del Servicio</h3>
-                <ul class="space-y-3">
-                    <li>El usuario debe ser mayor de 18 años para registrarse en SplitGasto.</li>
-                    <li>Está prohibido el uso fraudulento de la plataforma para actividades ilícitas.</li>
-                    <li>SplitGasto no almacena datos bancarios. Todas las liquidaciones son responsabilidad del usuario.</li>
-                    <li>El servicio se presta "tal como está" y puede ser modificado sin previo aviso.</li>
+            <div class="glass-panel p-8 rounded-[2.5rem] border-white/5 reveal-node" style="animation-delay:0.1s">
+                <h3 class="text-lg text-white mb-6 italic">1. Operativa del Sistema</h3>
+                <ul class="space-y-4">
+                    <li>Registro restringido a operadores mayores de 18 años.</li>
+                    <li>Prohibida la instrumentalización ilícita de la plataforma.</li>
+                    <li>SplitGasto no es una entidad depositaria. Las liquidaciones son externas.</li>
+                    <li>Protocolo de servicio "As-Is": sujeto a optimización continua.</li>
                 </ul>
             </div>
 
-            <div class="glass-panel p-10 rounded-[3rem] border-white/5 reveal-node" style="animation-delay:0.2s">
-                <h3 class="text-xl text-white mb-6">2. Protección de Datos — RGPD</h3>
-                <ul class="space-y-3">
-                    <li>Los datos personales se tratan conforme al Reglamento (UE) 2016/679 (RGPD).</li>
-                    <li>Tienes derecho de acceso, rectificación, supresión y portabilidad de tus datos.</li>
-                    <li>Los datos se almacenan con cifrado AES-256 en servidores dentro de la UE.</li>
-                    <li>No vendemos ni cedemos datos a terceros bajo ningún concepto.</li>
-                    <li>Para ejercer tus derechos, contacta: privacidad@splitgasto.com</li>
+            <div class="glass-panel p-8 rounded-[2.5rem] border-white/5 reveal-node" style="animation-delay:0.2s">
+                <h3 class="text-lg text-white mb-6 italic">2. Privacidad Alpha — RGPD</h3>
+                <ul class="space-y-4">
+                    <li>Tratamiento de datos bajo el Reglamento (UE) 2016/679.</li>
+                    <li>Derechos ARCO (Acceso, Rectificación, Cancelación, Oposición) garantizados.</li>
+                    <li>Cifrado simétrico AES-256 en servidores de la Unión Europea.</li>
+                    <li>Protocolo de Cero Cesión: tus datos no son mercancía.</li>
                 </ul>
             </div>
 
-            <div class="glass-panel p-10 rounded-[3rem] border-[#a855f7]/10 reveal-node" style="animation-delay:0.3s">
-                <h3 class="text-xl text-white mb-6">3. Política de Cookies</h3>
-                <ul class="space-y-3">
-                    <li>Usamos cookies técnicas esenciales para el funcionamiento del servicio.</li>
-                    <li>Cookies analíticas de primera parte para mejorar la experiencia.</li>
-                    <li>No utilizamos cookies de publicidad ni de rastreo de terceros.</li>
-                    <li>Puedes gestionar las preferencias de cookies desde tu perfil.</li>
+            <div class="glass-panel p-8 rounded-[2.5rem] border-[#a855f7]/20 reveal-node" style="animation-delay:0.3s">
+                <h3 class="text-lg text-[#a855f7] mb-6 italic">3. Rastreo Técnico (Cookies)</h3>
+                <ul class="space-y-4">
+                    <li>Uso exclusivo de cookies técnicas para persistencia de sesión.</li>
+                    <li>Analíticas de nodo propio para optimización de UX.</li>
+                    <li>Inexistencia de rastreadores de terceros o redes publicitarias.</li>
                 </ul>
             </div>
 
-            <div class="glass-panel p-10 rounded-[3rem] border-[#FF9D42]/10 reveal-node" style="animation-delay:0.4s">
-                <h3 class="text-xl text-white mb-6">4. Limitación de Responsabilidad</h3>
-                <ul class="space-y-3">
-                    <li>SplitGasto no se responsabiliza de disputas económicas entre usuarios.</li>
-                    <li>La plataforma es una herramienta de registro. No actúa como entidad financiera.</li>
-                    <li>En caso de discrepancias, el usuario debe resolver directamente con las partes implicadas.</li>
-                </ul>
-            </div>
-
-            <div class="glass-panel p-10 rounded-[3rem] border-white/5 reveal-node" style="animation-delay:0.5s">
-                <h3 class="text-xl text-white mb-6">5. Contacto Legal</h3>
-                <div class="flex flex-col sm:flex-row gap-4 mt-4">
-                    <div class="flex items-center gap-3 glass-panel px-6 py-4 rounded-2xl">
+            <div class="glass-panel p-8 rounded-[2.5rem] border-white/5 reveal-node" style="animation-delay:0.4s">
+                <h3 class="text-lg text-white mb-6 italic">4. Canales de Contacto</h3>
+                <div class="flex flex-col gap-3 mt-6">
+                    <div class="flex items-center gap-4 glass-panel px-6 py-4 rounded-2xl border-white/5">
                         <span class="material-icons-round text-[#13ecd6] text-lg">mail</span>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">legal@splitgasto.com</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400 tech-font">legal@splitgasto.com</span>
                     </div>
-                    <div class="flex items-center gap-3 glass-panel px-6 py-4 rounded-2xl">
+                    <div class="flex items-center gap-4 glass-panel px-6 py-4 rounded-2xl border-white/5">
                         <span class="material-icons-round text-[#a855f7] text-lg">location_on</span>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Madrid, España — UE</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400 tech-font">Madrid, España — UE</span>
                     </div>
                 </div>
             </div>
         </main>
 
-        <footer class="text-center py-8 border-t border-white/5 reveal-node" style="animation-delay:0.6s">
-            <button onclick="SGRouter.back()" class="px-10 py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] hover:bg-white/10 transition-all active:scale-95">
-                Volver
+        <footer class="text-center py-10 reveal-node" style="animation-delay:0.5s">
+            <button onclick="SGRouter.back()" class="w-full py-6 glass-panel border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 hover:text-white transition-all active:scale-95">
+                Cerrar Protocolo
             </button>
         </footer>
     </div>
     
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
@@ -182,32 +156,6 @@
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
