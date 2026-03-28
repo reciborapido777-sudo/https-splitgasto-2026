@@ -1,300 +1,161 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Motor de Reparto Elite | SplitGasto 2026</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Motor de Reparto | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden; width: 100%; margin: 0; padding: 0; 
-            overscroll-behavior: none;
-        }
-
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.02); 
-            backdrop-filter: blur(30px); 
-            -webkit-backdrop-filter: blur(30px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            transform: translateZ(0); 
-        }
-
-        .money-display { 
-            font-family: 'Space Grotesk', sans-serif; 
-            padding-right: 0.55em !important; 
-            white-space: nowrap; 
-        }
-        
-        .reveal { 
-            animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            opacity: 0; 
-        }
-
-        @keyframes revealUp { 
-            from { transform: translateY(20px); opacity: 0; } 
-            to { transform: translateY(0); opacity: 1; } 
-        }
-
+        /* Estilos del Motor de Azar */
         .control-display {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(19, 236, 214, 0.05) 100%);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--glass-border);
+            transition: var(--transition-alpha);
         }
 
-        .game-btn { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .game-btn:active { transform: scale(0.95); }
-        
+        .game-btn { transition: var(--transition-alpha); cursor: pointer; }
         .active-glow {
-            border-color: #a855f7 !important;
+            border-color: var(--purple-deep) !important;
             box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
             background: rgba(168, 85, 247, 0.08) !important;
         }
 
-        /* Participantes Flotantes y Dinámicos */
-        .participant-row {
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
-        }
-        .participant-row:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-5px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.1);
-            z-index: 10;
-        }
-        .participant-row:hover .avatar-img {
-            filter: grayscale(0) !important;
-            border-color: #13ecd6 !important;
-            box-shadow: 0 0 20px rgba(19, 236, 214, 0.2);
-        }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+        .participant-row { transition: var(--transition-alpha); border: 1px solid var(--glass-border); }
+        .participant-row:hover { background: rgba(255, 255, 255, 0.04); transform: translateY(-4px); }
+        
+        /* Navigation Sync */
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+    </style>
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
+<body class="app-shell">
 <div class="app-frame">
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
         
-        <header class="flex justify-between items-center py-4 reveal">
-            <div class="flex items-center gap-6">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-500 text-3xl">arrow_back</span>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
                 </button>
-                
-                <div class="flex items-center gap-4 cursor-pointer group" onclick="SGRouter.navigate('profile', 'split')">
-                    <div class="relative">
-                        <div class="absolute -inset-1 bg-[#FF9D42] rounded-xl blur opacity-20 group-hover:opacity-40 transition-all"></div>
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="relative size-12 rounded-xl border border-[#FF9D42]/30 group-hover:border-[#FF9D42] transition-all" alt="Comandante">
-                    </div>
+                <div class="flex items-center gap-3 cursor-pointer" onclick="SGRouter.navigate('profile')">
+                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a" class="size-10 rounded-xl border border-[#FF9D42]/30" alt="">
                     <div>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] mb-0.5">Socio Fundador</p>
-                        <h1 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Perfil Alpha</h1>
+                        <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Comandante</p>
+                        <h1 class="text-sm font-black font-['Space_Grotesk'] uppercase italic leading-none">Perfil Alpha</h1>
                     </div>
                 </div>
             </div>
-
-            <button onclick="SGRouter.navigate('dashboard', 'split')" class="px-5 py-3 rounded-2xl glass-panel flex items-center gap-3 border-white/5 hover:bg-white/10 transition-all">
-                <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Mando</span>
+            <button onclick="SGRouter.navigate('dashboard')" class="px-4 py-2.5 rounded-xl glass-panel text-[#13ecd6] border-white/5 active:scale-95 transition-all">
+                <span class="material-icons-round text-lg">dashboard</span>
             </button>
         </header>
 
-        <section class="space-y-6 reveal" style="animation-delay: 0.1s">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div onclick="updateControl(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
-                    <span class="material-icons-round text-[#a855f7] text-2xl group-hover:rotate-180 transition-transform duration-700">autorenew</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Ruleta Alpha</span>
-                </div>
-                <div onclick="updateControl(this, 'Carta Alta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
-                    <span class="material-icons-round text-[#a855f7] text-2xl group-hover:-translate-y-1 transition-transform">style</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Carta Alta</span>
-                </div>
-                <div onclick="updateControl(this, 'Dardos')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
-                    <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-125 transition-transform">ads_click</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Dardos</span>
-                </div>
-                <div onclick="updateControl(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
-                    <span class="material-icons-round text-[#a855f7] text-2xl group-hover:animate-bounce">monetization_on</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Moneda</span>
-                </div>
+        <section class="grid grid-cols-4 gap-3 reveal-node">
+            <div onclick="updateControl(this, 'Ruleta')" class="game-btn glass-panel p-4 flex flex-col items-center gap-2 rounded-2xl">
+                <span class="material-icons-round text-[#a855f7] text-xl">autorenew</span>
+                <p class="text-[7px] font-black uppercase text-zinc-500">Ruleta</p>
             </div>
-
-            <div id="game-control-panel" class="control-display p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6 border-white/10 shadow-2xl">
-                <div class="flex items-center gap-5">
-                    <div class="size-12 rounded-full bg-[#a855f7]/20 flex items-center justify-center border border-[#a855f7]/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                        <span id="game-icon" class="material-icons-round text-[#a855f7] animate-pulse">psychology</span>
-                    </div>
-                    <div>
-                        <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Estado de Ejecución</p>
-                        <h4 id="active-game-label" class="text-xl font-black font-['Space_Grotesk'] uppercase italic">Seleccione Juego</h4>
-                    </div>
-                </div>
-                <button onclick="executeSplit()" class="w-full md:w-auto px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-xl">
-                    Ejecutar Reparto
-                </button>
+            <div onclick="updateControl(this, 'Carta Alta')" class="game-btn glass-panel p-4 flex flex-col items-center gap-2 rounded-2xl">
+                <span class="material-icons-round text-[#a855f7] text-xl">style</span>
+                <p class="text-[7px] font-black uppercase text-zinc-500">Cartas</p>
+            </div>
+            <div onclick="updateControl(this, 'Dardos')" class="game-btn glass-panel p-4 flex flex-col items-center gap-2 rounded-2xl">
+                <span class="material-icons-round text-[#a855f7] text-xl">ads_click</span>
+                <p class="text-[7px] font-black uppercase text-zinc-500">Dardos</p>
+            </div>
+            <div onclick="updateControl(this, 'Moneda')" class="game-btn glass-panel p-4 flex flex-col items-center gap-2 rounded-2xl">
+                <span class="material-icons-round text-[#a855f7] text-xl">monetization_on</span>
+                <p class="text-[7px] font-black uppercase text-zinc-500">Moneda</p>
             </div>
         </section>
 
-        <main class="glass-panel p-10 rounded-[3.5rem] border-[#13ecd6]/10 space-y-8 reveal" style="animation-delay: 0.2s">
-            <div class="flex justify-between items-center border-b border-white/5 pb-6">
-                <div class="flex items-center gap-4">
-                    <span class="size-3 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Sushi Kyoto Pro</h2>
+        <div id="game-control-panel" class="control-display p-6 rounded-[2.5rem] flex flex-col gap-6 reveal-node" style="animation-delay: 0.1s">
+            <div class="flex items-center gap-4">
+                <div class="size-10 rounded-full bg-[#a855f7]/20 flex items-center justify-center border border-[#a855f7]/30">
+                    <span id="game-icon" class="material-icons-round text-[#a855f7] text-lg animate-pulse">psychology</span>
                 </div>
-                <p class="text-4xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display leading-none">25,56€</p>
+                <div>
+                    <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Protocolo Seleccionado</p>
+                    <h4 id="active-game-label" class="text-base font-black font-['Space_Grotesk'] uppercase italic">Esperando...</h4>
+                </div>
+            </div>
+            <button onclick="executeSplit()" class="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">
+                Ejecutar Reparto
+            </button>
+        </div>
+
+        <main class="glass-panel p-6 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
+            <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                <h2 class="text-xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter">Sushi Kyoto Pro</h2>
+                <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">25,56€</p>
             </div>
             
-            <div class="grid grid-cols-1 gap-4">
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
+            <div class="space-y-3">
+                <div class="participant-row flex items-center justify-between p-4 rounded-2xl">
                     <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl border border-[#FF9D42]/30 transition-all duration-500">
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a" class="size-10 rounded-xl border border-[#FF9D42]/30">
                         <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Usted</p>
+                            <p class="text-[7px] font-black text-zinc-500 uppercase leading-none">Usted</p>
                             <p class="text-xs font-black uppercase text-white">Comandante</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-black font-['Space_Grotesk'] money-display text-white leading-none">8,52€</p>
-                        <span class="text-[8px] font-black text-[#13ecd6] uppercase tracking-widest">Liquidado</span>
+                        <p class="font-black font-['Space_Grotesk'] money-display text-white">8,52€</p>
+                        <span class="text-[7px] font-black text-[#13ecd6] uppercase tracking-widest">Liquidado</span>
                     </div>
                 </div>
 
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 opacity-60">
+                <div class="participant-row flex items-center justify-between p-4 rounded-2xl opacity-60">
                     <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=MR&backgroundColor=0a2a1a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl grayscale transition-all duration-500">
-                        <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Socio Alpha</p>
-                            <p class="text-xs font-black uppercase">Mario</p>
-                        </div>
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=MR&backgroundColor=0a2a1a" class="size-10 rounded-xl">
+                        <p class="text-xs font-black uppercase">Mario</p>
                     </div>
-                    <p class="font-black font-['Space_Grotesk'] money-display text-zinc-400 leading-none">8,52€</p>
-                </div>
-
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 opacity-60">
-                    <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=EL&backgroundColor=1a0a2a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl grayscale transition-all duration-500" alt="Elena">
-                        <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Socia Alpha</p>
-                            <p class="text-xs font-black uppercase">Elena</p>
-                        </div>
-                    </div>
-                    <p class="font-black font-['Space_Grotesk'] money-display text-zinc-400 leading-none">8,52€</p>
+                    <p class="font-black font-['Space_Grotesk'] money-display text-zinc-400">8,52€</p>
                 </div>
             </div>
         </main>
     </div>
 
-        <script>
+    <script>
         let selectedGame = null;
+        const gameIcons = { 'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on' };
+        const gameRoutes = { 'Ruleta': 'game-roulette', 'Carta Alta': 'game-cards', 'Dardos': 'game-darts', 'Moneda': 'game-coin' };
 
         function updateControl(element, game) {
             document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
             selectedGame = game;
             element.classList.add('active-glow');
             
-            const label = document.getElementById('active-game-label');
-            const icon = document.getElementById('game-icon');
-            
-            label.innerText = game.toUpperCase() + ' ACTIVA';
-            label.style.color = '#a855f7';
-            
-            const icons = {
-                'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on'
-            };
-            icon.innerText = icons[game] || 'psychology';
-            
-            SGRouter.showToast(`${game} lista para ejecución`, 'info');
+            document.getElementById('active-game-label').innerText = game.toUpperCase() + ' ACTIVA';
+            document.getElementById('game-icon').innerText = gameIcons[game];
+            SGRouter.showToast(`${game} lista`, 'info');
         }
-
-        const gameRoutes = {
-            'Ruleta': 'game-roulette',
-            'Carta Alta': 'game-cards',
-            'Dardos': 'game-darts',
-            'Moneda': 'game-coin'
-        };
 
         function executeSplit() {
             if (!selectedGame) {
-                SGRouter.showToast('Seleccione un protocolo de azar', 'error');
+                SGRouter.showToast('Seleccione protocolo', 'error');
                 return;
             }
-            const route = gameRoutes[selectedGame];
-            SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
-            setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+            SGRouter.showToast(`Iniciando ${selectedGame}`, 'premium');
+            setTimeout(() => SGRouter.navigate(gameRoutes[selectedGame]), 600);
         }
     </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
@@ -302,42 +163,16 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
