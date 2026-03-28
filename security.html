@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>Seguridad Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -10,324 +10,134 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
+        /* Estilos de Control de Seguridad */
+        .security-status { padding: 6px 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: var(--purple-deep); border-radius: 10px; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
         
-        html, body { 
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0; 
-            box-sizing: border-box; 
-        }
+        /* Toggles Mecánicos Alpha */
+        .toggle-box { width: 44px; height: 24px; background: rgba(255,255,255,0.05); border-radius: 50px; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: var(--transition-alpha); }
+        .toggle-knob { width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 4px; transition: inherit; }
+        .toggle-active { background: rgba(19, 236, 214, 0.15); border-color: var(--cian-tech); }
+        .toggle-active .toggle-knob { left: 22px; background: var(--cian-tech); box-shadow: 0 0 10px var(--cian-tech); }
 
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.02); 
-            backdrop-filter: blur(30px); 
-            -webkit-backdrop-filter: blur(30px); 
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            transform: translateZ(0);
-        }
+        .score-ring { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--cian-tech) 0% 85%, rgba(255,255,255,0.05) 85% 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+        .score-ring::after { content: ''; position: absolute; width: 66px; height: 66px; background: #000; border-radius: 50%; }
+        .score-value { position: relative; z-index: 1; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.25rem; color: var(--cian-tech); }
 
-        .security-status { 
-            padding: 8px 16px; 
-            background: rgba(168, 85, 247, 0.1); 
-            border: 1px solid rgba(168, 85, 247, 0.2); 
-            color: #a855f7; 
-            border-radius: 12px; font-size: 10px; font-weight: 900; 
-            text-transform: uppercase; letter-spacing: 2px; 
-        }
-
-        .toggle-box { 
-            width: 50px; height: 26px; 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 50px; position: relative; 
-            cursor: pointer; border: 1px solid rgba(255,255,255,0.1); 
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .toggle-knob { 
-            width: 18px; height: 18px; 
-            background: #fff; border-radius: 50%; 
-            position: absolute; top: 3px; left: 4px; 
-            transition: inherit; 
-        }
-        .toggle-active .toggle-knob { left: 26px; background: #13ecd6; box-shadow: 0 0 15px #13ecd6; }
-        .toggle-active { background: rgba(19, 236, 214, 0.1); border-color: #13ecd6; }
-        .toggle-active-purple .toggle-knob { left: 26px; background: #a855f7; box-shadow: 0 0 15px #a855f7; }
-        .toggle-active-purple { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; }
-
-        .security-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .security-row:last-child { border-bottom: none; }
-
-        .log-entry {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0.9rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
+        .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .log-entry:last-child { border-bottom: none; }
+    </style>
 
-        .score-ring {
-            width: 90px; height: 90px;
-            border-radius: 50%;
-            background: conic-gradient(#13ecd6 0% 85%, rgba(255,255,255,0.05) 85% 100%);
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .score-ring::after {
-            content: '';
-            position: absolute;
-            width: 74px; height: 74px;
-            background: #000;
-            border-radius: 50%;
-        }
-        .score-value {
-            position: relative; z-index: 1;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 900; font-size: 1.5rem;
-            color: #13ecd6;
-        }
-
-        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
+<body class="app-shell">
 <div class="app-frame">
+    <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-        
-        <!-- Header -->
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="group flex items-center justify-center size-14 rounded-2xl glass-panel hover:bg-white/10 transition-all active:scale-90 shadow-xl">
-                    <span class="material-icons-round text-zinc-600 group-hover:text-[#a855f7] transition-colors text-3xl">arrow_back</span>
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
+            <div class="flex items-center gap-4">
+                <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                    <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
                 </button>
-                <div class="space-y-0.5">
+                <div>
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault Security</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-[#a855f7] leading-none">Blindaje</h1>
+                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-[#a855f7] leading-none">Blindaje</h1>
                 </div>
             </div>
-            <div class="security-status animate-pulse">AES-256 Activo</div>
+            <div class="security-status">AES-256</div>
         </header>
 
-        <!-- Score de seguridad -->
-        <section class="glass-panel p-8 sm:p-10 rounded-[3rem] border-[#a855f7]/10 flex flex-col sm:flex-row items-center gap-8 reveal-node">
-            <div class="score-ring shrink-0">
+        <section class="glass-panel p-8 rounded-[2.5rem] border-[#a855f7]/10 flex items-center gap-6 reveal-node">
+            <div class="score-ring">
                 <span class="score-value">85</span>
             </div>
-            <div class="text-center sm:text-left space-y-2 flex-1">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Índice de Seguridad Alpha</p>
-                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic">Nivel Élite</h2>
-                <p class="text-xs text-zinc-500">Tu cuenta está protegida con los más altos estándares de seguridad. Activa la verificación en 2 pasos para llegar al 100%.</p>
-            </div>
-            <div class="shrink-0">
-                <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest">Verificado</span>
+            <div class="space-y-1">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Índice Alpha</p>
+                <h2 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Protección Élite</h2>
+                <p class="text-[10px] text-zinc-500 leading-tight">Cifrado de grado militar activo en todos los nodos de capital.</p>
             </div>
         </section>
 
-        <!-- Controles de seguridad -->
-        <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#a855f7]/10 space-y-2 reveal-node" style="animation-delay: 0.1s">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-4">Controles Activos</p>
-
-            <!-- Biometría -->
-            <div class="security-row">
-                <div class="flex items-center gap-5">
-                    <div class="size-11 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/20 flex items-center justify-center">
-                        <span class="material-icons-round text-[#a855f7]">fingerprint</span>
+        <section class="glass-panel p-6 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay: 0.1s">
+            <div class="flex justify-between items-center py-4 border-bottom-alpha">
+                <div class="flex items-center gap-4">
+                    <div class="size-10 rounded-xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20">
+                        <span class="material-icons-round text-[#a855f7] text-lg">fingerprint</span>
                     </div>
-                    <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Desbloqueo Biométrico</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">FaceID / Huella Dactilar</p>
+                    <div>
+                        <h4 class="text-[11px] font-black uppercase tracking-wide">Biometría</h4>
+                        <p class="text-[8px] text-zinc-600 uppercase">FaceID / TouchID</p>
                     </div>
                 </div>
-                <div class="toggle-box toggle-active" 
-                     onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Biometría actualizada', 'success')">
+                <div class="toggle-box toggle-active" onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Protocolo actualizado', 'info')">
                     <div class="toggle-knob"></div>
                 </div>
             </div>
 
-            <!-- 2FA -->
-            <div class="security-row">
-                <div class="flex items-center gap-5">
-                    <div class="size-11 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center justify-center">
-                        <span class="material-icons-round text-[#13ecd6]">verified_user</span>
+            <div class="flex justify-between items-center py-4 border-bottom-alpha">
+                <div class="flex items-center gap-4">
+                    <div class="size-10 rounded-xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20">
+                        <span class="material-icons-round text-[#13ecd6] text-lg">verified_user</span>
                     </div>
-                    <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Verificación 2 Pasos</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">SMS / App Authenticator</p>
+                    <div>
+                        <h4 class="text-[11px] font-black uppercase tracking-wide">Doble Factor</h4>
+                        <p class="text-[8px] text-zinc-600 uppercase">Verificación 2FA</p>
                     </div>
                 </div>
-                <div class="toggle-box" 
-                     onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('2FA: Configura en ajustes', 'info')">
+                <div class="toggle-box" onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Configure 2FA en Ajustes', 'warning')">
                     <div class="toggle-knob"></div>
                 </div>
             </div>
+        </section>
 
-            <!-- Notificaciones de acceso -->
-            <div class="security-row">
-                <div class="flex items-center gap-5">
-                    <div class="size-11 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 flex items-center justify-center">
-                        <span class="material-icons-round text-[#FF9D42]">notifications_active</span>
-                    </div>
-                    <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Alertas de Acceso</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Notificación en cada login</p>
-                    </div>
-                </div>
-                <div class="toggle-box toggle-active" 
-                     onclick="this.classList.toggle('toggle-active'); SGRouter.showToast('Alertas de acceso actualizadas', 'success')">
-                    <div class="toggle-knob"></div>
-                </div>
+        <section class="glass-panel p-8 rounded-[2.5rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
+            <div class="flex items-center gap-3">
+                <span class="material-icons-round text-zinc-600 text-sm">history</span>
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Log de Auditoría</p>
             </div>
-
-            <!-- Cifrado de Bóveda -->
-            <div class="security-row">
-                <div class="flex items-center gap-5">
-                    <div class="size-11 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/20 flex items-center justify-center">
-                        <span class="material-icons-round text-[#a855f7]">lock</span>
+            <div class="space-y-1">
+                <div class="log-entry">
+                    <div class="flex items-center gap-3">
+                        <span class="size-1.5 bg-[#13ecd6] rounded-full"></span>
+                        <p class="text-[10px] font-bold uppercase tracking-tight">Login Exitoso · Madrid</p>
                     </div>
-                    <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Cifrado Bóveda</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">AES-256 · Siempre activo</p>
-                    </div>
+                    <p class="text-[8px] font-black text-zinc-700 uppercase">Hoy, 04:00</p>
                 </div>
-                <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest">Forzado</span>
+                <div class="log-entry">
+                    <div class="flex items-center gap-3">
+                        <span class="size-1.5 bg-[#a855f7] rounded-full"></span>
+                        <p class="text-[10px] font-bold uppercase tracking-tight">Cifrado Sincronizado</p>
+                    </div>
+                    <p class="text-[8px] font-black text-zinc-700 uppercase">Ayer, 23:15</p>
+                </div>
             </div>
         </section>
 
-        <!-- Cambiar contraseña -->
-        <section class="glass-panel p-8 rounded-[3rem] space-y-5 reveal-node" style="animation-delay: 0.15s">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Credenciales</p>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button onclick="SGRouter.showToast('Enlace de cambio enviado a tu correo', 'success')" 
-                        class="flex-1 py-5 glass-panel rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-300 hover:text-white hover:bg-white/5 transition-all active:scale-95 flex items-center justify-center gap-3">
-                    <span class="material-icons-round text-[#a855f7]">key</span>
-                    Cambiar Contraseña
-                </button>
-                <button onclick="SGRouter.showToast('Sesiones cerradas en todos los dispositivos', 'success')" 
-                        class="flex-1 py-5 glass-panel rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-500 hover:text-red-400 hover:border-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-3">
-                    <span class="material-icons-round">logout</span>
-                    Cerrar Todas las Sesiones
-                </button>
-            </div>
-        </section>
-
-        <!-- Log de auditoría -->
-        <section class="glass-panel p-8 sm:p-12 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="material-icons-round text-zinc-600">history</span>
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">Log de Auditoría</p>
-                </div>
-                <span class="text-[8px] font-black text-zinc-700 uppercase tracking-widest">Últimos 7 días</span>
-            </div>
-            <div class="space-y-0">
-                <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-2 bg-[#13ecd6] rounded-full shadow-[0_0_8px_#13ecd6]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Conexión Exitosa · Madrid, ES</p>
-                    </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">Hoy, 04:00</p>
-                </div>
-                <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-2 bg-[#a855f7] rounded-full shadow-[0_0_8px_#a855f7]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Cifrado Bóveda Sincronizado</p>
-                    </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">Ayer, 23:15</p>
-                </div>
-                <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-2 bg-[#FF9D42] rounded-full shadow-[0_0_8px_#FF9D42]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Cambio de Configuración</p>
-                    </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">12 Mar, 18:30</p>
-                </div>
-                <div class="log-entry">
-                    <div class="flex items-center gap-3">
-                        <span class="size-2 bg-zinc-600 rounded-full"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Sesión Cerrada · Safari iOS</p>
-                    </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">11 Mar, 09:00</p>
-                </div>
-            </div>
-        </section>
+        <div class="flex flex-col gap-3 reveal-node" style="animation-delay: 0.3s">
+            <button onclick="SGRouter.showToast('Enlace enviado', 'success')" class="w-full py-4 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] hover:bg-white/5 active:scale-95 transition-all">
+                Actualizar Credenciales
+            </button>
+            <button onclick="SGRouter.showToast('Sesiones cerradas', 'info')" class="w-full py-4 border border-red-500/20 rounded-2xl text-[9px] font-black uppercase tracking-[0.4em] text-red-500/60 hover:bg-red-500/5 active:scale-95 transition-all">
+                Cierre Global de Sesión
+            </button>
+        </div>
 
     </div>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
@@ -337,32 +147,6 @@
             </button>
         </div>
     </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
