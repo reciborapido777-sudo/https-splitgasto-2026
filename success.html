@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,178 +10,103 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
         
         body, html { 
             background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; overflow: hidden !important; margin: 0; 
-            box-sizing: border-box;
-            overscroll-behavior: none;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transform: translateZ(0);
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            height: 100vh; overflow: hidden !important; 
         }
 
         .success-glow {
             position: relative;
-            width: 120px; height: 120px;
-            background: rgba(19, 236, 214, 0.1);
+            size: 140px;
+            background: rgba(19, 236, 214, 0.05);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(19, 236, 214, 0.3);
-            box-shadow: 0 0 50px rgba(19, 236, 214, 0.1);
-            animation: pulseSuccess 3s infinite ease-in-out;
-            transform: translateZ(0); /* Aceleración GPU */
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(19, 236, 214, 0.2);
+            box-shadow: 0 0 60px rgba(19, 236, 214, 0.1);
+            animation: pulseSuccess 4s infinite ease-in-out;
         }
 
         @keyframes pulseSuccess {
-            0% { transform: scale(1); box-shadow: 0 0 30px rgba(19, 236, 214, 0.1); }
-            50% { transform: scale(1.06); box-shadow: 0 0 60px rgba(19, 236, 214, 0.3); }
-            100% { transform: scale(1); box-shadow: 0 0 30px rgba(19, 236, 214, 0.1); }
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 80px rgba(19, 236, 214, 0.2); }
         }
 
-        .text-gradient-cyan { 
-            background: linear-gradient(135deg, #13ecd6 0%, #10b981 100%); 
-            -webkit-background-clip: text; 
+        .amount-highlight {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #13ecd6 0%, #10b981 100%);
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: inline-block;
-            padding-right: 0.55em !important; /* Blindaje Alpha v1.62 */
+            padding-right: 0.2em;
         }
 
-        .reveal-node { animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .btn-premium-cyan:hover {
-            background: #13ecd6;
-            color: #000;
-            box-shadow: 0 0 40px rgba(19, 236, 214, 0.4);
-        }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
+    </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell flex flex-col items-center justify-center p-6 text-center space-y-12">
-<div class="app-frame">
+<body class="app-shell flex flex-col items-center justify-center p-6 text-center">
+<div class="app-frame flex flex-col items-center justify-center w-full max-w-lg">
 
-    <div class="reveal-node flex flex-col items-center space-y-8">
-        <div class="success-glow">
-            <span class="material-icons-round text-[#13ecd6] text-6xl">done_all</span>
+    <div class="reveal-node flex flex-col items-center space-y-10 mb-12">
+        <div class="success-glow size-32">
+            <span class="material-icons-round text-[#13ecd6] text-6xl">verified</span>
         </div>
-        <div class="space-y-3">
-            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.6em] ml-2">Operación Validada</p>
-            <h1 class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-white leading-none">
+        <div class="space-y-4">
+            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.6em]">Protocolo Finalizado</p>
+            <h1 class="text-5xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-white leading-none">
                 Éxito Total
             </h1>
         </div>
     </div>
 
-    <section class="w-full max-w-md glass-panel p-10 rounded-[3.5rem] border-[#13ecd6]/10 space-y-10 reveal-node" style="animation-delay: 0.2s">
+    <section class="w-full glass-panel p-10 rounded-[3.5rem] border-white/5 space-y-10 reveal-node" style="animation-delay: 0.1s">
         <div class="flex justify-between items-center border-b border-white/5 pb-8">
             <div class="text-left">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Activo Procesado</p>
-                <p class="text-xl font-bold font-['Space_Grotesk'] uppercase tracking-tight">Sushi Kyoto Pro</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Activo</p>
+                <p class="text-sm font-black font-['Space_Grotesk'] uppercase tracking-tight">Sushi Kyoto Pro</p>
             </div>
             <div class="text-right">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Valor Final</p>
-                <p class="text-3xl font-black font-['Space_Grotesk'] text-gradient-cyan leading-none">25,56€</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Importe</p>
+                <p class="text-3xl font-black font-['Space_Grotesk'] amount-highlight leading-none italic">25,56€</p>
             </div>
         </div>
 
-        <div class="space-y-5">
-            <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+        <div class="space-y-6">
+            <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
                 <span>Auditoría IA</span>
                 <span class="text-[#13ecd6] flex items-center gap-2">
                     <span class="size-1.5 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    Completada
+                    SELLADA
                 </span>
             </div>
-            <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+            <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">
                 <span>Distribución</span>
                 <span class="text-white">Simétrica Alpha</span>
             </div>
         </div>
     </section>
 
-    <footer class="w-full max-w-xs space-y-4 reveal-node" style="animation-delay: 0.4s">
-        <button onclick="SGRouter.navigate('dashboard', 'success')" class="w-full py-7 bg-white text-black rounded-[2.2rem] font-black text-xs uppercase tracking-[0.5em] btn-premium-cyan transition-all shadow-2xl active:scale-95">
-            Volver al Dashboard
+    <footer class="w-full mt-12 space-y-4 reveal-node" style="animation-delay: 0.2s">
+        <button onclick="SGRouter.navigate('dashboard')" class="w-full py-7 bg-white text-black rounded-[2.2rem] font-black text-xs uppercase tracking-[0.5em] transition-all active:scale-95 shadow-[0_20px_40px_rgba(255,255,255,0.1)]">
+            Volver al Mando
         </button>
-        <button onclick="SGRouter.navigate('activity', 'success')" class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-            Ver en Historial
+        <button onclick="SGRouter.navigate('activity')" class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
+            Ver Log de Auditoría
         </button>
     </footer>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
@@ -189,42 +114,17 @@
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+            <button class="nav-item" onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
 
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
