@@ -5,25 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Añadir Gasto | SplitGasto 2026</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="engine/global.css">
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
+        /* Blindaje de Fuentes y Variables Locales */
         :root { --cian-tech: #13ecd6; --purple-deep: #a855f7; --orange-socio: #FF9D42; }
-        * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        body { background: #000; min-height: 100dvh; color: #fff; overflow-x: hidden; }
-
-        /* Importe Dinámico Space Grotesk */
         #amount-input {
             background: transparent; border: none; outline: none;
             color: white; font-size: 4.5rem; font-weight: 900;
@@ -54,7 +43,6 @@
             cursor: pointer; transition: all 0.2s; text-transform: uppercase;
         }
         .split-option.active { background: var(--cian-tech); color: #000; box-shadow: 0 4px 15px rgba(19, 236, 214, 0.3); }
-        .split-option:not(.active) { color: rgba(255,255,255,0.3); }
 
         .payer-chip { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-width: 60px; }
         .payer-avatar {
@@ -71,57 +59,43 @@
             color: #d8b4fe; font-size: 9px; font-weight: 900; letter-spacing: 0.1em;
             padding: 8px 16px; border-radius: 50px; transition: all 0.3s;
         }
-        .btn-luck:active { transform: scale(0.9); background: rgba(168, 85, 247, 0.3); }
+        
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; cursor: pointer; transition: all .2s; }
+        .nav-item span { font-size: 20px; color: #4a4a4a; }
+        .nav-item p { font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .15em; color: #4a4a4a; }
+        .nav-item.active span, .nav-item.active p { color: var(--cian-tech); }
     </style>
-
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            var fixedBottom = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedBottom.forEach(function(el){ el.style.position = 'sticky'; el.style.bottom = '0'; el.style.width = '100%'; });
-            var fixedTop = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTop.forEach(function(el){ el.style.position = 'sticky'; el.style.top = '0'; el.style.width = '100%'; });
-        }
-        window.addEventListener('load', applyDesktopFix);
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js"></script>
 </head>
 
-<body class="app-shell pb-32">
-<div class="app-frame max-w-lg mx-auto">
+<body class="app-shell bg-black">
+<div class="app-frame flex flex-col h-full">
 
     <header class="flex justify-between items-center px-6 py-5 sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <button onclick="SGRouter.back()" class="size-10 rounded-xl glass-panel flex items-center justify-center active:scale-90 transition-all">
+        <button onclick="SGRouter.back()" class="size-10 rounded-xl glass-panel flex items-center justify-center active:scale-90 transition-all border border-white/5">
             <span class="material-icons-round text-zinc-400">arrow_back</span>
         </button>
         <div class="text-center">
             <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nueva Entrada</p>
             <h1 class="text-[10px] font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Registro Alpha</h1>
         </div>
-        <button onclick="saveExpense()" class="text-[10px] font-black uppercase tracking-widest text-[#13ecd6] hover:brightness-110 transition-all">Guardar</button>
+        <button onclick="saveExpense()" class="text-[10px] font-black uppercase tracking-widest text-[#13ecd6]">Guardar</button>
     </header>
 
-    <main class="px-6 pt-8 space-y-8">
+    <main class="flex-1 overflow-y-auto px-6 pt-8 space-y-8 pb-32 no-scrollbar">
 
-        <div class="glass-panel p-5 flex items-center gap-4 border-[#13ecd6]/20 bg-[#13ecd6]/05 cursor-pointer active:scale-95 transition-all" onclick="SGRouter.navigate('scanner')">
+        <div class="glass-panel p-5 flex items-center gap-4 border-[#13ecd6]/20 bg-[#13ecd6]/05 cursor-pointer active:scale-95 transition-all reveal-node" onclick="SGRouter.navigate('scanner')">
             <div class="size-12 rounded-2xl flex items-center justify-center bg-[#13ecd6]/20 shadow-[0_0_20px_rgba(19,236,214,0.1)]">
                 <span class="material-icons-round text-[#13ecd6]">auto_awesome</span>
             </div>
             <div>
-                <p class="font-black text-[10px] uppercase tracking-wider text-white">Escanear Ticket con IA</p>
-                <p class="text-[9px] text-zinc-500 uppercase font-bold">Extrae datos de precisión</p>
+                <p class="font-black text-[10px] uppercase tracking-wider text-white">Escanear Ticket IA</p>
+                <p class="text-[9px] text-zinc-500 uppercase font-bold tracking-tighter">Extracción AES-256</p>
             </div>
             <span class="material-icons-round ml-auto text-zinc-700">chevron_right</span>
         </div>
 
-        <div class="glass-panel p-8 text-center border-white/5">
+        <div class="glass-panel p-8 text-center border-white/5 reveal-node" style="animation-delay: 0.1s">
             <p class="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-600 mb-4">Importe Total</p>
             <div class="flex items-center justify-center">
                 <span class="text-2xl font-black text-zinc-800 mr-2 italic">€</span>
@@ -130,7 +104,7 @@
             <p id="per-person-hint" class="text-[9px] font-black text-[#13ecd6] tracking-[0.2em] mt-4 opacity-40 uppercase italic">Esperando telemetría...</p>
         </div>
 
-        <div class="space-y-6">
+        <div class="space-y-6 reveal-node" style="animation-delay: 0.2s">
             <div class="space-y-3">
                 <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Descripción del Activo</label>
                 <div class="relative">
@@ -145,7 +119,7 @@
                     <input type="date" id="date-input" class="sg-input font-mono text-xs">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Grupo</label>
+                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Grupo de Mando</label>
                     <select id="group-input" class="sg-input text-xs font-bold appearance-none cursor-pointer">
                         <option>🍣 Sushi Kyoto Pro</option>
                         <option>🏔️ Viaje Pirineos</option>
@@ -162,12 +136,11 @@
                     <button class="cat-btn" data-cat="fun" onclick="selectCat(this)">🎬 <span>Ocio</span></button>
                     <button class="cat-btn" data-cat="home" onclick="selectCat(this)">🏠 <span>Hogar</span></button>
                     <button class="cat-btn" data-cat="travel" onclick="selectCat(this)">✈️ <span>Vuelos</span></button>
-                    <button class="cat-btn" data-cat="health" onclick="selectCat(this)">💊 <span>Salud</span></button>
                 </div>
             </div>
         </div>
 
-        <div class="glass-panel p-6 space-y-6 border-white/5">
+        <div class="glass-panel p-6 space-y-6 border-white/5 reveal-node" style="animation-delay: 0.3s">
             <div class="flex justify-between items-center">
                 <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Pagado por</h3>
                 <button onclick="SGRouter.navigate('games')" class="btn-luck flex items-center gap-2">
@@ -178,7 +151,7 @@
             <div class="flex gap-6 overflow-x-auto py-2 no-scrollbar" id="payers-row"></div>
         </div>
 
-        <div class="glass-panel p-6 space-y-6 border-white/5">
+        <div class="glass-panel p-6 space-y-6 border-white/5 reveal-node" style="animation-delay: 0.4s">
             <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Reparto de Deuda</h3>
             <div class="flex p-1.5 rounded-2xl bg-white/5 border border-white/5">
                 <div class="split-option active" onclick="selectSplit(this,'equal')">Igual</div>
@@ -189,11 +162,6 @@
             <div id="split-details" class="space-y-4 mt-2"></div>
         </div>
 
-        <div class="space-y-2">
-            <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Notas Alpha</label>
-            <textarea id="notes-input" class="sg-input resize-none h-24" placeholder="Anotaciones de la misión..."></textarea>
-        </div>
-
         <button onclick="saveExpense()" class="w-full py-6 rounded-[2.5rem] bg-gradient-to-br from-[#13ecd6] to-[#0dbfb0] text-black font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(19,236,214,0.2)] active:scale-95 transition-all">
             Confirmar Gasto Alpha
         </button>
@@ -202,17 +170,17 @@
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-3xl border-t border-white/5">
         <div class="max-w-lg mx-auto flex justify-around items-center py-4 pb-8">
-            <button class="nav-item opacity-30 flex flex-col items-center gap-1" onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p class="text-[7px] font-black uppercase tracking-tighter">Mando</p>
+                <p>Mando</p>
             </button>
-            <button class="nav-item text-[#13ecd6] flex flex-col items-center gap-1" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p class="text-[7px] font-black uppercase tracking-tighter">Gastos</p>
+                <p>Gastos</p>
             </button>
-            <button class="nav-item opacity-30 flex flex-col items-center gap-1" onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p class="text-[7px] font-black uppercase tracking-tighter">Perfil</p>
+                <p>Perfil</p>
             </button>
         </div>
     </nav>
@@ -236,10 +204,10 @@
         row.innerHTML = members.map((m, i) => `
             <div onclick="selectedPayer=${i}; renderPayers()" class="payer-chip ${i === selectedPayer ? 'selected' : ''}">
                 <div class="payer-avatar" style="color:${m.color}; border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.init}</div>
-                <span class="payer-name">${m.name}</span>
+                <span class="payer-name text-zinc-500">${m.name}</span>
             </div>
         `).join('') + `
-            <div class="payer-chip opacity-30" onclick="SGRouter.showToast('Versión Socio Fundador')">
+            <div class="payer-chip opacity-30" onclick="SGRouter.showToast('Actualice a Membresía Élite')">
                 <div class="payer-avatar" style="border-style:dashed">+</div>
                 <span class="payer-name">Añadir</span>
             </div>`;
@@ -258,23 +226,32 @@
     }
 
     function renderSplitDetails() {
-        const amount = parseFloat(document.getElementById('amount-input').value) || 0;
+        const amountValue = document.getElementById('amount-input').value;
+        const amount = parseFloat(amountValue) || 0;
         const perPerson = (amount / members.length).toFixed(2);
-        document.getElementById('per-person-hint').innerText = amount > 0 ? `${perPerson}€ POR SOCIO ALPHA` : "ESPERANDO TELEMETRÍA...";
+        
+        const hint = document.getElementById('per-person-hint');
+        hint.innerText = amount > 0 ? `${perPerson}€ POR SOCIO ALPHA` : "ESPERANDO TELEMETRÍA...";
+        hint.style.opacity = amount > 0 ? "1" : "0.4";
 
         const container = document.getElementById('split-details');
         container.innerHTML = members.map((m, i) => {
             let inputUI = '';
-            if (splitMethod === 'equal') inputUI = `<span class="text-xs font-black text-[#13ecd6]">${perPerson} €</span>`;
-            else if (splitMethod === 'percentage') inputUI = `<div class="flex items-center gap-2"><input type="number" value="25" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">%</span></div>`;
-            else if (splitMethod === 'exact') inputUI = `<div class="flex items-center gap-2"><input type="number" placeholder="0.00" class="sg-input w-24 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">€</span></div>`;
-            else inputUI = `<div class="flex items-center gap-2"><input type="number" value="1" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">PARTES</span></div>`;
+            if (splitMethod === 'equal') {
+                inputUI = `<span class="text-xs font-black text-[#13ecd6]">${perPerson} €</span>`;
+            } else if (splitMethod === 'percentage') {
+                inputUI = `<div class="flex items-center gap-2"><input type="number" value="25" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">%</span></div>`;
+            } else if (splitMethod === 'exact') {
+                inputUI = `<div class="flex items-center gap-2"><input type="number" placeholder="0.00" class="sg-input w-24 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">€</span></div>`;
+            } else {
+                inputUI = `<div class="flex items-center gap-2"><input type="number" value="1" class="sg-input w-16 p-2 text-center text-xs"/><span class="text-[10px] opacity-40">PARTES</span></div>`;
+            }
 
             return `
                 <div class="flex items-center justify-between bg-white/[0.02] p-3 rounded-xl border border-white/5">
                     <div class="flex items-center gap-3">
                         <div class="size-8 rounded-full flex items-center justify-center font-black text-[10px]" style="background:${m.color}20; color:${m.color}">${m.init}</div>
-                        <span class="text-[11px] font-bold uppercase tracking-tight">${m.name}</span>
+                        <span class="text-[11px] font-bold uppercase tracking-tight text-white">${m.name}</span>
                     </div>
                     ${inputUI}
                 </div>`;
@@ -285,19 +262,14 @@
 
     function saveExpense() {
         const amt = document.getElementById('amount-input').value;
-        if(!amt) { SGRouter.showToast('IMPORTE REQUERIDO', 'warning'); return; }
-        SGRouter.showToast('GASTO REGISTRADO ✓', 'success');
+        if(!amt) { SGRouter.showToast('ERROR: IMPORTE REQUERIDO', 'warning'); return; }
+        SGRouter.showToast('MISIÓN COMPLETADA: GASTO REGISTRADO ✓', 'success');
         setTimeout(() => SGRouter.navigate('activity'), 1000);
     }
 
+    // Inicialización de matriz
     renderPayers();
     renderSplitDetails();
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(e => console.warn('[SW] Error:', e));
-        });
-    }
 </script>
 </body>
 </html>
