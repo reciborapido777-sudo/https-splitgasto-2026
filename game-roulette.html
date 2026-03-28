@@ -35,6 +35,15 @@
         }
         .spin-btn:active { transform: scale(0.94) rotate(-1deg); }
         .spin-btn:disabled { opacity: 0.5; filter: grayscale(1); }
+
+        /* Botón de Registro Post-Giro */
+        .register-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .register-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--cian-tech); }
     </style>
     <script src="engine/router.js"></script>
 </head>
@@ -81,12 +90,18 @@
             </div>
         </section>
 
-        <button id="spin-btn" class="spin-btn w-full py-6 rounded-[2rem] reveal-node" onclick="spinWheel()">
-            <span class="flex items-center justify-center gap-3">
-                <span class="material-icons-round">bolt</span>
-                EJECUTAR GIRO ALPHA
-            </span>
-        </button>
+        <div class="space-y-4">
+            <button id="spin-btn" class="spin-btn w-full py-6 rounded-[2rem] reveal-node" onclick="spinWheel()">
+                <span class="flex items-center justify-center gap-3">
+                    <span class="material-icons-round">bolt</span>
+                    EJECUTAR GIRO ALPHA
+                </span>
+            </button>
+
+            <button id="register-btn" class="register-btn w-full py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest opacity-0 pointer-events-none transition-all duration-500" onclick="SGRouter.navigate('split')">
+                Registrar Gasto del Perdedor
+            </button>
+        </div>
     </div>
 
     <script>
@@ -100,7 +115,6 @@
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
 
-        // Motor Sónico Alpha
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClick(vol = 0.1) {
             const osc = audioCtx.createOscillator();
@@ -158,6 +172,7 @@
             
             isSpinning = true;
             document.getElementById('spin-btn').disabled = true;
+            document.getElementById('register-btn').classList.add('opacity-0', 'pointer-events-none');
             
             const winnerIdx = Math.floor(Math.random() * players.length);
             const slice = (Math.PI*2)/players.length;
@@ -176,10 +191,9 @@
                 
                 drawWheel(currentPos);
 
-                // Lógica de sonido: Clic cada vez que pasa un sector
                 const currentAngleMod = currentPos % (Math.PI * 2);
                 if (Math.abs(currentAngleMod - lastClickAngle) > slice) {
-                    playClick(0.15 * (1 - t)); // El sonido se debilita al frenar
+                    playClick(0.15 * (1 - t)); 
                     lastClickAngle = currentAngleMod;
                 }
 
@@ -188,11 +202,12 @@
                 } else {
                     isSpinning = false;
                     document.getElementById('spin-btn').disabled = false;
+                    document.getElementById('register-btn').classList.remove('opacity-0', 'pointer-events-none');
                     spinCounter++;
                     document.getElementById('spin-count').innerText = spinCounter;
                     document.getElementById('last-winner').innerText = players[winnerIdx].name;
                     playWin();
-                    if(window.SGRouter) SGRouter.showToast(`OBJETIVO: ${players[winnerIdx].name}`, 'premium');
+                    if(window.SGRouter) SGRouter.showToast(`SELECCIONADO: ${players[winnerIdx].name}`, 'premium');
                 }
             }
             requestAnimationFrame(animate);
