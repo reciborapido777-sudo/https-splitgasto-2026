@@ -1,228 +1,167 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color:#000 !important;overflow-x:hidden">
+<html lang="es" class="app-shell" style="background-color:#000 !important">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Bienvenido | SplitGasto 2026</title>
-<link rel="stylesheet" href="engine/global.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
-html,body{background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0;overflow:hidden;height:100vh;box-sizing:border-box}
-.glass-panel{background:rgba(255,255,255,0.02);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.05);transition:all .5s cubic-bezier(.16,1,.3,1);transform:translateZ(0)}
-.step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all .4s}
-.step-dot.active{width:28px;border-radius:4px;background:#13ecd6;box-shadow:0 0 12px #13ecd6}
-.reveal-node{animation:revealUp .8s cubic-bezier(.16,1,.3,1) forwards;opacity:0}
-@keyframes revealUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.slide{display:none;animation:fadeIn .5s ease}
-.slide.active{display:flex}
-@keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
-.illus-ring{border-radius:50%;animation:pulseRing 3s infinite ease-in-out}
-@keyframes pulseRing{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.08);opacity:1}}
-</style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>Bienvenido | SplitGasto 2026</title>
+    
+    <link rel="stylesheet" href="engine/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
+        
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+        
+        .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Sistema de Puntos Alpha */
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .step-dot.active { width: 32px; border-radius: 4px; background: var(--cian-tech); box-shadow: 0 0 15px var(--cian-tech); }
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
+        /* Animaciones de Transición */
+        .slide { display: none; transform: translateX(20px); opacity: 0; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+        .slide.active { display: flex; transform: translateX(0); opacity: 1; }
+        
+        .illus-ring { border-radius: 50%; animation: pulseRing 4s infinite ease-in-out; }
+        @keyframes pulseRing { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.1); opacity: 0.8; } }
+
+        .main-btn {
+            background: #fff; color: #000;
+            font-weight: 900; font-family: 'Space Grotesk';
+            letter-spacing: 0.3em; transition: var(--transition-alpha);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
         }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+        .main-btn:active { transform: scale(0.96); background: var(--cian-tech); }
+    </style>
     <script src="engine/router.js"></script>
 </head>
 <body class="app-shell flex flex-col h-screen">
-<div class="app-frame">
+<div class="app-frame flex flex-col h-full">
 
-<!-- Header -->
-<div class="flex justify-between items-center p-6 shrink-0">
-  <div class="flex items-center gap-2">
-    <div class="size-8 bg-[#13ecd6] rounded-xl flex items-center justify-center">
-      <span class="material-icons-round text-black text-base">bolt</span>
-    </div>
-    <span class="font-black text-base font-['Space_Grotesk'] uppercase tracking-tight">SplitGasto</span>
-  </div>
-  <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors">Saltar</button>
-</div>
-
-<!-- Slides Container -->
-<div class="flex-1 flex flex-col items-center justify-center px-6 overflow-hidden">
-
-  <!-- Slide 1: Crea tus grupos -->
-  <div id="slide-0" class="slide active flex-col items-center text-center gap-8 w-full max-w-sm">
-    <div class="relative w-56 h-56 flex items-center justify-center mx-auto">
-      <div class="absolute inset-0 bg-[#13ecd6]/10 rounded-full blur-3xl illus-ring"></div>
-      <div class="relative z-10 flex -space-x-6">
-        <div class="size-20 rounded-full bg-zinc-900 border-4 border-black flex items-center justify-center shadow-xl">
-          <img src="https://api.dicebear.com/9.x/initials/svg?seed=Ana&backgroundColor=0a3a2a&fontFamily=Arial&fontSize=40" class="size-full rounded-full" alt="Ana">
+    <header class="flex justify-between items-center p-8 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="size-9 bg-[#13ecd6] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(19,236,214,0.3)]">
+                <span class="material-icons-round text-black text-lg">bolt</span>
+            </div>
+            <span class="font-black text-lg font-['Space_Grotesk'] uppercase tracking-tighter">SplitGasto</span>
         </div>
-        <div class="size-24 rounded-full bg-[#13ecd6]/20 border-4 border-black flex items-center justify-center shadow-2xl z-10">
-          <span class="material-icons-round text-[#13ecd6] text-4xl">group_add</span>
-        </div>
-        <div class="size-20 rounded-full bg-zinc-900 border-4 border-black flex items-center justify-center shadow-xl">
-          <img src="https://api.dicebear.com/9.x/initials/svg?seed=MR&backgroundColor=0a2a3a&fontFamily=Arial&fontSize=40" class="size-full rounded-full" alt="Mario">
-        </div>
-      </div>
-    </div>
-    <div class="space-y-3">
-      <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.5em]">Paso 1</p>
-      <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Crea tus Grupos</h2>
-      <p class="text-sm text-zinc-500 font-medium leading-relaxed">Organiza a tus amigos en grupos para cada ocasión: viajes, piso compartido, cenas, eventos.</p>
-    </div>
-  </div>
+        <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.3em] hover:text-[#13ecd6] transition-colors">Saltar</button>
+    </header>
 
-  <!-- Slide 2: Registra gastos -->
-  <div id="slide-1" class="slide flex-col items-center text-center gap-8 w-full max-w-sm">
-    <div class="relative w-56 h-56 flex items-center justify-center mx-auto">
-      <div class="absolute inset-0 bg-[#a855f7]/10 rounded-full blur-3xl illus-ring"></div>
-      <div class="relative z-10 glass-panel p-8 rounded-[2rem] border border-[#a855f7]/20">
-        <span class="material-icons-round text-[#a855f7] text-6xl">document_scanner</span>
-        <div class="mt-4 flex items-center gap-2 justify-center">
-          <span class="size-2 bg-[#13ecd6] rounded-full animate-pulse"></span>
-          <span class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest">IA Verificando</span>
+    <main class="flex-1 flex flex-col items-center justify-center px-8 text-center overflow-hidden">
+        
+        <div id="slide-0" class="slide active flex-col items-center gap-10 w-full max-w-sm">
+            <div class="relative size-64 flex items-center justify-center">
+                <div class="absolute inset-0 bg-[#13ecd6]/10 blur-[80px] illus-ring"></div>
+                <div class="relative z-10 flex -space-x-8">
+                    <div class="size-20 rounded-full glass-panel border-white/10 overflow-hidden shadow-2xl">
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=A1&backgroundColor=050505" class="size-full opacity-80">
+                    </div>
+                    <div class="size-28 rounded-full bg-black border-4 border-[#13ecd6]/30 flex items-center justify-center shadow-[0_0_40px_rgba(19,236,214,0.2)] z-10">
+                        <span class="material-icons-round text-[#13ecd6] text-5xl">group_add</span>
+                    </div>
+                    <div class="size-20 rounded-full glass-panel border-white/10 overflow-hidden shadow-2xl">
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=B2&backgroundColor=050505" class="size-full opacity-80">
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.6em] reveal-node" style="animation-delay:0.1s">Despliegue 01</p>
+                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9] reveal-node" style="animation-delay:0.2s">Crea tus<br>Grupos</h2>
+                <p class="text-sm text-zinc-500 font-medium leading-relaxed reveal-node" style="animation-delay:0.3s">Organización absoluta para viajes, cenas o residencias compartidas. Control total, cero fricción.</p>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="space-y-3">
-      <p class="text-[9px] font-black text-[#a855f7] uppercase tracking-[0.5em]">Paso 2</p>
-      <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Escanea y Divide</h2>
-      <p class="text-sm text-zinc-500 font-medium leading-relaxed">Fotografía cualquier ticket. La IA extrae el importe y lo divide automáticamente entre los socios del grupo.</p>
-    </div>
-  </div>
 
-  <!-- Slide 3: Liquida al instante -->
-  <div id="slide-2" class="slide flex-col items-center text-center gap-8 w-full max-w-sm">
-    <div class="relative w-56 h-56 flex items-center justify-center mx-auto">
-      <div class="absolute inset-0 bg-[#FF9D42]/10 rounded-full blur-3xl illus-ring"></div>
-      <div class="relative z-10 text-center space-y-4">
-        <div class="size-24 mx-auto bg-[#13ecd6]/10 border border-[#13ecd6]/30 rounded-full flex items-center justify-center">
-          <span class="material-icons-round text-[#13ecd6] text-5xl">check_circle</span>
+        <div id="slide-1" class="slide flex-col items-center gap-10 w-full max-w-sm">
+            <div class="relative size-64 flex items-center justify-center">
+                <div class="absolute inset-0 bg-[#a855f7]/10 blur-[80px] illus-ring"></div>
+                <div class="relative z-10 size-40 glass-panel rounded-[3rem] border-[#a855f7]/30 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(168,85,247,0.15)]">
+                    <span class="material-icons-round text-[#a855f7] text-7xl">document_scanner</span>
+                    <div class="absolute -bottom-2 px-4 py-1.5 bg-black border border-[#a855f7]/50 rounded-full flex items-center gap-2">
+                        <div class="size-1.5 bg-[#13ecd6] rounded-full animate-ping"></div>
+                        <span class="text-[8px] font-black text-white uppercase tracking-widest italic">IA Audit</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <p class="text-[9px] font-black text-[#a855f7] uppercase tracking-[0.6em]">Despliegue 02</p>
+                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9]">Escaneo<br>Cognitivo</h2>
+                <p class="text-sm text-zinc-500 font-medium leading-relaxed">Nuestra IA extrae importes de cualquier ticket con precisión quirúrgica. Olvida el procesamiento manual.</p>
+            </div>
         </div>
-        <div class="glass-panel px-6 py-3 rounded-2xl">
-          <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6]">+150,50€</p>
-          <p class="text-[8px] text-zinc-600 uppercase tracking-widest">Deuda liquidada</p>
+
+        <div id="slide-2" class="slide flex-col items-center gap-10 w-full max-w-sm">
+            <div class="relative size-64 flex items-center justify-center">
+                <div class="absolute inset-0 bg-[#FF9D42]/10 blur-[80px] illus-ring"></div>
+                <div class="relative z-10 glass-panel px-10 py-6 rounded-[2.5rem] border-[#FF9D42]/30 text-center">
+                    <p class="text-[10px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-2">Liquidación</p>
+                    <p class="text-4xl font-black font-['Space_Grotesk'] text-white italic">+150,50€</p>
+                    <div class="mt-4 flex justify-center">
+                        <span class="material-icons-round text-[#13ecd6] text-3xl">verified</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.6em]">Despliegue 03</p>
+                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9]">Balance<br>Invisible</h2>
+                <p class="text-sm text-zinc-500 font-medium leading-relaxed">Algoritmos de optimización que reducen el número de transferencias. Liquida deudas con un solo toque.</p>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="space-y-3">
-      <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.5em]">Paso 3</p>
-      <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Liquida al Instante</h2>
-      <p class="text-sm text-zinc-500 font-medium leading-relaxed">Sin malentendidos. Sin cálculos manuales. La IA audita cada operación y cierra cuentas con precisión absoluta.</p>
-    </div>
-  </div>
 
-</div>
+    </main>
 
-<!-- Controls -->
-<div class="shrink-0 px-6 pb-10 space-y-6">
-  <!-- Dots -->
-  <div class="flex justify-center gap-2" id="dots">
-    <div class="step-dot active" id="dot-0"></div>
-    <div class="step-dot" id="dot-1"></div>
-    <div class="step-dot" id="dot-2"></div>
-  </div>
-  
-  <!-- Button -->
-  <button id="nextBtn" onclick="nextSlide()" 
-    class="w-full py-6 bg-white text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
-    Siguiente
-  </button>
-  <div class="text-center">
-    <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-700 uppercase tracking-widest hover:text-zinc-400 transition-colors">
-      ¿Ya tienes cuenta? <span class="text-[#13ecd6]">Iniciar sesión</span>
-    </button>
-  </div>
+    <footer class="shrink-0 px-8 pb-12 space-y-8">
+        <div class="flex justify-center gap-3" id="dots">
+            <div class="step-dot active" id="dot-0"></div>
+            <div class="step-dot" id="dot-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+        </div>
+        
+        <div class="space-y-6">
+            <button id="nextBtn" onclick="nextSlide()" class="main-btn w-full py-6 rounded-[2rem] text-xs uppercase italic">
+                Siguiente
+            </button>
+            <div class="text-center">
+                <button onclick="skipOnboarding()" class="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">
+                    ¿Socio existente? <span class="text-[#13ecd6] ml-1">Identificarse</span>
+                </button>
+            </div>
+        </div>
+    </footer>
+
 </div>
 
 <script>
-let currentSlide = 0;
-const totalSlides = 3;
+    let currentSlide = 0;
+    const totalSlides = 3;
 
-function nextSlide() {
-  if (currentSlide < totalSlides - 1) {
-    document.getElementById('slide-' + currentSlide).classList.remove('active');
-    document.getElementById('dot-' + currentSlide).classList.remove('active');
-    currentSlide++;
-    document.getElementById('slide-' + currentSlide).classList.add('active');
-    document.getElementById('dot-' + currentSlide).classList.add('active');
-    if (currentSlide === totalSlides - 1) {
-      document.getElementById('nextBtn').textContent = 'Comenzar';
-      document.getElementById('nextBtn').onclick = () => SGRouter.navigate('register', 'onboarding');
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+            document.getElementById(`dot-${currentSlide}`).classList.remove('active');
+            currentSlide++;
+            
+            // Delay para permitir que el display:none no rompa la transición
+            setTimeout(() => {
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                document.getElementById(`dot-${currentSlide}`).classList.add('active');
+            }, 50);
+
+            if (currentSlide === totalSlides - 1) {
+                const btn = document.getElementById('nextBtn');
+                btn.textContent = 'Iniciar Misión';
+                btn.style.background = 'var(--cian-tech)';
+            }
+        } else {
+            SGRouter.navigate('register', 'onboarding');
+        }
     }
-  } else {
-    SGRouter.navigate('register', 'onboarding');
-  }
-}
 
-function skipOnboarding() {
-  SGRouter.navigate('auth', 'onboarding');
-}
+    function skipOnboarding() {
+        SGRouter.navigate('auth', 'onboarding');
+    }
 </script>
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
-</div>
 </body>
 </html>
