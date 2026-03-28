@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="app-shell" style="background-color:#000 !important">
+<html lang="es" class="app-shell" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -12,107 +12,111 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@700;900&display=swap');
         
-        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100dvh; margin: 0; }
+        .tech-font { font-family: 'Space Grotesk', sans-serif; }
         
         .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.05); }
         
         /* Sistema de Puntos Alpha */
-        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-        .step-dot.active { width: 32px; border-radius: 4px; background: var(--cian-tech); box-shadow: 0 0 15px var(--cian-tech); }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .step-dot.active { width: 32px; border-radius: 4px; background: #13ecd6; box-shadow: 0 0 15px rgba(19,236,214,0.4); }
 
         /* Animaciones de Transición */
-        .slide { display: none; transform: translateX(20px); opacity: 0; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
-        .slide.active { display: flex; transform: translateX(0); opacity: 1; }
+        .slide { display: none; transform: translateY(15px); opacity: 0; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide.active { display: flex; transform: translateY(0); opacity: 1; }
         
         .illus-ring { border-radius: 50%; animation: pulseRing 4s infinite ease-in-out; }
-        @keyframes pulseRing { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        @keyframes pulseRing { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.15); opacity: 0.6; } }
 
         .main-btn {
             background: #fff; color: #000;
             font-weight: 900; font-family: 'Space Grotesk';
-            letter-spacing: 0.3em; transition: var(--transition-alpha);
-            box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+            letter-spacing: 0.25em; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-transform: uppercase;
         }
-        .main-btn:active { transform: scale(0.96); background: var(--cian-tech); }
+        .main-btn:active { transform: scale(0.96); filter: brightness(1.1); }
+        
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell flex flex-col h-screen">
+<body class="app-shell flex flex-col h-screen bg-black">
 <div class="app-frame flex flex-col h-full">
 
-    <header class="flex justify-between items-center p-8 shrink-0">
+    <header class="flex justify-between items-center p-8 shrink-0 reveal-node">
         <div class="flex items-center gap-3">
-            <div class="size-9 bg-[#13ecd6] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(19,236,214,0.3)]">
-                <span class="material-icons-round text-black text-lg">bolt</span>
+            <div class="size-10 bg-[#13ecd6] rounded-2xl flex items-center justify-center shadow-[0_0_25px_rgba(19,236,214,0.35)]">
+                <span class="material-icons-round text-black text-xl">bolt</span>
             </div>
-            <span class="font-black text-lg font-['Space_Grotesk'] uppercase tracking-tighter">SplitGasto</span>
+            <span class="font-black text-xl tech-font uppercase tracking-tighter italic">SplitGasto</span>
         </div>
-        <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.3em] hover:text-[#13ecd6] transition-colors">Saltar</button>
+        <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] hover:text-[#13ecd6] transition-all">Saltar</button>
     </header>
 
-    <main class="flex-1 flex flex-col items-center justify-center px-8 text-center overflow-hidden">
+    <main class="flex-1 flex flex-col items-center justify-center px-10 text-center overflow-hidden">
         
-        <div id="slide-0" class="slide active flex-col items-center gap-10 w-full max-w-sm">
+        <div id="slide-0" class="slide active flex-col items-center gap-12 w-full max-w-sm">
             <div class="relative size-64 flex items-center justify-center">
                 <div class="absolute inset-0 bg-[#13ecd6]/10 blur-[80px] illus-ring"></div>
                 <div class="relative z-10 flex -space-x-8">
-                    <div class="size-20 rounded-full glass-panel border-white/10 overflow-hidden shadow-2xl">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=A1&backgroundColor=050505" class="size-full opacity-80">
+                    <div class="size-20 rounded-[2rem] glass-panel border-white/5 overflow-hidden shadow-2xl rotate-[-10deg]">
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=A1&backgroundColor=0d1f0d" class="size-full opacity-60">
                     </div>
-                    <div class="size-28 rounded-full bg-black border-4 border-[#13ecd6]/30 flex items-center justify-center shadow-[0_0_40px_rgba(19,236,214,0.2)] z-10">
-                        <span class="material-icons-round text-[#13ecd6] text-5xl">group_add</span>
+                    <div class="size-28 rounded-[2.5rem] bg-black border-2 border-[#13ecd6]/30 flex items-center justify-center shadow-[0_0_50px_rgba(19,236,214,0.2)] z-10">
+                        <span class="material-icons-round text-[#13ecd6] text-5xl">groups_3</span>
                     </div>
-                    <div class="size-20 rounded-full glass-panel border-white/10 overflow-hidden shadow-2xl">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=B2&backgroundColor=050505" class="size-full opacity-80">
+                    <div class="size-20 rounded-[2rem] glass-panel border-white/5 overflow-hidden shadow-2xl rotate-[10deg]">
+                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=B2&backgroundColor=0d0d1f" class="size-full opacity-60">
                     </div>
                 </div>
             </div>
-            <div class="space-y-4">
-                <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.6em] reveal-node" style="animation-delay:0.1s">Despliegue 01</p>
-                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9] reveal-node" style="animation-delay:0.2s">Crea tus<br>Grupos</h2>
-                <p class="text-sm text-zinc-500 font-medium leading-relaxed reveal-node" style="animation-delay:0.3s">Organización absoluta para viajes, cenas o residencias compartidas. Control total, cero fricción.</p>
+            <div class="space-y-5">
+                <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.6em]">Despliegue 01</p>
+                <h2 class="text-4xl font-black tech-font uppercase italic tracking-tighter leading-[0.9]">Crea tus<br>Grupos</h2>
+                <p class="text-sm text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">Organización absoluta para misiones compartidas. Control total en cada nodo.</p>
             </div>
         </div>
 
-        <div id="slide-1" class="slide flex-col items-center gap-10 w-full max-w-sm">
+        <div id="slide-1" class="slide flex-col items-center gap-12 w-full max-w-sm">
             <div class="relative size-64 flex items-center justify-center">
                 <div class="absolute inset-0 bg-[#a855f7]/10 blur-[80px] illus-ring"></div>
-                <div class="relative z-10 size-40 glass-panel rounded-[3rem] border-[#a855f7]/30 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(168,85,247,0.15)]">
+                <div class="relative z-10 size-44 glass-panel rounded-[3.5rem] border-[#a855f7]/30 flex flex-col items-center justify-center shadow-[0_0_60px_rgba(168,85,247,0.2)]">
                     <span class="material-icons-round text-[#a855f7] text-7xl">document_scanner</span>
-                    <div class="absolute -bottom-2 px-4 py-1.5 bg-black border border-[#a855f7]/50 rounded-full flex items-center gap-2">
-                        <div class="size-1.5 bg-[#13ecd6] rounded-full animate-ping"></div>
-                        <span class="text-[8px] font-black text-white uppercase tracking-widest italic">IA Audit</span>
+                    <div class="absolute -bottom-3 px-5 py-2 bg-black border border-[#a855f7]/40 rounded-full flex items-center gap-2">
+                        <div class="size-2 bg-[#13ecd6] rounded-full animate-ping"></div>
+                        <span class="text-[8px] font-black text-white uppercase tracking-[0.2em] tech-font italic">IA Alpha v4.4</span>
                     </div>
                 </div>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <p class="text-[9px] font-black text-[#a855f7] uppercase tracking-[0.6em]">Despliegue 02</p>
-                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9]">Escaneo<br>Cognitivo</h2>
-                <p class="text-sm text-zinc-500 font-medium leading-relaxed">Nuestra IA extrae importes de cualquier ticket con precisión quirúrgica. Olvida el procesamiento manual.</p>
+                <h2 class="text-4xl font-black tech-font uppercase italic tracking-tighter leading-[0.9]">Visión<br>Artificial</h2>
+                <p class="text-sm text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">Extracción de datos con precisión quirúrgica. Cero errores manuales.</p>
             </div>
         </div>
 
-        <div id="slide-2" class="slide flex-col items-center gap-10 w-full max-w-sm">
+        <div id="slide-2" class="slide flex-col items-center gap-12 w-full max-w-sm">
             <div class="relative size-64 flex items-center justify-center">
                 <div class="absolute inset-0 bg-[#FF9D42]/10 blur-[80px] illus-ring"></div>
-                <div class="relative z-10 glass-panel px-10 py-6 rounded-[2.5rem] border-[#FF9D42]/30 text-center">
-                    <p class="text-[10px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-2">Liquidación</p>
-                    <p class="text-4xl font-black font-['Space_Grotesk'] text-white italic">+150,50€</p>
-                    <div class="mt-4 flex justify-center">
-                        <span class="material-icons-round text-[#13ecd6] text-3xl">verified</span>
+                <div class="relative z-10 glass-panel px-10 py-8 rounded-[3rem] border-[#FF9D42]/20 text-center shadow-2xl">
+                    <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-3">Balance Global</p>
+                    <p class="text-5xl font-black tech-font text-white italic tracking-tighter">+150,50€</p>
+                    <div class="mt-5 flex justify-center">
+                        <span class="material-icons-round text-[#13ecd6] text-4xl shadow-glow">verified</span>
                     </div>
                 </div>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.6em]">Despliegue 03</p>
-                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-[0.9]">Balance<br>Invisible</h2>
-                <p class="text-sm text-zinc-500 font-medium leading-relaxed">Algoritmos de optimización que reducen el número de transferencias. Liquida deudas con un solo toque.</p>
+                <h2 class="text-4xl font-black tech-font uppercase italic tracking-tighter leading-[0.9]">Saldos de<br>Élite</h2>
+                <p class="text-sm text-zinc-500 font-bold leading-relaxed uppercase tracking-tight">Algoritmos de optimización de capital. Liquida el nodo con un toque.</p>
             </div>
         </div>
 
     </main>
 
-    <footer class="shrink-0 px-8 pb-12 space-y-8">
+    <footer class="shrink-0 px-10 pb-12 space-y-10 reveal-node">
         <div class="flex justify-center gap-3" id="dots">
             <div class="step-dot active" id="dot-0"></div>
             <div class="step-dot" id="dot-1"></div>
@@ -120,12 +124,12 @@
         </div>
         
         <div class="space-y-6">
-            <button id="nextBtn" onclick="nextSlide()" class="main-btn w-full py-6 rounded-[2rem] text-xs uppercase italic">
-                Siguiente
+            <button id="nextBtn" onclick="nextSlide()" class="main-btn w-full py-6 rounded-[2rem] text-[10px] shadow-2xl active:scale-95">
+                Continuar
             </button>
             <div class="text-center">
-                <button onclick="skipOnboarding()" class="text-[10px] font-bold text-zinc-700 uppercase tracking-widest">
-                    ¿Socio existente? <span class="text-[#13ecd6] ml-1">Identificarse</span>
+                <button onclick="skipOnboarding()" class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.3em] hover:text-white transition-all">
+                    ¿Socio en activo? <span class="text-[#13ecd6] ml-1">Identificarse</span>
                 </button>
             </div>
         </div>
@@ -143,7 +147,7 @@
             document.getElementById(`dot-${currentSlide}`).classList.remove('active');
             currentSlide++;
             
-            // Delay para permitir que el display:none no rompa la transición
+            // Timeout para asegurar sincronía de transición
             setTimeout(() => {
                 document.getElementById(`slide-${currentSlide}`).classList.add('active');
                 document.getElementById(`dot-${currentSlide}`).classList.add('active');
@@ -151,16 +155,18 @@
 
             if (currentSlide === totalSlides - 1) {
                 const btn = document.getElementById('nextBtn');
-                btn.textContent = 'Iniciar Misión';
-                btn.style.background = 'var(--cian-tech)';
+                btn.textContent = 'Inicializar Nodo';
+                btn.style.background = '#13ecd6';
+                btn.style.boxShadow = '0 0 30px rgba(19,236,214,0.3)';
             }
         } else {
-            SGRouter.navigate('register', 'onboarding');
+            // Navegación limpia v4.4
+            SGRouter.navigate('register');
         }
     }
 
     function skipOnboarding() {
-        SGRouter.navigate('auth', 'onboarding');
+        SGRouter.navigate('auth');
     }
 </script>
 </body>
