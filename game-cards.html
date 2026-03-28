@@ -35,7 +35,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Estados de Auditoría */
         .card-3d.winner .card-front { 
             box-shadow: 0 0 30px #13ecd6; 
             border: 2px solid #13ecd6;
@@ -59,13 +58,13 @@
     </style>
     <script src="engine/router.js"></script>
 </head>
-<body class="app-shell">
+<body class="app-shell pb-32">
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-4 py-6 space-y-8">
 
         <header class="flex justify-between items-center py-4">
             <button onclick="SGRouter.back()" class="size-12 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
-                <span class="material-icons-round text-zinc-500 text-xl">arrow_back</span>
+                <span class="material-icons-round text-zinc-400 text-xl">arrow_back</span>
             </button>
             <div class="text-center">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Protocolo Azar</p>
@@ -77,15 +76,15 @@
         <section class="grid grid-cols-3 gap-4 reveal-node">
             <div class="glass-panel p-4 text-center">
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="round-num">1</p>
-                <p class="text-[8px] font-black text-zinc-600 uppercase">Ronda</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Ronda</p>
             </div>
             <div class="glass-panel p-4 text-center">
                 <p class="text-xl font-black font-['Space_Grotesk'] text-white" id="deck-count">52</p>
-                <p class="text-[8px] font-black text-zinc-600 uppercase">Baraja</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Baraja</p>
             </div>
             <div class="glass-panel p-4 text-center">
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#FF9D42]">84,20€</p>
-                <p class="text-[8px] font-black text-zinc-600 uppercase">Pot</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Pot</p>
             </div>
         </section>
 
@@ -99,7 +98,7 @@
             <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-2">Result: Carta Más Alta</p>
             <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic text-[#13ecd6] mb-6" id="result-name"></h2>
             <div class="flex gap-3">
-                <button onclick="confirmPay()" class="flex-1 py-4 bg-white text-black rounded-xl text-[9px] font-black uppercase tracking-widest">Registrar</button>
+                <button onclick="SGRouter.navigate('split')" class="flex-1 py-4 bg-white text-black rounded-xl text-[9px] font-black uppercase tracking-widest">Registrar</button>
                 <button onclick="nextRound()" class="px-6 py-4 glass-panel rounded-xl text-[9px] font-black uppercase text-zinc-500">Siguiente</button>
             </div>
         </div>
@@ -112,6 +111,27 @@
         </button>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Mando</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('activity')">
+                <span class="material-icons-round">receipt_long</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Gastos</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+                <span class="material-icons-round text-[#13ecd6]">casino</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1 text-[#13ecd6]">Juegos</p>
+            </button>
+            <button class="nav-item opacity-40" onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">Perfil</p>
+            </button>
+        </div>
+    </nav>
+
     <script>
         const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
         const players = [
@@ -122,7 +142,6 @@
         let isDealing = false;
         let roundCounter = 1;
 
-        // Motor Sónico Alpha para Naipes
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playCardSnap() {
@@ -212,7 +231,6 @@
             }, (players.length * 350) + 500);
         }
 
-        function confirmPay() { SGRouter.navigate('split'); }
         function nextRound() { 
             roundCounter++;
             document.getElementById('round-num').innerText = roundCounter;
