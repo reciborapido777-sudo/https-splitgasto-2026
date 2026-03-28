@@ -21,27 +21,24 @@
         :root { --cian-tech: #13ecd6; --purple-deep: #a855f7; --orange-socio: #FF9D42; }
         * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        body { background: #000; min-height: 100dvh; color: #fff; }
+        body { background: #000; min-height: 100dvh; color: #fff; overflow-x: hidden; }
 
-        /* Importe Dinámico */
+        /* Importe Dinámico Space Grotesk */
         #amount-input {
             background: transparent; border: none; outline: none;
-            color: white; font-size: 4rem; font-weight: 900;
+            color: white; font-size: 4.5rem; font-weight: 900;
             text-align: center; width: 100%; caret-color: var(--cian-tech);
             font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.05em;
         }
         #amount-input::placeholder { color: rgba(255,255,255,0.05); }
 
-        /* Inputs de Precisión */
         .sg-input {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
             border-radius: 16px; color: white; padding: 14px 18px; width: 100%;
             font-size: 0.9rem; font-weight: 600; outline: none; transition: all 0.3s;
         }
         .sg-input:focus { border-color: var(--cian-tech); background: rgba(255,255,255,0.06); }
-        .sg-input::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
 
-        /* Categorías */
         .cat-btn {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             padding: 12px 16px; border-radius: 20px;
@@ -51,7 +48,6 @@
         }
         .cat-btn.active { border-color: var(--cian-tech); background: rgba(19, 236, 214, 0.1); color: var(--cian-tech); transform: translateY(-2px); }
 
-        /* Reparto Selector */
         .split-option {
             flex: 1; text-align: center; padding: 12px;
             border-radius: 14px; font-size: 0.75rem; font-weight: 800;
@@ -60,7 +56,6 @@
         .split-option.active { background: var(--cian-tech); color: #000; box-shadow: 0 4px 15px rgba(19, 236, 214, 0.3); }
         .split-option:not(.active) { color: rgba(255,255,255,0.3); }
 
-        /* Payer Chip */
         .payer-chip { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-width: 60px; }
         .payer-avatar {
             width: 52px; height: 52px; border-radius: 50%;
@@ -71,7 +66,6 @@
         .payer-chip.selected .payer-avatar { border-color: var(--cian-tech); box-shadow: 0 0 15px rgba(19, 236, 214, 0.2); transform: scale(1.1); }
         .payer-name { font-size: 0.65rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; }
 
-        /* Gamificación Button */
         .btn-luck {
             background: rgba(168, 85, 247, 0.1); border: 1px dashed rgba(168, 85, 247, 0.4);
             color: #d8b4fe; font-size: 9px; font-weight: 900; letter-spacing: 0.1em;
@@ -111,7 +105,7 @@
             <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nueva Entrada</p>
             <h1 class="text-[10px] font-black font-['Space_Grotesk'] tracking-widest uppercase italic text-white">Registro Alpha</h1>
         </div>
-        <button onclick="saveExpense()" class="text-[10px] font-black uppercase tracking-widest text-[#13ecd6] hover:brightness-125">Guardar</button>
+        <button onclick="saveExpense()" class="text-[10px] font-black uppercase tracking-widest text-[#13ecd6] hover:brightness-110 transition-all">Guardar</button>
     </header>
 
     <main class="px-6 pt-8 space-y-8">
@@ -162,7 +156,7 @@
 
             <div class="space-y-3">
                 <label class="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-2">Categoría</label>
-                <div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar" style="-webkit-overflow-scrolling:touch;">
+                <div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
                     <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣 <span>Comida</span></button>
                     <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗 <span>Viaje</span></button>
                     <button class="cat-btn" data-cat="fun" onclick="selectCat(this)">🎬 <span>Ocio</span></button>
@@ -181,8 +175,7 @@
                     DECIDIR POR SUERTE
                 </button>
             </div>
-            <div class="flex gap-6 overflow-x-auto py-2 no-scrollbar" id="payers-row">
-                </div>
+            <div class="flex gap-6 overflow-x-auto py-2 no-scrollbar" id="payers-row"></div>
         </div>
 
         <div class="glass-panel p-6 space-y-6 border-white/5">
@@ -193,9 +186,7 @@
                 <div class="split-option" onclick="selectSplit(this,'exact')">€</div>
                 <div class="split-option" onclick="selectSplit(this,'shares')">Partes</div>
             </div>
-
-            <div id="split-details" class="space-y-4 mt-2">
-                </div>
+            <div id="split-details" class="space-y-4 mt-2"></div>
         </div>
 
         <div class="space-y-2">
@@ -225,7 +216,6 @@
             </button>
         </div>
     </nav>
-
 </div>
 
 <script>
@@ -239,7 +229,6 @@
     let selectedPayer = 0;
     let splitMethod = 'equal';
 
-    // Fecha actual
     document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
 
     function renderPayers() {
@@ -250,7 +239,7 @@
                 <span class="payer-name">${m.name}</span>
             </div>
         `).join('') + `
-            <div class="payer-chip opacity-30" onclick="SGRouter.showToast('Solo socios fundadores en esta versión')">
+            <div class="payer-chip opacity-30" onclick="SGRouter.showToast('Versión Socio Fundador')">
                 <div class="payer-avatar" style="border-style:dashed">+</div>
                 <span class="payer-name">Añadir</span>
             </div>`;
@@ -297,18 +286,16 @@
     function saveExpense() {
         const amt = document.getElementById('amount-input').value;
         if(!amt) { SGRouter.showToast('IMPORTE REQUERIDO', 'warning'); return; }
-        SGRouter.showToast('GASTO REGISTRADO CON ÉXITO', 'success');
+        SGRouter.showToast('GASTO REGISTRADO ✓', 'success');
         setTimeout(() => SGRouter.navigate('activity'), 1000);
     }
 
-    // Inicializar
     renderPayers();
     renderSplitDetails();
 
-    // Service Worker Alpha Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(e => console.warn('[SW] Fallo:', e));
+            navigator.serviceWorker.register('sw.js').catch(e => console.warn('[SW] Error:', e));
         });
     }
 </script>
