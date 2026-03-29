@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SplitGasto — La app que arregla las cuentas entre amigos</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="description" content="Divide gastos al instante con IA. Escanea tickets, crea grupos y liquida deudas en segundos. Gratis para siempre.">
@@ -17,35 +18,35 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <script src="engine/router.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+        
         :root {
-            --cyan: #13ecd6; /* Cian Tech */
-            --purple-deep: #a855f7; /* Púrpura Deep */
-            --orange-socio: #FF9D42; /* Naranja Socio */
+            --cyan: #13ecd6;
+            --purple-deep: #a855f7;
+            --orange-socio: #FF9D42;
             --bg: #000000;
             --surface: #111111;
             --border: rgba(255,255,255,0.05);
         }
 
-        html { scroll-behavior: smooth; background: var(--bg); }
+        html, body { width: 100%; min-height: 100%; background: var(--bg); overflow-x: hidden; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
             color: #fff;
-            overflow-x: hidden;
             line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* ─── NAVBAR ─── */
+        /* NAVBAR */
         nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
             padding: 16px 24px;
             display: flex; align-items: center; justify-content: space-between;
             background: rgba(0,0,0,0.85);
@@ -65,148 +66,108 @@
             background: linear-gradient(135deg, var(--purple-deep) 0%, var(--orange-socio) 100%);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
         }
-
         .nav-logo-icon span { font-size: 20px; color: #fff; font-weight: 900; }
 
-        .nav-cta { display: flex; align-items: center; gap: 12px; }
-
-        .btn-nav-login {
-            padding: 9px 20px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6);
-            background: transparent; cursor: pointer; transition: 0.2s;
-        }
-        .btn-nav-login:hover { color: #fff; background: rgba(255,255,255,0.05); }
-
         .btn-nav-primary {
-            padding: 9px 20px;
-            border: none; border-radius: 12px;
+            padding: 9px 20px; border: none; border-radius: 12px;
             font-size: 14px; font-weight: 700; color: #000;
-            background: var(--cyan); cursor: pointer; transition: 0.2s;
+            background: var(--cyan); cursor: pointer;
         }
 
-        /* ─── HERO ─── */
+        /* HERO WRAPPER (Alineación Blindada) */
+        .hero-wrapper {
+            position: relative; width: 100%; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
         .hero {
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 120px 24px 80px;
-            text-align: center;
-            position: relative;
+            width: 100%; max-width: 1200px; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 120px 24px 80px; text-align: center;
         }
 
         .hero-orb {
-            position: absolute; border-radius: 50%;
-            filter: blur(120px); pointer-events: none; z-index: 0;
+            position: absolute; border-radius: 50%; filter: blur(120px); 
+            pointer-events: none; z-index: -1;
         }
-        .orb-1 { width: 500px; height: 500px; background: rgba(19,236,214,0.12); top: -100px; right: -100px; }
-        .orb-2 { width: 400px; height: 400px; background: rgba(168,85,247,0.08); bottom: -50px; left: -100px; }
+        .orb-1 { width: 500px; height: 500px; background: rgba(19,236,214,0.12); top: -100px; right: -150px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(168,85,247,0.08); bottom: 100px; left: -150px; }
 
         .badge {
-            position: relative; z-index: 1;
             display: inline-flex; align-items: center; gap: 8px;
-            padding: 8px 16px;
-            background: rgba(19,236,214,0.08);
-            border: 1px solid rgba(19,236,214,0.2);
-            border-radius: 99px;
-            font-size: 12px; font-weight: 700; color: var(--cyan);
-            margin-bottom: 32px;
+            padding: 8px 16px; background: rgba(19,236,214,0.08);
+            border: 1px solid rgba(19,236,214,0.2); border-radius: 99px;
+            font-size: 12px; font-weight: 700; color: var(--cyan); margin-bottom: 32px;
         }
 
         .hero h1 {
-            position: relative; z-index: 1;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(48px, 8vw, 88px);
-            font-weight: 900; line-height: 1.05; letter-spacing: -0.03em;
-            margin-bottom: 24px; max-width: 900px;
+            font-size: clamp(48px, 8vw, 88px); font-weight: 900; line-height: 1.05;
+            letter-spacing: -0.03em; margin-bottom: 24px;
         }
-
         .hero h1 em { font-style: normal; color: var(--cyan); }
 
         .hero p {
-            position: relative; z-index: 1;
-            font-size: clamp(17px, 2.5vw, 21px);
-            color: rgba(255,255,255,0.5);
+            font-size: clamp(17px, 2.5vw, 21px); color: rgba(255,255,255,0.5);
             max-width: 560px; margin: 0 auto 48px;
         }
 
-        .hero-buttons { position: relative; z-index: 1; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 72px; }
+        .hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 72px; }
 
         .btn-primary {
-            padding: 16px 36px;
-            background: var(--cyan); color: #000;
-            font-size: 15px; font-weight: 800;
-            border: none; border-radius: 16px;
-            cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(19,236,214,0.3); }
-
-        .btn-secondary {
-            padding: 16px 36px;
-            background: rgba(255,255,255,0.05); color: #fff;
-            font-size: 15px; font-weight: 600;
-            border: 1px solid var(--border); border-radius: 16px;
-            cursor: pointer; transition: 0.3s;
+            padding: 16px 36px; background: var(--cyan); color: #000;
+            font-size: 15px; font-weight: 800; border: none; border-radius: 16px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
         }
 
-        /* ─── STATS BAR ─── */
+        /* STATS BAR */
         .stats-bar {
-            position: relative; z-index: 1;
-            display: flex; background: var(--surface);
-            border: 1px solid var(--border); border-radius: 20px;
-            overflow: hidden; max-width: 600px; width: 100%;
-            backdrop-filter: blur(10px);
+            width: 100%; max-width: 600px; display: flex;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden; backdrop-filter: blur(10px);
         }
-
         .stat { flex: 1; padding: 24px; text-align: center; border-right: 1px solid var(--border); }
         .stat:last-child { border-right: none; }
         .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 900; color: var(--cyan); display: block; }
-        .stat-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; }
 
-        /* ─── FEATURES ─── */
-        .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
-        .section-label { font-size: 12px; font-weight: 800; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; display: block; }
-        .section-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 52px); font-weight: 900; margin-bottom: 16px; }
-        .section-sub { font-size: 18px; color: rgba(255,255,255,0.45); max-width: 500px; margin-bottom: 60px; }
+        /* SECTIONS */
+        .section { width: 100%; max-width: 1100px; padding: 100px 24px; margin: 0 auto; }
+        .section-label { font-size: 12px; font-weight: 800; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; display: block; text-align: center; }
+        .section-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 52px); font-weight: 900; margin-bottom: 60px; text-align: center; }
 
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
         .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 40px; transition: 0.3s; }
-        .feature-card:hover { border-color: var(--cyan); transform: translateY(-5px); background: rgba(19,236,214,0.02); }
+        .feature-card:hover { border-color: var(--cyan); transform: translateY(-5px); }
         .feature-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 24px; }
 
-        /* ─── GAMES PILLS ─── */
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 48px; }
-        .game-pill { 
-            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; 
-            padding: 28px; display: flex; align-items: center; gap: 20px; 
-            cursor: pointer; transition: 0.3s; text-decoration: none; color: #fff;
-        }
-        .game-pill:hover { transform: translateY(-3px); border-color: var(--purple-deep); background: rgba(168,85,247,0.05); }
-        .game-emoji { font-size: 32px; }
-        .game-pill h4 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; }
-        .game-pill p { font-size: 13px; color: rgba(255,255,255,0.4); }
-
-        /* ─── STEPS ─── */
-        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-top: 60px; }
+        /* STEPS */
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; }
         .step { text-align: center; }
         .step-num { width: 48px; height: 48px; background: rgba(19,236,214,0.1); border: 1px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 900; color: var(--cyan); margin: 0 auto 20px; }
 
-        /* ─── FOOTER ─── */
-        footer { border-top: 1px solid var(--border); padding: 60px 24px; max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 32px; }
+        /* GAMES */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .game-pill { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; 
+            padding: 28px; display: flex; align-items: center; gap: 20px; cursor: pointer; text-decoration: none; color: #fff;
+        }
+        .game-pill:hover { border-color: var(--purple-deep); transform: translateY(-3px); }
+        .game-emoji { font-size: 32px; }
 
-        /* ANIMACIONES */
-        .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
+        footer { width: 100%; max-width: 1100px; border-top: 1px solid var(--border); padding: 60px 24px; display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.4); font-size: 13px; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 52px; }
+            .hero-buttons { flex-direction: column; width: 100%; }
+            .stats-bar { flex-direction: column; }
+            .stat { border-right: none; border-bottom: 1px solid var(--border); }
+            .stat:last-child { border-bottom: none; }
+        }
     </style>
 </head>
-<body class="fade-up">
+<body>
 
 <nav>
     <a class="nav-logo" href="#">
@@ -214,60 +175,50 @@
         SplitGasto
     </a>
     <div class="nav-cta">
-        <button class="btn-nav-login" onclick="SGRouter.navigate('auth','landing')">Iniciar sesión</button>
         <button class="btn-nav-primary" onclick="SGRouter.navigate('register','landing')">Empezar gratis</button>
     </div>
 </nav>
 
-<section class="hero">
+<div class="hero-wrapper">
     <div class="hero-orb orb-1"></div>
     <div class="hero-orb orb-2"></div>
 
-    <div class="badge">
-        <span class="material-icons-round" style="font-size:14px">auto_awesome</span>
-        IA · Juegos 3D · Liquidación Alpha
-    </div>
-
-    <h1 class="delay-1">Divide gastos,<br><em>multiplica momentos.</em></h1>
-
-    <p class="delay-2">SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket, elige quién paga con un juego, y liquida sin drama.</p>
-
-    <div class="hero-buttons delay-3">
-        <button class="btn-primary" onclick="SGRouter.navigate('register','landing')">
-            <span class="material-icons-round">rocket_launch</span>
-            Crear cuenta — es gratis
-        </button>
-        <button class="btn-secondary" onclick="SGRouter.navigate('auth','landing')">
-            Ya tengo cuenta →
-        </button>
-    </div>
-
-    <div class="stats-bar">
-        <div class="stat">
-            <span class="stat-num">2.4K+</span>
-            <span class="stat-label">Usuarios</span>
+    <section class="hero">
+        <div class="badge">
+            <span class="material-icons-round" style="font-size:14px">auto_awesome</span>
+            IA · Juegos 3D · Liquidación Alpha
         </div>
-        <div class="stat">
-            <span class="stat-num">€1.8M</span>
-            <span class="stat-label">Dividido</span>
+
+        <h1>Divide gastos,<br><em>multiplica momentos.</em></h1>
+
+        <p>SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket, elige quién paga con un juego, y liquida sin drama.</p>
+
+        <div class="hero-buttons">
+            <button class="btn-primary" onclick="SGRouter.navigate('register','landing')">
+                <span class="material-icons-round">rocket_launch</span>
+                Crear cuenta — es gratis
+            </button>
+            <button onclick="SGRouter.navigate('auth','landing')" style="background:none; border:none; color:white; font-weight:700; cursor:pointer">
+                Ya tengo cuenta →
+            </button>
         </div>
-        <div class="stat">
-            <span class="stat-num">4.9★</span>
-            <span class="stat-label">Rating</span>
+
+        <div class="stats-bar">
+            <div class="stat"><span class="stat-num">2.4K+</span><span class="stat-label">Usuarios</span></div>
+            <div class="stat"><span class="stat-num">€1.8M</span><span class="stat-label">Dividido</span></div>
+            <div class="stat"><span class="stat-num">4.9★</span><span class="stat-label">Rating</span></div>
         </div>
-    </div>
-</section>
+    </section>
+</div>
 
 <section class="section">
-    <span class="section-label">Por qué SplitGasto</span>
+    <span class="section-label">Características</span>
     <h2 class="section-title">Todo lo que necesitas.</h2>
-    <p class="section-sub">Escanea, divide, liquida y decide quién paga en una sola interfaz fluida.</p>
-
     <div class="features-grid">
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(19,236,214,0.1); color:var(--cyan)"><span class="material-icons-round">document_scanner</span></div>
             <h3>Escáner IA</h3>
-            <p>Fotografía el recibo y la IA extrae el importe automáticamente. Sin errores manuales.</p>
+            <p>Fotografía el recibo y la IA extrae el importe automáticamente.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(168,85,247,0.1); color:var(--purple-deep)"><span class="material-icons-round">groups_3</span></div>
@@ -277,50 +228,50 @@
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(255,157,66,0.1); color:var(--orange-socio)"><span class="material-icons-round">bolt</span></div>
             <h3>Liquidación Instantánea</h3>
-            <p>Paga con un toque. La deuda desaparece y queda registrada para siempre.</p>
+            <p>Paga con un toque. La deuda desaparece y queda registrada.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(19,236,214,0.1); color:var(--cyan)"><span class="material-icons-round">query_stats</span></div>
             <h3>Análisis de Gasto</h3>
-            <p>Gráficos claros por categoría. Descubre en qué gastas sin esfuerzo.</p>
+            <p>Gráficos claros por categoría. Descubre en qué gastas.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(212,175,55,0.1); color:#D4AF37"><span class="material-icons-round">casino</span></div>
             <h3>Juegos de Decisión</h3>
-            <p>¿Quién paga hoy? Ruleta, cartas y dardos en 3D para momentos divertidos.</p>
+            <p>¿Quién paga hoy? Ruleta, cartas y dardos en 3D.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon" style="background:rgba(34,197,94,0.1); color:#22c55e"><span class="material-icons-round">lock</span></div>
             <h3>Privacidad AES-256</h3>
-            <p>Bóveda segura y cifrado de grado militar para todos tus datos financieros.</p>
-        </div>
-    </div>
-</section>
-
-<section class="section" style="padding-top:0">
-    <span class="section-label">Cómo funciona</span>
-    <h2 class="section-title">Tres pasos. Y ya.</h2>
-    <div class="steps">
-        <div class="step">
-            <div class="step-num">1</div>
-            <h4>Crea tu grupo</h4>
-            <p>Añade a tus amigos por enlace o QR. En segundos, todos conectados.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">2</div>
-            <h4>Registra el gasto</h4>
-            <p>Escanea el ticket. La IA lo divide de forma justa entre todos.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">3</div>
-            <h4>Liquida y olvida</h4>
-            <p>Cuentas cerradas, amistad intacta y cero deudas pendientes.</p>
+            <p>Bóveda segura y cifrado de grado militar para tus datos.</p>
         </div>
     </div>
 </section>
 
 <section class="section">
-    <span class="section-label">Games Premium</span>
+    <span class="section-label">Flujo Operativo</span>
+    <h2 class="section-title">Tres pasos. Y ya.</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <h4>Crea tu grupo</h4>
+            <p>Añade a tus amigos por enlace o QR.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <h4>Registra el gasto</h4>
+            <p>Escanea el ticket. La IA lo divide de forma justa.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <h4>Liquida y olvida</h4>
+            <p>Cuentas cerradas, amistad intacta.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <span class="section-label">Protocolos de Azar</span>
     <h2 class="section-title">Decide quién paga.</h2>
     <div class="games-grid">
         <button class="game-pill" onclick="SGRouter.navigate('game-roulette','landing')">
@@ -333,7 +284,7 @@
         </button>
         <button class="game-pill" onclick="SGRouter.navigate('game-coin','landing')">
             <span class="game-emoji">🪙</span>
-            <div><h4>Cara o Cruz</h4><p>Moneda personalizada · 50/50</p></div>
+            <div><h4>Cara o Cruz</h4><p>50/50 · Custom Moneda</p></div>
         </button>
         <button class="game-pill" onclick="SGRouter.navigate('game-darts','landing')">
             <span class="game-emoji">🎯</span>
@@ -345,8 +296,8 @@
 <footer>
     <p>© 2026 SplitGasto · Protocolo Alpha</p>
     <div style="display:flex; gap:24px">
-        <button onclick="SGRouter.navigate('legal','landing')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer">Privacidad</button>
-        <button onclick="SGRouter.navigate('support','landing')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer">Soporte</button>
+        <span onclick="SGRouter.navigate('legal','landing')" style="cursor:pointer">Privacidad</span>
+        <span onclick="SGRouter.navigate('support','landing')" style="cursor:pointer">Soporte</span>
     </div>
 </footer>
 
@@ -355,7 +306,6 @@
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
                 .then(reg => {
-                    console.log('[SW] Operativo. Perímetro: ', reg.scope);
                     reg.update().catch(() => {});
                     reg.addEventListener('updatefound', () => {
                         const newSW = reg.installing;
