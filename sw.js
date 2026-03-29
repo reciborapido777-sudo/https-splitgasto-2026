@@ -1,12 +1,12 @@
 /**
  * SplitGasto 2026 - Master Service Worker
- * Versión: 5.2 Gold | Protocolo: Resiliencia Total y Persistencia Alpha
- * ESTRATEGIA: Network-first (HTML/Data) + Cache-first (Assets/UI)
+ * Versión: 5.2 Gold | Protocolo: Resiliencia Total
+ * ESTRATEGIA: Network-first (Veracidad de Datos) + Cache-first (Velocidad de Interfaz)
  */
 
 const CACHE_NAME = 'splitgasto-v5-2026';
 
-// Listado de Activos Críticos para el funcionamiento del Núcleo
+// Bóveda de Activos Críticos (Blindaje Total)
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -18,44 +18,44 @@ const STATIC_ASSETS = [
     '/favicon-32.png',
     '/favicon-16.png',
     '/apple-touch-icon.png',
+    '/icons/icon-72.png',
+    '/icons/icon-96.png',
+    '/icons/icon-128.png',
+    '/icons/icon-144.png',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
 ];
 
-// 1. INSTALACIÓN: Pre-cacheo atómico de la arquitectura base
+// 1. INSTALACIÓN: Sellado de la Bóveda Alpha
 self.addEventListener('install', event => {
-    console.log('[SW Alpha] Inicializando v5.2...');
+    console.log('[SW Alpha] Inicializando Bóveda v5.2 Gold...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('[SW Alpha] Sellando activos estáticos en Bóveda...');
+                console.log('[SW Alpha] Sellando activos estáticos...');
                 return cache.addAll(STATIC_ASSETS);
             })
             .then(() => self.skipWaiting())
-            .catch(err => console.error('[SW Alpha] Error crítico en pre-cache:', err))
     );
 });
 
-// 2. ACTIVACIÓN: Purga total de registros obsoletos y toma de control
+// 2. ACTIVACIÓN: Purga de protocolos obsoletos
 self.addEventListener('activate', event => {
     console.log('[SW Alpha] Reclamando control del perímetro...');
     event.waitUntil(
-        caches.keys().then(keys => {
-            return Promise.all(
-                keys.filter(key => key !== CACHE_NAME)
-                    .map(key => {
-                        console.log('[SW Alpha] Eliminando caché obsoleto:', key);
-                        return caches.delete(key);
-                    })
-            );
-        }).then(() => self.clients.claim())
+        caches.keys().then(keys => Promise.all(
+            keys.filter(key => key !== CACHE_NAME)
+                .map(key => {
+                    console.log('[SW Alpha] Eliminando caché obsoleto:', key);
+                    return caches.delete(key);
+                })
+        )).then(() => self.clients.claim())
     );
 });
 
-// 3. MENSAJERÍA: Sincronización forzada desde la Interfaz de Mando
+// 3. MENSAJERÍA: Orden de ejecución inmediata
 self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
-        console.log('[SW Alpha] Orden de ejecución SKIP_WAITING recibida.');
         self.skipWaiting();
     }
 });
@@ -65,7 +65,7 @@ self.addEventListener('fetch', event => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Ignorar peticiones externas o métodos que no sean GET (Seguridad)
+    // Solo gestionar peticiones del mismo origen y método GET
     if (url.origin !== location.origin || request.method !== 'GET') return;
 
     const isHTML = (
@@ -76,32 +76,29 @@ self.addEventListener('fetch', event => {
     );
 
     if (isHTML) {
-        // ESTRATEGIA: NETWORK-FIRST (Garantiza veracidad de saldos)
+        // ESTRATEGIA: NETWORK-FIRST (Garantiza veracidad de saldos financieros)
         event.respondWith(
             fetch(request, { cache: 'no-store' })
                 .then(response => {
-                    if (response.status === 200) {
+                    if (response.ok) {
                         const clone = response.clone();
                         caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                     }
                     return response;
                 })
-                .catch(err => {
-                    console.warn('[SW Alpha] Modo Offline activado para:', url.pathname);
-                    return caches.match(request).then(cached => {
-                        // Si no hay caché de la página específica, servir el Dashboard como nodo raíz
-                        return cached || caches.match('/dashboard.html') || caches.match('/');
-                    });
+                .catch(() => {
+                    // Offline Fallback: Intentar recuperar del caché o servir Dashboard
+                    return caches.match(request)
+                        .then(cached => cached || caches.match('/dashboard.html') || caches.match('/'));
                 })
         );
     } else {
-        // ESTRATEGIA: CACHE-FIRST (Aceleración GPU de la Interfaz)
+        // ESTRATEGIA: CACHE-FIRST (Aceleración de UI y Assets)
         event.respondWith(
             caches.match(request).then(cached => {
                 if (cached) return cached;
                 return fetch(request).then(response => {
-                    // Solo cachear respuestas válidas y evitar extensiones de navegador
-                    if (response.status === 200 && !url.protocol.includes('extension')) {
+                    if (response.ok) {
                         const clone = response.clone();
                         caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                     }
@@ -112,15 +109,9 @@ self.addEventListener('fetch', event => {
     }
 });
 
-// 5. PUSH & NOTIFICACIONES: Protocolo de Comunicación de Élite
+// 5. PUSH & NOTIFICACIONES: Protocolo de Comunicación Élite
 self.addEventListener('push', event => {
-    let data = { title: 'SplitGasto 2026', body: 'Actualización de Nodo entrante.' };
-    try {
-        if (event.data) data = event.data.json();
-    } catch (e) {
-        data.body = event.data.text();
-    }
-
+    const data = event.data?.json() || { title: 'SplitGasto 2026', body: 'Actualización de Nodo' };
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
@@ -134,13 +125,16 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
+    const urlToOpen = new URL(event.notification.data.url, self.location.origin).href;
+
     event.waitUntil(
-        clients.matchAll({ type: 'window' }).then(clientList => {
-            const url = event.notification.data.url;
-            for (const client of clientList) {
-                if (client.url === url && 'focus' in client) return client.focus();
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+            // Si ya hay una ventana abierta, enfocarla
+            for (let client of windowClients) {
+                if (client.url === urlToOpen && 'focus' in client) return client.focus();
             }
-            if (clients.openWindow) return clients.openWindow(url);
+            // Si no, abrir una nueva
+            if (clients.openWindow) return clients.openWindow(urlToOpen);
         })
     );
 });
