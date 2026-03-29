@@ -22,6 +22,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
+        /* 1. RESET Y VARIABLES ORIGINALES */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -43,7 +44,7 @@
             line-height: 1.5;
         }
 
-        /* ─── NAVBAR ─── */
+        /* 2. NAVBAR CON DENSIDAD ORIGINAL */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             padding: 16px 24px;
@@ -89,7 +90,7 @@
         }
         .btn-nav-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(19, 236, 214, 0.4); }
 
-        /* ─── HERO ─── */
+        /* 3. HERO SECTION ORIGINAL */
         .hero {
             min-height: 100vh;
             display: flex; flex-direction: column;
@@ -145,7 +146,7 @@
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); }
 
-        /* ─── FEATURES ─── */
+        /* 4. FEATURES GRID ORIGINAL */
         .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
 
         .features-grid {
@@ -168,7 +169,7 @@
             margin-bottom: 24px; font-size: 26px;
         }
 
-        /* ─── CTA ─── */
+        /* 5. CTA SECTION ORIGINAL */
         .cta-section {
             margin: 100px 24px;
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(255, 157, 66, 0.1) 100%);
@@ -260,7 +261,7 @@
 </footer>
 
 <script>
-    // Registro del Motor Alpha (Service Worker)
+    // Registro del Motor Alpha (Service Worker) - Blindado contra mermas
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
@@ -268,6 +269,11 @@
                 .catch(err => console.error('[SW Alpha] Fallo de inyección:', err));
         });
     }
+
+    // Prevención de rebotes y carga inicial del Router
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('[Landing Alpha] Sistema cargado. Listo para navegación.');
+    });
 </script>
 
 </body>
