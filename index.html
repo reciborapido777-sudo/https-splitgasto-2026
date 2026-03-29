@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SplitGasto — La app que arregla las cuentas entre amigos</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="description" content="Divide gastos al instante con IA. Escanea tickets, crea grupos y liquida deudas en segundos. Gratis para siempre.">
@@ -16,19 +15,19 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    
+
     <script src="engine/router.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
     <style>
-        /* 1. RESET Y VARIABLES ORIGINALES */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --cyan: #13ecd6;
-            --purple-deep: #a855f7;
-            --orange-socio: #FF9D42;
+            --cyan: #13ecd6; /* Cian Tech */
+            --purple-deep: #a855f7; /* Púrpura Deep */
+            --orange-socio: #FF9D42; /* Naranja Socio */
             --bg: #000000;
             --surface: #111111;
             --border: rgba(255,255,255,0.05);
@@ -44,20 +43,20 @@
             line-height: 1.5;
         }
 
-        /* 2. NAVBAR CON DENSIDAD ORIGINAL */
+        /* ─── NAVBAR ─── */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             padding: 16px 24px;
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(30px);
             border-bottom: 1px solid var(--border);
         }
 
         .nav-logo {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; gap: 10px;
             font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700; font-size: 20px; color: #fff;
+            font-weight: 800; font-size: 18px; color: #fff;
             text-decoration: none;
         }
 
@@ -66,15 +65,15 @@
             background: linear-gradient(135deg, var(--purple-deep) 0%, var(--orange-socio) 100%);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
         }
 
-        .nav-logo-icon span { font-size: 20px; color: #fff; font-weight: 800; font-family: 'Space Grotesk'; }
+        .nav-logo-icon span { font-size: 20px; color: #fff; font-weight: 900; }
 
         .nav-cta { display: flex; align-items: center; gap: 12px; }
 
         .btn-nav-login {
-            padding: 10px 20px;
+            padding: 9px 20px;
             border: 1px solid var(--border);
             border-radius: 12px;
             font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6);
@@ -83,14 +82,13 @@
         .btn-nav-login:hover { color: #fff; background: rgba(255,255,255,0.05); }
 
         .btn-nav-primary {
-            padding: 10px 22px;
+            padding: 9px 20px;
             border: none; border-radius: 12px;
             font-size: 14px; font-weight: 700; color: #000;
             background: var(--cyan); cursor: pointer; transition: 0.2s;
         }
-        .btn-nav-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(19, 236, 214, 0.4); }
 
-        /* 3. HERO SECTION ORIGINAL */
+        /* ─── HERO ─── */
         .hero {
             min-height: 100vh;
             display: flex; flex-direction: column;
@@ -100,93 +98,115 @@
             position: relative;
         }
 
+        .hero-orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(120px); pointer-events: none; z-index: 0;
+        }
+        .orb-1 { width: 500px; height: 500px; background: rgba(19,236,214,0.12); top: -100px; right: -100px; }
+        .orb-2 { width: 400px; height: 400px; background: rgba(168,85,247,0.08); bottom: -50px; left: -100px; }
+
         .badge {
+            position: relative; z-index: 1;
             display: inline-flex; align-items: center; gap: 8px;
             padding: 8px 16px;
             background: rgba(19,236,214,0.08);
-            border: 1px solid rgba(19,236,214,0.15);
+            border: 1px solid rgba(19,236,214,0.2);
             border-radius: 99px;
             font-size: 12px; font-weight: 700; color: var(--cyan);
             margin-bottom: 32px;
         }
 
         .hero h1 {
+            position: relative; z-index: 1;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(48px, 8vw, 82px);
-            font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+            font-size: clamp(48px, 8vw, 88px);
+            font-weight: 900; line-height: 1.05; letter-spacing: -0.03em;
             margin-bottom: 24px; max-width: 900px;
         }
 
         .hero h1 em { font-style: normal; color: var(--cyan); }
 
         .hero p {
-            font-size: clamp(18px, 2.5vw, 21px);
+            position: relative; z-index: 1;
+            font-size: clamp(17px, 2.5vw, 21px);
             color: rgba(255,255,255,0.5);
-            max-width: 580px; margin: 0 auto 48px;
+            max-width: 560px; margin: 0 auto 48px;
         }
 
-        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .hero-buttons { position: relative; z-index: 1; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 72px; }
 
         .btn-primary {
-            padding: 18px 36px;
+            padding: 16px 36px;
             background: var(--cyan); color: #000;
-            font-size: 16px; font-weight: 700;
+            font-size: 15px; font-weight: 800;
             border: none; border-radius: 16px;
             cursor: pointer; transition: 0.3s;
             display: flex; align-items: center; gap: 10px;
         }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(19, 236, 214, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(19,236,214,0.3); }
 
         .btn-secondary {
-            padding: 18px 36px;
+            padding: 16px 36px;
             background: rgba(255,255,255,0.05); color: #fff;
-            font-size: 16px; font-weight: 600;
+            font-size: 15px; font-weight: 600;
             border: 1px solid var(--border); border-radius: 16px;
             cursor: pointer; transition: 0.3s;
         }
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
 
-        /* 4. FEATURES GRID ORIGINAL */
+        /* ─── STATS BAR ─── */
+        .stats-bar {
+            position: relative; z-index: 1;
+            display: flex; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 20px;
+            overflow: hidden; max-width: 600px; width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat { flex: 1; padding: 24px; text-align: center; border-right: 1px solid var(--border); }
+        .stat:last-child { border-right: none; }
+        .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 900; color: var(--cyan); display: block; }
+        .stat-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* ─── FEATURES ─── */
         .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+        .section-label { font-size: 12px; font-weight: 800; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; display: block; }
+        .section-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(32px, 5vw, 52px); font-weight: 900; margin-bottom: 16px; }
+        .section-sub { font-size: 18px; color: rgba(255,255,255,0.45); max-width: 500px; margin-bottom: 60px; }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px; margin-top: 60px;
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+        .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 40px; transition: 0.3s; }
+        .feature-card:hover { border-color: var(--cyan); transform: translateY(-5px); background: rgba(19,236,214,0.02); }
+        .feature-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 24px; }
+
+        /* ─── GAMES PILLS ─── */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 48px; }
+        .game-pill { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; 
+            padding: 28px; display: flex; align-items: center; gap: 20px; 
+            cursor: pointer; transition: 0.3s; text-decoration: none; color: #fff;
         }
+        .game-pill:hover { transform: translateY(-3px); border-color: var(--purple-deep); background: rgba(168,85,247,0.05); }
+        .game-emoji { font-size: 32px; }
+        .game-pill h4 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; }
+        .game-pill p { font-size: 13px; color: rgba(255,255,255,0.4); }
 
-        .feature-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 24px; padding: 40px;
-            transition: 0.3s;
-        }
-        .feature-card:hover { border-color: var(--cyan); transform: translateY(-5px); }
+        /* ─── STEPS ─── */
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-top: 60px; }
+        .step { text-align: center; }
+        .step-num { width: 48px; height: 48px; background: rgba(19,236,214,0.1); border: 1px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 900; color: var(--cyan); margin: 0 auto 20px; }
 
-        .feature-icon {
-            width: 54px; height: 54px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 24px; font-size: 26px;
-        }
+        /* ─── FOOTER ─── */
+        footer { border-top: 1px solid var(--border); padding: 60px 24px; max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 32px; }
 
-        /* 5. CTA SECTION ORIGINAL */
-        .cta-section {
-            margin: 100px 24px;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(255, 157, 66, 0.1) 100%);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 32px; padding: 80px 40px; text-align: center;
-        }
-
-        footer { border-top: 1px solid var(--border); padding: 40px 24px; max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.3); font-size: 13px; }
-
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 52px; }
-            .hero-buttons { flex-direction: column; }
-            .nav-cta .btn-nav-login { display: none; }
-        }
+        /* ANIMACIONES */
+        .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
     </style>
 </head>
-<body>
+<body class="fade-up">
 
 <nav>
     <a class="nav-logo" href="#">
@@ -194,87 +214,166 @@
         SplitGasto
     </a>
     <div class="nav-cta">
-        <button class="btn-nav-login" onclick="SGRouter.navigate('auth')">Iniciar sesión</button>
-        <button class="btn-nav-primary" onclick="SGRouter.navigate('register')">Empezar gratis</button>
+        <button class="btn-nav-login" onclick="SGRouter.navigate('auth','landing')">Iniciar sesión</button>
+        <button class="btn-nav-primary" onclick="SGRouter.navigate('register','landing')">Empezar gratis</button>
     </div>
 </nav>
 
 <section class="hero">
+    <div class="hero-orb orb-1"></div>
+    <div class="hero-orb orb-2"></div>
+
     <div class="badge">
-        <span class="material-icons-round" style="font-size:16px">auto_awesome</span>
-        Tecnología Alpha 2026 · Edición Socio Fundador
+        <span class="material-icons-round" style="font-size:14px">auto_awesome</span>
+        IA · Juegos 3D · Liquidación Alpha
     </div>
 
-    <h1>Divide gastos,<br><em>multiplica momentos.</em></h1>
+    <h1 class="delay-1">Divide gastos,<br><em>multiplica momentos.</em></h1>
 
-    <p>La herramienta definitiva para amigos que valoran su tiempo y su dinero. Inteligencia Artificial aplicada a tus finanzas grupales.</p>
+    <p class="delay-2">SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket, elige quién paga con un juego, y liquida sin drama.</p>
 
-    <div class="hero-buttons">
-        <button class="btn-primary" onclick="SGRouter.navigate('register')">
+    <div class="hero-buttons delay-3">
+        <button class="btn-primary" onclick="SGRouter.navigate('register','landing')">
             <span class="material-icons-round">rocket_launch</span>
             Crear cuenta — es gratis
         </button>
-        <button class="btn-secondary" onclick="SGRouter.navigate('auth')">
+        <button class="btn-secondary" onclick="SGRouter.navigate('auth','landing')">
             Ya tengo cuenta →
         </button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <span class="stat-num">2.4K+</span>
+            <span class="stat-label">Usuarios</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num">€1.8M</span>
+            <span class="stat-label">Dividido</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num">4.9★</span>
+            <span class="stat-label">Rating</span>
+        </div>
     </div>
 </section>
 
 <section class="section">
+    <span class="section-label">Por qué SplitGasto</span>
+    <h2 class="section-title">Todo lo que necesitas.</h2>
+    <p class="section-sub">Escanea, divide, liquida y decide quién paga en una sola interfaz fluida.</p>
+
     <div class="features-grid">
         <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(19,236,214,0.1); color:var(--cyan)">
-                <span class="material-icons-round">document_scanner</span>
-            </div>
-            <h3>Escáner Inteligente</h3>
-            <p>Sube tu ticket y deja que nuestra IA identifique artículos e importes en tiempo real.</p>
+            <div class="feature-icon" style="background:rgba(19,236,214,0.1); color:var(--cyan)"><span class="material-icons-round">document_scanner</span></div>
+            <h3>Escáner IA</h3>
+            <p>Fotografía el recibo y la IA extrae el importe automáticamente. Sin errores manuales.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(168,85,247,0.1); color:var(--purple-deep)">
-                <span class="material-icons-round">casino</span>
-            </div>
+            <div class="feature-icon" style="background:rgba(168,85,247,0.1); color:var(--purple-deep)"><span class="material-icons-round">groups_3</span></div>
+            <h3>Grupos inteligentes</h3>
+            <p>Crea grupos para cada viaje o cena y gestiona deudas en tiempo real.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(255,157,66,0.1); color:var(--orange-socio)"><span class="material-icons-round">bolt</span></div>
+            <h3>Liquidación Instantánea</h3>
+            <p>Paga con un toque. La deuda desaparece y queda registrada para siempre.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(19,236,214,0.1); color:var(--cyan)"><span class="material-icons-round">query_stats</span></div>
+            <h3>Análisis de Gasto</h3>
+            <p>Gráficos claros por categoría. Descubre en qué gastas sin esfuerzo.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background:rgba(212,175,55,0.1); color:#D4AF37"><span class="material-icons-round">casino</span></div>
             <h3>Juegos de Decisión</h3>
-            <p>¿Quién paga hoy? Ruleta, dardos o cartas en 3D para resolver la cuenta de forma épica.</p>
+            <p>¿Quién paga hoy? Ruleta, cartas y dardos en 3D para momentos divertidos.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(255,157,66,0.1); color:var(--orange-socio)">
-                <span class="material-icons-round">security</span>
-            </div>
-            <h3>Bóveda Segura</h3>
-            <p>Tus datos financieros blindados bajo el protocolo de seguridad AES-256.</p>
+            <div class="feature-icon" style="background:rgba(34,197,94,0.1); color:#22c55e"><span class="material-icons-round">lock</span></div>
+            <h3>Privacidad AES-256</h3>
+            <p>Bóveda segura y cifrado de grado militar para todos tus datos financieros.</p>
         </div>
     </div>
 </section>
 
-<div class="cta-section">
-    <h2 style="font-family:'Space Grotesk'; font-size:42px; margin-bottom:20px">¿Listo para el siguiente nivel?</h2>
-    <p style="margin-bottom:40px; color:rgba(255,255,255,0.5)">Únete a los 2,400 usuarios que ya han optimizado sus finanzas grupales.</p>
-    <button class="btn-primary" style="margin: 0 auto;" onclick="SGRouter.navigate('register')">Empezar ahora</button>
-</div>
+<section class="section" style="padding-top:0">
+    <span class="section-label">Cómo funciona</span>
+    <h2 class="section-title">Tres pasos. Y ya.</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <h4>Crea tu grupo</h4>
+            <p>Añade a tus amigos por enlace o QR. En segundos, todos conectados.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <h4>Registra el gasto</h4>
+            <p>Escanea el ticket. La IA lo divide de forma justa entre todos.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <h4>Liquida y olvida</h4>
+            <p>Cuentas cerradas, amistad intacta y cero deudas pendientes.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <span class="section-label">Games Premium</span>
+    <h2 class="section-title">Decide quién paga.</h2>
+    <div class="games-grid">
+        <button class="game-pill" onclick="SGRouter.navigate('game-roulette','landing')">
+            <span class="game-emoji">🎰</span>
+            <div><h4>Ruleta 3D</h4><p>Gira la rueda · Canvas API</p></div>
+        </button>
+        <button class="game-pill" onclick="SGRouter.navigate('game-cards','landing')">
+            <span class="game-emoji">🃏</span>
+            <div><h4>Cartas Alpha</h4><p>Baraja de 52 · Flip 3D</p></div>
+        </button>
+        <button class="game-pill" onclick="SGRouter.navigate('game-coin','landing')">
+            <span class="game-emoji">🪙</span>
+            <div><h4>Cara o Cruz</h4><p>Moneda personalizada · 50/50</p></div>
+        </button>
+        <button class="game-pill" onclick="SGRouter.navigate('game-darts','landing')">
+            <span class="game-emoji">🎯</span>
+            <div><h4>Dardos Alpha</h4><p>Tablero real · 5 rondas</p></div>
+        </button>
+    </div>
+</section>
 
 <footer>
     <p>© 2026 SplitGasto · Protocolo Alpha</p>
-    <div style="display:flex; gap:20px">
-        <span style="cursor:pointer" onclick="SGRouter.navigate('legal')">Privacidad</span>
-        <span style="cursor:pointer" onclick="SGRouter.navigate('support')">Soporte</span>
+    <div style="display:flex; gap:24px">
+        <button onclick="SGRouter.navigate('legal','landing')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer">Privacidad</button>
+        <button onclick="SGRouter.navigate('support','landing')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer">Soporte</button>
     </div>
 </footer>
 
 <script>
-    // Registro del Motor Alpha (Service Worker) - Blindado contra mermas
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('[SW Alpha] Perímetro asegurado ✓ Scope:', reg.scope))
-                .catch(err => console.error('[SW Alpha] Fallo de inyección:', err));
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    console.log('[SW] Operativo. Perímetro: ', reg.scope);
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const newSW = reg.installing;
+                        if (newSW) {
+                            newSW.addEventListener('statechange', () => {
+                                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                                    newSW.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        }
+                    });
+                });
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
         });
     }
-
-    // Prevención de rebotes y carga inicial del Router
-    window.addEventListener('DOMContentLoaded', () => {
-        console.log('[Landing Alpha] Sistema cargado. Listo para navegación.');
-    });
 </script>
-
 </body>
 </html>
