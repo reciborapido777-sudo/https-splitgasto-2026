@@ -2,21 +2,25 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SplitGasto — La app que arregla las cuentas entre amigos</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="description" content="Divide gastos al instante con IA. Escanea tickets, crea grupos y liquida deudas en segundos. Gratis para siempre.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    
     <script src="engine/router.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,7 +33,7 @@
             --border: rgba(255,255,255,0.05);
         }
 
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; background: var(--bg); }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -56,7 +60,6 @@
             text-decoration: none;
         }
 
-        /* ICONO DEGRADADO SOLICITADO */
         .nav-logo-icon {
             width: 36px; height: 36px;
             background: linear-gradient(135deg, var(--purple-deep) 0%, var(--orange-socio) 100%);
@@ -255,6 +258,17 @@
         <span style="cursor:pointer" onclick="SGRouter.navigate('support')">Soporte</span>
     </div>
 </footer>
+
+<script>
+    // Registro del Motor Alpha (Service Worker)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[SW Alpha] Perímetro asegurado ✓ Scope:', reg.scope))
+                .catch(err => console.error('[SW Alpha] Fallo de inyección:', err));
+        });
+    }
+</script>
 
 </body>
 </html>
