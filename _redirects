@@ -59,4 +59,4 @@
 
 # --- 404 Resilience ---
 # Captura cualquier ruta no definida arriba para el sistema de resiliencia
-/* /engine/resilience.html   404
+/* /engine/resilience.html   200
