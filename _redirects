@@ -1,62 +1,66 @@
 # ─────────────────────────────────────────────────────────────────
-# SplitGasto 2026 - Cloudflare Pages Redirects (v4.6)
+# SplitGasto 2026 - Cloudflare Pages Redirects (v4.8)
 # Protocolo: Resolución Atómica - ZERO LOOP CORE
 # ─────────────────────────────────────────────────────────────────
 
+# --- Fix Crítico: Evitar bucle en la raíz ---
+/               /index.html          200
+
 # --- Auth & Onboarding ---
-/auth                /auth.html                200
-/login               /auth.html                200
-/register            /register.html            200
-/signup              /register.html            200
-/onboarding          /onboarding.html          200
+/auth           /auth.html           200
+/login          /auth.html           200
+/register       /register.html       200
+/signup         /register.html       200
+/onboarding     /onboarding.html     200
 
 # --- Main App Pages ---
-/dashboard           /dashboard.html           200
-/groups              /groups.html              200
-/profile             /profile.html             200
-/activity            /activity.html            200
-/vault               /vault.html               200
-/scanner             /scanner.html             200
-/notifications       /notifications.html       200
-/settings            /settings.html            200
-/security            /security.html            200
-/membership          /membership.html          200
-/rankings            /rankings.html            200
+/dashboard      /dashboard.html      200
+/groups         /groups.html         200
+/profile        /profile.html        200
+/activity       /activity.html       200
+/vault          /vault.html          200
+/scanner        /scanner.html        200
+/notifications  /notifications.html  200
+/settings       /settings.html       200
+/security       /security.html       200
+/membership     /membership.html     200
+/rankings       /rankings.html       200
 
 # --- Analytics & Metrics ---
-/analytics           /analytics.html           200
-/metrics             /analytics.html           200
+/analytics      /analytics.html      200
+/metrics        /analytics.html      200
 
 # --- Expenses & Groups Logic ---
-/add-expense         /add-expense.html         200
-/create-group        /create-group.html        200
-/split               /split.html               200
-/liquidation         /liquidation.html         200
-/success             /success.html             200
-/receipt             /receipt.html             200
+/add-expense    /add-expense.html    200
+/create-group   /create-group.html   200
+/split          /split.html          200
+/liquidation    /liquidation.html    200
+/success        /success.html        200
+/receipt        /receipt.html        200
 
 # --- Games Ecosystem ---
-/games               /games.html               200
-/game-roulette       /game-roulette.html       200
-/game-cards          /game-cards.html          200
-/game-coin           /game-coin.html           200
-/game-darts          /game-darts.html          200
+/games          /games.html          200
+/game-roulette  /game-roulette.html  200
+/game-cards     /game-cards.html     200
+/game-coin      /game-coin.html      200
+/game-darts     /game-darts.html     200
 
 # --- Social & Support ---
-/friends             /friends.html             200
-/invite              /invite.html              200
-/support             /support.html             200
-/manual              /manual.html              200
+/friends        /friends.html        200
+/invite         /invite.html         200
+/support        /support.html        200
+/manual         /manual.html         200
 
 # --- Legal & Corporate ---
-/legal               /legal.html               200
-/privacy             /legal.html               200
-/investors           /investors.html           200
+/legal          /legal.html          200
+/privacy        /legal.html          200
+/investors      /investors.html      200
 
-# --- Engine & Assets Protection (Splat rules at the end) ---
-/engine/* /engine/:splat            200
-/assets/* /assets/:splat            200
+# --- Engine & Assets Protection (Prioridad de archivos) ---
+/engine/* /engine/:splat       200
+/assets/* /assets/:splat       200
+/sw.js          /sw.js               200
 
-# --- 404 Resilience ---
-# Captura cualquier ruta no definida arriba para el sistema de resiliencia
-/* /engine/resilience.html   200
+# --- 404 Resilience (Safe fallback) ---
+# Solo se activa si la URL no es un archivo real ni una de las anteriores
+/* /engine/resilience.html  200
