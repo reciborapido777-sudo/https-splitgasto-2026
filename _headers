@@ -1,35 +1,37 @@
-# ─────────────────────────────────────────────────────────────────
-# SplitGasto 2026 - Cloudflare Pages Headers (v4.3)
-# ─────────────────────────────────────────────────────────────────
+# SplitGasto 2026 - Cloudflare Pages Headers
+# Engineering Revision v4.2 — Zero-cache HTML, HSTS, correct asset TTLs
 
-# ── Security headers for ALL paths ──────────────────────────────
+# ── Security headers for ALL paths ──────────────────────────────────────────
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-XSS-Protection: 1; mode=block
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
-# ── HTML — never cache (always fresh on every visit) ─────────────
+# ── HTML pages — NEVER cache; always validate with server ───────────────────
+# This is the most critical fix: old cached HTML with broken router = infinite loop
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
 
-# ── Service Worker — never cache ─────────────────────────────────
+# ── Service Worker — NEVER cache (must always be fresh for updates) ─────────
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
+  Expires: 0
 
-# ── Engine assets (router.js, global.css) — no cache ─────────────
-/engine/*
-  Cache-Control: no-cache, must-revalidate
-
-# ── Manifest ─────────────────────────────────────────────────────
+# ── Manifest — short cache (1 day) ──────────────────────────────────────────
 /manifest.json
   Cache-Control: public, max-age=86400, must-revalidate
 
-# ── Favicon files ────────────────────────────────────────────────
+# ── Engine assets (CSS/JS) — short cache, always revalidate ─────────────────
+/engine/*
+  Cache-Control: no-cache, must-revalidate
+
+# ── Favicon files — 1 day cache (changed recently) ──────────────────────────
 /favicon.svg
   Cache-Control: public, max-age=86400, must-revalidate
 
@@ -42,6 +44,6 @@
 /apple-touch-icon.png
   Cache-Control: public, max-age=86400, must-revalidate
 
-# ── Static icons (long cache — immutable) ────────────────────────
+# ── Static icons (immutable, content-hashed names) ──────────────────────────
 /icons/*
   Cache-Control: public, max-age=31536000, immutable
