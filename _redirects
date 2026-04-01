@@ -1,17 +1,18 @@
 # SplitGasto 2026 - Cloudflare Pages Redirects
 # ─────────────────────────────────────────────────────────────────
-# RULES: All rewrites use 200 (serve content without URL change)
-# IMPORTANT: Specific rules FIRST, wildcard fallback LAST
-# Cloudflare Pages automatically serves existing .html files directly
+# STRATEGY: Explicit 200 rewrites only. NO wildcard /* catch-all.
+# CF Pages flags /* /index.html 200 as an infinite loop and ignores it.
+# All navigation uses relative .html paths so CF serves files directly.
 # ─────────────────────────────────────────────────────────────────
 
-# ── Auth ──────────────────────────────────────────────────────────
+# ── Auth & Onboarding ────────────────────────────────────────────
 /auth                  /auth.html                200
 /login                 /auth.html                200
 /register              /register.html            200
 /signup                /register.html            200
+/onboarding            /onboarding.html          200
 
-# ── Main app pages ────────────────────────────────────────────────
+# ── Main App Pages ───────────────────────────────────────────────
 /dashboard             /dashboard.html           200
 /groups                /groups.html              200
 /profile               /profile.html             200
@@ -26,7 +27,7 @@
 /membership            /membership.html          200
 /rankings              /rankings.html            200
 
-# ── Expenses & Groups ─────────────────────────────────────────────
+# ── Expenses & Groups ────────────────────────────────────────────
 /add-expense           /add-expense.html         200
 /create-group          /create-group.html        200
 /split                 /split.html               200
@@ -34,29 +35,23 @@
 /success               /success.html             200
 /receipt               /receipt-view.html        200
 
-# ── Games ─────────────────────────────────────────────────────────
+# ── Games ────────────────────────────────────────────────────────
 /games                 /games.html               200
 /game-roulette         /game-roulette.html       200
 /game-cards            /game-cards.html          200
 /game-coin             /game-coin.html           200
 /game-darts            /game-darts.html          200
 
-# ── Social ────────────────────────────────────────────────────────
+# ── Social ───────────────────────────────────────────────────────
 /friends               /friends.html             200
 /invite                /invite.html              200
 
-# ── Info pages ────────────────────────────────────────────────────
+# ── Info & Legal ─────────────────────────────────────────────────
 /legal                 /legal.html               200
 /privacy               /legal.html               200
 /investors             /investors.html           200
 /manual                /manual.html              200
 /support               /support.html             200
-/onboarding            /onboarding.html          200
 
-# ── Engine & static assets (pass-through) ─────────────────────────
+# ── Engine & static assets (pass-through) ────────────────────────
 /engine/*              /engine/:splat            200
-
-# ── Fallback: serve index.html for any unknown path (SPA mode) ────
-# NOTE: Cloudflare Pages serves existing files directly first,
-# so this only triggers for truly unknown paths.
-/*                     /index.html               200
