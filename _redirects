@@ -5,6 +5,9 @@
 # Cloudflare Pages automatically serves existing .html files directly
 # ─────────────────────────────────────────────────────────────────
 
+# ── Root — explicit rule to avoid /* self-loop ────────────────────
+/                      /index.html               200
+
 # ── Auth ──────────────────────────────────────────────────────────
 /auth                  /auth.html                200
 /login                 /auth.html                200
