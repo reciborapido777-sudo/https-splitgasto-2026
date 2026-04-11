@@ -16,9 +16,8 @@ jobs:
 
       - name: Prepare site (excluir .git y artefactos)
         run: |
-          rm -rf dist
           mkdir -p dist
-          rsync -av --exclude='.git' --exclude='.github' --exclude='dist' . dist/
+          rsync -av --exclude=dist --exclude=.git --exclude=.github . dist/
           find dist/ -name "*.pack" -delete
           find dist/ -name "*.idx" -delete
           echo "✅ Archivos: $(find dist/ -type f | wc -l)"
