@@ -1,0 +1,33 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy SplitGasto 2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare site (excluir .git y artefactos)
+        run: |
+          rm -rf dist_temp
+          mkdir -p dist_temp
+          cp -r --no-preserve=mode,ownership . dist_temp/ --exclude=dist_temp --exclude=.git --exclude=.github
+          rm -rf dist
+          mv dist_temp dist
+          find dist/ -name "*.pack" -delete
+          find dist/ -name "*.idx" -delete
+          echo "✅ Archivos: $(find dist/ -type f | wc -l)"
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=splitgasto --commit-dirty=true
