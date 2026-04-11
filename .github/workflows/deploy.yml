@@ -16,11 +16,10 @@ jobs:
 
       - name: Prepare site (excluir .git y artefactos)
         run: |
-          rm -rf dist_temp
-          mkdir -p dist_temp
-          cp -r --no-preserve=mode,ownership . dist_temp/ --exclude=dist_temp --exclude=.git --exclude=.github
           rm -rf dist
-          mv dist_temp dist
+          mkdir -p dist
+          cp -r . dist/
+          rm -rf dist/.git dist/.github dist/dist
           find dist/ -name "*.pack" -delete
           find dist/ -name "*.idx" -delete
           echo "✅ Archivos: $(find dist/ -type f | wc -l)"
