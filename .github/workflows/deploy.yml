@@ -17,16 +17,15 @@ jobs:
       - name: Prepare site (excluir .git y artefactos)
         run: |
           mkdir -p dist
-          rsync -av --exclude=dist --exclude=.git --exclude=.github . dist/
+          cp -r . dist/
+          rm -rf dist/.git dist/.github dist/dist
           find dist/ -name "*.pack" -delete
           find dist/ -name "*.idx" -delete
           echo "✅ Archivos: $(find dist/ -type f | wc -l)"
 
       - name: Deploy to Cloudflare Pages
-        uses: AliSoftware/cloudflare-pages-deploy@v1.0.0
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: splitgasto
-          directory: dist
-          githubtokenForPreview: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy dist --project-name=splitgasto --commit-dirty=true
