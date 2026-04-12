@@ -14,25 +14,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare site (excluir .git y artefactos)
+      - name: Preparar carpeta dist (excluir .git y carpetas grandes)
         run: |
-          mkdir -p dist
-          rsync -av --exclude=dist --exclude=.git --exclude=.github . dist/
-          find dist/ -name "*.pack" -delete
-          find dist/ -name "*.idx" -delete
-          echo "✅ Archivos: $(find dist/ -type f | wc -l)"
+          mkdir dist
+          find . -maxdepth 1 \
+            ! -name '.' \
+            ! -name '.git' \
+            ! -name '.github' \
+            ! -name 'dist' \
+            ! -name 'proyecto' \
+            ! -name 'proyecto_new' \
+            ! -name 'screenshots' \
+            ! -name 'DEPLOY.sh' \
+            -exec cp -r {} dist/ \;
+          echo "✅ Archivos: $(find dist/ -type f | wc -l) — $(du -sh dist/ | cut -f1)"
+          ls dist/
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy a Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          wrangler pages deploy dist --project-name=splitgasto --commit-dirty=true
+          npm install -g wrangler@latest --silent
+          wrangler pages deploy dist \
+            --project-name=splitgasto \
+            --commit-dirty=true
