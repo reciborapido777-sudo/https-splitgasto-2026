@@ -1,12 +1,8 @@
 # SplitGasto 2026 - Cloudflare Pages Redirects
 # ─────────────────────────────────────────────────────────────────
 # RULES: All rewrites use 200 (serve content without URL change)
-# IMPORTANT: Specific rules FIRST, wildcard fallback LAST
-# Cloudflare Pages automatically serves existing .html files directly
+# CF Pages serves existing .html files DIRECTLY before evaluating these rules
 # ─────────────────────────────────────────────────────────────────
-
-# ── Root — explicit rule to avoid /* self-loop ────────────────────
-/                      /index.html               200
 
 # ── Auth ──────────────────────────────────────────────────────────
 /auth                  /auth.html                200
@@ -58,8 +54,3 @@
 
 # ── Engine & static assets (pass-through) ─────────────────────────
 /engine/*              /engine/:splat            200
-
-# ── Fallback: serve index.html for any unknown path (SPA mode) ────
-# NOTE: Cloudflare Pages serves existing files directly first,
-# so this only triggers for truly unknown paths.
-/*                     /index.html               200
