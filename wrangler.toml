@@ -1,1 +1,4 @@
-name = "splitgasto" account_id = "34b0bbd5db590a69edbb901b768ebccc" type = "javascript" compatibility_date = "2026-04-14"
+name = "splitgasto"
+account_id = "34b0bbd5db590a69edbb901b768ebccc"
+type = "javascript"
+compatibility_date = "2026-04-14"
