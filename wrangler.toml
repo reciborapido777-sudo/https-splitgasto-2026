@@ -1,24 +1,17 @@
-# SplitGasto 2026 — Cloudflare Workers con IA
-# Worker: https-splitgasto-2026
-# URL pública: https://https-splitgasto-2026.reciborapido777.workers.dev
-
 name = "https-splitgasto-2026"
-main = "_worker.js"
+main = "_worker.js"               # ← modo DINÁMICO (no solo estático)
 compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
-# ─── Assets estáticos (HTML, CSS, JS, imágenes) ─────────────────────
 [assets]
 directory = "./dist"
 not_found_handling = "single-page-application"
 html_handling = "auto-trailing-slash"
 
-# ─── Cloudflare AI (Workers AI) ──────────────────────────────────────
 [[ai]]
-binding = "AI"
+binding = "AI"                    # ← Cloudflare Workers AI habilitado
 
-# ─── Variables de entorno públicas ───────────────────────────────────
 [vars]
-APP_NAME = "SplitGasto 2026"
+APP_NAME    = "SplitGasto 2026"
 APP_VERSION = "3.0"
-APP_ENV = "production"
+APP_ENV     = "production"
