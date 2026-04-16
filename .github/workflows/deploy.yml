@@ -18,9 +18,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Ajusta según la versión que uses localmente
+          node-version: '18'
 
-      # Cambiado npm ci por npm install para evitar error si no hay package-lock.json
       - name: Install dependencies
         run: npm install
 
