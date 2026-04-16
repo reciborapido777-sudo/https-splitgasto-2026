@@ -3,7 +3,8 @@ name: Deploy SplitGasto 2026
 on:
   push:
     branches: [main]
-  workflow_dispatch:              
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,7 +16,7 @@ jobs:
       - name: Preparar dist
         run: |
           mkdir -p dist
-          # Copia archivos excluyendo los que no quieres
+          # Copia archivos excluyendo los que no quieres subir como assets
           find . -maxdepth 1 \
             ! -name "." \
             ! -name ".git" \
