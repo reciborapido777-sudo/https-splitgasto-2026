@@ -9,8 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    name: Deploy a Cloudflare Workers
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,9 +19,11 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
+        working-directory: ./https-splitgasto-2026  # Ajusta según tu estructura
         run: npm install
 
       - name: Preparar dist
+        working-directory: ./https-splitgasto-2026
         run: |
           mkdir -p dist
           find . -maxdepth 1 \
@@ -40,9 +40,6 @@ jobs:
           echo "✅ Archivos en dist/: $(find dist/ -type f | wc -l) — $(du -sh dist/ | cut -f1)"
           ls dist/
 
-      - name: Check dist directory before deploy
-        run: ls -la dist
-
       - name: Install Wrangler v4
         run: npm install -g wrangler@4
 
@@ -50,6 +47,7 @@ jobs:
         run: wrangler --version
 
       - name: Deploy a Cloudflare Workers
+        working-directory: ./https-splitgasto-2026
         run: wrangler deploy --verbose
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
