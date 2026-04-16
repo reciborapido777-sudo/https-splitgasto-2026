@@ -3,8 +3,7 @@ name: Deploy SplitGasto 2026
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-
+  workflow_dispatch:              
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,6 +15,7 @@ jobs:
       - name: Preparar dist
         run: |
           mkdir -p dist
+          echo "_worker.js" > .assetsignore
           find . -maxdepth 1 \
             ! -name "." \
             ! -name ".git" \
@@ -25,7 +25,9 @@ jobs:
             ! -name "proyecto_new" \
             ! -name "screenshots" \
             ! -name "DEPLOY.sh" \
+            ! -name "_worker.js" \
             -exec cp -r {} dist/ \;
+          mv .assetsignore dist/
           rm -rf dist/.git dist/.github
           echo "✅ Archivos en dist/: $(find dist/ -type f | wc -l) — $(du -sh dist/ | cut -f1)"
           ls dist/
