@@ -15,7 +15,7 @@ jobs:
       - name: Preparar dist
         run: |
           mkdir -p dist
-          echo "_worker.js" > .assetsignore
+          # Copia archivos excluyendo los que no quieres
           find . -maxdepth 1 \
             ! -name "." \
             ! -name ".git" \
@@ -27,19 +27,15 @@ jobs:
             ! -name "DEPLOY.sh" \
             ! -name "_worker.js" \
             -exec cp -r {} dist/ \;
-          mv .assetsignore dist/
           rm -rf dist/.git dist/.github
-          echo "✅ Archivos en dist/: $(find dist/ -type f | wc -l) — $(du -sh dist/ | cut -f1)"
-          ls dist/
+          echo "Archivos en dist:"
+          ls -la dist/
 
       - name: Install Wrangler v4
         run: npm install -g wrangler@4
-
-      - name: Check Wrangler version
-        run: wrangler --version
 
       - name: Deploy a Cloudflare Workers
         run: wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
