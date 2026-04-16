@@ -8,7 +8,7 @@ directory = "./dist"
 not_found_handling = "single-page-application"
 html_handling = "auto-trailing-slash"
 
-[[ai]]
+[ai]
 binding = "AI"                    # ← Cloudflare Workers AI habilitado
 
 [vars]
