@@ -7,7 +7,8 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu
+
     name: Deploy a Cloudflare Workers
 
     steps:
