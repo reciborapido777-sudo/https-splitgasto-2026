@@ -13,24 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preparar dist
+      - name: Verificar archivos
         run: |
-          mkdir -p dist
-          # Copia archivos excluyendo los que no quieres subir como assets
-          find . -maxdepth 1 \
-            ! -name "." \
-            ! -name ".git" \
-            ! -name ".github" \
-            ! -name "dist" \
-            ! -name "proyecto" \
-            ! -name "proyecto_new" \
-            ! -name "screenshots" \
-            ! -name "DEPLOY.sh" \
-            ! -name "_worker.js" \
-            -exec cp -r {} dist/ \;
-          rm -rf dist/.git dist/.github
-          echo "Archivos en dist:"
-          ls -la dist/
+          echo "=== Raíz del repositorio ==="
+          ls -la
+          echo "=== .assetsignore ==="
+          cat .assetsignore
+          echo "Total HTML: $(find . -maxdepth 1 -name '*.html' | wc -l)"
 
       - name: Install Wrangler v4
         run: npm install -g wrangler@4
