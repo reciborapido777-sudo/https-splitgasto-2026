@@ -1,0 +1,30 @@
+# Wrangler .assetsignore — archivos excluidos del upload de assets
+# Referencia: https://developers.cloudflare.com/workers/static-assets/routing/#assetsignore
+
+# Worker entry point (no es un asset, es código del Worker)
+_worker.js
+
+# Git internals (nunca deben subirse)
+.git
+.git/**
+*.pack
+*.idx
+
+# CI/CD y configuración
+.github
+.github/**
+.gitignore
+wrangler.toml
+DEPLOY.sh
+
+# Carpetas de desarrollo / prototipos (grandes, no son el sitio)
+proyecto
+proyecto/**
+proyecto_new
+proyecto_new/**
+screenshots
+screenshots/**
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

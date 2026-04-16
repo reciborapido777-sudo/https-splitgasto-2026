@@ -1,16 +1,28 @@
+# SplitGasto 2026 — Cloudflare Workers Dinámico con IA
+# Worker: https-splitgasto-2026
+# URL: https://https-splitgasto-2026.reciborapido777.workers.dev
+
 name = "https-splitgasto-2026"
-main = "_worker.js"               # ← modo DINÁMICO (no solo estático)
+main = "_worker.js"
 compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
+# ── Assets estáticos ─────────────────────────────────────────────────
+# assets.directory apunta a la raíz "." para que funcione tanto en:
+#   • Cloudflare CI  (ejecuta desde /opt/buildhome/repo/, sin dist/)
+#   • GitHub Actions (crea dist/ y ejecuta desde allí)
+# El archivo .assetsignore excluye _worker.js y archivos de desarrollo
+# para que no se suban como assets.
 [assets]
-directory = "./dist"
+directory = "."
 not_found_handling = "single-page-application"
 html_handling = "auto-trailing-slash"
 
+# ── Cloudflare Workers AI ─────────────────────────────────────────────
 [ai]
-binding = "AI"                    # ← Cloudflare Workers AI habilitado
+binding = "AI"
 
+# ── Variables de entorno ──────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
 APP_VERSION = "3.0"

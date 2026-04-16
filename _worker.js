@@ -1,13 +1,18 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 1.0 — 2026-04-15
+ * Versión: 1.1 — 2026-04-16
  *
  * Responsabilidades:
- *  1. Servir archivos estáticos desde el bucket de assets (./dist)
+ *  1. Servir archivos estáticos desde el bucket de assets (raíz del repo)
  *  2. Exponer API REST en /api/* para funciones serverless
  *  3. Integrar Cloudflare Workers AI en /api/ai/*
  *  4. Manejar CORS y cabeceras de seguridad
  *  5. SPA fallback: cualquier ruta desconocida → index.html
+ *
+ * NOTAS de arquitectura:
+ *  - assets.directory = "." en wrangler.toml (funciona en Cloudflare CI y GH Actions)
+ *  - .assetsignore excluye _worker.js, .git, carpetas de dev, wrangler.toml
+ *  - env.ASSETS es el binding automático de Wrangler para assets estáticos
  */
 
 export default {
