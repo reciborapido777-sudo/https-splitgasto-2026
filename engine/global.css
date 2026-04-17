@@ -1,22 +1,17 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 1.62 Gold | Protocolo: Blindaje de Perímetro y Divisa
+ * Versión: 1.63 Gold | Protocolo: Blindaje de Perímetro y Divisa
  * Estándar: Plus Jakarta Sans & Space Grotesk
- * RECTIFICACIÓN: Funcionalidad Absoluta y Aceleración GPU
+ * RECTIFICACIÓN: Funcionalidad Absoluta, Aceleración GPU y Desktop Responsive
  */
 
 :root {
-    /* Paleta de Autoridad - Handbook 2.1 */
-    --cian-tech: #13ecd6;    /* Éxitos y Validaciones */
-    --purple-deep: #a855f7;  /* Lógica, Seguridad y Procesos IA */
-    --orange-socio: #FF9D42; /* Estatus Élite y Membresía */
-    
-    /* Arquitectura de Cristal Alpha */
+    --cian-tech: #13ecd6;
+    --purple-deep: #a855f7;
+    --orange-socio: #FF9D42;
     --glass-bg: rgba(255, 255, 255, 0.02);
     --glass-border: rgba(255, 255, 255, 0.05);
     --glass-blur: blur(30px);
-    
-    /* Variables de Capas */
     --transition-alpha: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -24,7 +19,7 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box !important; 
+    box-sizing: border-box !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
@@ -34,7 +29,7 @@ html, body {
     background-color: #000 !important;
     color: #fff;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    overflow-x: hidden !important; 
+    overflow-x: hidden !important;
     width: 100% !important;
     max-width: 100vw;
     position: relative;
@@ -43,7 +38,7 @@ html, body {
     overscroll-behavior-y: none;
 }
 
-/* 2. BLINDAJE DE DIVISA (Inexpugnable ante recortes) */
+/* 2. BLINDAJE DE DIVISA */
 .money-display {
     display: inline-block;
     padding-right: 0.55em !important;
@@ -53,7 +48,7 @@ html, body {
     transform: translateZ(0);
 }
 
-/* 3. SISTEMA DE CRISTALERÍA (Glassmorphism) */
+/* 3. SISTEMA DE CRISTALERÍA */
 .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
@@ -65,7 +60,7 @@ html, body {
     will-change: transform, opacity;
 }
 
-/* 4. TIPOGRAFÍA Y GRADIENTES DE MANDO */
+/* 4. TIPOGRAFÍA Y GRADIENTES */
 h1, h2, h3, .font-accent {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 900;
@@ -109,7 +104,7 @@ h1, h2, h3, .font-accent {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* 6. COMPONENTES TÁCTICOS (Inputs y Botones) */
+/* 6. COMPONENTES TÁCTICOS */
 .input-alpha {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--glass-border);
@@ -141,8 +136,7 @@ h1, h2, h3, .font-accent {
     border: none;
 }
 
-/* 7. UTILIDADES DE SCROLL Y RECORTE */
-/* Scrollbar oculto en móvil, visible en desktop */
+/* 7. UTILIDADES DE SCROLL */
 @media (max-width: 767px) {
     ::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -165,7 +159,7 @@ h1, h2, h3, .font-accent {
     letter-spacing: 2px;
 }
 
-/* 8. RESPONSIVE DESKTOP WRAPPER — App pages (mobile-first design) */
+/* 8. RESPONSIVE DESKTOP WRAPPER */
 .app-shell {
     background: #000;
     min-height: 100dvh;
@@ -185,8 +179,8 @@ h1, h2, h3, .font-accent {
     }
 
     .app-frame {
-        width: 430px !important;
-        max-width: 430px !important;
+        width: 100%;
+        max-width: 960px;
         min-height: calc(100dvh - 4rem);
         border-radius: 2rem;
         overflow: hidden;
@@ -206,22 +200,20 @@ h1, h2, h3, .font-accent {
     }
 }
 
-/* 9. APP-FRAME SCROLL FIX for desktop */
+/* 9. APP-FRAME SCROLL FIX */
 @media (min-width: 768px) {
     .app-frame {
         overflow-y: auto !important;
         overflow-x: hidden !important;
     }
-    
-    /* Fixed bottom nav becomes sticky inside the frame */
+
     .app-frame nav.fixed,
     .app-frame footer.fixed,
     .app-frame .bottom-nav-fixed {
         position: sticky !important;
         bottom: 0 !important;
     }
-    
-    /* Fixed top header becomes sticky inside the frame */  
+
     .app-frame header.fixed,
     .app-frame .top-header-fixed {
         position: sticky !important;
@@ -229,11 +221,40 @@ h1, h2, h3, .font-accent {
     }
 }
 
-/* 10. PÁGINAS SIN APP-SHELL — scroll normal en desktop */
+/* 10. DESKTOP CONTENT SCALING */
 @media (min-width: 768px) {
-    body:not(.app-shell) {
-        overflow-y: auto !important;
-        max-width: 480px;
-        margin: 0 auto;
+    .app-frame .max-w-lg {
+        max-width: 100% !important;
+    }
+
+    .app-frame .grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem !important;
+    }
+
+    .app-frame .experience-card {
+        height: 320px !important;
+    }
+
+    .app-frame .glass-panel {
+        padding: 2rem !important;
+    }
+
+    .app-frame section .text-5xl,
+    .app-frame section .text-6xl {
+        font-size: 4rem !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-frame .grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1.5rem !important;
+    }
+
+    .app-frame .max-w-lg {
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
     }
 }
