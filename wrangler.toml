@@ -8,14 +8,11 @@ compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
 # ── Assets estáticos ─────────────────────────────────────────────────
-# assets.directory apunta a "." ya que los archivos HTML están en la raíz.
-# binding = "ASSETS" permite que env.ASSETS.fetch() funcione en el Worker.
-# El archivo .assetsignore excluye _worker.js y archivos de desarrollo.
 [assets]
 directory = "."
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-html_handling = "auto-trailing-slash"
+html_handling = "drop-trailing-slash"
 
 # ── Cloudflare Workers AI ─────────────────────────────────────────────
 [ai]
