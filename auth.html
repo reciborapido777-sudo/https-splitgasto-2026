@@ -28,6 +28,10 @@
         .glass-card{background:rgba(255,255,255,.02);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);border-radius:32px}
         .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
         label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:#4a4a4a;display:block;margin-bottom:8px}
+        @media (min-width: 768px) {
+            .app-frame { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; min-height:calc(100dvh - 4rem) !important; padding:2rem !important; }
+            .app-frame > div.w-full { max-width:480px !important; width:100% !important; }
+        }
     </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->

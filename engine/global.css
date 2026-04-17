@@ -1,8 +1,8 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 1.63 Gold | Protocolo: Blindaje de Perímetro y Divisa
+ * Versión: 1.64 Gold | Protocolo: Blindaje de Perímetro y Divisa
  * Estándar: Plus Jakarta Sans & Space Grotesk
- * RECTIFICACIÓN: Funcionalidad Absoluta, Aceleración GPU y Desktop Responsive
+ * RECTIFICACIÓN: Desktop responsive — centrado forms, vault grid, sin overflow recorte
  */
 
 :root {
@@ -175,7 +175,9 @@ h1, h2, h3, .font-accent {
         justify-content: center;
         padding: 2rem 1rem;
         min-height: 100dvh;
+        /* Scroll en el shell, no en el frame — evita que contenido sea recortado */
         overflow-y: auto !important;
+        overflow-x: hidden !important;
     }
 
     .app-frame {
@@ -183,7 +185,8 @@ h1, h2, h3, .font-accent {
         max-width: 960px;
         min-height: calc(100dvh - 4rem);
         border-radius: 2rem;
-        overflow: hidden;
+        /* overflow visible para que sticky headers/footers funcionen sin recortar */
+        overflow: visible;
         box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
                     0 30px 80px rgba(0,0,0,0.8),
                     0 0 120px rgba(19,236,214,0.04);
@@ -197,33 +200,40 @@ h1, h2, h3, .font-accent {
     .app-frame {
         width: 100%;
         min-height: 100dvh;
+        overflow-x: hidden;
     }
 }
 
-/* 9. APP-FRAME SCROLL FIX */
+/* 9. STICKY NAV/HEADER DENTRO DEL FRAME */
 @media (min-width: 768px) {
-    .app-frame {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-
-    .app-frame nav.fixed,
-    .app-frame footer.fixed,
+    /* Convertir fixed→sticky para que queden dentro del frame (960px) */
+    .app-frame nav[class*="fixed"],
+    .app-frame footer[class*="fixed"],
+    .app-frame div[class*="fixed bottom"],
     .app-frame .bottom-nav-fixed {
         position: sticky !important;
         bottom: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
     }
 
-    .app-frame header.fixed,
+    .app-frame header[class*="fixed"],
+    .app-frame div[class*="fixed top"],
     .app-frame .top-header-fixed {
         position: sticky !important;
         top: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
     }
 }
 
 /* 10. DESKTOP CONTENT SCALING */
 @media (min-width: 768px) {
-    .app-frame .max-w-lg {
+    /* Expandir contenedores que usan max-w-lg/sm en móvil */
+    .app-frame .max-w-lg,
+    .app-frame .max-w-md {
         max-width: 100% !important;
     }
 
@@ -236,7 +246,9 @@ h1, h2, h3, .font-accent {
         height: 320px !important;
     }
 
-    .app-frame .glass-panel {
+    /* SOLO expandir padding en glass-panel grande, NO en cards pequeñas */
+    .app-frame > .glass-panel,
+    .app-frame section > .glass-panel {
         padding: 2rem !important;
     }
 
@@ -252,9 +264,35 @@ h1, h2, h3, .font-accent {
         gap: 1.5rem !important;
     }
 
-    .app-frame .max-w-lg {
+    .app-frame .max-w-lg,
+    .app-frame .max-w-md {
         max-width: 100% !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
+    }
+}
+
+/* 11. PÁGINAS DE FORMULARIO (auth, register, login)
+   El body usa flex+center pero app-frame es block → el formulario queda a la izquierda.
+   Solución: cuando el body es flex y el app-frame contiene un form centrado,
+   hacemos que app-frame herede el centrado. */
+@media (min-width: 768px) {
+    /* body con clases de centrado flex → app-frame también centra */
+    body.app-shell.items-center .app-frame,
+    body.app-shell.justify-center .app-frame {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 2rem !important;
+    }
+
+    /* El contenedor del formulario no debe sobrepasar 480px en desktop */
+    body.app-shell.items-center .app-frame > div[class*="max-w-sm"],
+    body.app-shell.items-center .app-frame > div[class*="max-w-md"],
+    body.app-shell.justify-center .app-frame > div[class*="max-w-sm"],
+    body.app-shell.justify-center .app-frame > div[class*="max-w-md"] {
+        width: 100% !important;
+        max-width: 480px !important;
     }
 }

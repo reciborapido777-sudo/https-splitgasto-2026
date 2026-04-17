@@ -98,6 +98,30 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+
+        /* ── DESKTOP RESPONSIVE (bóveda) ─────────────────────────────── */
+        @media (min-width: 768px) {
+            /* Grid de tickets: 3 cols en tablet, 4 en desktop */
+            #vaultGrid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 1.5rem !important;
+            }
+            /* Las tarjetas de ticket no se solapan: altura mínima garantizada */
+            .asset-card {
+                aspect-ratio: 3/4 !important;
+                min-height: 220px !important;
+            }
+            /* Texto dentro de las tarjetas: legible en desktop */
+            .asset-overlay {
+                padding: 1.5rem !important;
+            }
+        }
+        @media (min-width: 1024px) {
+            #vaultGrid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 1.75rem !important;
+            }
+        }
 </style>
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">

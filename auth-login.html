@@ -47,6 +47,10 @@
 
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media (min-width: 768px) {
+            .app-frame { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; min-height:calc(100dvh - 4rem) !important; padding:2rem !important; }
+            .app-frame > div.w-full { max-width:520px !important; width:100% !important; }
+        }
     </style>
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">

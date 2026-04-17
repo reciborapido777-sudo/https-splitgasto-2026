@@ -29,6 +29,21 @@
         .orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
         label{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:#4a4a4a;display:block;margin-bottom:8px}
         .benefit-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:6px 12px;font-size:10px;font-weight:700;color:#9a9a9a}
+        /* ── DESKTOP: centrar formulario dentro del app-frame ─────────── */
+        @media (min-width: 768px) {
+            .app-frame {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                min-height: calc(100dvh - 4rem) !important;
+                padding: 2rem !important;
+            }
+            .app-frame > div.w-full.max-w-sm {
+                max-width: 480px !important;
+                width: 100% !important;
+            }
+        }
     </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
