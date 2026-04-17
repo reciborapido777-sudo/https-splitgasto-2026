@@ -13,13 +13,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verificar archivos
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar Vue (genera dist/)
+        run: npm run build
+
+      - name: Verificar dist/
         run: |
-          echo "=== Raíz del repositorio ==="
-          ls -la
-          echo "=== .assetsignore ==="
-          cat .assetsignore
-          echo "Total HTML: $(find . -maxdepth 1 -name '*.html' | wc -l)"
+          echo "=== Contenido de dist/ ==="
+          ls -la dist/
+          echo "Total archivos: $(find dist/ -type f | wc -l)"
 
       - name: Install Wrangler v4
         run: npm install -g wrangler@4
