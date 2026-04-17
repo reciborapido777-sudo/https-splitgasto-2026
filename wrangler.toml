@@ -8,11 +8,15 @@ compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
 # ── Assets estáticos ─────────────────────────────────────────────────
+# Los archivos HTML se sirven directamente como assets.
+# Solo las rutas /api/* pasan por el Worker (run_worker_first).
+# binding = "ASSETS" permite que el Worker use env.ASSETS.fetch() cuando necesite.
 [assets]
 directory = "."
 binding = "ASSETS"
+run_worker_first = ["/api/*"]
 not_found_handling = "single-page-application"
-html_handling = "drop-trailing-slash"
+html_handling = "auto-trailing-slash"
 
 # ── Cloudflare Workers AI ─────────────────────────────────────────────
 [ai]
