@@ -1,8 +1,7 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 1.63 Gold | Protocolo: Blindaje de Perímetro y Divisa
+ * Versión: 1.64 Gold | Desktop Responsive Fix
  * Estándar: Plus Jakarta Sans & Space Grotesk
- * RECTIFICACIÓN: Funcionalidad Absoluta, Aceleración GPU y Desktop Responsive
  */
 
 :root {
@@ -15,7 +14,7 @@
     --transition-alpha: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 1. RESET DE SEGURIDAD ALPHA */
+/* 1. RESET */
 * {
     margin: 0;
     padding: 0;
@@ -48,7 +47,7 @@ html, body {
     transform: translateZ(0);
 }
 
-/* 3. SISTEMA DE CRISTALERÍA */
+/* 3. CRISTALERÍA */
 .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
@@ -92,7 +91,7 @@ h1, h2, h3, .font-accent {
     padding-right: 0.2em;
 }
 
-/* 5. ANIMACIONES DE REVELADO ALPHA */
+/* 5. ANIMACIONES */
 .reveal-node {
     animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
@@ -136,13 +135,13 @@ h1, h2, h3, .font-accent {
     border: none;
 }
 
-/* 7. UTILIDADES DE SCROLL */
-@media (max-width: 767px) {
+/* 7. SCROLLBAR — solo visible en desktop real (no móvil horizontal) */
+@media (max-width: 1023px) {
     ::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
@@ -159,13 +158,35 @@ h1, h2, h3, .font-accent {
     letter-spacing: 2px;
 }
 
-/* 8. RESPONSIVE DESKTOP WRAPPER */
+/* 8. APP SHELL — Móvil: pantalla completa | Desktop: frame centrado */
 .app-shell {
     background: #000;
     min-height: 100dvh;
 }
 
-@media (min-width: 768px) {
+/* ── Móvil (incluido horizontal): pantalla completa ── */
+@media (max-width: 1023px) {
+    .app-shell {
+        overflow-y: auto !important;
+    }
+
+    .app-frame {
+        width: 100%;
+        min-height: 100dvh;
+    }
+
+    /* Nav fija normal en móvil */
+    .app-frame nav.fixed,
+    .app-frame .bottom-nav-fixed {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+}
+
+/* ── Desktop (1024px+): frame centrado con scroll interno ── */
+@media (min-width: 1024px) {
     .app-shell {
         background: radial-gradient(ellipse at 20% 50%, rgba(19,236,214,0.04) 0%, transparent 50%),
                     radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.04) 0%, transparent 50%),
@@ -180,10 +201,11 @@ h1, h2, h3, .font-accent {
 
     .app-frame {
         width: 100%;
-        max-width: 960px;
+        max-width: 1200px;
         min-height: calc(100dvh - 4rem);
         border-radius: 2rem;
-        overflow: hidden;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
                     0 30px 80px rgba(0,0,0,0.8),
                     0 0 120px rgba(19,236,214,0.04);
@@ -191,70 +213,42 @@ h1, h2, h3, .font-accent {
         background: #000;
         flex-shrink: 0;
     }
-}
 
-@media (max-width: 767px) {
-    .app-frame {
-        width: 100%;
-        min-height: 100dvh;
-    }
-}
-
-/* 9. APP-FRAME SCROLL FIX */
-@media (min-width: 768px) {
-    .app-frame {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-
+    /* Nav sticky dentro del frame en desktop */
     .app-frame nav.fixed,
     .app-frame footer.fixed,
     .app-frame .bottom-nav-fixed {
         position: sticky !important;
         bottom: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
     }
 
     .app-frame header.fixed,
     .app-frame .top-header-fixed {
         position: sticky !important;
         top: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
     }
 }
 
-/* 10. DESKTOP CONTENT SCALING */
-@media (min-width: 768px) {
+/* 9. DESKTOP CONTENT SCALING */
+@media (min-width: 1024px) {
     .app-frame .max-w-lg {
         max-width: 100% !important;
-    }
-
-    .app-frame .grid-cols-3 {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 1rem !important;
     }
 
     .app-frame .experience-card {
         height: 320px !important;
     }
-
-    .app-frame .glass-panel {
-        padding: 2rem !important;
-    }
-
-    .app-frame section .text-5xl,
-    .app-frame section .text-6xl {
-        font-size: 4rem !important;
-    }
 }
 
+/* 10. PÁGINAS SIN APP-SHELL */
 @media (min-width: 1024px) {
-    .app-frame .grid-cols-3 {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 1.5rem !important;
-    }
-
-    .app-frame .max-w-lg {
-        max-width: 100% !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+    body:not(.app-shell) {
+        overflow-y: auto !important;
     }
 }
