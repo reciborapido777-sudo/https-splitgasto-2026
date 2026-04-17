@@ -1,4 +1,4 @@
-  # SplitGasto 2026 — Cloudflare Workers Dinámico con IA
+# SplitGasto 2026 — Cloudflare Workers Dinámico con IA
 # Worker: https-splitgasto-2026
 # URL: https://https-splitgasto-2026.reciborapido777.workers.dev
 
@@ -8,13 +8,12 @@ compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
 # ── Assets estáticos ─────────────────────────────────────────────────
-# assets.directory apunta a la raíz "." para que funcione tanto en:
-#   • Cloudflare CI  (ejecuta desde /opt/buildhome/repo/, sin dist/)
-#   • GitHub Actions (crea dist/ y ejecuta desde allí)
-# El archivo .assetsignore excluye _worker.js y archivos de desarrollo
-# para que no se suban como assets.
+# assets.directory apunta a "./dist" donde Vue genera los archivos
+# compilados después de npm run build.
+# binding = "ASSETS" permite que env.ASSETS.fetch() funcione en el Worker.
 [assets]
-directory = "."
+directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
 html_handling = "auto-trailing-slash"
 
