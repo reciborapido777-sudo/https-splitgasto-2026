@@ -1,5 +1,5 @@
 # SplitGasto 2026 - Cloudflare Pages Headers
-# Engineering Revision v4.2 — Zero-cache HTML, HSTS, correct asset TTLs
+# Engineering Revision v4.2 — Zero-cache HTML, correct asset TTLs
 
 # ── Security headers for ALL paths ──────────────────────────────────────────
 /*
@@ -8,16 +8,14 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-XSS-Protection: 1; mode=block
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 # ── HTML pages — NEVER cache; always validate with server ───────────────────
-# This is the most critical fix: old cached HTML with broken router = infinite loop
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
 
-# ── Service Worker — NEVER cache (must always be fresh for updates) ─────────
+# ── Service Worker — NEVER cache ─────────────────────────────────────────
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
@@ -31,7 +29,7 @@
 /engine/*
   Cache-Control: no-cache, must-revalidate
 
-# ── Favicon files — 1 day cache (changed recently) ──────────────────────────
+# ── Favicon files — 1 day cache ──────────────────────────────────────────
 /favicon.svg
   Cache-Control: public, max-age=86400, must-revalidate
 
