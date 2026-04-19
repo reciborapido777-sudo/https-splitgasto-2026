@@ -28,26 +28,10 @@
             transform: translateZ(0);
         }
 
-        .asset-card {
-            position: relative;
-            aspect-ratio: 4/5;
-            border-radius: 2.5rem;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            background: #0a0a0a;
-            transform: translateZ(0);
-            will-change: transform, opacity;
-        }
-        .asset-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(19, 236, 214, 0.3);
-            box-shadow: 0 40px 80px -15px rgba(0,0,0,0.8);
-        }
-        .asset-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,1) 5%, rgba(0,0,0,0.4) 50%, transparent 100%);
-        }
-
+        .asset-card{position:relative;aspect-ratio:4/5;border-radius:2.5rem;overflow:hidden;border:1px solid rgba(255,255,255,0.05);transition:all 0.6s cubic-bezier(0.16,1,0.3,1);background:#0a0a0a;transform:translateZ(0);will-change:transform,opacity}
+        .asset-card:hover{transform:translateY(-10px) scale(1.02);border-color:rgba(19,236,214,0.3);box-shadow:0 40px 80px -15px rgba(0,0,0,0.8)}
+        .asset-overlay{background:linear-gradient(to top,rgba(0,0,0,1) 5%,rgba(0,0,0,0.4) 50%,transparent 100%)}
+        
         .money-display {
             font-family: 'Space Grotesk', sans-serif;
             padding-right: 0.55em !important; 
@@ -55,40 +39,12 @@
             white-space: nowrap;
         }
 
-        .search-field:focus-within {
-            border-color: rgba(19, 236, 214, 0.4);
-            background: rgba(255, 255, 255, 0.04);
-            box-shadow: 0 0 20px rgba(19, 236, 214, 0.1);
-        }
-
-        .filter-btn {
-            padding: 8px 18px;
-            border-radius: 999px;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: transparent;
-            color: #71717a;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .filter-btn.active, .filter-btn:hover {
-            border-color: #13ecd6;
-            color: #13ecd6;
-            background: rgba(19, 236, 214, 0.07);
-        }
-
-        .stat-pill {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 1.5rem;
-            padding: 1rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .search-field:focus-within{border-color:rgba(19,236,214,0.4);background:rgba(255,255,255,0.04);box-shadow:0 0 20px rgba(19,236,214,0.1)}
+        
+        .filter-btn{padding:8px 18px;border-radius:999px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#71717a;cursor:pointer;transition:all 0.3s}
+        .filter-btn.active,.filter-btn:hover{border-color:#13ecd6;color:#13ecd6;background:rgba(19,236,214,0.07)}
+        
+        .stat-pill{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:1.5rem;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:4px}
 
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -99,31 +55,10 @@
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 
-        /* ── DESKTOP RESPONSIVE (bóveda) ─────────────────────────────── */
-        @media (min-width: 768px) {
-            /* Grid de tickets: 3 cols en tablet, 4 en desktop */
-            #vaultGrid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 1.5rem !important;
-            }
-            /* Las tarjetas de ticket no se solapan: altura mínima garantizada */
-            .asset-card {
-                aspect-ratio: 3/4 !important;
-                min-height: 220px !important;
-            }
-            /* Texto dentro de las tarjetas: legible en desktop */
-            .asset-overlay {
-                padding: 1.5rem !important;
-            }
-        }
-        @media (min-width: 1024px) {
-            #vaultGrid {
-                grid-template-columns: repeat(4, 1fr) !important;
-                gap: 1.75rem !important;
-            }
-        }
-</style>
-<link rel="manifest" href="manifest.json">
+        @media(min-width:768px){#vaultGrid{grid-template-columns:repeat(3,1fr)!important;gap:1.5rem!important}.asset-card{aspect-ratio:3/4!important;min-height:220px!important}.asset-overlay{padding:1.5rem!important}}
+        @media(min-width:1024px){#vaultGrid{grid-template-columns:repeat(4,1fr)!important;gap:1.75rem!important}}
+    </style>
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -133,44 +68,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowY = 'auto';
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
     <script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell min-h-screen pb-32">
@@ -178,7 +75,6 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
         
-        <!-- Header -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sticky top-0 bg-black/80 backdrop-blur-xl z-50 py-4">
             <div class="flex items-center gap-5">
                 <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
@@ -201,7 +97,6 @@
             </div>
         </header>
 
-        <!-- Estadísticas -->
         <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
             <div class="stat-pill">
                 <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Total Guardado</p>
@@ -220,7 +115,6 @@
             </div>
         </section>
 
-        <!-- Filtros -->
         <div class="flex gap-2 flex-wrap reveal-node" style="animation-delay: 0.05s">
             <button class="filter-btn active" onclick="setFilter(this,'todos')">Todos</button>
             <button class="filter-btn" onclick="setFilter(this,'alimentacion')">Alimentación</button>
@@ -230,10 +124,8 @@
             <button class="filter-btn" onclick="setFilter(this,'transporte')">Transporte</button>
         </div>
 
-        <!-- Grid de activos -->
         <main id="vaultGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7">
             
-            <!-- Nuevo ticket CTA -->
             <div onclick="SGRouter.navigate('scanner', 'vault')" 
                  class="asset-card flex flex-col items-center justify-center gap-5 cursor-pointer group border-dashed border-zinc-800 bg-transparent hover:border-[#FF9D42]/40 reveal-node">
                 <div class="size-14 rounded-full bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/15 group-hover:scale-110 transition-transform">
@@ -245,7 +137,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Mercadona -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.05s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="alimentacion" data-name="mercadona">
                 <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800" 
@@ -262,7 +153,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Sushi Kyoto -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.1s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="gastronomia" data-name="sushi kyoto">
                 <img src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?q=80&w=800" 
@@ -279,7 +169,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Netflix -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.15s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="ocio" data-name="netflix">
                 <div class="absolute inset-0 bg-gradient-to-br from-red-950/60 to-black flex items-center justify-center">
@@ -297,7 +186,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Luz -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.2s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="suministros" data-name="factura luz">
                 <div class="absolute inset-0 bg-gradient-to-br from-yellow-950/50 to-black flex items-center justify-center">
@@ -315,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Uber -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.25s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="transporte" data-name="uber">
                 <div class="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center">
@@ -333,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- Asset: Viaje Pirineos -->
             <div class="asset-card group cursor-pointer reveal-node" style="animation-delay: 0.3s" 
                  onclick="SGRouter.navigate('receipt', 'vault')" data-cat="ocio" data-name="pirineos">
                 <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800" 
@@ -352,7 +238,6 @@
 
         </main>
 
-        <!-- Sin resultados -->
         <div id="emptyVault" class="hidden text-center py-20 space-y-4">
             <span class="material-icons-round text-zinc-700 text-6xl">search_off</span>
             <p class="text-zinc-600 font-black uppercase text-sm tracking-widest">Sin resultados</p>
@@ -360,7 +245,7 @@
 
     </div>
 
-        <script>
+    <script>
         let currentFilter = 'todos';
 
         function setFilter(btn, cat) {
@@ -391,10 +276,8 @@
         }
     </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
@@ -418,8 +301,7 @@
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
