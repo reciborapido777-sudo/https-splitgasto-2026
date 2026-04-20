@@ -8,9 +8,6 @@ compatibility_date = "2026-04-14"
 compatibility_flags = ["nodejs_compat"]
 
 # ── Assets estáticos ─────────────────────────────────────────────────
-# run_worker_first = true: el Worker SIEMPRE se ejecuta primero
-# html_handling = "none": sin redirecciones automáticas (elimina bucle)
-# El Worker maneja el routing internamente con env.ASSETS.fetch()
 [assets]
 directory = "."
 binding = "ASSETS"
@@ -22,10 +19,24 @@ html_handling = "none"
 [ai]
 binding = "AI"
 
+# ── R2 Bucket ─────────────────────────────────────────────────────────
+[[r2_buckets]]
+binding = "SPLITGASTO_BUCKET"
+bucket_name = "splitgasto-storage"
+
+# ── Rate Limiting ──────────────────────────────────────────────────────
+[[ratelimits]]
+name = "SPLITGASTO_RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 100
+  period = 60
+
 # ── Variables de entorno ──────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
-APP_VERSION = "3.0"
+APP_VERSION = "3.1"
 APP_ENV     = "production"
 
 # ── Observabilidad ─────────────────────────────────────────────────────
