@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 1.90 Platinum | Densidad Total + Visibilidad Legacy
+ * Versión: 1.70 Gold | Layout Universal
  */
 
 :root {
@@ -13,12 +13,14 @@
     --transition-alpha: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 1. RESET Y ESTRUCTURA (Fix Scroll Crítico) */
+/* 1. RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box !important;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -32,12 +34,13 @@ body {
     color: #fff !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     overflow-x: hidden !important;
-    overflow-y: auto !important; /* Unificación: solo el body tiene scroll */
+    overflow-y: auto !important;
     width: 100% !important;
+    max-width: 100vw !important;
     min-height: 100dvh !important;
+    height: auto !important;
     position: relative;
-    /* ESPACIO DE SEGURIDAD ALPHA: Evita que la nav tape datos en cualquier página */
-    padding-bottom: 120px !important; 
+    overscroll-behavior-y: none;
 }
 
 /* 2. BLINDAJE DE DIVISA */
@@ -47,6 +50,7 @@ body {
     white-space: nowrap;
     font-family: 'Space Grotesk', sans-serif;
     letter-spacing: -0.02em;
+    transform: translateZ(0);
 }
 
 /* 3. CRISTALERÍA */
@@ -56,14 +60,16 @@ body {
     -webkit-backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 2rem;
-    transition: var(--transition-alpha);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     transform: translateZ(0);
+    will-change: transform, opacity;
 }
 
 /* 4. TIPOGRAFÍA Y GRADIENTES */
 h1, h2, h3, .font-accent {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 900;
+    letter-spacing: -0.04em;
     text-transform: uppercase;
     font-style: italic;
     line-height: 0.95;
@@ -91,7 +97,7 @@ h1, h2, h3, .font-accent {
     padding-right: 0.2em;
 }
 
-/* 5. ANIMACIONES (Restaurado) */
+/* 5. ANIMACIONES */
 .reveal-node {
     animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
@@ -103,7 +109,7 @@ h1, h2, h3, .font-accent {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* 6. COMPONENTES TÁCTICOS (Restaurado) */
+/* 6. COMPONENTES TÁCTICOS */
 .input-alpha {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--glass-border);
@@ -113,6 +119,7 @@ h1, h2, h3, .font-accent {
     width: 100%;
     font-weight: 700;
     transition: var(--transition-alpha);
+    transform: translateZ(0);
 }
 
 .input-alpha:focus {
@@ -134,16 +141,7 @@ h1, h2, h3, .font-accent {
     border: none;
 }
 
-.status-tag {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 8px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-/* 7. SCROLLBAR (Restaurado) */
+/* 7. SCROLLBAR */
 @media (max-width: 1023px) {
     ::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -156,44 +154,64 @@ h1, h2, h3, .font-accent {
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 }
 
-/* 8. LAYOUT UNIVERSAL (Fix Desktop Crítico) */
+.status-tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. LAYOUT UNIVERSAL
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Móvil: pantalla completa ── */
 .app-shell {
     background: #000 !important;
     min-height: 100dvh !important;
-    overflow: visible !important; /* El scroll lo manda el body */
+    overflow-y: auto !important;
 }
 
 .app-frame {
     width: 100%;
     min-height: 100dvh;
-    margin: 0 auto;
 }
 
+/* ── Desktop: centrado con fondo ── */
 @media (min-width: 1024px) {
-    body {
+    .app-shell {
         background: radial-gradient(ellipse at 20% 50%, rgba(19,236,214,0.04) 0%, transparent 50%),
                     radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.04) 0%, transparent 50%),
                     #0a0a0a !important;
-        padding-bottom: 150px !important;
     }
 
     .app-frame {
         max-width: 1200px;
+        margin: 0 auto;
+        min-height: 100dvh;
+        border-radius: 2rem;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
+                    0 30px 80px rgba(0,0,0,0.8),
+                    0 0 120px rgba(19,236,214,0.04);
         background: #000;
-        border-radius: 0 0 2rem 2rem;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 30px 80px rgba(0,0,0,0.8);
     }
-    
-    /* Unificación de max-width interiores en Desktop */
-    .app-frame .max-w-lg, .app-frame .max-w-7xl {
+
+    .app-frame .max-w-lg {
         max-width: 100% !important;
-        padding-left: 2rem;
-        padding-right: 2rem;
+    }
+
+    .app-frame .experience-card {
+        height: 320px !important;
     }
 }
 
-/* 9. NAV BAR (Fix Centrado y Visibilidad) */
-.app-frame nav.fixed, .app-frame .bottom-nav-fixed {
+/* ═══════════════════════════════════════════════════════════════
+   9. NAV BAR — centrada y responsive
+   ═══════════════════════════════════════════════════════════════ */
+.app-frame nav.fixed,
+.app-frame .bottom-nav-fixed {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -205,36 +223,44 @@ h1, h2, h3, .font-accent {
     border-top: 1px solid rgba(255,255,255,0.05);
 }
 
+/* Nav inner: expandir en desktop */
+.app-frame nav .nav-inner {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: around;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    padding-bottom: 1.25rem;
+}
+
 @media (min-width: 1024px) {
-    .app-frame nav.fixed, .app-frame .bottom-nav-fixed {
-        /* Centrado estable sin hacks de transform */
+    .app-frame nav.fixed,
+    .app-frame .bottom-nav-fixed {
         max-width: 1200px;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        border-radius: 0;
-        border-left: 1px solid rgba(255,255,255,0.05);
-        border-right: 1px solid rgba(255,255,255,0.05);
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 0 0 2rem 2rem;
+    }
+
+    .app-frame nav .max-w-lg {
+        max-width: 100% !important;
     }
 }
 
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-/* 10. FIX PÁGINAS LEGACY (Auth/Register) */
+/* ═══════════════════════════════════════════════════════════════
+   10. PÁGINAS SIN APP-SHELL (landing, onboarding, auth)
+   ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-    body:not(.app-shell) .max-w-lg, body:not(.app-shell) .max-w-sm {
+    body:not(.app-shell) {
+        overflow-y: auto !important;
+    }
+
+    body:not(.app-shell) .max-w-lg,
+    body:not(.app-shell) .max-w-sm {
         max-width: 600px !important;
-        margin: 4rem auto !important;
-        padding: 3rem;
-        background: #000;
-        border-radius: 2.5rem;
-        border: 1px solid var(--glass-border);
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 }
