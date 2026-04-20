@@ -36,7 +36,7 @@ namespace_id = "1001"
 # ── Variables de entorno ──────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
-APP_VERSION = "3.1"
+APP_VERSION = "3.0"
 APP_ENV     = "production"
 
 # ── Observabilidad ─────────────────────────────────────────────────────
