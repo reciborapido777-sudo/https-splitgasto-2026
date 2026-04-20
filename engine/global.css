@@ -1,6 +1,7 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 1.70 Gold | Layout Universal
+ * Versión: 1.85 Platinum | Densidad Restaurada + Fix Desktop
+ * Auditoría: Resuelve Doble Scroll y Centrado de Nav sin mermas.
  */
 
 :root {
@@ -33,8 +34,9 @@ body {
     background-color: #000 !important;
     color: #fff !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
+    /* FIX: Unificamos el scroll aquí para evitar el doble contexto */
     overflow-x: hidden !important;
-    overflow-y: auto !important;
+    overflow-y: auto !important; 
     width: 100% !important;
     max-width: 100vw !important;
     min-height: 100dvh !important;
@@ -97,7 +99,7 @@ h1, h2, h3, .font-accent {
     padding-right: 0.2em;
 }
 
-/* 5. ANIMACIONES */
+/* 5. ANIMACIONES (Restaurado) */
 .reveal-node {
     animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
@@ -109,7 +111,7 @@ h1, h2, h3, .font-accent {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* 6. COMPONENTES TÁCTICOS */
+/* 6. COMPONENTES TÁCTICOS (Restaurado) */
 .input-alpha {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--glass-border);
@@ -141,7 +143,16 @@ h1, h2, h3, .font-accent {
     border: none;
 }
 
-/* 7. SCROLLBAR */
+.status-tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* 7. SCROLLBAR (Restaurado) */
 @media (max-width: 1023px) {
     ::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -154,32 +165,24 @@ h1, h2, h3, .font-accent {
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 }
 
-.status-tag {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 8px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   8. LAYOUT UNIVERSAL
+   8. LAYOUT UNIVERSAL (Corrección de Auditoría)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Móvil: pantalla completa ── */
+/* Móvil: el shell hereda el scroll del body */
 .app-shell {
     background: #000 !important;
     min-height: 100dvh !important;
-    overflow-y: auto !important;
+    overflow-y: visible !important; /* Evita el doble scroll */
 }
 
 .app-frame {
     width: 100%;
     min-height: 100dvh;
+    padding-bottom: 90px; /* Previene que la nav tape contenido */
 }
 
-/* ── Desktop: centrado con fondo ── */
+/* Desktop: Centrado robusto */
 @media (min-width: 1024px) {
     .app-shell {
         background: radial-gradient(ellipse at 20% 50%, rgba(19,236,214,0.04) 0%, transparent 50%),
@@ -193,22 +196,20 @@ h1, h2, h3, .font-accent {
         min-height: 100dvh;
         border-radius: 2rem;
         box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
-                    0 30px 80px rgba(0,0,0,0.8),
-                    0 0 120px rgba(19,236,214,0.04);
+                    0 30px 80px rgba(0,0,0,0.8);
         background: #000;
+        padding-bottom: 110px;
     }
 
-    .app-frame .max-w-lg {
+    .app-frame .max-w-lg, .app-frame .max-w-7xl {
         max-width: 100% !important;
-    }
-
-    .app-frame .experience-card {
-        height: 320px !important;
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   9. NAV BAR — centrada y responsive
+   9. NAV BAR (Resuelve Punto 3 de Auditoría)
    ═══════════════════════════════════════════════════════════════ */
 .app-frame nav.fixed,
 .app-frame .bottom-nav-fixed {
@@ -223,34 +224,35 @@ h1, h2, h3, .font-accent {
     border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Nav inner: expandir en desktop */
-.app-frame nav .nav-inner {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+/* Nav inner: Unificación de max-width */
+.app-frame nav .nav-inner,
+.app-frame nav .max-w-lg,
+.app-frame nav .max-w-7xl {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
     display: flex;
-    justify-content: around;
+    justify-content: space-around;
     align-items: center;
-    padding: 0.75rem 1rem;
-    padding-bottom: 1.25rem;
+    padding: 0.75rem 1rem 1.25rem 1rem !important;
 }
 
 @media (min-width: 1024px) {
     .app-frame nav.fixed,
     .app-frame .bottom-nav-fixed {
+        /* FIX: Centrado estable sin transform para pantallas anchas */
         max-width: 1200px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: 0 0 2rem 2rem;
-    }
-
-    .app-frame nav .max-w-lg {
-        max-width: 100% !important;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        border-radius: 0; 
+        border-left: 1px solid rgba(255,255,255,0.05);
+        border-right: 1px solid rgba(255,255,255,0.05);
     }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   10. PÁGINAS SIN APP-SHELL (landing, onboarding, auth)
+   10. PÁGINAS ESPECIALES (Auth/Register Scroll Fix)
    ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
     body:not(.app-shell) {
@@ -260,7 +262,10 @@ h1, h2, h3, .font-accent {
     body:not(.app-shell) .max-w-lg,
     body:not(.app-shell) .max-w-sm {
         max-width: 600px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
+        margin: 4rem auto !important;
+        background: #000;
+        padding: 3rem;
+        border-radius: 2.5rem;
+        border: 1px solid var(--glass-border);
     }
 }
