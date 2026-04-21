@@ -2,7 +2,7 @@
 <html lang="es" style="background-color:#000">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Elite Lounge | SplitGasto 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#D4AF37">
@@ -45,7 +45,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
@@ -259,8 +258,15 @@
         }
 
         function subscribe() {
-            SGRouter.showToast('¡Bienvenido a Premium! 🎉', 'premium');
-            setTimeout(() => SGRouter.navigate('dashboard'), 1500);
+            // Show confirmation toast – AI payment integration coming soon
+            const plan = document.getElementById('plan-monthly').classList.contains('selected') ? 'Mensual' : 'Anual';
+            const btn = document.getElementById('cta-btn');
+            btn.disabled = true;
+            btn.textContent = '✓ Procesando...';
+            btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+            SGRouter.showToast('¡Plan ' + plan + ' activado! Gestión de pagos próximamente vía Workers AI', 'premium');
+            // Return to previous page after 2s (profile/dashboard) instead of forcing dashboard
+            setTimeout(() => SGRouter.back(), 2000);
         }
 
         if ('serviceWorker' in navigator) {

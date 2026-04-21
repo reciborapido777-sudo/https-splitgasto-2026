@@ -2,7 +2,7 @@
 <html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Alpha | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
@@ -14,8 +14,8 @@
         
         html, body { 
             background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; overflow: hidden !important;
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            min-height: 100dvh; overflow-x: hidden !important; overflow-y: auto !important;
             overscroll-behavior: none;
         }
 
@@ -70,7 +70,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');

@@ -2,7 +2,7 @@
 <html lang="es" class="dark" style="background-color:#0a0a0a">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>La Carta Más Alta | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -142,7 +142,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
@@ -262,28 +261,6 @@
 </main>
 
 <!-- Bottom Nav -->
-<nav class="bottom-nav fixed bottom-0 left-0 right-0 flex justify-around items-center px-4 py-3 pb-6">
-  <button onclick="SGRouter.navigate('dashboard')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">home</span>
-    <span class="text-[10px]">Inicio</span>
-  </button>
-  <button onclick="SGRouter.navigate('groups')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">group</span>
-    <span class="text-[10px]">Grupos</span>
-  </button>
-  <button class="flex flex-col items-center gap-1" style="color:var(--cyan)">
-    <span class="material-icons-round text-xl">casino</span>
-    <span class="text-[10px]">Juegos</span>
-  </button>
-  <button onclick="SGRouter.navigate('vault')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">account_balance_wallet</span>
-    <span class="text-[10px]">Bóveda</span>
-  </button>
-  <button onclick="SGRouter.navigate('profile')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">person</span>
-    <span class="text-[10px]">Perfil</span>
-  </button>
-</nav>
 
 <script>
 // ─── DECK ─────────────────────────────────────────────────────────────────────
@@ -292,6 +269,46 @@ const SUIT_COLORS = {'♠':'#e2e8f0','♥':'#ef4444','♦':'#ef4444','♣':'#e2e
 const SUIT_BG = {'♠':'#1e293b','♥':'#1e0a0a','♦':'#1e0a0a','♣':'#1e293b'};
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const RANK_VALUES = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+
+// ─── AUDIO ENGINE ─────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+function playCardFlip() {
+  try {
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2) * 0.3;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.6, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    src.connect(gain); gain.connect(ctx.destination);
+    src.start();
+  } catch(e) {}
+}
+
+function playWinSound() {
+  try {
+    const ctx = getAudioCtx();
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      osc.start(t); osc.stop(t + 0.4);
+    });
+  } catch(e) {}
+}
 
 let deck = [];
 let players = [
@@ -414,6 +431,8 @@ let flippedCards = new Set();
 function flipCard(idx) {
   const card = document.getElementById(`card-${idx}`);
   if (!card) return;
+  try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
+  playCardFlip();
   if (flippedCards.has(idx)) {
     card.classList.remove('flipped');
     flippedCards.delete(idx);
@@ -451,7 +470,8 @@ function showWinner() {
   renderPlayers();
   renderScoreboard();
 
-  // Show result
+  // Sound + Show result
+  playWinSound();
   const rankName = {'J':'Jota','Q':'Reina','K':'Rey','A':'As'}[winner.card.rank] || winner.card.rank;
   document.getElementById('result-emoji').textContent = winner.card.suit === '♥' || winner.card.suit === '♦' ? '🃏' : '🂡';
   document.getElementById('result-text').textContent = `${winner.player.name} tiene la carta más alta`;
@@ -546,7 +566,7 @@ updateStats();
 
     <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>

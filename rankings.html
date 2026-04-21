@@ -2,7 +2,7 @@
 <html lang="es" style="background-color:#0a0a0a">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Rankings Alpha | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -99,7 +99,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
@@ -231,28 +230,6 @@
 </main>
 
 <!-- Bottom Nav -->
-<nav class="bottom-nav fixed bottom-0 left-0 right-0 flex justify-around items-center px-4 py-3 pb-6">
-  <button onclick="SGRouter.navigate('dashboard')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">home</span>
-    <span class="text-[10px]">Inicio</span>
-  </button>
-  <button onclick="SGRouter.navigate('activity')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">timeline</span>
-    <span class="text-[10px]">Actividad</span>
-  </button>
-  <button class="flex flex-col items-center gap-1" style="color:var(--gold)">
-    <span class="material-icons-round text-xl">emoji_events</span>
-    <span class="text-[10px]">Rankings</span>
-  </button>
-  <button onclick="SGRouter.navigate('analytics')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">bar_chart</span>
-    <span class="text-[10px]">Métricas</span>
-  </button>
-  <button onclick="SGRouter.navigate('profile')" class="flex flex-col items-center gap-1 opacity-40">
-    <span class="material-icons-round text-xl">person</span>
-    <span class="text-[10px]">Perfil</span>
-  </button>
-</nav>
 
 <script>
 const rankingData = {
@@ -391,7 +368,7 @@ renderRanking('global');
 
     <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>

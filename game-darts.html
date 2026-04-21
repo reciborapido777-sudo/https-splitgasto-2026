@@ -14,6 +14,7 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="engine/global.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <script>
@@ -134,7 +135,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
@@ -253,7 +253,7 @@
     <!-- Bottom Navigation Bar -->
         <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
@@ -278,6 +278,45 @@
     </nav>
 
         <script>
+        // ─── AUDIO ENGINE ─────────────────────────────────────────────────────
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+        function playDartHit(score) {
+          try {
+            const ctx = getAudioCtx();
+            const freq = score >= 50 ? 1200 : score >= 25 ? 900 : score > 0 ? 600 : 200;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = score >= 50 ? 'sine' : 'triangle';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.5, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.15);
+          } catch(e) {}
+        }
+
+        function playWinSound() {
+          try {
+            const ctx = getAudioCtx();
+            [523, 659, 784, 1047].forEach((freq, i) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain); gain.connect(ctx.destination);
+              osc.type = 'sine'; osc.frequency.value = freq;
+              const t = ctx.currentTime + i * 0.12;
+              gain.gain.setValueAtTime(0, t);
+              gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
+              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+              osc.start(t); osc.stop(t + 0.4);
+            });
+          } catch(e) {}
+        }
+
         // ─── Game State ───────────────────────────────────────────────
         const PLAYERS = [
             { name: 'Tú', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
@@ -485,12 +524,16 @@
         // ─── Throw Dart ───────────────────────────────────────────────
         function throwDart(x, y) {
             if (gameOver) return;
+            try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
 
             const result = getScore(x, y);
             const player = PLAYERS[currentPlayer];
 
             player.score += result.pts;
             player.darts.push({ x, y });
+
+            // Sound feedback
+            playDartHit(result.pts);
 
             // Show hit ring
             showHitRing(x, y, result.pts > 0 ? player.color : '#ef4444');
@@ -584,6 +627,7 @@
             document.getElementById('winnerInvites').textContent = loser.name;
             document.getElementById('winnerModal').classList.remove('hidden');
 
+            playWinSound();
             launchConfetti();
         }
 

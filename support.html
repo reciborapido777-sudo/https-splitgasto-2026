@@ -2,7 +2,7 @@
 <html lang="es" style="background-color:#000 !important;overflow-x:hidden">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Soporte Alpha | SplitGasto 2026</title>
 <link rel="stylesheet" href="engine/global.css">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -47,7 +47,6 @@ html,body{background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
@@ -288,7 +287,7 @@ function filterFAQ(query) {
     <!-- Bottom Navigation Bar -->
         <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-lg mx-auto flex justify-around items-center py-3 pb-5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>

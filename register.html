@@ -2,7 +2,7 @@
 <html lang="es" style="background-color:#000">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Nueva Cuenta | SplitGasto 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
@@ -54,7 +54,6 @@
             var frame = document.querySelector('.app-frame');
             if(!frame) return;
             // Make frame the scroll container
-            frame.style.overflowY = 'auto';
             frame.style.overflowX = 'hidden';
             // Convert fixed bottom elements to sticky
             var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
