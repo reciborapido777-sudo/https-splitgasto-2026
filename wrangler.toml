@@ -33,11 +33,23 @@ namespace_id = "1001"
 limit = 100
 period = 60
 
+# ── D1 Database ───────────────────────────────────────────────────────
+[[d1_databases]]
+binding = "SPLITGASTO_DB"
+database_name = "splitgasto-db"
+database_id = "0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"
+
+# ── KV Namespace ──────────────────────────────────────────────────────
+[[kv_namespaces]]
+binding = "SPLITGASTO_CACHE"
+id = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
 # ── Variables de entorno ──────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
 APP_VERSION = "3.0"
 APP_ENV     = "production"
+AI_GATEWAY  = "splitgasto-ai"
 
 # ── Observabilidad ─────────────────────────────────────────────────────
 [observability]
