@@ -377,9 +377,13 @@ async function handleStorageList(request, env) {
         }
 
         const url = new URL(request.url);
-        const prefix = url.searchParams.get('prefix') || '';
+        const userId = url.searchParams.get('userId') || 'anonymous';
+        const folder = url.searchParams.get('folder') || '';
         const limit = parseInt(url.searchParams.get('limit') || '50', 10);
         const cursor = url.searchParams.get('cursor') || undefined;
+
+        // Solo listar archivos del usuario
+        const prefix = `usuarios/${userId}/${folder}`;
 
         const listed = await env.SPLITGASTO_BUCKET.list({
             prefix: prefix,
@@ -408,6 +412,7 @@ async function handleStorageList(request, env) {
         );
     }
 }
+
 
 // ═══════════════════════════════════════════════════════════════════════
 // Cloudflare Workers AI
@@ -535,7 +540,8 @@ function corsResponse() {
         status: 204,
         headers: {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
         },
