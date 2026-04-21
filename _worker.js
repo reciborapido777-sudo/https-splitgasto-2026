@@ -509,4 +509,50 @@ async function handleAI(request, env, path) {
             return jsonResponse(
                 { error: 'Error clasificando gasto', detail: err.message },
                 500
-            );
+                  );
+        }
+    }
+
+    return jsonResponse({ error: 'Ruta de AI no encontrada', path }, 404);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════════
+function jsonResponse(data, status = 200) {
+    return new Response(JSON.stringify(data, null, 2), {
+        status,
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Access-Control-Allow-Origin': '*',
+            'X-Content-Type-Options': 'nosniff',
+        },
+    });
+}
+
+function corsResponse() {
+    return new Response(null, {
+        status: 204,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Max-Age': '86400',
+        },
+    });
+}
+
+function setSecurityHeaders(headers) {
+    headers.set('X-Frame-Options', 'SAMEORIGIN');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set(
+        'Permissions-Policy',
+        'camera=(), microphone=(), geolocation=()'
+    );
+    // Cache: HTML sin cache, assets con cache largo
+    const ct = headers.get('Content-Type') || '';
+    if (ct.includes('text/html')) {
+        headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+}
