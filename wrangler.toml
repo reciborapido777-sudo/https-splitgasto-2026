@@ -29,9 +29,9 @@ bucket_name = "splitgasto-storage"
 name = "SPLITGASTO_RATE_LIMITER"
 namespace_id = "1001"
 
-  [ratelimits.simple]
-  limit = 100
-  period = 60
+[ratelimits.simple]
+limit = 100
+period = 60
 
 # ── Variables de entorno ──────────────────────────────────────────────
 [vars]
