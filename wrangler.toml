@@ -37,12 +37,12 @@ period = 60
 [[d1_databases]]
 binding = "SPLITGASTO_DB"
 database_name = "splitgasto-db"
-database_id = "0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"
+id = "ac0401b5-1e3a-4c02-8c36-01025169eb1a"
 
 # ── KV Namespace ──────────────────────────────────────────────────────
 [[kv_namespaces]]
 binding = "SPLITGASTO_CACHE"
-id = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+id = "2fff1325c50247a68880274994732d79"
 
 # ── Variables de entorno ──────────────────────────────────────────────
 [vars]
