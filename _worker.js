@@ -1,21 +1,21 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 3.1 — 2026-04-20
+ * Versión: 2.0 — 2026-04-20
  *
  * Responsabilidades:
  *  1. Servir archivos estáticos desde el bucket de assets (raíz del repo)
  *  2. Exponer API REST en /api/* para funciones serverless
  *  3. Integrar Cloudflare Workers AI en /api/ai/*
- *  4. Almacenamiento seguro en R2 en /api/storage/*
- *  5. Rate Limiting por IP/usuario
+ *  4. Almacenamiento seguro en R2 (/api/storage/*)
+ *  5. Rate limiting por IP en todas las rutas de API
  *  6. Manejar CORS y cabeceras de seguridad
  *  7. SPA fallback: cualquier ruta desconocida → index.html
  *
- * Bindings requeridos:
- *  - ASSETS: Assets estáticos (Wrangler)
- *  - AI: Cloudflare Workers AI
- *  - SPLITGASTO_BUCKET: R2 Bucket (splitgasto-storage)
- *  - SPLITGASTO_RATE_LIMITER: Rate Limiter (100 req/60s)
+ * Bindings:
+ *  - env.ASSETS                → Assets estáticos
+ *  - env.AI                    → Workers AI
+ *  - env.SPLITGASTO_BUCKET     → R2 Bucket (splitgasto-storage)
+ *  - env.SPLITGASTO_RATE_LIMITER → Rate Limiter (100 req/60s)
  */
 
 export default {
@@ -23,26 +23,16 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
 
-        // ── 0. Rate Limiting global ──────────────────────────────────
-        const rateLimitResult = await checkRateLimit(request, env);
-        if (!rateLimitResult.success) {
-            return jsonResponse(
-                {
-                    error: 'Demasiadas peticiones',
-                    message: 'Has excedido el límite de 100 peticiones por minuto. Intenta de nuevo más tarde.',
-                    retryAfter: 60,
-                },
-                429,
-                { 'Retry-After': '60' }
-            );
-        }
-
-        // ── 1. Rutas de API ──────────────────────────────────────────
+        // ── 1. Rutas de API (con rate limiting) ────────────────────────
         if (path.startsWith('/api/')) {
+            // Rate limiting por IP
+            const rateLimitResult = await checkRateLimit(request, env);
+            if (rateLimitResult) return rateLimitResult;
+
             return handleAPI(request, env, ctx, path);
         }
 
-        // ── 2. Assets estáticos ──────────────────────────────────────
+        // ── 2. Assets estáticos ─────────────────────────────────────────
         try {
             const assetResponse = await env.ASSETS.fetch(request);
             const headers = new Headers(assetResponse.headers);
@@ -52,6 +42,7 @@ export default {
                 headers,
             });
         } catch (e) {
+            // Fallback SPA — sirve index.html
             const indexRequest = new Request(
                 new URL('/index.html', request.url).toString(),
                 request
@@ -72,86 +63,26 @@ export default {
 // Rate Limiting
 // ═══════════════════════════════════════════════════════════════════════
 async function checkRateLimit(request, env) {
-    if (!env.SPLITGASTO_RATE_LIMITER) {
-        return { success: true }; // Sin rate limiter configurado, permitir
-    }
+    if (!env.SPLITGASTO_RATE_LIMITER) return null;
 
     const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const authHeader = request.headers.get('Authorization');
+    const url = new URL(request.url);
+    const key = `${clientIP}:${url.pathname}`;
 
-    // Priorizar usuario autenticado sobre IP
-    const key = authHeader
-        ? `user:${extractUserIdFromToken(authHeader)}`
-        : `ip:${clientIP}`;
+    const { success } = await env.SPLITGASTO_RATE_LIMITER.limit({ key });
 
-    try {
-        return await env.SPLITGASTO_RATE_LIMITER.limit({ key });
-    } catch {
-        return { success: true }; // Si falla el rate limiter, permitir
-    }
-}
-
-function extractUserIdFromToken(authHeader) {
-    // ── IMPORTANTE ──────────────────────────────────────────────────
-    // Reemplaza esta función con tu lógica real de autenticación.
-    // Por ahora extrae un ID básico del header Authorization.
-    // Ejemplos de lo que deberías implementar:
-    //   - Verificar JWT y extraer el sub/userId
-    //   - Validar sesión contra tu base de datos
-    //   - Verificar token contra un servicio de auth externo
-    // ─────────────────────────────────────────────────────────────────
-    if (authHeader.startsWith('Bearer ')) {
-        const token = authHeader.slice(7);
-        // TODO: Decodificar JWT real y extraer userId
-        // Por ahora usamos un hash simple del token como identificador
-        return token.slice(0, 16) || 'anonymous';
-    }
-    return 'anonymous';
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// Autenticación
-// ═══════════════════════════════════════════════════════════════════════
-function requireAuth(request) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return {
-            authenticated: false,
-            error: jsonResponse(
-                { error: 'No autorizado', message: 'Se requiere header Authorization: Bearer <token>' },
-                401
-            ),
-        };
+    if (!success) {
+        return jsonResponse(
+            {
+                error: 'Demasiadas peticiones',
+                message: 'Has excedido el límite de 100 peticiones por minuto. Intenta de nuevo más tarde.',
+                retry_after: 60,
+            },
+            429
+        );
     }
 
-    // ── IMPORTANTE ──────────────────────────────────────────────────
-    // Reemplaza esta validación con tu sistema de autenticación real.
-    // Este es un placeholder que acepta cualquier token no vacío.
-    // Deberías:
-    //   1. Verificar la firma del JWT
-    //   2. Verificar que no haya expirado
-    //   3. Extraer el userId del payload
-    //   4. Verificar permisos específicos si es necesario
-    // ─────────────────────────────────────────────────────────────────
-    const token = authHeader.slice(7);
-    if (!token || token.length < 8) {
-        return {
-            authenticated: false,
-            error: jsonResponse(
-                { error: 'Token inválido', message: 'El token proporcionado no es válido' },
-                401
-            ),
-        };
-    }
-
-    // TODO: Reemplazar con decodificación real del JWT
-    const userId = token.slice(0, 16);
-
-    return {
-        authenticated: true,
-        userId,
-        token,
-    };
+    return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -170,12 +101,12 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '3.1',
+            version: env.APP_VERSION ?? '3.0',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
             r2_available: !!env.SPLITGASTO_BUCKET,
-            rate_limiter_available: !!env.SPLITGASTO_RATE_LIMITER,
+            ratelimit_available: !!env.SPLITGASTO_RATE_LIMITER,
         });
     }
 
@@ -190,6 +121,292 @@ async function handleAPI(request, env, ctx, path) {
     }
 
     return jsonResponse({ error: 'Endpoint no encontrado', path }, 404);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// R2 Storage — Almacenamiento seguro
+// ═══════════════════════════════════════════════════════════════════════
+async function handleStorage(request, env, path) {
+    if (!env.SPLITGASTO_BUCKET) {
+        return jsonResponse(
+            { error: 'R2 Storage no está habilitado en este entorno' },
+            503
+        );
+    }
+
+    const method = request.method;
+
+    // ── /api/storage/upload — Subir archivo a R2 ─────────────────────
+    if (path === '/api/storage/upload' && method === 'POST') {
+        return handleStorageUpload(request, env);
+    }
+
+    // ── /api/storage/download/:key — Descargar archivo de R2 ─────────
+    if (path.startsWith('/api/storage/download/') && method === 'GET') {
+        const key = decodeURIComponent(path.replace('/api/storage/download/', ''));
+        return handleStorageDownload(request, env, key);
+    }
+
+    // ── /api/storage/signed-url/:key — URL pre-firmada temporal ──────
+    if (path.startsWith('/api/storage/signed-url/') && method === 'GET') {
+        const key = decodeURIComponent(path.replace('/api/storage/signed-url/', ''));
+        return handleSignedUrl(request, env, key);
+    }
+
+    // ── /api/storage/delete/:key — Eliminar archivo de R2 ────────────
+    if (path.startsWith('/api/storage/delete/') && method === 'DELETE') {
+        const key = decodeURIComponent(path.replace('/api/storage/delete/', ''));
+        return handleStorageDelete(request, env, key);
+    }
+
+    // ── /api/storage/list — Listar archivos ──────────────────────────
+    if (path === '/api/storage/list' && method === 'GET') {
+        return handleStorageList(request, env);
+    }
+
+    return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404);
+}
+
+// ── Upload ────────────────────────────────────────────────────────────
+async function handleStorageUpload(request, env) {
+    try {
+        const contentType = request.headers.get('Content-Type') || '';
+
+        // Soporta multipart/form-data (archivos) y JSON (datos base64)
+        if (contentType.includes('multipart/form-data')) {
+            const formData = await request.formData();
+            const file = formData.get('file');
+            const userId = formData.get('userId') || 'anonymous';
+            const folder = formData.get('folder') || 'general';
+
+            if (!file) {
+                return jsonResponse({ error: 'Campo "file" requerido en el formulario' }, 400);
+            }
+
+            // Validar tamaño máximo: 10MB
+            const MAX_SIZE = 10 * 1024 * 1024;
+            if (file.size > MAX_SIZE) {
+                return jsonResponse(
+                    { error: 'El archivo excede el límite de 10MB' },
+                    413
+                );
+            }
+
+            // Validar tipo de archivo permitido
+            const allowedTypes = [
+                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                'application/pdf',
+                'text/plain', 'text/csv',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                return jsonResponse(
+                    { error: `Tipo de archivo no permitido: ${file.type}` },
+                    415
+                );
+            }
+
+            // Generar key segura: usuarios/{userId}/{folder}/{timestamp}-{nombre}
+            const timestamp = Date.now();
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const key = `usuarios/${userId}/${folder}/${timestamp}-${sanitizedName}`;
+
+            await env.SPLITGASTO_BUCKET.put(key, file.stream(), {
+                httpMetadata: { contentType: file.type },
+                customMetadata: {
+                    userId: userId,
+                    originalName: file.name,
+                    uploadedAt: new Date().toISOString(),
+                },
+            });
+
+            return jsonResponse({
+                success: true,
+                key: key,
+                size: file.size,
+                type: file.type,
+                message: 'Archivo subido correctamente',
+            }, 201);
+        }
+
+        // JSON con datos base64
+        const body = await request.json();
+        const { data, filename, userId, folder, mimeType } = body;
+
+        if (!data || !filename) {
+            return jsonResponse(
+                { error: 'Campos "data" y "filename" requeridos' },
+                400
+            );
+        }
+
+        const uid = userId || 'anonymous';
+        const fld = folder || 'general';
+        const timestamp = Date.now();
+        const sanitizedName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const key = `usuarios/${uid}/${fld}/${timestamp}-${sanitizedName}`;
+
+        // Decodificar base64
+        const binaryString = atob(data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        await env.SPLITGASTO_BUCKET.put(key, bytes, {
+            httpMetadata: { contentType: mimeType || 'application/octet-stream' },
+            customMetadata: {
+                userId: uid,
+                originalName: filename,
+                uploadedAt: new Date().toISOString(),
+            },
+        });
+
+        return jsonResponse({
+            success: true,
+            key: key,
+            message: 'Archivo subido correctamente',
+        }, 201);
+    } catch (err) {
+        return jsonResponse(
+            { error: 'Error subiendo archivo', detail: err.message },
+            500
+        );
+    }
+}
+
+// ── Download ──────────────────────────────────────────────────────────
+async function handleStorageDownload(request, env, key) {
+    try {
+        // Verificar que la key pertenece al usuario (seguridad)
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) {
+            return jsonResponse({ error: 'Autorización requerida' }, 401);
+        }
+
+        const object = await env.SPLITGASTO_BUCKET.get(key);
+        if (!object) {
+            return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+        }
+
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+        headers.set('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
+        headers.set('Cache-Control', 'private, max-age=3600');
+        setSecurityHeaders(headers);
+
+        return new Response(object.body, { headers });
+    } catch (err) {
+        return jsonResponse(
+            { error: 'Error descargando archivo', detail: err.message },
+            500
+        );
+    }
+}
+
+// ── Signed URL (URL pre-firmada temporal) ─────────────────────────────
+async function handleSignedUrl(request, env, key) {
+    try {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) {
+            return jsonResponse({ error: 'Autorización requerida' }, 401);
+        }
+
+        // Verificar que el objeto existe
+        const object = await env.SPLITGASTO_BUCKET.head(key);
+        if (!object) {
+            return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+        }
+
+        // Generar URL pre-firmada válida por 1 hora
+        const signedUrl = await env.SPLITGASTO_BUCKET.createSignedUrl(key, {
+            expiresIn: 3600,
+        });
+
+        return jsonResponse({
+            success: true,
+            url: signedUrl,
+            expiresIn: 3600,
+            key: key,
+        });
+    } catch (err) {
+        return jsonResponse(
+            { error: 'Error generando URL firmada', detail: err.message },
+            500
+        );
+    }
+}
+
+// ── Delete ────────────────────────────────────────────────────────────
+async function handleStorageDelete(request, env, key) {
+    try {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) {
+            return jsonResponse({ error: 'Autorización requerida' }, 401);
+        }
+
+        // Verificar que el objeto existe antes de eliminar
+        const object = await env.SPLITGASTO_BUCKET.head(key);
+        if (!object) {
+            return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+        }
+
+        await env.SPLITGASTO_BUCKET.delete(key);
+
+        return jsonResponse({
+            success: true,
+            message: 'Archivo eliminado correctamente',
+            key: key,
+        });
+    } catch (err) {
+        return jsonResponse(
+            { error: 'Error eliminando archivo', detail: err.message },
+            500
+        );
+    }
+}
+
+// ── List ──────────────────────────────────────────────────────────────
+async function handleStorageList(request, env) {
+    try {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) {
+            return jsonResponse({ error: 'Autorización requerida' }, 401);
+        }
+
+        const url = new URL(request.url);
+        const prefix = url.searchParams.get('prefix') || '';
+        const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+        const cursor = url.searchParams.get('cursor') || undefined;
+
+        const listed = await env.SPLITGASTO_BUCKET.list({
+            prefix: prefix,
+            limit: Math.min(limit, 100),
+            cursor: cursor,
+        });
+
+        const objects = listed.objects.map((obj) => ({
+            key: obj.key,
+            size: obj.size,
+            uploaded: obj.uploaded.toISOString(),
+            type: obj.httpMetadata?.contentType || 'unknown',
+        }));
+
+        return jsonResponse({
+            success: true,
+            objects: objects,
+            truncated: listed.truncated,
+            cursor: listed.truncated ? listed.cursor : null,
+            count: objects.length,
+        });
+    } catch (err) {
+        return jsonResponse(
+            { error: 'Error listando archivos', detail: err.message },
+            500
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -214,7 +431,7 @@ async function handleAI(request, env, path) {
         return jsonResponse({ error: 'Body JSON inválido' }, 400);
     }
 
-    // ── /api/ai/chat ────────────────────────────────────────────────
+    // ── /api/ai/chat ──────────────────────────────────────────────────
     if (path === '/api/ai/chat') {
         const userMessage = body.message || body.prompt || '';
         if (!userMessage) {
@@ -251,7 +468,7 @@ async function handleAI(request, env, path) {
         }
     }
 
-    // ── /api/ai/classify ────────────────────────────────────────────
+    // ── /api/ai/classify ──────────────────────────────────────────────
     if (path === '/api/ai/classify') {
         const expense = body.expense || '';
         if (!expense) {
@@ -293,195 +510,3 @@ async function handleAI(request, env, path) {
                 { error: 'Error clasificando gasto', detail: err.message },
                 500
             );
-        }
-    }
-
-    // ── /api/ai/summary ─────────────────────────────────────────────
-    if (path === '/api/ai/summary') {
-        const data = body.data || body.expenses || '';
-        if (!data) {
-            return jsonResponse({ error: 'Campo "data" requerido' }, 400);
-        }
-
-        try {
-            const prompt =
-                typeof data === 'string'
-                    ? data
-                    : JSON.stringify(data, null, 2);
-
-            const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-                messages: [
-                    {
-                        role: 'system',
-                        content:
-                            'Eres un analista financiero personal. Analiza los datos de gastos ' +
-                            'compartidos entre amigos y genera un resumen conciso en español ' +
-                            '(máximo 3 párrafos) con: quién debe más, categorías principales, ' +
-                            'y 2 recomendaciones para ahorrar.',
-                    },
-                    {
-                        role: 'user',
-                        content: `Analiza estos datos de gastos:\n${prompt}`,
-                    },
-                ],
-                max_tokens: 400,
-                temperature: 0.5,
-            });
-
-            return jsonResponse({
-                success: true,
-                summary: result.response,
-                model: '@cf/meta/llama-3.1-8b-instruct',
-            });
-        } catch (err) {
-            return jsonResponse(
-                { error: 'Error generando resumen', detail: err.message },
-                500
-            );
-        }
-    }
-
-    return jsonResponse({ error: 'Ruta de AI no encontrada', path }, 404);
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// R2 Storage — Almacenamiento seguro de archivos
-// ═══════════════════════════════════════════════════════════════════════
-async function handleStorage(request, env, path) {
-    if (!env.SPLITGASTO_BUCKET) {
-        return jsonResponse(
-            { error: 'R2 Storage no está habilitado en este entorno' },
-            503
-        );
-    }
-
-    // ── Autenticación requerida para TODAS las operaciones R2 ────────
-    const auth = requireAuth(request);
-    if (!auth.authenticated) {
-        return auth.error;
-    }
-
-    const { userId } = auth;
-    const method = request.method;
-
-    // ── /api/storage/upload — Subir archivo ─────────────────────────
-    if (path === '/api/storage/upload' && method === 'POST') {
-        return handleUpload(request, env, userId);
-    }
-
-    // ── /api/storage/download/:key — Descargar archivo ──────────────
-    if (path.startsWith('/api/storage/download/') && method === 'GET') {
-        const key = decodeURIComponent(path.slice('/api/storage/download/'.length));
-        return handleDownload(env, userId, key);
-    }
-
-    // ── /api/storage/delete/:key — Eliminar archivo ─────────────────
-    if (path.startsWith('/api/storage/delete/') && method === 'DELETE') {
-        const key = decodeURIComponent(path.slice('/api/storage/delete/'.length));
-        return handleDelete(env, userId, key);
-    }
-
-    // ── /api/storage/list — Listar archivos del usuario ─────────────
-    if (path === '/api/storage/list' && method === 'GET') {
-        return handleList(env, userId);
-    }
-
-    // ── /api/storage/presigned — Generar URL pre-firmada ────────────
-    if (path === '/api/storage/presigned' && method === 'POST') {
-        return handlePresigned(request, env, userId);
-    }
-
-    // ── /api/storage/info/:key — Info de un archivo ─────────────────
-    if (path.startsWith('/api/storage/info/') && method === 'GET') {
-        const key = decodeURIComponent(path.slice('/api/storage/info/'.length));
-        return handleInfo(env, userId, key);
-    }
-
-    return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404);
-}
-
-// ── Subir archivo a R2 ──────────────────────────────────────────────
-async function handleUpload(request, env, userId) {
-    const contentType = request.headers.get('Content-Type') || '';
-
-    // Soportar multipart/form-data y binary direct
-    let fileData, fileName, fileType;
-
-    if (contentType.includes('multipart/form-data')) {
-        const formData = await request.formData();
-        const file = formData.get('file');
-        if (!file) {
-            return jsonResponse({ error: 'Campo "file" requerido en el formulario' }, 400);
-        }
-        fileData = await file.arrayBuffer();
-        fileName = formData.get('name') || file.name || 'untitled';
-        fileType = file.type || 'application/octet-stream';
-    } else {
-        // Binary upload directo
-        fileData = await request.arrayBuffer();
-        fileName = request.headers.get('X-File-Name') || 'untitled';
-        fileType = contentType || 'application/octet-stream';
-    }
-
-    // ── Validaciones de seguridad ────────────────────────────────────
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
-    if (fileData.byteLength > MAX_FILE_SIZE) {
-        return jsonResponse(
-            { error: 'Archivo demasiado grande', maxSize: '50MB', receivedSize: `${(fileData.byteLength / 1024 / 1024).toFixed(2)}MB` },
-            413
-        );
-    }
-
-    // Tipos de archivo permitidos
-    const ALLOWED_TYPES = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-        'application/pdf',
-        'text/plain', 'text/csv',
-        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/zip',
-    ];
-    if (!ALLOWED_TYPES.includes(fileType)) {
-        return jsonResponse(
-            { error: 'Tipo de archivo no permitido', allowedTypes: ALLOWED_TYPES, receivedType: fileType },
-            415
-        );
-    }
-
-    // Generar clave única: usuarios/{userId}/{timestamp}_{fileName}
-    const timestamp = Date.now();
-    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `usuarios/${userId}/${timestamp}_${safeName}`;
-
-    // Subir a R2 con metadata
-    await env.SPLITGASTO_BUCKET.put(key, fileData, {
-        httpMetadata: {
-            contentType: fileType,
-        },
-        customMetadata: {
-            userId,
-            originalName: fileName,
-            uploadedAt: new Date().toISOString(),
-        },
-    });
-
-    return jsonResponse({
-        success: true,
-        key,
-        fileName,
-        fileType,
-        fileSize: fileData.byteLength,
-        message: 'Archivo subido correctamente',
-    }, 201);
-}
-
-// ── Descargar archivo de R2 ─────────────────────────────────────────
-async function handleDownload(env, userId, key) {
-    // Verificar que el archivo pertenece al usuario
-    if (!isUserFile(userId, key)) {
-        return jsonResponse(
-            { error: 'Acceso denegado', message: 'No tienes permiso para acceder a este archivo' },
-            403
-        );
-    }
-
-    const object = await env.SPLITGASTO_BUCKET.get
