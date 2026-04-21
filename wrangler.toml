@@ -42,7 +42,8 @@ period = 60
 [[d1_databases]]
 binding = "SPLITGASTO_DB"
 database_name = "splitgasto-db"
-database_id = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+database_id = "ac0401b5-1e3a-4c02-8c36-01025169eb1a"
+
 
 # ── AI Gateway ─────────────────────────────────────────────────────────
 [vars]
