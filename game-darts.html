@@ -128,42 +128,7 @@
 </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script>
-    (function(){
-        function applyDesktopFix(){
-            if(window.innerWidth < 768) return;
-            var frame = document.querySelector('.app-frame');
-            if(!frame) return;
-            // Make frame the scroll container
-            frame.style.overflowX = 'hidden';
-            // Convert fixed bottom elements to sticky
-            var fixedEls = frame.querySelectorAll('[class*="fixed bottom"]');
-            fixedEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.bottom = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-            // Convert fixed top elements to sticky
-            var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
-            fixedTopEls.forEach(function(el){
-                el.style.position = 'sticky';
-                el.style.top = '0';
-                el.style.left = 'auto';
-                el.style.width = '100%';
-                el.style.zIndex = '50';
-            });
-        }
-        // Run on load and resize
-        if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', applyDesktopFix);
-        } else {
-            applyDesktopFix();
-        }
-        window.addEventListener('resize', applyDesktopFix);
-    })();
-    </script>
+    <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell dark">
@@ -278,47 +243,10 @@
     </nav>
 
         <script>
-        // ─── AUDIO ENGINE ─────────────────────────────────────────────────────
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-        function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
-
-        function playDartHit(score) {
-          try {
-            const ctx = getAudioCtx();
-            const freq = score >= 50 ? 1200 : score >= 25 ? 900 : score > 0 ? 600 : 200;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.type = score >= 50 ? 'sine' : 'triangle';
-            osc.frequency.setValueAtTime(freq, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.5, ctx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.15);
-          } catch(e) {}
-        }
-
-        function playWinSound() {
-          try {
-            const ctx = getAudioCtx();
-            [523, 659, 784, 1047].forEach((freq, i) => {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.connect(gain); gain.connect(ctx.destination);
-              osc.type = 'sine'; osc.frequency.value = freq;
-              const t = ctx.currentTime + i * 0.12;
-              gain.gain.setValueAtTime(0, t);
-              gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
-              gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-              osc.start(t); osc.stop(t + 0.4);
-            });
-          } catch(e) {}
-        }
-
-        // ─── Game State ───────────────────────────────────────────────
-        const PLAYERS = [
+        // ─── AUDIO ENGINE (delegated to engine/audio.js) ──────────────────────────────
+function playDartHit(score) { if(window.SGAudio) SGAudio.dartHit(score); }
+function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
+const PLAYERS = [
             { name: 'Tú', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
             { name: 'Alex', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
             { name: 'María', emoji: '⚡', color: '#FF9D42', score: 0, darts: [] },

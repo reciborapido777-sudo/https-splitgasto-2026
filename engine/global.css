@@ -248,11 +248,11 @@ h1, h2, h3, .font-accent {
 }
 
 @media (min-width: 1024px) {
+    /* IMPORTANT: left/width/borderRadius on fixed nav are set by engine/desktop-fix.js
+       using getBoundingClientRect so the nav aligns exactly with .app-frame.
+       Do NOT set left:50% or transform here — it conflicts with the JS inline styles. */
     .app-frame nav.fixed,
     .app-frame .bottom-nav-fixed {
-        max-width: 1200px;
-        left: 50%;
-        transform: translateX(-50%);
         border-radius: 0 0 2rem 2rem;
     }
 
@@ -261,7 +261,8 @@ h1, h2, h3, .font-accent {
     .app-frame nav .max-w-sm,
     .app-frame nav .max-w-xl,
     .app-frame nav .max-w-2xl,
-    .app-frame nav .max-w-3xl {
+    .app-frame nav .max-w-3xl,
+    .app-frame nav .max-w-7xl {
         max-width: 100% !important;
     }
 }
@@ -291,15 +292,13 @@ h1, h2, h3, .font-accent {
         margin-right: auto !important;
     }
 
-    /* Center the fixed bottom nav on legacy pages */
+    /* Center the fixed bottom nav on legacy pages — positioning handled by desktop-fix.js */
     body:not(.app-shell) nav.fixed {
-        max-width: 1200px;
-        left: 50%;
-        transform: translateX(-50%);
         border-radius: 0 0 2rem 2rem;
     }
 
-    body:not(.app-shell) nav.fixed .max-w-lg {
+    body:not(.app-shell) nav.fixed .max-w-lg,
+    body:not(.app-shell) nav.fixed .max-w-7xl {
         max-width: 100% !important;
     }
 }
