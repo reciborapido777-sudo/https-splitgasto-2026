@@ -9,182 +9,87 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link rel="stylesheet" href="engine/global.css"/>
 <style>
-  :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
+  :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; --gold:#d4af37; }
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
   body { background:#050505; min-height:100dvh; overflow-x:hidden; }
 
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
-  /* ─── 3D Coin — realistic with visible edge ─── */
-  #coin-scene {
-    perspective:500px;
-    width:200px; height:200px;
-    margin:0 auto;
+  /* ═══════════════════════════════════════════
+     3-D COIN  (Canvas-based realistic spin)
+     ═══════════════════════════════════════════ */
+  #coin-area {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    padding:24px 0 12px;
+  }
+
+  /* Wraps canvas + shadow */
+  #coin-wrap {
+    position:relative;
+    width:220px;
     cursor:pointer;
-    position:relative;
+    user-select:none;
   }
-  #coin {
-    width:100%; height:100%;
-    transform-style:preserve-3d;
-    position:relative;
-    transition:none;
-    will-change:transform;
-  }
-  .coin-face {
-    position:absolute; inset:0;
+  #coin-canvas {
+    display:block;
     border-radius:50%;
-    backface-visibility:hidden;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
+    filter:drop-shadow(0 8px 24px rgba(0,0,0,0.8));
+    transition:filter 0.3s;
   }
-  /* Heads — cyan metallic */
-  #coin-heads {
-    background:
-      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.45) 0%, transparent 50%),
-      radial-gradient(circle at 70% 75%, rgba(0,0,0,0.2) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, #3ffff0 0%, #13ecd6 40%, #07a89e 75%, #055f59 100%);
-    box-shadow:
-      0 0 60px rgba(19,236,214,0.55),
-      inset 0 3px 6px rgba(255,255,255,0.4),
-      inset 0 -3px 6px rgba(0,0,0,0.35);
-    border:3px solid rgba(19,236,214,0.8);
+  #coin-canvas.result-heads {
+    filter:drop-shadow(0 0 28px rgba(19,236,214,0.85)) drop-shadow(0 8px 24px rgba(0,0,0,0.6));
   }
-  /* Tails — gold metallic */
-  #coin-tails {
-    transform:rotateY(180deg);
-    background:
-      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0%, transparent 50%),
-      radial-gradient(circle at 70% 75%, rgba(0,0,0,0.25) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, #ffe87a 0%, #d4af37 38%, #a07d1a 72%, #5a440a 100%);
-    box-shadow:
-      0 0 60px rgba(212,175,55,0.55),
-      inset 0 3px 6px rgba(255,255,255,0.45),
-      inset 0 -3px 6px rgba(0,0,0,0.4);
-    border:3px solid rgba(212,175,55,0.85);
+  #coin-canvas.result-tails {
+    filter:drop-shadow(0 0 28px rgba(212,175,55,0.85)) drop-shadow(0 8px 24px rgba(0,0,0,0.6));
   }
-  /* Coin inner ring engraving */
-  .coin-inner {
-    width:76%; height:76%;
-    border-radius:50%;
-    border:2px solid rgba(255,255,255,0.25);
-    display:flex; align-items:center; justify-content:center;
-    flex-direction:column; gap:4px;
-    position:relative;
-  }
-  .coin-inner::before {
-    content:'';
-    position:absolute; inset:6px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,0.12);
-  }
-  /* Visible coin EDGE — CSS cylinder trick */
-  #coin-edge {
-    position:absolute;
-    left:50%; top:0;
-    width:8px; height:100%;
-    transform:translateX(-50%) rotateY(90deg);
-    background:linear-gradient(to bottom,
-      #888 0%, #ccc 15%, #777 35%, #bbb 50%, #666 65%, #aaa 80%, #555 100%);
-    backface-visibility:visible;
-    border-radius:4px;
-    box-shadow:inset 0 0 4px rgba(0,0,0,0.6);
-  }
-
-  /* Coin shadow on table */
+  /* Table shadow beneath coin */
   #coin-shadow {
-    width:80%; height:24px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.65) 0%, transparent 70%);
+    width:80%;
+    height:20px;
+    margin:4px auto 0;
+    background:radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%);
     border-radius:50%;
-    filter:blur(10px);
-    margin:8px auto 0;
-    transition:transform 0.3s, opacity 0.3s;
+    filter:blur(8px);
     transform-origin:center;
+    transition:transform 0.3s, opacity 0.3s;
   }
-  #coin-shadow.squashed {
-    transform:scaleX(0.4);
-    opacity:0.4;
-  }
-
-  /* Flip animations — 5 full spins (1800°) + landing */
-  @keyframes flip-heads {
-    0%   { transform:rotateY(0deg) translateY(0); }
-    15%  { transform:rotateY(270deg) translateY(-30px); }
-    70%  { transform:rotateY(1440deg) translateY(-10px); }
-    100% { transform:rotateY(1800deg) translateY(0); }
-  }
-  @keyframes flip-tails {
-    0%   { transform:rotateY(0deg) translateY(0); }
-    15%  { transform:rotateY(270deg) translateY(-30px); }
-    70%  { transform:rotateY(1620deg) translateY(-10px); }
-    100% { transform:rotateY(1980deg) translateY(0); }
-  }
-  .flip-heads { animation:flip-heads 2.2s cubic-bezier(0.22,0.61,0.36,1) forwards; }
-  .flip-tails { animation:flip-tails 2.2s cubic-bezier(0.22,0.61,0.36,1) forwards; }
-
-  /* Bounce after landing */
-  @keyframes coin-bounce {
-    0%   { transform:rotateY(var(--end-rot)) translateY(0); }
-    25%  { transform:rotateY(var(--end-rot)) translateY(-12px); }
-    55%  { transform:rotateY(var(--end-rot)) translateY(-4px); }
-    80%  { transform:rotateY(var(--end-rot)) translateY(-1px); }
-    100% { transform:rotateY(var(--end-rot)) translateY(0); }
-  }
-  /* Glow pulse on result */
-  @keyframes coin-glow-heads {
-    0%,100%{ box-shadow:0 0 30px rgba(19,236,214,0.4); }
-    50%    { box-shadow:0 0 80px rgba(19,236,214,0.9), 0 0 30px rgba(19,236,214,0.5); }
-  }
-  @keyframes coin-glow-tails {
-    0%,100%{ box-shadow:0 0 30px rgba(212,175,55,0.4); }
-    50%    { box-shadow:0 0 80px rgba(212,175,55,0.9), 0 0 30px rgba(212,175,55,0.5); }
+  #coin-shadow.flying {
+    transform:scaleX(0.3) scaleY(0.5);
+    opacity:0.25;
   }
 
-  /* Result glow */
-  #result-card {
-    transition:all 0.4s;
-    border-radius:24px;
-  }
+  /* Result card */
+  #result-card { transition:all 0.4s; border-radius:24px; }
   #result-card.heads-win {
-    background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(19,236,214,0.05));
+    background:linear-gradient(135deg, rgba(19,236,214,0.14), rgba(19,236,214,0.04));
     border:1px solid rgba(19,236,214,0.4);
-    box-shadow:0 0 40px rgba(19,236,214,0.2);
+    box-shadow:0 0 40px rgba(19,236,214,0.18);
   }
   #result-card.tails-win {
-    background:linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
+    background:linear-gradient(135deg, rgba(212,175,55,0.14), rgba(212,175,55,0.04));
     border:1px solid rgba(212,175,55,0.4);
-    box-shadow:0 0 40px rgba(212,175,55,0.2);
+    box-shadow:0 0 40px rgba(212,175,55,0.18);
   }
 
-  /* Buttons */
+  /* Choice buttons */
   .choice-btn {
-    border-radius:16px;
-    font-weight:800;
-    font-size:0.95rem;
-    transition:all 0.2s;
-    border:2px solid transparent;
+    border-radius:16px; font-weight:800; font-size:0.92rem;
+    transition:all 0.2s; border:2px solid transparent;
     position:relative; overflow:hidden;
   }
-  .choice-btn.selected-heads {
-    background:rgba(19,236,214,0.15);
-    border-color:var(--cyan);
-    color:var(--cyan);
-  }
-  .choice-btn.selected-tails {
-    background:rgba(212,175,55,0.15);
-    border-color:#d4af37;
-    color:#d4af37;
-  }
-  .choice-btn.idle {
-    background:rgba(255,255,255,0.06);
-    border-color:rgba(255,255,255,0.12);
-  }
+  .choice-btn.idle        { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.12); }
+  .choice-btn.selected-heads { background:rgba(19,236,214,0.15); border-color:var(--cyan); color:var(--cyan); }
+  .choice-btn.selected-tails { background:rgba(212,175,55,0.15); border-color:var(--gold); color:var(--gold); }
+
+  /* Flip button */
   #flip-btn {
     background:linear-gradient(135deg, var(--cyan), #0fbfaf);
-    color:#050505;
-    border-radius:50px;
+    color:#050505; border-radius:50px;
     font-weight:800; font-size:1.1rem;
-    box-shadow:0 8px 32px rgba(19,236,214,0.4);
-    transition:all 0.2s;
+    box-shadow:0 8px 32px rgba(19,236,214,0.4); transition:all 0.2s;
   }
   #flip-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(19,236,214,0.6); }
   #flip-btn:disabled { opacity:0.5; cursor:not-allowed; }
@@ -194,36 +99,31 @@
   .confetti-piece { position:fixed; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
   @keyframes confetti-fall { from{transform:translateY(-20px) rotate(0deg);opacity:1} to{transform:translateY(110vh) rotate(720deg);opacity:0} }
 
-  /* Ambient glow */
-  .heads-glow { box-shadow:0 0 80px rgba(19,236,214,0.2); }
-  .tails-glow { box-shadow:0 0 80px rgba(212,175,55,0.2); }
-
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+  .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+  .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+  .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+  .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/audio.js" defer></script>
-    <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+<meta name="theme-color" content="#13ecd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SplitGasto">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<script src="engine/audio.js"></script>
+<script src="engine/desktop-fix.js" defer></script>
+<script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
 <!-- Header -->
-<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(5,5,5,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
+<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50"
+  style="background:rgba(5,5,5,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
   </button>
@@ -249,12 +149,12 @@
       <p class="text-xs opacity-40">Total</p>
     </div>
     <div class="glass p-3 text-center">
-      <p class="text-lg font-bold" style="color:#d4af37" id="tails-count">0</p>
+      <p class="text-lg font-bold" style="color:var(--gold)" id="tails-count">0</p>
       <p class="text-xs opacity-40">Cruz</p>
     </div>
   </div>
 
-  <!-- Choice row (who calls?) -->
+  <!-- Who chooses -->
   <div class="glass p-4">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">¿Quién elige?</p>
     <div class="grid grid-cols-2 gap-3">
@@ -275,27 +175,10 @@
     </div>
   </div>
 
-  <!-- 3D Coin -->
-  <div class="flex flex-col items-center py-4 gap-4">
-    <div id="coin-scene" onclick="tapCoin()">
-      <div id="coin">
-        <!-- Heads face — cyan -->
-        <div class="coin-face" id="coin-heads">
-          <div class="coin-inner">
-            <span class="material-icons-round text-white" style="font-size:2.2rem;text-shadow:0 2px 8px rgba(0,0,0,0.4)">account_balance_wallet</span>
-            <span class="text-white font-black tracking-widest" style="font-size:0.65rem;text-shadow:0 1px 4px rgba(0,0,0,0.5)">CARA</span>
-          </div>
-        </div>
-        <!-- Tails face — gold -->
-        <div class="coin-face" id="coin-tails">
-          <div class="coin-inner">
-            <span class="material-icons-round text-white" style="font-size:2.2rem;text-shadow:0 2px 8px rgba(0,0,0,0.4)">monetization_on</span>
-            <span class="text-white font-black tracking-widest" style="font-size:0.65rem;text-shadow:0 1px 4px rgba(0,0,0,0.5)">CRUZ</span>
-          </div>
-        </div>
-        <!-- Coin edge (visible during spin) -->
-        <div id="coin-edge"></div>
-      </div>
+  <!-- 3D Canvas Coin -->
+  <div id="coin-area">
+    <div id="coin-wrap" onclick="tapCoin()">
+      <canvas id="coin-canvas" width="220" height="220"></canvas>
     </div>
     <div id="coin-shadow"></div>
     <p class="text-xs opacity-30">Toca la moneda o usa el botón</p>
@@ -334,27 +217,182 @@
 
 </main>
 
-<!-- Bottom Nav -->
-
 <script>
-// ─── AUDIO ENGINE (delegated to engine/audio.js) ──────────────────────────────
-function playCoinSpin() { if(window.SGAudio) SGAudio.coinSpin(); }
-function playCoinLand() { if(window.SGAudio) SGAudio.coinLand(); }
-function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
+// ══════════════════════════════════════════════════════════════════════════════
+//  CANVAS-BASED 3D COIN RENDERER
+//  The coin is drawn on a <canvas> using ellipses to simulate perspective.
+//  angleY: rotation around Y axis (0 = heads facing, π/2 = edge, π = tails, etc.)
+//  This gives a true 3D flip illusion without CSS transforms.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const coinCanvas = document.getElementById('coin-canvas');
+const cctx       = coinCanvas.getContext('2d');
+const C          = 220;         // canvas size
+const R          = 88;          // coin face radius (face occupies most of canvas)
+const CX         = C / 2;
+const CY         = C / 2;
+const EDGE_THICKNESS = 10;      // visible edge width when nearly 90°
+
+// Current Y-rotation angle (radians). 0 = heads, π = tails.
+let coinAngleY = 0;
+
+// ── Gradient caches (built once per draw pass is fine) ──────────────────────
+function makeHeadsGrad(scaleX) {
+  // Perspective squish makes radius = R*|cos(angleY)|
+  const rx = Math.max(R * Math.abs(scaleX), 1);
+  const g  = cctx.createRadialGradient(CX - rx * 0.25, CY - rx * 0.25, 2, CX, CY, rx);
+  g.addColorStop(0,    '#5ffff0');
+  g.addColorStop(0.3,  '#3ffff0');
+  g.addColorStop(0.6,  '#13ecd6');
+  g.addColorStop(0.82, '#07a89e');
+  g.addColorStop(1,    '#045954');
+  return g;
+}
+function makeTailsGrad(scaleX) {
+  const rx = Math.max(R * Math.abs(scaleX), 1);
+  const g  = cctx.createRadialGradient(CX - rx * 0.25, CY - rx * 0.25, 2, CX, CY, rx);
+  g.addColorStop(0,    '#ffe87c');
+  g.addColorStop(0.3,  '#e8c843');
+  g.addColorStop(0.6,  '#d4af37');
+  g.addColorStop(0.82, '#a07825');
+  g.addColorStop(1,    '#5a420c');
+  return g;
+}
+
+function drawCoin(angleY) {
+  cctx.clearRect(0, 0, C, C);
+
+  // cos(angleY) gives the X-scale for the ellipse (1=full circle, 0=line, -1=back)
+  const cosA = Math.cos(angleY);
+  const sinA = Math.abs(Math.sin(angleY));  // edge blend (0–1)
+  const rx   = R * Math.abs(cosA);          // half-width of visible face ellipse
+
+  // Which face is visible?
+  // cosA > 0 → heads; cosA < 0 → tails; cosA ≈ 0 → edge
+  const showHeads = cosA >= 0;
+
+  // ── Draw cylindrical edge ────────────────────────────────────────────────
+  if (sinA > 0.05) {
+    const edgeH = Math.min(EDGE_THICKNESS * sinA * 1.6, R * 0.18);
+    // Edge = rectangle behind the face ellipse, slightly taller
+    const edgeGrad = cctx.createLinearGradient(CX - R, 0, CX + R, 0);
+    edgeGrad.addColorStop(0,    '#555');
+    edgeGrad.addColorStop(0.15, '#ccc');
+    edgeGrad.addColorStop(0.35, '#777');
+    edgeGrad.addColorStop(0.5,  '#bbb');
+    edgeGrad.addColorStop(0.65, '#666');
+    edgeGrad.addColorStop(0.85, '#aaa');
+    edgeGrad.addColorStop(1,    '#444');
+    // Bottom half of edge (shadow side)
+    cctx.beginPath();
+    cctx.ellipse(CX, CY + edgeH, R, R * 0.32, 0, 0, Math.PI);
+    cctx.fillStyle = 'rgba(0,0,0,0.55)';
+    cctx.fill();
+    // Full edge band
+    cctx.beginPath();
+    cctx.ellipse(CX, CY - edgeH / 2, R, R * 0.22, 0, 0, Math.PI * 2);
+    cctx.fillStyle = edgeGrad;
+    cctx.fill();
+    // Rim stripes
+    for (let k = 0; k < 12; k++) {
+      const px = CX - R + (2 * R * k / 12);
+      cctx.beginPath();
+      cctx.rect(px, CY - edgeH / 2 - R * 0.22, 1.5, R * 0.44);
+      cctx.fillStyle = 'rgba(0,0,0,0.2)';
+      cctx.fill();
+    }
+  }
+
+  // ── Draw face ────────────────────────────────────────────────────────────
+  if (rx > 0.5) {
+    const faceGrad = showHeads ? makeHeadsGrad(cosA) : makeTailsGrad(cosA);
+    const borderCol = showHeads ? 'rgba(19,236,214,0.85)' : 'rgba(212,175,55,0.85)';
+
+    // Face ellipse
+    cctx.beginPath();
+    cctx.ellipse(CX, CY, rx, R, 0, 0, Math.PI * 2);
+    cctx.fillStyle = faceGrad;
+    cctx.fill();
+
+    // Border ring
+    cctx.beginPath();
+    cctx.ellipse(CX, CY, rx, R, 0, 0, Math.PI * 2);
+    cctx.strokeStyle = borderCol;
+    cctx.lineWidth   = 3;
+    cctx.stroke();
+
+    // Specular highlight (top-left arc)
+    const hlGrad = cctx.createRadialGradient(
+      CX - rx * 0.35, CY - R * 0.3, 1,
+      CX - rx * 0.15, CY - R * 0.1, rx * 0.85
+    );
+    hlGrad.addColorStop(0,    'rgba(255,255,255,0.45)');
+    hlGrad.addColorStop(0.45, 'rgba(255,255,255,0.08)');
+    hlGrad.addColorStop(1,    'rgba(255,255,255,0)');
+    cctx.beginPath();
+    cctx.ellipse(CX, CY, rx, R, 0, 0, Math.PI * 2);
+    cctx.fillStyle = hlGrad;
+    cctx.fill();
+
+    // Inner engraving ring (perspective-correct)
+    cctx.beginPath();
+    cctx.ellipse(CX, CY, rx * 0.77, R * 0.77, 0, 0, Math.PI * 2);
+    cctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    cctx.lineWidth   = 1.5;
+    cctx.stroke();
+
+    // Icon / text in center (only when face is wide enough to read)
+    if (rx > R * 0.3) {
+      const alpha = Math.min(1, (rx / R - 0.3) / 0.35);
+      cctx.globalAlpha = alpha;
+      cctx.fillStyle   = '#fff';
+      cctx.font        = `900 ${Math.round(13 * rx / R)}px Manrope, sans-serif`;
+      cctx.textAlign   = 'center';
+      cctx.textBaseline = 'middle';
+      cctx.shadowColor = 'rgba(0,0,0,0.7)';
+      cctx.shadowBlur  = 6;
+      // Simple text label (icon via Material Symbols not available on canvas)
+      cctx.fillText(showHeads ? 'CARA' : 'CRUZ', CX, CY + 10);
+      // Year / decorative
+      cctx.font = `700 ${Math.round(8 * rx / R)}px Manrope, sans-serif`;
+      cctx.fillStyle = 'rgba(255,255,255,0.55)';
+      cctx.fillText('2026', CX, CY - 14 * rx / R);
+      cctx.shadowBlur  = 0;
+      cctx.globalAlpha = 1;
+    }
+
+    // Bottom shadow on face
+    const shadowGrad = cctx.createLinearGradient(CX, CY, CX, CY + R);
+    shadowGrad.addColorStop(0, 'transparent');
+    shadowGrad.addColorStop(1, 'rgba(0,0,0,0.28)');
+    cctx.beginPath();
+    cctx.ellipse(CX, CY, rx, R, 0, 0, Math.PI * 2);
+    cctx.fillStyle = shadowGrad;
+    cctx.fill();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════════════════════════════════
 let headsCount = 0, tailsCount = 0, totalFlips = 0;
 let isFlipping = false;
-let choices = {p1: null, p2: null};
-let history = [];
-const players = [{name:'Commander', color:'#13ecd6'}, {name:'Mario', color:'#a855f7'}];
+let choices    = { p1: null, p2: null };
+let history    = [];
+const players  = [{name:'Commander', color:'#13ecd6'}, {name:'Mario', color:'#a855f7'}];
 let lastResult = null;
+
+// Audio shims
+function playCoinSpin()  { if (window.SGAudio) SGAudio.coinSpin(); }
+function playCoinLand()  { if (window.SGAudio) SGAudio.coinLand(); }
+function playWinSound()  { if (window.SGAudio) SGAudio.victory(); }
 
 function selectChoice(player, side) {
   choices[player] = side;
   const other = player === 'p1' ? 'p2' : 'p1';
-  // Auto-select opposite for other player if not chosen
   if (!choices[other]) {
     const otherSide = side === 'heads' ? 'tails' : 'heads';
-    choices[other] = otherSide;
+    choices[other]  = otherSide;
     updateChoiceButtons(other, otherSide);
   }
   updateChoiceButtons(player, side);
@@ -363,104 +401,131 @@ function selectChoice(player, side) {
 function updateChoiceButtons(player, side) {
   const h = document.getElementById(`${player}-heads`);
   const t = document.getElementById(`${player}-tails`);
-  h.className = `choice-btn flex-1 py-2 px-3 text-sm ${side==='heads'?'selected-heads':'idle'}`;
-  t.className = `choice-btn flex-1 py-2 px-3 text-sm ${side==='tails'?'selected-tails':'idle'}`;
+  h.className = `choice-btn flex-1 py-2 px-3 text-sm ${side === 'heads' ? 'selected-heads' : 'idle'}`;
+  t.className = `choice-btn flex-1 py-2 px-3 text-sm ${side === 'tails' ? 'selected-tails' : 'idle'}`;
 }
 
 function tapCoin() { if (!isFlipping) flipCoin(); }
 
+// ── FLIP ANIMATION ────────────────────────────────────────────────────────────
+// Pure JS animation: rotate angleY from 0 through multiple spins.
+// Heads = 0, 2π, 4π…   Tails = π, 3π, 5π…
 function flipCoin() {
   if (isFlipping) return;
   isFlipping = true;
-  if (window.SGAudio) { SGAudio.resume(); }
+  if (window.SGAudio) SGAudio.resume();
   playCoinSpin();
 
   document.getElementById('flip-btn').disabled = true;
   document.getElementById('result-card').classList.add('hidden');
+  coinCanvas.classList.remove('result-heads', 'result-tails');
 
-  const coin   = document.getElementById('coin');
   const shadow = document.getElementById('coin-shadow');
-  const heads  = document.getElementById('coin-heads');
-  const tails  = document.getElementById('coin-tails');
-
-  // Reset
-  coin.style.animation = 'none';
-  coin.style.transform = '';
-  heads.style.animation = '';
-  tails.style.animation = '';
-  shadow.classList.remove('squashed');
-  void coin.offsetWidth; // force reflow
+  shadow.classList.add('flying');
 
   // Determine result
   const result = Math.random() < 0.5 ? 'heads' : 'tails';
-  lastResult = result;
+  lastResult   = result;
 
-  // Apply flip animation
-  const animClass = result === 'heads' ? 'flip-heads' : 'flip-tails';
-  coin.classList.remove('flip-heads', 'flip-tails');
-  coin.classList.add(animClass);
+  // Total rotation: 5 full spins (10π) + landing angle
+  const landingAngle = result === 'heads'
+    ? Math.round(coinAngleY / (Math.PI * 2)) * Math.PI * 2          // even multiple → heads
+    : Math.round(coinAngleY / (Math.PI * 2)) * Math.PI * 2 + Math.PI; // +π → tails
+  const totalSpins  = 5 * Math.PI * 2; // 5 full rotations
+  const startAngle  = coinAngleY;
+  const endAngle    = landingAngle + totalSpins;
+  const duration    = 2200; // ms
+  const t0          = performance.now();
 
-  // Shadow: squash during flight, restore on land
-  setTimeout(() => shadow.classList.add('squashed'), 100);
+  // Animation: vertical lift while spinning
+  // translateY goes: 0 → -40px (peak at 25%) → 0 (land at 100%)
+  const coinWrap = document.getElementById('coin-wrap');
 
-  // LANDING (2200ms — matches animation duration)
-  setTimeout(() => {
-    shadow.classList.remove('squashed');
-    coin.classList.remove('flip-heads', 'flip-tails');
+  function easeFlip(t) {
+    // Fast at first (launch), slow at end (landing). Smooth arc.
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+  function liftY(t) {
+    // Parabolic lift: 0 at t=0, peak at t=0.35, 0 at t=1
+    return -48 * Math.sin(Math.PI * Math.min(t / 0.75, 1));
+  }
 
-    const endRot = result === 'heads' ? '0deg' : '180deg';
-    coin.style.setProperty('--end-rot', endRot);
-    coin.style.transform = `rotateY(${endRot})`;
+  function animate(now) {
+    const elapsed = now - t0;
+    const t       = Math.min(elapsed / duration, 1);
+    const te      = easeFlip(t);
 
-    // Apply landing glow to visible face
-    const visibleFace = result === 'heads' ? heads : tails;
-    visibleFace.style.animation = result === 'heads'
-      ? 'coin-glow-heads 1.5s ease infinite'
-      : 'coin-glow-tails 1.5s ease infinite';
+    coinAngleY = startAngle + (endAngle - startAngle) * te;
+    drawCoin(coinAngleY);
 
-    playCoinLand();
+    // Vertical lift transform
+    const ly = liftY(t);
+    coinWrap.style.transform = `translateY(${ly}px)`;
 
-    // Update counts
-    if (result === 'heads') headsCount++; else tailsCount++;
-    totalFlips++;
-    document.getElementById('heads-count').textContent = headsCount;
-    document.getElementById('tails-count').textContent = tailsCount;
-    document.getElementById('total-flips').textContent = totalFlips;
-    document.getElementById('flip-count-hdr').textContent = `×${totalFlips}`;
+    // Shadow scaling (smaller when coin is high)
+    const sh = 1 - Math.max(0, ly / -48) * 0.7;
+    shadow.style.transform = `scaleX(${sh})`;
+    shadow.style.opacity   = String(0.25 + sh * 0.5);
 
-    showResult(result);
-    isFlipping = false;
-    document.getElementById('flip-btn').disabled = false;
-  }, 2300);
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Landing
+      coinAngleY = endAngle;
+      drawCoin(coinAngleY);
+      coinWrap.style.transform = '';
+      shadow.classList.remove('flying');
+      shadow.style.transform   = '';
+      shadow.style.opacity     = '';
+
+      // Result glow
+      coinCanvas.classList.add(result === 'heads' ? 'result-heads' : 'result-tails');
+
+      playCoinLand();
+
+      // Counts
+      if (result === 'heads') headsCount++; else tailsCount++;
+      totalFlips++;
+      document.getElementById('heads-count').textContent    = headsCount;
+      document.getElementById('tails-count').textContent    = tailsCount;
+      document.getElementById('total-flips').textContent    = totalFlips;
+      document.getElementById('flip-count-hdr').textContent = `×${totalFlips}`;
+
+      isFlipping = false;
+      document.getElementById('flip-btn').disabled = false;
+      showResult(result);
+    }
+  }
+  requestAnimationFrame(animate);
 }
 
 function showResult(result) {
-  const isHeads = result === 'heads';
+  const isHeads  = result === 'heads';
   playWinSound();
   const resultCard = document.getElementById('result-card');
   resultCard.classList.remove('hidden', 'heads-win', 'tails-win');
   resultCard.classList.add(isHeads ? 'heads-win' : 'tails-win');
 
-  // Determine who wins
   let winnerMsg = '';
   if (choices.p1 || choices.p2) {
     const p1Won = choices.p1 === result;
     const p2Won = choices.p2 === result;
-    if (p1Won) winnerMsg = `¡${players[0].name} gana!`;
-    else if (p2Won) winnerMsg = `¡${players[1].name} gana!`;
-    else winnerMsg = 'Ninguno acertó – repetir';
+    if (p1Won)       winnerMsg = `¡${players[0].name} gana!`;
+    else if (p2Won)  winnerMsg = `¡${players[1].name} gana!`;
+    else             winnerMsg = 'Ninguno acertó – repetir';
   } else {
     winnerMsg = isHeads ? `${players[0].name} paga` : `${players[1].name} paga`;
   }
 
-  document.getElementById('result-emoji').textContent = isHeads ? '👆' : '✋';
-  document.getElementById('result-title').textContent = isHeads ? '¡CARA!' : '¡CRUZ!';
-  document.getElementById('result-title').style.color = isHeads ? 'var(--cyan)' : '#d4af37';
-  document.getElementById('result-sub').textContent = winnerMsg;
+  document.getElementById('result-emoji').textContent   = isHeads ? '👆' : '✋';
+  document.getElementById('result-title').textContent   = isHeads ? '¡CARA!' : '¡CRUZ!';
+  document.getElementById('result-title').style.color   = isHeads ? 'var(--cyan)' : 'var(--gold)';
+  document.getElementById('result-sub').textContent     = winnerMsg;
 
-  // History
-  const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-  history.unshift({result, label: isHeads?'CARA':'CRUZ', time, winner: winnerMsg});
+  const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+  history.unshift({result, label: isHeads ? 'CARA' : 'CRUZ', time, winner: winnerMsg});
   renderHistory();
 
   launchConfetti(isHeads ? '#13ecd6' : '#d4af37');
@@ -469,14 +534,18 @@ function showResult(result) {
 
 function renderHistory() {
   const el = document.getElementById('history');
-  if (history.length === 0) {
+  if (!history.length) {
     el.innerHTML = '<p class="text-xs opacity-30 text-center py-2">Sin lanzamientos aún</p>';
     return;
   }
-  el.innerHTML = history.slice(0,6).map((h, i) => `
-    <div class="flex items-center justify-between py-1 ${i>0?'border-t border-white/5':''}">
+  el.innerHTML = history.slice(0, 6).map((h, i) => `
+    <div class="flex items-center justify-between py-1 ${i > 0 ? 'border-t border-white/5' : ''}">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-black px-2 py-0.5 rounded-full" style="background:${h.result==='heads'?'rgba(19,236,214,0.15)':'rgba(212,175,55,0.15)'};color:${h.result==='heads'?'#13ecd6':'#d4af37'}">${h.label}</span>
+        <span class="text-xs font-black px-2 py-0.5 rounded-full"
+          style="background:${h.result === 'heads' ? 'rgba(19,236,214,0.15)' : 'rgba(212,175,55,0.15)'};
+                 color:${h.result === 'heads' ? '#13ecd6' : '#d4af37'}">
+          ${h.label}
+        </span>
         <span class="text-xs opacity-60">${h.winner}</span>
       </div>
       <span class="text-xs opacity-30">${h.time}</span>
@@ -484,14 +553,12 @@ function renderHistory() {
 }
 
 function resetCoin() {
-  const coin  = document.getElementById('coin');
-  coin.style.transition = 'transform 0.5s ease';
-  coin.style.transform  = 'rotateY(0deg)';
-  document.getElementById('coin-heads').style.animation = '';
-  document.getElementById('coin-tails').style.animation = '';
+  coinAngleY = 0;
+  drawCoin(0);
+  coinCanvas.classList.remove('result-heads', 'result-tails');
+  document.getElementById('coin-wrap').style.transform = '';
   lastResult = null;
-  choices = {p1: null, p2: null};
-  // Reset choice buttons
+  choices    = { p1: null, p2: null };
   ['p1','p2'].forEach(p => {
     ['heads','tails'].forEach(s => {
       document.getElementById(`${p}-${s}`).className = 'choice-btn flex-1 py-2 px-3 text-sm idle';
@@ -507,70 +574,77 @@ function confirmResult() {
 }
 
 function launchConfetti(color) {
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 35; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
-    p.style.cssText = `left:${Math.random()*100}vw;top:-20px;background:${Math.random()>0.5?color:'#ffffff'};width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.5}s;border-radius:${Math.random()>0.5?'50%':'2px'}`;
+    p.style.cssText = `
+      left:${Math.random() * 100}vw;top:-20px;
+      background:${Math.random() > 0.5 ? color : '#ffffff'};
+      width:${5 + Math.random() * 9}px;height:${5 + Math.random() * 9}px;
+      animation-duration:${1.5 + Math.random() * 2}s;
+      animation-delay:${Math.random() * 0.5}s;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'}`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 4000);
   }
 }
 
-// Init
+// ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('player1-name').textContent = players[0].name;
 document.getElementById('player2-name').textContent = players[1].name;
+drawCoin(0);  // initial draw: heads facing
 </script>
 
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+                reg.update().catch(() => {});
+                reg.addEventListener('updatefound', () => {
+                    const sw = reg.installing;
+                    if (!sw) return;
+                    sw.addEventListener('statechange', () => {
+                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                            sw.postMessage({ type: 'SKIP_WAITING' });
+                        }
                     });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
+                });
+            })
+            .catch(e => console.warn('[SW] Failed:', e));
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) { refreshing = true; window.location.reload(); }
         });
-    }
-    </script>
+    });
+}
+</script>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('games')">
-                <span class="material-icons-round">casino</span>
-                <p>Juegos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('vault')">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+    <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
+        <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <span class="material-icons-round">grid_view</span>
+            <p>Mando</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <span class="material-icons-round">groups_3</span>
+            <p>Grupos</p>
+        </button>
+        <button class="nav-item active" onclick="SGRouter.navigate('games')">
+            <span class="material-icons-round">casino</span>
+            <p>Juegos</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('vault')">
+            <span class="material-icons-round">auto_stories</span>
+            <p>Bóveda</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <span class="material-icons-round">person</span>
+            <p>Perfil</p>
+        </button>
+    </div>
+</nav>
 </div>
 </body>
 </html>

@@ -13,90 +13,91 @@
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
   body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; }
 
-  /* 3D Canvas Wrapper */
+  /* ── Roulette container ── */
   #roulette-wrapper {
     position:relative;
-    width:320px; height:360px;   /* extra height for pointer above */
+    width:320px;
     margin:0 auto;
-    display:flex; flex-direction:column; align-items:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
   }
-  /* Static pointer — sits above the wheel, NOT inside 3D container */
+
+  /* ── Pointer: STATIC triangle above the canvas, pointing DOWN ── */
   #pointer-wrap {
     position:relative;
     z-index:20;
-    margin-bottom:-6px;
+    /* Negative bottom margin so pointer tip overlaps canvas top */
+    margin-bottom:-4px;
+    line-height:0;
   }
-  #wheel-3d {
-    width:300px; height:300px;
+  #pointer {
+    display:block;
+    filter:drop-shadow(0 4px 12px rgba(19,236,214,0.9));
+    animation:pointerPulse 2s ease-in-out infinite;
+  }
+  @keyframes pointerPulse {
+    0%,100% { filter:drop-shadow(0 3px 8px rgba(19,236,214,0.7)); transform:translateY(0); }
+    50%      { filter:drop-shadow(0 6px 20px rgba(19,236,214,1));  transform:translateY(-3px); }
+  }
+
+  /* ── Canvas & glow ── */
+  #wheel-canvas-wrap {
     position:relative;
-    perspective:700px;
-    transform-style:preserve-3d;
-    transform: rotateX(18deg);
-    transition: transform 0.3s ease;
+    width:300px; height:300px;
     flex-shrink:0;
   }
   canvas#wheel {
     display:block;
     border-radius:50%;
-    box-shadow:0 0 0 6px rgba(19,236,214,0.15),
-               0 0 60px rgba(19,236,214,0.4),
-               0 20px 50px rgba(0,0,0,0.9),
-               inset 0 0 20px rgba(0,0,0,0.5);
+    box-shadow:
+      0 0 0 5px rgba(19,236,214,0.12),
+      0 0 50px rgba(19,236,214,0.35),
+      0 24px 60px rgba(0,0,0,0.95);
     transition:box-shadow 0.3s;
   }
   canvas#wheel.spinning {
-    box-shadow:0 0 0 6px rgba(19,236,214,0.35),
-               0 0 100px rgba(19,236,214,0.8),
-               0 30px 70px rgba(0,0,0,0.95),
-               inset 0 0 30px rgba(0,0,0,0.6);
+    box-shadow:
+      0 0 0 7px rgba(19,236,214,0.3),
+      0 0 90px rgba(19,236,214,0.75),
+      0 30px 80px rgba(0,0,0,0.99);
   }
   #wheel-shadow {
     position:absolute;
-    bottom:-22px; left:50%;
+    bottom:-18px; left:50%;
     transform:translateX(-50%);
-    width:85%; height:35px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.75) 0%, transparent 70%);
-    filter:blur(12px);
+    width:80%; height:28px;
+    background:radial-gradient(ellipse, rgba(0,0,0,0.8) 0%, transparent 70%);
+    filter:blur(10px);
     z-index:-1;
-  }
-  /* Pointer: static, above wheel */
-  #pointer {
-    position:relative;
-    z-index:10;
-    filter:drop-shadow(0 3px 10px rgba(19,236,214,0.9));
-    animation: pointerPulse 1.8s ease-in-out infinite;
-  }
-  @keyframes pointerPulse {
-    0%, 100% { filter: drop-shadow(0 3px 8px rgba(19,236,214,0.7)); transform:translateY(0); }
-    50% { filter: drop-shadow(0 5px 18px rgba(19,236,214,1)); transform:translateY(-2px); }
   }
   #center-hub {
     position:absolute;
     top:50%; left:50%;
     transform:translate(-50%,-50%);
     width:52px; height:52px;
-    background:radial-gradient(circle at 35% 35%, #2a2a2a 0%, #0e0e0e 100%);
+    background:radial-gradient(circle at 35% 35%, #2e2e2e 0%, #111 100%);
     border:3px solid var(--cyan);
     border-radius:50%;
     display:flex; align-items:center; justify-content:center;
     z-index:5;
-    box-shadow:0 0 25px rgba(19,236,214,0.7),
-               inset 0 1px 3px rgba(255,255,255,0.15);
+    box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* Glass panels */
+  /* ── Glass panels ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
-  /* Result banner */
+  /* ── Result banner ── */
   #result-banner {
-    background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(168,85,247,0.1));
+    background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(168,85,247,0.08));
     border:1px solid rgba(19,236,214,0.4);
     border-radius:20px;
     animation:pulse-glow 2s ease infinite;
   }
-  @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(19,236,214,0.3)} 50%{box-shadow:0 0 40px rgba(19,236,214,0.6)} }
+  @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(19,236,214,0.25)} 50%{box-shadow:0 0 45px rgba(19,236,214,0.6)} }
 
-  /* Spin button */
+  /* ── Spin button ── */
   #spin-btn {
     background:linear-gradient(135deg, var(--cyan), #0fbfaf);
     color:#0a0a0a;
@@ -111,7 +112,7 @@
   #spin-btn:active:not(:disabled) { transform:scale(0.97); }
   #spin-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* Player chips */
+  /* ── Player chips ── */
   .player-chip {
     background:rgba(255,255,255,0.06);
     border:1px solid rgba(255,255,255,0.1);
@@ -125,46 +126,33 @@
   }
   .player-chip:hover { background:rgba(255,255,255,0.1); }
   .player-chip.active { border-color:var(--cyan); background:rgba(19,236,214,0.12); color:var(--cyan); }
-  .player-chip .dot { width:8px; height:8px; border-radius:50%; }
+  .player-chip .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
-  /* Bottom nav */
+  /* ── Bottom nav ── */
   .bottom-nav { background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); }
 
-  /* Confetti */
-  .confetti-piece {
-    position:fixed;
-    width:10px; height:10px;
-    top:-20px;
-    border-radius:2px;
-    animation:confetti-fall linear forwards;
-    z-index:100;
-    pointer-events:none;
-  }
-  @keyframes confetti-fall {
-    0% { transform:translateY(0) rotate(0deg); opacity:1; }
-    100% { transform:translateY(110vh) rotate(720deg); opacity:0; }
-  }
+  /* ── Confetti ── */
+  .confetti-piece { position:fixed; width:10px; height:10px; top:-20px; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
+  @keyframes confetti-fall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+  .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+  .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+  .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+  .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/audio.js" defer></script>
-    <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+<meta name="theme-color" content="#13ecd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SplitGasto">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<script src="engine/audio.js"></script>
+<script src="engine/desktop-fix.js" defer></script>
+<script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -183,7 +171,7 @@
   </button>
 </header>
 
-<!-- Main content -->
+<!-- Main -->
 <main class="max-w-md mx-auto px-4 pt-6 space-y-6">
 
   <!-- Group selector -->
@@ -198,28 +186,41 @@
     <span class="material-icons-round text-sm opacity-40">expand_more</span>
   </div>
 
-  <!-- 3D Roulette Wheel -->
+  <!-- Roulette Wheel (flat, no 3D tilt) -->
   <div class="flex flex-col items-center py-4">
     <div id="roulette-wrapper">
-      <!-- Static pointer above wheel — NOT inside 3D transform -->
+
+      <!-- Pointer: static triangle, tip pointing DOWN toward canvas top -->
       <div id="pointer-wrap">
-        <div id="pointer">
-          <svg width="28" height="32" viewBox="0 0 28 32">
-            <!-- Triangle pointing DOWN — tip at bottom y=32 -->
-            <polygon points="14,32 26,6 14,13 2,6" fill="#13ecd6"/>
-            <polygon points="14,32 26,6 14,13 2,6" fill="url(#ptrGrad)"/>
-            <circle cx="14" cy="30" r="3.5" fill="#fff" opacity="0.95"/>
-            <defs>
-              <linearGradient id="ptrGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#4ffff0"/>
-                <stop offset="100%" stop-color="#09c4b0"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
+        <svg id="pointer" width="32" height="36" viewBox="0 0 32 36">
+          <!--
+            Triangle: tip at bottom center (16,36), base at top.
+            This tip will visually touch the wheel's top edge.
+          -->
+          <defs>
+            <linearGradient id="ptrG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4ffff0"/>
+              <stop offset="100%" stop-color="#09b8a0"/>
+            </linearGradient>
+            <filter id="ptrBlur">
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur"/>
+            </filter>
+          </defs>
+          <!-- Shadow polygon -->
+          <polygon points="16,36 30,6 16,14 2,6" fill="rgba(0,0,0,0.4)" transform="translate(0,2)"/>
+          <!-- Main pointer -->
+          <polygon points="16,36 30,6 16,14 2,6" fill="url(#ptrG)"/>
+          <!-- Highlight stripe -->
+          <polygon points="16,36 16,14 2,6" fill="rgba(255,255,255,0.15)"/>
+          <!-- Base circle -->
+          <circle cx="16" cy="7" r="5" fill="#fff" opacity="0.9"/>
+          <circle cx="16" cy="7" r="3" fill="var(--cyan)"/>
+        </svg>
       </div>
-      <!-- 3D tilt container -->
-      <div id="wheel-3d">
+
+      <!-- Wheel canvas (flat, no perspective tilt) -->
+      <div id="wheel-canvas-wrap">
         <canvas id="wheel" width="300" height="300"></canvas>
         <div id="wheel-shadow"></div>
         <div id="center-hub">
@@ -229,14 +230,14 @@
     </div>
 
     <!-- Spin stats -->
-    <div class="flex gap-4 mt-4 text-center">
+    <div class="flex gap-6 mt-5 text-center">
       <div>
         <p class="text-lg font-bold" style="color:var(--cyan)" id="spin-count">0</p>
         <p class="text-xs opacity-40">Giros</p>
       </div>
       <div class="w-px bg-white/10"></div>
       <div>
-        <p class="text-lg font-bold text-white" id="last-winner">—</p>
+        <p class="text-lg font-bold text-white truncate max-w-24" id="last-winner">—</p>
         <p class="text-xs opacity-40">Último</p>
       </div>
       <div class="w-px bg-white/10"></div>
@@ -247,9 +248,9 @@
     </div>
   </div>
 
-  <!-- Result banner (hidden initially) -->
+  <!-- Result banner -->
   <div id="result-banner" class="hidden p-5 text-center">
-    <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">¡RESULTADO!</p>
+    <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">🎯 ¡RESULTADO!</p>
     <p class="text-2xl font-extrabold" id="result-name" style="color:var(--cyan)">—</p>
     <p class="text-sm opacity-60 mt-1" id="result-sub">paga la cuenta de esta noche</p>
     <div class="flex justify-center gap-3 mt-4">
@@ -269,7 +270,7 @@
       <span class="text-xs opacity-40" id="player-count">4 jugadores</span>
     </div>
     <div id="players-container" class="flex flex-wrap gap-2">
-      <!-- Players rendered by JS -->
+      <!-- rendered by JS -->
     </div>
   </div>
 
@@ -291,13 +292,13 @@
 
 </main>
 
-<!-- Bottom Nav -->
-
 <!-- Add Player Modal -->
 <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
   <div class="glass p-6 mx-4 w-full max-w-sm">
     <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
-    <input id="new-player-input" type="text" placeholder="Nombre del jugador" class="w-full px-4 py-3 rounded-xl font-medium text-white" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1)"/>
+    <input id="new-player-input" type="text" placeholder="Nombre del jugador"
+      class="w-full px-4 py-3 rounded-xl font-medium text-white"
+      style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1)"/>
     <div class="flex gap-3 mt-4">
       <button onclick="closeModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:rgba(255,255,255,0.07)">Cancelar</button>
       <button onclick="addPlayerFromModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:var(--cyan);color:#0a0a0a">Añadir</button>
@@ -306,199 +307,218 @@
 </div>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
+// ── DATA ─────────────────────────────────────────────────────────────────────
 const COLORS = [
   '#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e',
   '#f59e0b','#ef4444','#8b5cf6','#06b6d4'
 ];
 
 let players = [
-  {name:'Commander', color:'#13ecd6', active:true},
-  {name:'Mario', color:'#a855f7', active:true},
-  {name:'Elena', color:'#FF9D42', active:true},
-  {name:'Sofia', color:'#ec4899', active:true},
+  {name:'Commander', color:'#13ecd6',  active:true},
+  {name:'Mario',     color:'#a855f7',  active:true},
+  {name:'Elena',     color:'#FF9D42',  active:true},
+  {name:'Sofia',     color:'#ec4899',  active:true},
 ];
 
-let currentAngle = 0;
+let currentAngle = 0;   // wheel rotation offset in radians
 let spinCount = 0;
 let isSpinning = false;
 let lastWinner = null;
 let history = [];
 
-// ─── AUDIO ENGINE (delegated to engine/audio.js) ──────────────────────────────
-function playTick(frequency, duration) { if(window.SGAudio) SGAudio.tick((frequency||800) / 1200); }
-function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
-// NOTE: maybePlayTick is defined below in SPIN LOGIC section
-// ─── CANVAS SETUP ────────────────────────────────────────────────────────────
+// ── AUDIO SHIMS ───────────────────────────────────────────────────────────────
+function playTick(speed) { if (window.SGAudio) SGAudio.tick(speed); }
+function playWinSound()  { if (window.SGAudio) SGAudio.victory(); }
+
+// ── CANVAS SETUP ─────────────────────────────────────────────────────────────
 const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const SIZE = 300;
-canvas.width = SIZE;
+const ctx    = canvas.getContext('2d');
+const SIZE   = 300;
+canvas.width  = SIZE;
 canvas.height = SIZE;
 
 function getActivePlayers() { return players.filter(p => p.active); }
 
-function drawWheel(angle = 0) {
+// ── DRAW WHEEL ────────────────────────────────────────────────────────────────
+// angle = rotation offset (radians). Segment i starts at angle + i*slice.
+// The POINTER TIP is at the TOP of the canvas = angle 270° = -π/2 in canvas coords.
+// We want winner segment center exactly at -π/2 (top).
+function drawWheel(angle) {
   const active = getActivePlayers();
-  if (active.length === 0) return;
+  if (!active.length) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
-  const cx = SIZE/2, cy = SIZE/2;
-  const rOuter = SIZE/2 - 3;   // main wheel radius
-  const rInner = 28;            // hub radius
-  const rLabel = rOuter * 0.68; // label radius
-  const rDot   = rOuter - 12;   // pin dot radius
-  const rRim   = rOuter + 1;    // metallic rim outer edge
-  const rBand  = rOuter - 18;   // inner band radius (alternating dark/light)
-  const slice = (Math.PI * 2) / active.length;
 
-  /* ── 1. Segments ── */
+  const cx     = SIZE / 2;
+  const cy     = SIZE / 2;
+  const R      = SIZE / 2 - 4;    // wheel outer radius
+  const rHub   = 26;              // hub radius
+  const rLabel = R * 0.65;        // label radius
+  const rDot   = R - 14;         // rim pin dot radius
+  const rBand  = R * 0.58;        // inner band divider
+  const slice  = (Math.PI * 2) / active.length;
+
+  // ── 1. Segments ──────────────────────────────────────────────────────────
   active.forEach((p, i) => {
-    const start = angle + i * slice;
-    const end   = start + slice;
-    const mid   = start + slice / 2;
+    const a0 = angle + i * slice;
+    const a1 = a0 + slice;
+    const am = a0 + slice / 2;
+    const dark = i % 2 === 0;
 
-    // Base fill: alternating darker/lighter for realism
-    const darken = i % 2 === 0;
-    const rad = ctx.createRadialGradient(cx, cy, rInner, cx, cy, rOuter);
-    rad.addColorStop(0,   darken ? p.color + '18' : p.color + '28');
-    rad.addColorStop(0.6, darken ? p.color + '30' : p.color + '48');
-    rad.addColorStop(1,   darken ? p.color + '50' : p.color + '70');
+    // Radial gradient fill
+    const grad = ctx.createRadialGradient(cx, cy, rHub, cx, cy, R);
+    grad.addColorStop(0,   (dark ? p.color + '22' : p.color + '33'));
+    grad.addColorStop(0.55,(dark ? p.color + '38' : p.color + '55'));
+    grad.addColorStop(1,   (dark ? p.color + '60' : p.color + '80'));
+
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, rOuter, start, end);
+    ctx.arc(cx, cy, R, a0, a1);
     ctx.closePath();
-    ctx.fillStyle = rad;
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Subtle inner band overlay
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a0) * rHub, cy + Math.sin(a0) * rHub);
+    ctx.arc(cx, cy, rBand, a0, a1);
+    ctx.closePath();
+    ctx.fillStyle = dark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.05)';
     ctx.fill();
 
     // Separator line
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(start) * rInner, cy + Math.sin(start) * rInner);
-    ctx.lineTo(cx + Math.cos(start) * rOuter, cy + Math.sin(start) * rOuter);
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-    ctx.lineWidth = 2;
+    ctx.moveTo(cx + Math.cos(a0) * rHub, cy + Math.sin(a0) * rHub);
+    ctx.lineTo(cx + Math.cos(a0) * R,    cy + Math.sin(a0) * R);
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
-    // Highlight arc near outer rim
+    // Outer colour arc highlight
     ctx.beginPath();
-    ctx.arc(cx, cy, rOuter - 2, start + 0.02, end - 0.02);
+    ctx.arc(cx, cy, R - 2, a0 + 0.03, a1 - 0.03);
     ctx.strokeStyle = p.color;
-    ctx.lineWidth = 4;
-    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 5;
+    ctx.globalAlpha = 0.55;
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // Inner band arc (alternating)
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(start) * rBand, cy + Math.sin(start) * rBand);
-    ctx.arc(cx, cy, rBand, start, end);
-    ctx.closePath();
-    ctx.fillStyle = darken ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.04)';
-    ctx.fill();
-
-    /* Label */
+    // Label
     const name = p.name.length > 7 ? p.name.slice(0, 6) + '…' : p.name;
-    const lx = cx + Math.cos(mid) * rLabel;
-    const ly = cy + Math.sin(mid) * rLabel;
     ctx.save();
-    ctx.translate(lx, ly);
-    ctx.rotate(mid + Math.PI / 2);
-    // Text shadow
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 6;
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px Manrope, sans-serif';
-    ctx.textAlign = 'center';
+    ctx.translate(
+      cx + Math.cos(am) * rLabel,
+      cy + Math.sin(am) * rLabel
+    );
+    ctx.rotate(am + Math.PI / 2);
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur  = 6;
+    ctx.fillStyle   = '#fff';
+    ctx.font        = 'bold 11.5px Manrope, sans-serif';
+    ctx.textAlign   = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(name, 0, 0);
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur  = 0;
     ctx.restore();
 
-    /* Pin dot at rim */
-    const dx = cx + Math.cos(mid) * rDot;
-    const dy = cy + Math.sin(mid) * rDot;
+    // Rim pin dot
+    const dx = cx + Math.cos(am) * rDot;
+    const dy = cy + Math.sin(am) * rDot;
     ctx.beginPath();
-    ctx.arc(dx, dy, 5, 0, Math.PI * 2);
+    ctx.arc(dx, dy, 5.5, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
     ctx.shadowColor = p.color;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur  = 12;
     ctx.fill();
-    ctx.shadowBlur = 0;
-
+    ctx.shadowBlur  = 0;
     // Pin highlight
     ctx.beginPath();
     ctx.arc(dx - 1.5, dy - 1.5, 2, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
     ctx.fill();
   });
 
-  /* ── 2. Outer metallic rim ── */
+  // ── 2. Metallic rim ──────────────────────────────────────────────────────
   const rimGrad = ctx.createLinearGradient(0, 0, SIZE, SIZE);
-  rimGrad.addColorStop(0,   'rgba(255,255,255,0.30)');
-  rimGrad.addColorStop(0.25,'rgba(255,255,255,0.08)');
-  rimGrad.addColorStop(0.5, 'rgba(255,255,255,0.22)');
-  rimGrad.addColorStop(0.75,'rgba(255,255,255,0.06)');
-  rimGrad.addColorStop(1,   'rgba(255,255,255,0.28)');
+  rimGrad.addColorStop(0,    'rgba(255,255,255,0.32)');
+  rimGrad.addColorStop(0.25, 'rgba(255,255,255,0.10)');
+  rimGrad.addColorStop(0.5,  'rgba(255,255,255,0.24)');
+  rimGrad.addColorStop(0.75, 'rgba(255,255,255,0.07)');
+  rimGrad.addColorStop(1,    'rgba(255,255,255,0.30)');
 
   ctx.beginPath();
-  ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.strokeStyle = rimGrad;
-  ctx.lineWidth = 6;
+  ctx.lineWidth   = 7;
   ctx.stroke();
 
-  // Outer glow ring
+  // Cyan outer glow ring
   ctx.beginPath();
-  ctx.arc(cx, cy, rOuter + 2, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.25)';
-  ctx.lineWidth = 2;
+  ctx.arc(cx, cy, R + 1, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(19,236,214,0.22)';
+  ctx.lineWidth   = 2;
   ctx.stroke();
 
-  /* ── 3. Hub ── */
-  const hubGrad = ctx.createRadialGradient(cx-8, cy-8, 2, cx, cy, rInner);
-  hubGrad.addColorStop(0, '#3a3a3a');
-  hubGrad.addColorStop(0.5, '#1a1a1a');
-  hubGrad.addColorStop(1, '#0a0a0a');
+  // ── 3. Hub ───────────────────────────────────────────────────────────────
+  const hubGrad = ctx.createRadialGradient(cx - 8, cy - 8, 2, cx, cy, rHub);
+  hubGrad.addColorStop(0,   '#383838');
+  hubGrad.addColorStop(0.5, '#1c1c1c');
+  hubGrad.addColorStop(1,   '#0a0a0a');
+
   ctx.beginPath();
-  ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+  ctx.arc(cx, cy, rHub, 0, Math.PI * 2);
   ctx.fillStyle = hubGrad;
   ctx.fill();
 
+  // Hub ring
   ctx.beginPath();
-  ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.6)';
-  ctx.lineWidth = 2.5;
+  ctx.arc(cx, cy, rHub, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(19,236,214,0.65)';
+  ctx.lineWidth   = 2.5;
   ctx.stroke();
+
+  // Hub inner shine
+  ctx.beginPath();
+  ctx.arc(cx - 5, cy - 5, rHub * 0.45, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fill();
 }
 
-// ─── TICK SOUND ───────────────────────────────────────────────────────────────
+// ── TICK SOUND ────────────────────────────────────────────────────────────────
 let lastTickAngle = 0;
 let lastTickTime  = 0;
 
 function maybePlayTick(angle, numSegments) {
   if (!window.SGAudio) return;
-  const slice = (Math.PI * 2) / numSegments;
-  // Fire a tick every time we cross a segment boundary
-  const crossed = Math.floor(angle / slice);
+  const slice      = (Math.PI * 2) / numSegments;
+  const crossed    = Math.floor(angle / slice);
   const lastCrossed = Math.floor(lastTickAngle / slice);
   if (crossed !== lastCrossed) {
-    // Speed = angle delta per ms (estimated)
-    const now = performance.now();
-    const dt = now - lastTickTime;
-    const angularSpeed = dt > 0 ? Math.abs(angle - lastTickAngle) / dt : 0.02;
-    // Pitch: faster spin → higher frequency (map 0.005–0.03 rad/ms to 0.1–1.0)
-    const speed = Math.min(Math.max((angularSpeed - 0.005) / 0.025, 0), 1);
+    const now  = performance.now();
+    const dt   = Math.max(now - lastTickTime, 1);
+    const angSpeed = Math.abs(angle - lastTickAngle) / dt;
+    // Map 0.005–0.03 rad/ms → speed 0–1
+    const speed = Math.min(Math.max((angSpeed - 0.005) / 0.025, 0), 1);
     SGAudio.tick(speed);
     lastTickTime = now;
   }
   lastTickAngle = angle;
 }
 
-// ─── SPIN LOGIC ──────────────────────────────────────────────────────────────
+// ── SPIN LOGIC ────────────────────────────────────────────────────────────────
+// Pointer tip is at TOP of canvas = canvas angle -π/2 (270°).
+// Segment i spans [currentAngle + i*slice,  currentAngle + (i+1)*slice].
+// Winner segment center = currentAngle + winnerIdx*slice + slice/2.
+// We need:  finalAngle + winnerIdx*slice + slice/2  ≡  -π/2  (mod 2π)
+// → finalAngle = -π/2 - winnerIdx*slice - slice/2  + k*2π
+// We spin clockwise (angle increases) so delta must be positive.
 function spinWheel() {
   const active = getActivePlayers();
-  if (active.length < 2) { SGRouter.showToast('Añade al menos 2 jugadores', 'warning'); return; }
+  if (active.length < 2) {
+    SGRouter.showToast('Añade al menos 2 jugadores', 'warning');
+    return;
+  }
   if (isSpinning) return;
 
-  // Resume AudioContext on user interaction (browser autoplay policy)
   if (window.SGAudio) { SGAudio.resume(); SGAudio.click(); }
 
   isSpinning = true;
@@ -506,30 +526,25 @@ function spinWheel() {
   document.getElementById('result-banner').classList.add('hidden');
   canvas.classList.add('spinning');
 
-  // Pick random winner
   const winnerIdx = Math.floor(Math.random() * active.length);
-  const slice = (Math.PI * 2) / active.length;
+  const slice     = (Math.PI * 2) / active.length;
+  const spins     = 6 + Math.floor(Math.random() * 4); // 6–9 full turns
 
-  // Target: winner segment center at the pointer (top = -π/2).
-  // currentAngle is the rotation offset applied when drawing.
-  // Segment i center is at: currentAngle + i*slice + slice/2
-  // We want that to equal -π/2 (mod 2π) → i.e. angle after spin:
-  //   finalAngle = -π/2 - (winnerIdx*slice + slice/2)  + k*2π
-  const targetSliceCenter = winnerIdx * slice + slice / 2;
-  const spins = 6 + Math.floor(Math.random() * 4); // 6–9 full rotations
-  const rawTarget = -Math.PI / 2 - targetSliceCenter;
-  // Ensure the fractional delta is always positive (JS % can be negative)
-  const delta = ((rawTarget - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  // Target angle where winner ends up at top
+  const rawTarget = -Math.PI / 2 - winnerIdx * slice - slice / 2;
+  // Delta is always positive (forward spin only)
+  const delta      = ((rawTarget - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
   const totalAngle = spins * Math.PI * 2 + delta;
   const finalAngle = currentAngle + totalAngle;
 
-  const duration = 4500 + Math.random() * 1500;
-  const t0 = performance.now();
+  const duration  = 4500 + Math.random() * 1500; // 4.5–6 s
+  const t0        = performance.now();
   const startAngle = currentAngle;
 
   lastTickAngle = currentAngle;
   lastTickTime  = t0;
 
+  // Ease-out quartic (starts fast, decelerates smoothly)
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
   function animate(now) {
@@ -542,8 +557,9 @@ function spinWheel() {
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      // Normalise to [0, 2π)
+      // Normalize to [0, 2π)
       currentAngle = ((finalAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      drawWheel(currentAngle);
       isSpinning = false;
       canvas.classList.remove('spinning');
       document.getElementById('spin-btn').disabled = false;
@@ -562,29 +578,25 @@ function showResult(winner) {
 
   const banner = document.getElementById('result-banner');
   document.getElementById('result-name').textContent = '🎯 ' + winner.name;
-  document.getElementById('result-name').style.color = winner.color;
-  document.getElementById('result-sub').textContent = 'paga la cuenta de esta noche';
+  document.getElementById('result-name').style.color  = winner.color;
+  document.getElementById('result-sub').textContent   = 'paga la cuenta de esta noche';
   banner.classList.remove('hidden');
 
-  // Add to history
-  const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+  const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
-
-  // Confetti!
   launchConfetti(winner.color);
-
   SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
 }
 
 function renderHistory() {
   const list = document.getElementById('history-list');
-  if (history.length === 0) {
+  if (!history.length) {
     list.innerHTML = '<p class="text-xs opacity-30 text-center py-2">Sin giros aún</p>';
     return;
   }
-  list.innerHTML = history.slice(0,5).map((h,i) => `
-    <div class="flex items-center justify-between py-2 ${i>0?'border-t border-white/5':''}">
+  list.innerHTML = history.slice(0, 5).map((h, i) => `
+    <div class="flex items-center justify-between py-2 ${i > 0 ? 'border-t border-white/5' : ''}">
       <div class="flex items-center gap-3">
         <div class="w-2 h-2 rounded-full" style="background:${h.color}"></div>
         <span class="text-sm font-semibold">${h.name}</span>
@@ -611,11 +623,11 @@ function eliminateWinner() {
   updatePlayerCount();
 }
 
-// ─── PLAYERS ─────────────────────────────────────────────────────────────────
+// ── PLAYERS ───────────────────────────────────────────────────────────────────
 function renderPlayers() {
   const container = document.getElementById('players-container');
   container.innerHTML = players.map((p, i) => `
-    <div class="player-chip ${p.active?'active':''}" onclick="togglePlayer(${i})">
+    <div class="player-chip ${p.active ? 'active' : ''}" onclick="togglePlayer(${i})">
       <div class="dot" style="background:${p.color}"></div>
       <span>${p.name}</span>
       ${!p.active ? '<span style="opacity:0.4;font-size:10px">OFF</span>' : ''}
@@ -637,22 +649,22 @@ function togglePlayer(idx) {
 
 function updatePlayerCount() {
   const n = getActivePlayers().length;
-  document.getElementById('player-count').textContent = `${n} jugador${n!==1?'es':''}`;
+  document.getElementById('player-count').textContent = `${n} jugador${n !== 1 ? 'es' : ''}`;
 }
 
-// ─── MODAL ───────────────────────────────────────────────────────────────────
+// ── MODAL ─────────────────────────────────────────────────────────────────────
 document.getElementById('add-player-btn').addEventListener('click', () => {
   document.getElementById('add-modal').style.display = 'flex';
 });
 function closeModal() {
   document.getElementById('add-modal').style.display = 'none';
-  document.getElementById('new-player-input').value = '';
+  document.getElementById('new-player-input').value  = '';
 }
 function addPlayerFromModal() {
   const name = document.getElementById('new-player-input').value.trim();
   if (!name) return;
   const color = COLORS[players.length % COLORS.length];
-  players.push({name, color, active:true});
+  players.push({name, color, active: true});
   renderPlayers();
   drawWheel(currentAngle);
   closeModal();
@@ -662,80 +674,80 @@ document.getElementById('new-player-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') addPlayerFromModal();
 });
 
-// ─── CONFETTI ────────────────────────────────────────────────────────────────
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
 function launchConfetti(color) {
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 45; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
     p.style.cssText = `
-      left:${Math.random()*100}vw;
-      background:${Math.random()>0.5?color:COLORS[Math.floor(Math.random()*COLORS.length)]};
-      width:${6+Math.random()*10}px;
-      height:${6+Math.random()*10}px;
-      animation-duration:${1.5+Math.random()*2}s;
-      animation-delay:${Math.random()*0.5}s;
-      border-radius:${Math.random()>0.5?'50%':'2px'};
+      left:${Math.random() * 100}vw;
+      background:${Math.random() > 0.5 ? color : COLORS[Math.floor(Math.random() * COLORS.length)]};
+      width:${6 + Math.random() * 10}px;
+      height:${6 + Math.random() * 10}px;
+      animation-duration:${1.5 + Math.random() * 2}s;
+      animation-delay:${Math.random() * 0.5}s;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
     `;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 4000);
   }
 }
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────────
 renderPlayers();
 drawWheel(0);
 </script>
 
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+                reg.update().catch(() => {});
+                reg.addEventListener('updatefound', () => {
+                    const sw = reg.installing;
+                    if (!sw) return;
+                    sw.addEventListener('statechange', () => {
+                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                            sw.postMessage({ type: 'SKIP_WAITING' });
+                        }
                     });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
+                });
+            })
+            .catch(e => console.warn('[SW] Failed:', e));
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) { refreshing = true; window.location.reload(); }
         });
-    }
-    </script>
+    });
+}
+</script>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('games')">
-                <span class="material-icons-round">casino</span>
-                <p>Juegos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('vault')">
-                <span class="material-icons-round">auto_stories</span>
-                <p>Bóveda</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+    <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
+        <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <span class="material-icons-round">grid_view</span>
+            <p>Mando</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <span class="material-icons-round">groups_3</span>
+            <p>Grupos</p>
+        </button>
+        <button class="nav-item active" onclick="SGRouter.navigate('games')">
+            <span class="material-icons-round">casino</span>
+            <p>Juegos</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('vault')">
+            <span class="material-icons-round">auto_stories</span>
+            <p>Bóveda</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <span class="material-icons-round">person</span>
+            <p>Perfil</p>
+        </button>
+    </div>
+</nav>
 </div>
 </body>
 </html>
