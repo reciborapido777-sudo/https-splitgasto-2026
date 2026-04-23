@@ -497,8 +497,10 @@ async function handleDatabase(request, env, path) {
         ).bind(id, name, currency || 'USD', userId).run();
 
         await env.SPLITGASTO_DB.prepare(
-            'INSERT INTO group_members (id, group_id, user_id, role) VALUES (?, ?, ?, ?)'
-        ).bind(crypto.randomUUID(), id, userId, 'admin').run();
+            'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+        ).bind(id, userId, 'admin').run();
+
+        await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`);
 
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
@@ -530,7 +532,10 @@ async function handleDatabase(request, env, path) {
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO expenses (id, group_id, paid_by, amount, currency, category, description, split_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(id, groupId, userId, amount, currency || 'USD', category || 'otro', description || '', splitType || 'equal').run();
+        ).bind(id, groupId, userId, amount, currency || 'USD', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
+
+        await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`);
+        await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`);
 
         return jsonResponse({ success: true, id, message: 'Gasto registrado' }, 201);
     }
@@ -555,7 +560,7 @@ async function handleDatabase(request, env, path) {
 
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
-            'INSERT INTO settlements (id, group_id, from_user_id, to_user_id, amount, currency) VALUES (?, ?, ?, ?, ?, ?)'
+            'INSERT INTO settlements (id, group_id, from_user, to_user, amount, currency) VALUES (?, ?, ?, ?, ?, ?)'
         ).bind(id, groupId, fromUserId, toUserId, amount, currency || 'USD').run();
 
         return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201);
@@ -588,13 +593,15 @@ async function handleDatabase(request, env, path) {
         if (!userId || !name) return jsonResponse({ error: 'Campos "userId" y "name" requeridos' }, 400);
 
         await env.SPLITGASTO_DB.prepare(
-            'INSERT OR REPLACE INTO users (id, name, email, avatar) VALUES (?, ?, ?, ?)'
-        ).bind(userId, name, email || '', avatar || '').run();
+            'INSERT OR REPLACE INTO users (id, name, email, avatar_url) VALUES (?, ?, ?, ?)'
+        ).bind(userId, name, email || `${userId}@splitgasto.app`, avatar || '').run();
+
+        await env.SPLITGASTO_CACHE.delete(`db:profile:${userId}`);
 
         return jsonResponse({ success: true, message: 'Perfil actualizado' });
     }
 
-    // ── Notificaciones ────────────────────────────────────────────────
+        // ── Notificaciones ────────────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId');
@@ -605,6 +612,19 @@ async function handleDatabase(request, env, path) {
         ).bind(userId).all();
 
         return jsonResponse({ success: true, notifications: notifications.results });
+    }
+
+    if (path === '/api/db/notifications' && method === 'POST') {
+        const body = await request.json();
+        const { userId, title, message, type } = body;
+        if (!userId || !title) return jsonResponse({ error: 'Campos "userId" y "title" requeridos' }, 400);
+
+        const id = crypto.randomUUID();
+        await env.SPLITGASTO_DB.prepare(
+            'INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)'
+        ).bind(id, userId, title, message || '', type || 'info').run();
+
+        return jsonResponse({ success: true, id, message: 'Notificación creada' }, 201);
     }
 
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404);
@@ -648,3 +668,5 @@ function setSecurityHeaders(headers) {
         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }
+
+
