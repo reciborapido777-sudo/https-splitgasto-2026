@@ -1,13 +1,15 @@
 /**
- * SplitGasto 2026 - Service Worker v5.3
+ * SplitGasto 2026 - Service Worker v5.4
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
- * v5.3: Workers AI integrado, bump cache para forzar actualización
+ * v5.4: engine/audio.js + engine/desktop-fix.js añadidos al cache; audio y juegos arreglados
  */
 
-const CACHE_NAME = 'splitgasto-v6-2026';
+const CACHE_NAME = 'splitgasto-v7-2026';
 const STATIC_ASSETS = [
     'engine/router.js',
     'engine/global.css',
+    'engine/audio.js',
+    'engine/desktop-fix.js',
     'favicon.svg',
     'favicon-32.png',
     'favicon-16.png',
@@ -23,7 +25,7 @@ const STATIC_ASSETS = [
 
 // ── Install: pre-cache static assets ───────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Installing v5.3…');
+    console.log('[SW] Installing v5.4…');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {

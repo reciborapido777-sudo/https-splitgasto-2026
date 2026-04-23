@@ -128,6 +128,7 @@
 </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
@@ -452,7 +453,7 @@ const PLAYERS = [
         // ─── Throw Dart ───────────────────────────────────────────────
         function throwDart(x, y) {
             if (gameOver) return;
-            try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
+            if (window.SGAudio) SGAudio.resume();
 
             const result = getScore(x, y);
             const player = PLAYERS[currentPlayer];

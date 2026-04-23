@@ -135,6 +135,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
@@ -359,7 +360,7 @@ let flippedCards = new Set();
 function flipCard(idx) {
   const card = document.getElementById(`card-${idx}`);
   if (!card) return;
-  try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
+  if (window.SGAudio) SGAudio.resume();
   playCardFlip();
   if (flippedCards.has(idx)) {
     card.classList.remove('flipped');

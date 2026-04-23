@@ -15,65 +15,129 @@
 
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
-  /* ─── 3D Coin ─── */
+  /* ─── 3D Coin — realistic with visible edge ─── */
   #coin-scene {
-    perspective:600px;
+    perspective:500px;
     width:200px; height:200px;
     margin:0 auto;
     cursor:pointer;
+    position:relative;
   }
   #coin {
     width:100%; height:100%;
     transform-style:preserve-3d;
     position:relative;
     transition:none;
+    will-change:transform;
   }
   .coin-face {
     position:absolute; inset:0;
     border-radius:50%;
     backface-visibility:hidden;
     display:flex; align-items:center; justify-content:center;
-    border:4px solid rgba(19,236,214,0.3);
+    overflow:hidden;
   }
+  /* Heads — cyan metallic */
   #coin-heads {
-    background:radial-gradient(circle at 35% 35%, #2ae4d3 0%, #13ecd6 45%, #08a69a 100%);
-    box-shadow:0 0 40px rgba(19,236,214,0.5), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.3);
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.45) 0%, transparent 50%),
+      radial-gradient(circle at 70% 75%, rgba(0,0,0,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, #3ffff0 0%, #13ecd6 40%, #07a89e 75%, #055f59 100%);
+    box-shadow:
+      0 0 60px rgba(19,236,214,0.55),
+      inset 0 3px 6px rgba(255,255,255,0.4),
+      inset 0 -3px 6px rgba(0,0,0,0.35);
+    border:3px solid rgba(19,236,214,0.8);
   }
+  /* Tails — gold metallic */
   #coin-tails {
     transform:rotateY(180deg);
-    background:radial-gradient(circle at 35% 35%, #c4a832 0%, #d4af37 45%, #8b7320 100%);
-    box-shadow:0 0 40px rgba(212,175,55,0.5), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.3);
-    border-color:rgba(212,175,55,0.4);
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.5) 0%, transparent 50%),
+      radial-gradient(circle at 70% 75%, rgba(0,0,0,0.25) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, #ffe87a 0%, #d4af37 38%, #a07d1a 72%, #5a440a 100%);
+    box-shadow:
+      0 0 60px rgba(212,175,55,0.55),
+      inset 0 3px 6px rgba(255,255,255,0.45),
+      inset 0 -3px 6px rgba(0,0,0,0.4);
+    border:3px solid rgba(212,175,55,0.85);
   }
+  /* Coin inner ring engraving */
   .coin-inner {
-    width:78%;
-    height:78%;
+    width:76%; height:76%;
     border-radius:50%;
-    border:2px dashed;
+    border:2px solid rgba(255,255,255,0.25);
     display:flex; align-items:center; justify-content:center;
     flex-direction:column; gap:4px;
+    position:relative;
   }
-  #coin-heads .coin-inner { border-color:rgba(255,255,255,0.3); }
-  #coin-tails .coin-inner { border-color:rgba(255,255,255,0.25); }
+  .coin-inner::before {
+    content:'';
+    position:absolute; inset:6px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.12);
+  }
+  /* Visible coin EDGE — CSS cylinder trick */
+  #coin-edge {
+    position:absolute;
+    left:50%; top:0;
+    width:8px; height:100%;
+    transform:translateX(-50%) rotateY(90deg);
+    background:linear-gradient(to bottom,
+      #888 0%, #ccc 15%, #777 35%, #bbb 50%, #666 65%, #aaa 80%, #555 100%);
+    backface-visibility:visible;
+    border-radius:4px;
+    box-shadow:inset 0 0 4px rgba(0,0,0,0.6);
+  }
 
-  /* Coin shadow */
+  /* Coin shadow on table */
   #coin-shadow {
-    width:80%; height:30px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.6) 0%, transparent 70%);
+    width:80%; height:24px;
+    background:radial-gradient(ellipse, rgba(0,0,0,0.65) 0%, transparent 70%);
     border-radius:50%;
     filter:blur(10px);
-    margin:0 auto;
-    transition:opacity 0.3s;
+    margin:8px auto 0;
+    transition:transform 0.3s, opacity 0.3s;
+    transform-origin:center;
+  }
+  #coin-shadow.squashed {
+    transform:scaleX(0.4);
+    opacity:0.4;
   }
 
-  /* Flip animation (set by JS) */
-  @keyframes flip-heads { 0%{transform:rotateY(0)} 100%{transform:rotateY(1800deg)} }
-  @keyframes flip-tails { 0%{transform:rotateY(0)} 100%{transform:rotateY(1980deg)} }
-  .flip-heads { animation:flip-heads 2s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-  .flip-tails { animation:flip-tails 2s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+  /* Flip animations — 5 full spins (1800°) + landing */
+  @keyframes flip-heads {
+    0%   { transform:rotateY(0deg) translateY(0); }
+    15%  { transform:rotateY(270deg) translateY(-30px); }
+    70%  { transform:rotateY(1440deg) translateY(-10px); }
+    100% { transform:rotateY(1800deg) translateY(0); }
+  }
+  @keyframes flip-tails {
+    0%   { transform:rotateY(0deg) translateY(0); }
+    15%  { transform:rotateY(270deg) translateY(-30px); }
+    70%  { transform:rotateY(1620deg) translateY(-10px); }
+    100% { transform:rotateY(1980deg) translateY(0); }
+  }
+  .flip-heads { animation:flip-heads 2.2s cubic-bezier(0.22,0.61,0.36,1) forwards; }
+  .flip-tails { animation:flip-tails 2.2s cubic-bezier(0.22,0.61,0.36,1) forwards; }
 
-  /* Bounce landing */
-  @keyframes coin-bounce { 0%{transform:rotateY(var(--end-rot)) translateY(0)} 30%{transform:rotateY(var(--end-rot)) translateY(-15px)} 60%{transform:rotateY(var(--end-rot)) translateY(-5px)} 100%{transform:rotateY(var(--end-rot)) translateY(0)} }
+  /* Bounce after landing */
+  @keyframes coin-bounce {
+    0%   { transform:rotateY(var(--end-rot)) translateY(0); }
+    25%  { transform:rotateY(var(--end-rot)) translateY(-12px); }
+    55%  { transform:rotateY(var(--end-rot)) translateY(-4px); }
+    80%  { transform:rotateY(var(--end-rot)) translateY(-1px); }
+    100% { transform:rotateY(var(--end-rot)) translateY(0); }
+  }
+  /* Glow pulse on result */
+  @keyframes coin-glow-heads {
+    0%,100%{ box-shadow:0 0 30px rgba(19,236,214,0.4); }
+    50%    { box-shadow:0 0 80px rgba(19,236,214,0.9), 0 0 30px rgba(19,236,214,0.5); }
+  }
+  @keyframes coin-glow-tails {
+    0%,100%{ box-shadow:0 0 30px rgba(212,175,55,0.4); }
+    50%    { box-shadow:0 0 80px rgba(212,175,55,0.9), 0 0 30px rgba(212,175,55,0.5); }
+  }
 
   /* Result glow */
   #result-card {
@@ -151,6 +215,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
@@ -214,18 +279,22 @@
   <div class="flex flex-col items-center py-4 gap-4">
     <div id="coin-scene" onclick="tapCoin()">
       <div id="coin">
+        <!-- Heads face — cyan -->
         <div class="coin-face" id="coin-heads">
           <div class="coin-inner">
-            <span class="material-icons-round text-white text-3xl">account_balance_wallet</span>
-            <span class="text-white text-xs font-black tracking-widest">CARA</span>
+            <span class="material-icons-round text-white" style="font-size:2.2rem;text-shadow:0 2px 8px rgba(0,0,0,0.4)">account_balance_wallet</span>
+            <span class="text-white font-black tracking-widest" style="font-size:0.65rem;text-shadow:0 1px 4px rgba(0,0,0,0.5)">CARA</span>
           </div>
         </div>
+        <!-- Tails face — gold -->
         <div class="coin-face" id="coin-tails">
           <div class="coin-inner">
-            <span class="material-icons-round text-white text-3xl">monetization_on</span>
-            <span class="text-white text-xs font-black tracking-widest">CRUZ</span>
+            <span class="material-icons-round text-white" style="font-size:2.2rem;text-shadow:0 2px 8px rgba(0,0,0,0.4)">monetization_on</span>
+            <span class="text-white font-black tracking-widest" style="font-size:0.65rem;text-shadow:0 1px 4px rgba(0,0,0,0.5)">CRUZ</span>
           </div>
         </div>
+        <!-- Coin edge (visible during spin) -->
+        <div id="coin-edge"></div>
       </div>
     </div>
     <div id="coin-shadow"></div>
@@ -303,15 +372,24 @@ function tapCoin() { if (!isFlipping) flipCoin(); }
 function flipCoin() {
   if (isFlipping) return;
   isFlipping = true;
-  try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
+  if (window.SGAudio) { SGAudio.resume(); }
   playCoinSpin();
 
   document.getElementById('flip-btn').disabled = true;
   document.getElementById('result-card').classList.add('hidden');
 
-  const coin = document.getElementById('coin');
+  const coin   = document.getElementById('coin');
+  const shadow = document.getElementById('coin-shadow');
+  const heads  = document.getElementById('coin-heads');
+  const tails  = document.getElementById('coin-tails');
+
+  // Reset
   coin.style.animation = 'none';
   coin.style.transform = '';
+  heads.style.animation = '';
+  tails.style.animation = '';
+  shadow.classList.remove('squashed');
+  void coin.offsetWidth; // force reflow
 
   // Determine result
   const result = Math.random() < 0.5 ? 'heads' : 'tails';
@@ -319,40 +397,45 @@ function flipCoin() {
 
   // Apply flip animation
   const animClass = result === 'heads' ? 'flip-heads' : 'flip-tails';
-  void coin.offsetWidth; // reflow
   coin.classList.remove('flip-heads', 'flip-tails');
   coin.classList.add(animClass);
 
-  // Shadow animation
-  const shadow = document.getElementById('coin-shadow');
-  shadow.style.opacity = '0.3';
+  // Shadow: squash during flight, restore on land
+  setTimeout(() => shadow.classList.add('squashed'), 100);
 
+  // LANDING (2200ms — matches animation duration)
   setTimeout(() => {
-    shadow.style.opacity = '0.6';
+    shadow.classList.remove('squashed');
     coin.classList.remove('flip-heads', 'flip-tails');
-    coin.style.transform = result === 'heads' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+
+    const endRot = result === 'heads' ? '0deg' : '180deg';
+    coin.style.setProperty('--end-rot', endRot);
+    coin.style.transform = `rotateY(${endRot})`;
+
+    // Apply landing glow to visible face
+    const visibleFace = result === 'heads' ? heads : tails;
+    visibleFace.style.animation = result === 'heads'
+      ? 'coin-glow-heads 1.5s ease infinite'
+      : 'coin-glow-tails 1.5s ease infinite';
+
+    playCoinLand();
 
     // Update counts
-    if (result === 'heads') headsCount++;
-    else tailsCount++;
+    if (result === 'heads') headsCount++; else tailsCount++;
     totalFlips++;
-
     document.getElementById('heads-count').textContent = headsCount;
     document.getElementById('tails-count').textContent = tailsCount;
     document.getElementById('total-flips').textContent = totalFlips;
     document.getElementById('flip-count-hdr').textContent = `×${totalFlips}`;
 
-    // Determine winner
     showResult(result);
-
     isFlipping = false;
     document.getElementById('flip-btn').disabled = false;
-  }, 2100);
+  }, 2300);
 }
 
 function showResult(result) {
   const isHeads = result === 'heads';
-  playCoinLand();
   playWinSound();
   const resultCard = document.getElementById('result-card');
   resultCard.classList.remove('hidden', 'heads-win', 'tails-win');
@@ -401,9 +484,11 @@ function renderHistory() {
 }
 
 function resetCoin() {
-  const coin = document.getElementById('coin');
+  const coin  = document.getElementById('coin');
   coin.style.transition = 'transform 0.5s ease';
-  coin.style.transform = 'rotateY(0deg)';
+  coin.style.transform  = 'rotateY(0deg)';
+  document.getElementById('coin-heads').style.animation = '';
+  document.getElementById('coin-tails').style.animation = '';
   lastResult = null;
   choices = {p1: null, p2: null};
   // Reset choice buttons

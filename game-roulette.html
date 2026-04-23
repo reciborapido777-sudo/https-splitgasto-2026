@@ -16,58 +16,72 @@
   /* 3D Canvas Wrapper */
   #roulette-wrapper {
     position:relative;
-    width:320px; height:320px;
+    width:320px; height:360px;   /* extra height for pointer above */
     margin:0 auto;
-    perspective:800px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  /* Static pointer — sits above the wheel, NOT inside 3D container */
+  #pointer-wrap {
+    position:relative;
+    z-index:20;
+    margin-bottom:-6px;
   }
   #wheel-3d {
-    width:100%; height:100%;
+    width:300px; height:300px;
     position:relative;
+    perspective:700px;
     transform-style:preserve-3d;
-    transform: rotateX(20deg);
+    transform: rotateX(18deg);
     transition: transform 0.3s ease;
+    flex-shrink:0;
   }
   canvas#wheel {
-    border-radius:50%;
-    box-shadow:0 0 60px rgba(19,236,214,0.4), 0 20px 40px rgba(0,0,0,0.8);
     display:block;
+    border-radius:50%;
+    box-shadow:0 0 0 6px rgba(19,236,214,0.15),
+               0 0 60px rgba(19,236,214,0.4),
+               0 20px 50px rgba(0,0,0,0.9),
+               inset 0 0 20px rgba(0,0,0,0.5);
     transition:box-shadow 0.3s;
   }
   canvas#wheel.spinning {
-    box-shadow:0 0 120px rgba(19,236,214,0.8), 0 30px 60px rgba(0,0,0,0.9);
+    box-shadow:0 0 0 6px rgba(19,236,214,0.35),
+               0 0 100px rgba(19,236,214,0.8),
+               0 30px 70px rgba(0,0,0,0.95),
+               inset 0 0 30px rgba(0,0,0,0.6);
   }
   #wheel-shadow {
     position:absolute;
-    bottom:-20px; left:50%;
+    bottom:-22px; left:50%;
     transform:translateX(-50%);
-    width:80%; height:30px;
-    background:radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%);
-    filter:blur(10px);
+    width:85%; height:35px;
+    background:radial-gradient(ellipse, rgba(0,0,0,0.75) 0%, transparent 70%);
+    filter:blur(12px);
+    z-index:-1;
   }
+  /* Pointer: static, above wheel */
   #pointer {
-    position:absolute;
-    top:-20px; left:50%;
-    transform:translateX(-50%);
+    position:relative;
     z-index:10;
-    filter:drop-shadow(0 4px 12px rgba(19,236,214,1));
-    animation: pointerPulse 2s ease-in-out infinite;
-    /* Pointer lives inside #wheel-3d so it tilts with the canvas */
+    filter:drop-shadow(0 3px 10px rgba(19,236,214,0.9));
+    animation: pointerPulse 1.8s ease-in-out infinite;
   }
   @keyframes pointerPulse {
-    0%, 100% { filter: drop-shadow(0 4px 12px rgba(19,236,214,0.8)); }
-    50% { filter: drop-shadow(0 4px 20px rgba(19,236,214,1)) drop-shadow(0 0 8px rgba(19,236,214,0.6)); }
+    0%, 100% { filter: drop-shadow(0 3px 8px rgba(19,236,214,0.7)); transform:translateY(0); }
+    50% { filter: drop-shadow(0 5px 18px rgba(19,236,214,1)); transform:translateY(-2px); }
   }
   #center-hub {
     position:absolute;
     top:50%; left:50%;
     transform:translate(-50%,-50%);
-    width:56px; height:56px;
-    background:radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%);
+    width:52px; height:52px;
+    background:radial-gradient(circle at 35% 35%, #2a2a2a 0%, #0e0e0e 100%);
     border:3px solid var(--cyan);
     border-radius:50%;
     display:flex; align-items:center; justify-content:center;
     z-index:5;
-    box-shadow:0 0 20px rgba(19,236,214,0.6);
+    box-shadow:0 0 25px rgba(19,236,214,0.7),
+               inset 0 1px 3px rgba(255,255,255,0.15);
   }
 
   /* Glass panels */
@@ -148,6 +162,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
@@ -186,21 +201,29 @@
   <!-- 3D Roulette Wheel -->
   <div class="flex flex-col items-center py-4">
     <div id="roulette-wrapper">
-      <!-- 3D tilt container — pointer lives inside so it tilts with the wheel -->
-      <div id="wheel-3d">
-        <!-- Pointer arrow (inside 3D container for correct visual alignment) -->
+      <!-- Static pointer above wheel — NOT inside 3D transform -->
+      <div id="pointer-wrap">
         <div id="pointer">
-          <svg width="32" height="36" viewBox="0 0 32 36">
-            <!-- Arrow pointing DOWN into the wheel: apex at bottom, base at top -->
-            <polygon points="16,36 28,8 16,16 4,8" fill="#13ecd6" filter="drop-shadow(0 0 10px #13ecd6)"/>
-            <!-- Glow circle at tip -->
-            <circle cx="16" cy="34" r="3" fill="#fff" opacity="0.9"/>
+          <svg width="28" height="32" viewBox="0 0 28 32">
+            <!-- Triangle pointing DOWN — tip at bottom y=32 -->
+            <polygon points="14,32 26,6 14,13 2,6" fill="#13ecd6"/>
+            <polygon points="14,32 26,6 14,13 2,6" fill="url(#ptrGrad)"/>
+            <circle cx="14" cy="30" r="3.5" fill="#fff" opacity="0.95"/>
+            <defs>
+              <linearGradient id="ptrGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4ffff0"/>
+                <stop offset="100%" stop-color="#09c4b0"/>
+              </linearGradient>
+            </defs>
           </svg>
         </div>
+      </div>
+      <!-- 3D tilt container -->
+      <div id="wheel-3d">
         <canvas id="wheel" width="300" height="300"></canvas>
         <div id="wheel-shadow"></div>
         <div id="center-hub">
-          <span class="material-icons-round" style="color:var(--cyan);font-size:24px">payments</span>
+          <span class="material-icons-round" style="color:var(--cyan);font-size:22px">payments</span>
         </div>
       </div>
     </div>
@@ -305,6 +328,7 @@ let history = [];
 // ─── AUDIO ENGINE (delegated to engine/audio.js) ──────────────────────────────
 function playTick(frequency, duration) { if(window.SGAudio) SGAudio.tick((frequency||800) / 1200); }
 function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
+// NOTE: maybePlayTick is defined below in SPIN LOGIC section
 // ─── CANVAS SETUP ────────────────────────────────────────────────────────────
 const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
@@ -318,80 +342,154 @@ function drawWheel(angle = 0) {
   const active = getActivePlayers();
   if (active.length === 0) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
-  const cx = SIZE/2, cy = SIZE/2, r = SIZE/2 - 4;
+  const cx = SIZE/2, cy = SIZE/2;
+  const rOuter = SIZE/2 - 3;   // main wheel radius
+  const rInner = 28;            // hub radius
+  const rLabel = rOuter * 0.68; // label radius
+  const rDot   = rOuter - 12;   // pin dot radius
+  const rRim   = rOuter + 1;    // metallic rim outer edge
+  const rBand  = rOuter - 18;   // inner band radius (alternating dark/light)
   const slice = (Math.PI * 2) / active.length;
 
+  /* ── 1. Segments ── */
   active.forEach((p, i) => {
     const start = angle + i * slice;
-    const end = start + slice;
+    const end   = start + slice;
+    const mid   = start + slice / 2;
 
-    // Segment
+    // Base fill: alternating darker/lighter for realism
+    const darken = i % 2 === 0;
+    const rad = ctx.createRadialGradient(cx, cy, rInner, cx, cy, rOuter);
+    rad.addColorStop(0,   darken ? p.color + '18' : p.color + '28');
+    rad.addColorStop(0.6, darken ? p.color + '30' : p.color + '48');
+    rad.addColorStop(1,   darken ? p.color + '50' : p.color + '70');
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
+    ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-
-    // Gradient fill
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    grad.addColorStop(0, p.color + '33');
-    grad.addColorStop(0.5, p.color + '22');
-    grad.addColorStop(1, p.color + '44');
-    ctx.fillStyle = grad;
+    ctx.fillStyle = rad;
     ctx.fill();
 
-    // Border
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Highlight arc (rim)
+    // Separator line
     ctx.beginPath();
-    ctx.arc(cx, cy, r, start, end);
-    ctx.strokeStyle = p.color + '88';
-    ctx.lineWidth = 3;
+    ctx.moveTo(cx + Math.cos(start) * rInner, cy + Math.sin(start) * rInner);
+    ctx.lineTo(cx + Math.cos(start) * rOuter, cy + Math.sin(start) * rOuter);
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Text
+    // Highlight arc near outer rim
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter - 2, start + 0.02, end - 0.02);
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Inner band arc (alternating)
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(start) * rBand, cy + Math.sin(start) * rBand);
+    ctx.arc(cx, cy, rBand, start, end);
+    ctx.closePath();
+    ctx.fillStyle = darken ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.04)';
+    ctx.fill();
+
+    /* Label */
+    const name = p.name.length > 7 ? p.name.slice(0, 6) + '…' : p.name;
+    const lx = cx + Math.cos(mid) * rLabel;
+    const ly = cy + Math.sin(mid) * rLabel;
     ctx.save();
-    const midAngle = start + slice / 2;
-    const tx = cx + Math.cos(midAngle) * (r * 0.68);
-    const ty = cy + Math.sin(midAngle) * (r * 0.68);
-    ctx.translate(tx, ty);
-    ctx.rotate(midAngle + Math.PI/2);
-    ctx.fillStyle = p.color;
-    ctx.font = 'bold 12px Manrope, sans-serif';
+    ctx.translate(lx, ly);
+    ctx.rotate(mid + Math.PI / 2);
+    // Text shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Manrope, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur = 8;
-    ctx.fillText(p.name.length > 8 ? p.name.substring(0,7)+'…' : p.name, 0, 0);
+    ctx.fillText(name, 0, 0);
+    ctx.shadowBlur = 0;
     ctx.restore();
 
-    // Dots near rim
+    /* Pin dot at rim */
+    const dx = cx + Math.cos(mid) * rDot;
+    const dy = cy + Math.sin(mid) * rDot;
     ctx.beginPath();
-    const dotR = r - 10;
-    const dotAngle = start + slice/2;
-    ctx.arc(cx + Math.cos(dotAngle)*dotR, cy + Math.sin(dotAngle)*dotR, 4, 0, Math.PI*2);
+    ctx.arc(dx, dy, 5, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
     ctx.shadowColor = p.color;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 10;
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    // Pin highlight
+    ctx.beginPath();
+    ctx.arc(dx - 1.5, dy - 1.5, 2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fill();
   });
 
-  // Outer ring
+  /* ── 2. Outer metallic rim ── */
+  const rimGrad = ctx.createLinearGradient(0, 0, SIZE, SIZE);
+  rimGrad.addColorStop(0,   'rgba(255,255,255,0.30)');
+  rimGrad.addColorStop(0.25,'rgba(255,255,255,0.08)');
+  rimGrad.addColorStop(0.5, 'rgba(255,255,255,0.22)');
+  rimGrad.addColorStop(0.75,'rgba(255,255,255,0.06)');
+  rimGrad.addColorStop(1,   'rgba(255,255,255,0.28)');
+
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.3)';
-  ctx.lineWidth = 4;
+  ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+  ctx.strokeStyle = rimGrad;
+  ctx.lineWidth = 6;
   ctx.stroke();
 
-  // Inner ring
+  // Outer glow ring
   ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(19,236,214,0.5)';
+  ctx.arc(cx, cy, rOuter + 2, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(19,236,214,0.25)';
   ctx.lineWidth = 2;
   ctx.stroke();
+
+  /* ── 3. Hub ── */
+  const hubGrad = ctx.createRadialGradient(cx-8, cy-8, 2, cx, cy, rInner);
+  hubGrad.addColorStop(0, '#3a3a3a');
+  hubGrad.addColorStop(0.5, '#1a1a1a');
+  hubGrad.addColorStop(1, '#0a0a0a');
+  ctx.beginPath();
+  ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+  ctx.fillStyle = hubGrad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(19,236,214,0.6)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+}
+
+// ─── TICK SOUND ───────────────────────────────────────────────────────────────
+let lastTickAngle = 0;
+let lastTickTime  = 0;
+
+function maybePlayTick(angle, numSegments) {
+  if (!window.SGAudio) return;
+  const slice = (Math.PI * 2) / numSegments;
+  // Fire a tick every time we cross a segment boundary
+  const crossed = Math.floor(angle / slice);
+  const lastCrossed = Math.floor(lastTickAngle / slice);
+  if (crossed !== lastCrossed) {
+    // Speed = angle delta per ms (estimated)
+    const now = performance.now();
+    const dt = now - lastTickTime;
+    const angularSpeed = dt > 0 ? Math.abs(angle - lastTickAngle) / dt : 0.02;
+    // Pitch: faster spin → higher frequency (map 0.005–0.03 rad/ms to 0.1–1.0)
+    const speed = Math.min(Math.max((angularSpeed - 0.005) / 0.025, 0), 1);
+    SGAudio.tick(speed);
+    lastTickTime = now;
+  }
+  lastTickAngle = angle;
 }
 
 // ─── SPIN LOGIC ──────────────────────────────────────────────────────────────
@@ -401,8 +499,7 @@ function spinWheel() {
   if (isSpinning) return;
 
   // Resume AudioContext on user interaction (browser autoplay policy)
-  if (window.SGAudio) SGAudio.resume();
-  playTick(600, 0.08); // click feedback
+  if (window.SGAudio) { SGAudio.resume(); SGAudio.click(); }
 
   isSpinning = true;
   document.getElementById('spin-btn').disabled = true;
@@ -413,22 +510,30 @@ function spinWheel() {
   const winnerIdx = Math.floor(Math.random() * active.length);
   const slice = (Math.PI * 2) / active.length;
 
-  // Target angle: winner segment center at top (pointer = -π/2)
-  const targetSliceCenter = winnerIdx * slice + slice/2;
-  const spins = 5 + Math.random() * 3; // 5-8 full rotations
-  const totalAngle = spins * Math.PI * 2 + (- Math.PI/2 - targetSliceCenter - currentAngle);
+  // Target: winner segment center at the pointer (top = -π/2).
+  // currentAngle is the rotation offset applied when drawing.
+  // Segment i center is at: currentAngle + i*slice + slice/2
+  // We want that to equal -π/2 (mod 2π) → i.e. angle after spin:
+  //   finalAngle = -π/2 - (winnerIdx*slice + slice/2)  + k*2π
+  const targetSliceCenter = winnerIdx * slice + slice / 2;
+  const spins = 6 + Math.floor(Math.random() * 4); // 6–9 full rotations
+  const rawTarget = -Math.PI / 2 - targetSliceCenter;
+  // Ensure the fractional delta is always positive (JS % can be negative)
+  const delta = ((rawTarget - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  const totalAngle = spins * Math.PI * 2 + delta;
   const finalAngle = currentAngle + totalAngle;
 
-  const duration = 4000 + Math.random() * 1500;
-  const start = performance.now();
+  const duration = 4500 + Math.random() * 1500;
+  const t0 = performance.now();
   const startAngle = currentAngle;
+
+  lastTickAngle = currentAngle;
+  lastTickTime  = t0;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
-  lastTickAngle = currentAngle;
-
   function animate(now) {
-    const elapsed = now - start;
+    const elapsed = now - t0;
     const t = Math.min(elapsed / duration, 1);
     currentAngle = startAngle + totalAngle * easeOut(t);
     drawWheel(currentAngle);
@@ -437,7 +542,8 @@ function spinWheel() {
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      currentAngle = finalAngle % (Math.PI * 2);
+      // Normalise to [0, 2π)
+      currentAngle = ((finalAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       isSpinning = false;
       canvas.classList.remove('spinning');
       document.getElementById('spin-btn').disabled = false;

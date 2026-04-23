@@ -74,26 +74,40 @@
         });
     }
 
-    /** Roulette tick — frequency depends on spin speed */
+    /** Roulette tick — speed 0 (slow) → 1 (fast)
+     *  At fast spin: short high-pitched click. At slow: deeper thud.
+     */
     function tick(speed) {
         resume();
-        var freq = 300 + Math.min(speed * 4000, 900);
-        tone(freq, 0.04, 'triangle', 0.12);
+        var s = Math.min(Math.max(speed || 0, 0), 1);
+        var freq = 280 + s * 720;   // 280 Hz slow → 1000 Hz fast
+        var dur  = 0.04 - s * 0.02; // shorter at high speed
+        var vol  = 0.10 + s * 0.06;
+        tone(freq, dur, 'triangle', vol);
+        // Add a quiet noise click at high speed
+        if (s > 0.4) noiseBurst(0.02, vol * 0.5, 40);
     }
 
-    /** Coin metallic ring */
+    /** Coin metallic ring — rising shimmer */
     function coinSpin() {
         resume();
-        [1200, 1800, 2400].forEach(function (f, i) {
-            tone(f, 0.6, 'sine', 0.10, i * 0.05);
+        // 3-partial metallic shimmer
+        [900, 1400, 2100].forEach(function (f, i) {
+            tone(f, 0.8, 'sine', 0.09, i * 0.04);
         });
+        // Sub thud at launch
+        tone(120, 0.1, 'sine', 0.3, 0);
     }
 
-    /** Coin landing thud */
+    /** Coin landing thud + bounce ring */
     function coinLand() {
         resume();
-        noiseBurst(0.15, 0.5, 25);
-        tone(280, 0.15, 'sine', 0.4, 0);
+        // Impact thud
+        noiseBurst(0.12, 0.55, 30);
+        tone(240, 0.12, 'sine', 0.45, 0);
+        // Metallic ring decay
+        tone(1600, 0.35, 'sine', 0.12, 0.05);
+        tone(1100, 0.25, 'sine', 0.08, 0.08);
     }
 
     /** Card flip */
