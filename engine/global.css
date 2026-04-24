@@ -334,3 +334,17 @@ h1, h2, h3, .font-accent {
 .nav-item.active p { color: #13ecd6; }
 .nav-item:hover span.material-icons-round,
 .nav-item:hover p { color: #fff; }
+/* ═══════════════════════════════════════════════════════════════
+   12. MOBILE TOUCH SCROLL FIX
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+    /* La barra nav no debe interceptar toques fuera de los botones */
+    nav.fixed {
+        pointer-events: none;
+    }
+    nav.fixed button,
+    nav.fixed .nav-item,
+    nav.fixed a {
+        pointer-events: auto;
+    }
+}
