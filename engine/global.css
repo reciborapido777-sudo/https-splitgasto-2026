@@ -27,6 +27,7 @@ html {
     background-color: #000 !important;
     scroll-behavior: smooth;
     overflow-x: hidden !important;
+    overflow-y: scroll;          
     /* Edge/iOS: ensure html is the scroll root */
     height: 100%;
 }
@@ -182,6 +183,7 @@ h1, h2, h3, .font-accent {
     /* CRITICAL: do NOT set overflow-y here — body is the scroll container */
     /* overflow-y:auto on both body AND app-shell causes double scrollbar on desktop */
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;  
 }
 
 .app-frame {
