@@ -96,6 +96,8 @@ async function handleAPI(request, env, ctx, path) {
         });
     }
 
+    if (path.startsWith('/api/auth/')) return handleAuth(request, env, path);
+    if (path === '/api/db/balances') return handleBalances(request, env);
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
     if (path.startsWith('/api/storage/')) return handleStorage(request, env, path);
     if (path.startsWith('/api/db/')) return handleDatabase(request, env, path);
@@ -458,6 +460,173 @@ async function handleStorageList(request, env) {
     } catch (err) {
         return jsonResponse({ error: 'Error listando', detail: err.message }, 500);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Auth — JWT con Web Crypto API
+// ═══════════════════════════════════════════════════════════════════════
+const AUTH_SECRET = 'splitgasto-2026-secret-key-change-in-production';
+
+async function signJWT(payload) {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const now = Math.floor(Date.now() / 1000);
+    const data = { ...payload, iat: now, exp: now + 86400 * 7 };
+    const enc = new TextEncoder();
+    const headerB64 = btoa(JSON.stringify(header));
+    const payloadB64 = btoa(JSON.stringify(data));
+    const message = `${headerB64}.${payloadB64}`;
+    const key = await crypto.subtle.importKey('raw', enc.encode(AUTH_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    return `${message}.${sigB64}`;
+}
+
+async function verifyJWT(token) {
+    try {
+        const parts = token.split('.');
+        if(parts.length !== 3) return null;
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey('raw', enc.encode(AUTH_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+        const sig = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
+        const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
+        if(!valid) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        if(payload.exp < Date.now() / 1000) return null;
+        return payload;
+    } catch { return null; }
+}
+
+async function getAuthUser(request) {
+    const authHeader = request.headers.get('Authorization');
+    if(!authHeader || !authHeader.startsWith('Bearer ')) return null;
+    return await verifyJWT(authHeader.substring(7));
+}
+
+async function handleAuth(request, env, path) {
+    if(!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+
+    if(path === '/api/auth/register' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { name, email, password } = body;
+        if(!name || !email || !password) return jsonResponse({ error: 'Campos "name", "email", "password" requeridos' }, 400);
+        if(password.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
+
+        const existing = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        if(existing) return jsonResponse({ error: 'Este email ya está registrado' }, 409);
+
+        const id = crypto.randomUUID();
+        await env.SPLITGASTO_DB.prepare(
+            'INSERT INTO users (id, name, email, avatar_url) VALUES (?, ?, ?, ?)'
+        ).bind(id, name, email, '').run();
+
+        const token = await signJWT({ userId: id, email });
+        return jsonResponse({ success: true, token, user: { id, name, email } }, 201);
+    }
+
+    if(path === '/api/auth/login' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { email, password } = body;
+        if(!email || !password) return jsonResponse({ error: 'Campos "email" y "password" requeridos' }, 400);
+
+        const user = await env.SPLITGASTO_DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
+        if(!user) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
+
+        const token = await signJWT({ userId: user.id, email: user.email });
+        return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
+    }
+
+    if(path === '/api/auth/me' && request.method === 'GET') {
+        const payload = await getAuthUser(request);
+        if(!payload) return jsonResponse({ error: 'No autorizado' }, 401);
+        const user = await env.SPLITGASTO_DB.prepare('SELECT id, name, email, avatar_url FROM users WHERE id = ?').bind(payload.userId).first();
+        if(!user) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+        return jsonResponse({ success: true, user });
+    }
+
+    return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Balances — Cálculo de deudas
+// ═══════════════════════════════════════════════════════════════════════
+async function handleBalances(request, env) {
+    if(!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+
+    const url = new URL(request.url);
+    const groupId = url.searchParams.get('groupId');
+    if(!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
+
+    const cacheKey = `db:balances:${groupId}`;
+    const cached = await getCached(env, cacheKey);
+    if(cached) return jsonResponse({ ...cached, cached: true });
+
+    const expenses = await env.SPLITGASTO_DB.prepare(
+        'SELECT * FROM expenses WHERE group_id = ?'
+    ).bind(groupId).all();
+
+    const settlements = await env.SPLITGASTO_DB.prepare(
+        'SELECT * FROM settlements WHERE group_id = ?'
+    ).bind(groupId).all();
+
+    const members = await env.SPLITGASTO_DB.prepare(
+        'SELECT user_id, role FROM group_members WHERE group_id = ?'
+    ).bind(groupId).all();
+
+    // Calcular saldos netos
+    const balances = {};
+    members.results.forEach(m => { balances[m.user_id] = 0; });
+
+    expenses.results.forEach(e => {
+        const amount = e.amount;
+        const paidBy = e.paid_by;
+        const memberCount = members.results.length;
+        const share = amount / memberCount;
+
+        if(balances[paidBy] !== undefined) balances[paidBy] += amount;
+        members.results.forEach(m => {
+            if(balances[m.user_id] !== undefined) balances[m.user_id] -= share;
+        });
+    });
+
+    settlements.results.forEach(s => {
+        if(balances[s.from_user] !== undefined) balances[s.from_user] += s.amount;
+        if(balances[s.to_user] !== undefined) balances[s.to_user] -= s.amount;
+    });
+
+    // Simplificar deudas (algoritmo greedy)
+    const debtors = [];
+    const creditors = [];
+    Object.entries(balances).forEach(([userId, balance]) => {
+        const rounded = Math.round(balance * 100) / 100;
+        if(rounded < -0.01) debtors.push({ userId, amount: Math.abs(rounded) });
+        else if(rounded > 0.01) creditors.push({ userId, amount: rounded });
+    });
+
+    debtors.sort((a, b) => b.amount - a.amount);
+    creditors.sort((a, b) => b.amount - a.amount);
+
+    const debts = [];
+    let di = 0, ci = 0;
+    while(di < debtors.length && ci < creditors.length) {
+        const amount = Math.min(debtors[di].amount, creditors[ci].amount);
+        if(amount > 0.01) {
+            debts.push({
+                from: debtors[di].userId,
+                to: creditors[ci].userId,
+                amount: Math.round(amount * 100) / 100
+            });
+        }
+        debtors[di].amount -= amount;
+        creditors[ci].amount -= amount;
+        if(debtors[di].amount < 0.01) di++;
+        if(creditors[ci].amount < 0.01) ci++;
+    }
+
+    const response = { success: true, balances, debts, totalExpenses: expenses.results.length };
+    await setCache(env, cacheKey, response, 30);
+    return jsonResponse(response);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
