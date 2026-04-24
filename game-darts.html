@@ -37,18 +37,8 @@
     </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Manrope', sans-serif;
-            background: #050505;
-            color: white;
-            min-height: 100dvh;
-            overflow-y: auto !important;        /* body is scroll container */
-            -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
-            overflow-x: hidden;
-        }
+        body { font-family: 'Manrope', sans-serif; background: #050505; color: white; min-height: 100vh; }
         
-        /* touch-action:none is intentional here — the dartboard needs full
-           pointer control. Everywhere else on the page vertical swipes scroll. */
         #dartCanvas { cursor: crosshair; touch-action: none; }
         
         .dart-board {
