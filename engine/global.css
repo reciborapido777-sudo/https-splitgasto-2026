@@ -27,7 +27,6 @@ html {
     background-color: #000 !important;
     scroll-behavior: smooth;
     overflow-x: hidden !important;
-    overflow-y: auto !important;
     touch-action: pan-y;
 }
 
@@ -338,13 +337,22 @@ h1, h2, h3, .font-accent {
    12. MOBILE TOUCH SCROLL FIX
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-    /* La barra nav no debe interceptar toques fuera de los botones */
-    nav.fixed {
+    /* backdrop-filter en fixed elements bloquea scroll de 1 dedo en iOS/Edge */
+    nav.fixed,
+    .app-frame nav.fixed,
+    .bottom-nav-fixed {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(0, 0, 0, 0.98) !important;
         pointer-events: none;
     }
     nav.fixed button,
     nav.fixed .nav-item,
     nav.fixed a {
         pointer-events: auto;
+    }
+    /* Eliminar transform en glass panels que crea capas de composición */
+    .glass-panel {
+        transform: none !important;
     }
 }
