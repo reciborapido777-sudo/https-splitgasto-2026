@@ -32,12 +32,17 @@
     width:220px;
     cursor:pointer;
     user-select:none;
+    /* pan-y: lets browser recognise vertical swipes as scroll gestures
+       even though the canvas intercepts touch events */
+    touch-action: pan-y;
   }
   #coin-canvas {
     display:block;
     border-radius:50%;
     filter:drop-shadow(0 8px 24px rgba(0,0,0,0.8));
     transition:filter 0.3s;
+    /* Canvas must NOT steal vertical touch events from the scroll container */
+    touch-action: pan-y;
   }
   #coin-canvas.result-heads {
     filter:drop-shadow(0 0 28px rgba(19,236,214,0.85)) drop-shadow(0 8px 24px rgba(0,0,0,0.6));

@@ -17,7 +17,10 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
             box-sizing: border-box;
-            overscroll-behavior: none;
+            /* overscroll-behavior:none removed — it blocks one-finger scroll
+               on some Android WebViews. Use 'contain' (allows scroll,
+               prevents pull-to-refresh/navigation on bounce) instead. */
+            overscroll-behavior: contain;
         }
 
         .glass-panel {
