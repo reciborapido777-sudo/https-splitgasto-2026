@@ -2,7 +2,7 @@
 <html lang="es" class="dark" style="background-color:#0a0a0a">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1"/>
 <title>Ruleta de la Suerte | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -11,17 +11,22 @@
 <style>
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; }
+  body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; touch-action:pan-y; }
 
   /* ── Roulette container ── */
   #roulette-wrapper {
     position:relative;
-    width:320px;
+    /* Use 100% width capped at 320px so it never overflows on small iOS screens.
+       The old fixed 320px caused the glow shadow to be clipped by overflow-x:hidden
+       on devices narrower than 360px. */
+    width:min(320px, 100%);
     margin:0 auto;
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:0;
+    /* Padding ensures the canvas glow (50px spread) is not clipped */
+    padding:0 4px;
   }
 
   /* ── Pointer: STATIC triangle above the canvas, pointing DOWN ── */
@@ -45,13 +50,17 @@
   /* ── Canvas & glow ── */
   #wheel-canvas-wrap {
     position:relative;
-    width:300px; height:300px;
+    /* Responsive: shrink below 300px only on very small screens */
+    width:min(300px, calc(100% - 8px));
+    height:min(300px, calc(100vw - 40px));
     flex-shrink:0;
     /* Allow vertical scroll to propagate when swiping over the wheel area */
     touch-action: pan-y;
   }
   canvas#wheel {
     display:block;
+    width:100% !important;
+    height:100% !important;
     border-radius:50%;
     /* Vertical swipes on the canvas pass through to body scroll */
     touch-action: pan-y;
@@ -176,7 +185,8 @@
 </header>
 
 <!-- Main -->
-<main class="max-w-md mx-auto px-4 pt-6 space-y-6">
+<!-- px-3 instead of px-4 gives 6px more side room for the glow shadow on small iOS screens -->
+<main class="max-w-md mx-auto px-3 pt-6 space-y-6">
 
   <!-- Group selector -->
   <div class="glass p-4 flex items-center justify-between">

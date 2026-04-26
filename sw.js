@@ -1,15 +1,17 @@
 /**
- * SplitGasto 2026 - Service Worker v5.5
+ * SplitGasto 2026 - Service Worker v6.0
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
- * v5.5: audio sin defer, coin 3D canvas, ruleta sin inclinación 3D, puntero corregido
+ * v6.0: touch-action:pan-y scroll fix, auth.js + api.js en caché
  */
 
-const CACHE_NAME = 'splitgasto-v7-2026';
+const CACHE_NAME = 'splitgasto-v8-2026';
 const STATIC_ASSETS = [
     'engine/router.js',
     'engine/global.css',
     'engine/audio.js',
     'engine/desktop-fix.js',
+    'engine/auth.js',
+    'engine/api.js',
     'favicon.svg',
     'favicon-32.png',
     'favicon-16.png',
@@ -25,21 +27,19 @@ const STATIC_ASSETS = [
 
 // ── Install: pre-cache static assets ───────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Installing v5.5…');
+    console.log('[SW] Installing v6.0…');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {
                 console.warn('[SW] Some assets failed to pre-cache:', err);
             }))
-            // NOTE: skipWaiting here means the SW activates immediately.
-            // The page will also send SKIP_WAITING message as a backup.
             .then(() => self.skipWaiting())
     );
 });
 
 // ── Activate: delete ALL old caches, claim clients ──────────────────────────
 self.addEventListener('activate', event => {
-    console.log('[SW] Activating v5.5…');
+    console.log('[SW] Activating v6.0…');
     event.waitUntil(
         caches.keys()
             .then(keys => Promise.all(
@@ -87,14 +87,12 @@ self.addEventListener('fetch', event => {
             fetch(request, { cache: 'no-store' })
                 .then(response => {
                     if (response.ok) {
-                        // Cache a copy for offline fallback
                         const clone = response.clone();
                         caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
                     }
                     return response;
                 })
                 .catch(() => {
-                    // Offline fallback: serve cached version or dashboard
                     return caches.match(request)
                         .then(cached => cached || caches.match('dashboard.html'));
                 })

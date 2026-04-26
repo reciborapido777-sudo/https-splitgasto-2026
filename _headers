@@ -1,12 +1,12 @@
 # SplitGasto 2026 - Cloudflare Pages Headers
-# Engineering Revision v4.2 — Zero-cache HTML, correct asset TTLs
+# Engineering Revision v4.3 — Zero-cache HTML, correct asset TTLs, camera=(self) for scanner
 
 # ── Security headers for ALL paths ──────────────────────────────────────────
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(self)
   X-XSS-Protection: 1; mode=block
 
 # ── HTML pages — NEVER cache; always validate with server ───────────────────

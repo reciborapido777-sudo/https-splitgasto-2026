@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1">
     <title>SplitGasto — La app que arregla las cuentas entre amigos</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
@@ -35,13 +35,12 @@
 
         html { scroll-behavior: smooth; }
 
-        body {
+        body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
             color: #fff;
             overflow-x: hidden;
-            line-height: 1.5;
-        }
+            line-height: 1.5; touch-action: pan-y; }
 
         /* ─── NAVBAR ─── */
         nav {
