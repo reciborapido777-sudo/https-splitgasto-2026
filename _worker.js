@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 3.0 — 2026-04-21
+ * Versión: 4.0 — 2026-04-26
  *
  * Bindings:
  *  - env.ASSETS                  → Assets estáticos
@@ -9,6 +9,7 @@
  *  - env.SPLITGASTO_RATE_LIMITER → Rate Limiter (100 req/60s)
  *  - env.SPLITGASTO_DB           → D1 Database (splitgasto-db)
  *  - env.SPLITGASTO_CACHE        → KV Namespace (splitgasto-cache)
+ *  - env.JWT_SECRET              → Secret para JWT (obligatorio)
  *
  * Modelos IA:
  *  - Chat/Análisis:    @cf/meta/llama-3.1-8b-instruct
@@ -79,13 +80,12 @@ async function checkRateLimit(request, env) {
 // ═══════════════════════════════════════════════════════════════════════
 async function handleAPI(request, env, ctx, path) {
     const method = request.method;
-    if (method === 'OPTIONS') return corsResponse();
-
+    if (method === 'OPTIONS') return corsResponse(request);
     if (path === '/api/health') {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '3.0',
+            version: env.APP_VERSION ?? '4.0',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -133,11 +133,264 @@ function hashString(str) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// Email Validation
+// ═══════════════════════════════════════════════════════════════════════
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Password Hashing — PBKDF2 con Web Crypto API
+// ═══════════════════════════════════════════════════════════════════════
+async function hashPassword(password) {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.importKey(
+        'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+    );
+    const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256
+    );
+    const saltB64 = btoa(String.fromCharCode(...salt));
+    const hashB64 = btoa(String.fromCharCode(...new Uint8Array(bits)));
+    return `${saltB64}:${hashB64}`;
+}
+
+async function verifyPassword(password, storedHash) {
+    try {
+        const [saltB64, hashB64] = storedHash.split(':');
+        if (!saltB64 || !hashB64) return false;
+        const enc = new TextEncoder();
+        const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
+        const key = await crypto.subtle.importKey(
+            'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+        );
+        const bits = await crypto.subtle.deriveBits(
+            { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256
+        );
+        const computedB64 = btoa(String.fromCharCode(...new Uint8Array(bits)));
+        return computedB64 === hashB64;
+    } catch { return false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Auth — JWT con Web Crypto API + PBKDF2 passwords
+// ═══════════════════════════════════════════════════════════════════════
+function getJwtSecret(env) {
+    return env.JWT_SECRET || 'splitgasto-2026-fallback-secret-change-me';
+}
+
+async function signJWT(payload, env) {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const now = Math.floor(Date.now() / 1000);
+    const data = { ...payload, iat: now, exp: now + 86400 * 7 };
+    const enc = new TextEncoder();
+    const headerB64 = btoa(JSON.stringify(header));
+    const payloadB64 = btoa(JSON.stringify(data));
+    const message = `${headerB64}.${payloadB64}`;
+    const key = await crypto.subtle.importKey(
+        'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    return `${message}.${sigB64}`;
+}
+
+async function verifyJWT(token, env) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+            'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
+        );
+        const sig = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
+        const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
+        if (!valid) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        if (payload.exp < Date.now() / 1000) return null;
+        return payload;
+    } catch { return null; }
+}
+
+async function getAuthUser(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+    return await verifyJWT(authHeader.substring(7), env);
+}
+
+// ── Middleware de autenticación para rutas protegidas ────────────────
+async function requireAuth(request, env) {
+    const user = await getAuthUser(request, env);
+    if (!user) return { error: jsonResponse({ error: 'No autorizado — token inválido o expirado' }, 401), user: null };
+    return { error: null, user };
+}
+
+// ── Generar código de recuperación (6 dígitos) ─────────────────────
+function generateRecoveryCode() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function handleAuth(request, env, path) {
+    if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+
+    // ── Registro ────────────────────────────────────────────────────
+    if (path === '/api/auth/register' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { name, email, password } = body;
+        if (!name || !email || !password) return jsonResponse({ error: 'Campos "name", "email", "password" requeridos' }, 400);
+        if (!isValidEmail(email)) return jsonResponse({ error: 'Email inválido' }, 400);
+        if (password.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
+        if (password.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
+
+        const existing = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        if (existing) return jsonResponse({ error: 'Este email ya está registrado' }, 409);
+
+        const id = crypto.randomUUID();
+        const hashedPassword = await hashPassword(password);
+
+        await env.SPLITGASTO_DB.prepare(
+            'INSERT INTO users (id, name, email, password_hash, avatar_url) VALUES (?, ?, ?, ?, ?)'
+        ).bind(id, name, email, hashedPassword, '').run();
+
+        const token = await signJWT({ userId: id, email }, env);
+        return jsonResponse({ success: true, token, user: { id, name, email } }, 201);
+    }
+
+    // ── Login ───────────────────────────────────────────────────────
+    if (path === '/api/auth/login' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { email, password } = body;
+        if (!email || !password) return jsonResponse({ error: 'Campos "email" y "password" requeridos' }, 400);
+
+        const user = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, name, email, password_hash, avatar_url FROM users WHERE email = ?'
+        ).bind(email).first();
+        if (!user) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
+
+        // Verificar contraseña con PBKDF2
+        if (!user.password_hash) return jsonResponse({ error: 'Cuenta sin contraseña. Usa recuperación.' }, 401);
+        const validPassword = await verifyPassword(password, user.password_hash);
+        if (!validPassword) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
+
+        const token = await signJWT({ userId: user.id, email: user.email }, env);
+        return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
+    }
+
+    // ── Perfil actual ───────────────────────────────────────────────
+    if (path === '/api/auth/me' && request.method === 'GET') {
+        const { error, user: authUser } = await requireAuth(request, env);
+        if (error) return error;
+
+        const user = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, name, email, avatar_url FROM users WHERE id = ?'
+        ).bind(authUser.userId).first();
+        if (!user) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+        return jsonResponse({ success: true, user });
+    }
+
+    // ── Cambiar contraseña ──────────────────────────────────────────
+    if (path === '/api/auth/change-password' && request.method === 'POST') {
+        const { error, user: authUser } = await requireAuth(request, env);
+        if (error) return error;
+
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { currentPassword, newPassword } = body;
+        if (!currentPassword || !newPassword) return jsonResponse({ error: 'Campos "currentPassword" y "newPassword" requeridos' }, 400);
+        if (newPassword.length < 6) return jsonResponse({ error: 'Nueva contraseña mínimo 6 caracteres' }, 400);
+
+        const user = await env.SPLITGASTO_DB.prepare(
+            'SELECT password_hash FROM users WHERE id = ?'
+        ).bind(authUser.userId).first();
+        if (!user || !user.password_hash) return jsonResponse({ error: 'Cuenta sin contraseña' }, 400);
+
+        const validPassword = await verifyPassword(currentPassword, user.password_hash);
+        if (!validPassword) return jsonResponse({ error: 'Contraseña actual incorrecta' }, 401);
+
+        const hashedNewPassword = await hashPassword(newPassword);
+        await env.SPLITGASTO_DB.prepare(
+            'UPDATE users SET password_hash = ? WHERE id = ?'
+        ).bind(hashedNewPassword, authUser.userId).run();
+
+        return jsonResponse({ success: true, message: 'Contraseña actualizada' });
+    }
+
+        // ── Solicitar recuperación de contraseña ─────────────────────────
+    if (path === '/api/auth/forgot-password' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { email } = body;
+        if (!email) return jsonResponse({ error: 'Campo "email" requerido' }, 400);
+
+        const user = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        if (!user) return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
+
+        const code = generateRecoveryCode();
+        const codeHash = await hashPassword(code);
+
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.put(
+                `recovery:${user.id}`,
+                JSON.stringify({ codeHash, email, createdAt: Date.now() }),
+                { expirationTtl: 900 }
+            );
+        }
+
+        return jsonResponse({
+            success: true,
+            message: 'Si el email existe, recibirás un código',
+        });
+    }
+
+   // ── Verificar código y restablecer contraseña ───────────────────
+    if (path === '/api/auth/reset-password' && request.method === 'POST') {
+        let body = {};
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+        const { userId, code, newPassword } = body;
+        if (!userId || !code || !newPassword) return jsonResponse({ error: 'Campos "userId", "code", "newPassword" requeridos' }, 400);
+        if (newPassword.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
+
+        if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
+
+        const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
+        if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400);
+
+        // Verificar que no hayan pasado más de 15 minutos
+        if (Date.now() - stored.createdAt > 900000) {
+            await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
+            return jsonResponse({ error: 'Código expirado' }, 400);
+        }
+
+        const validCode = await verifyPassword(code, stored.codeHash);
+        if (!validCode) return jsonResponse({ error: 'Código incorrecto' }, 400);
+
+        const hashedPassword = await hashPassword(newPassword);
+        await env.SPLITGASTO_DB.prepare(
+            'UPDATE users SET password_hash = ? WHERE id = ?'
+        ).bind(hashedPassword, userId).run();
+
+        // Eliminar código usado
+        await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
+
+        return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' });
+    }
+
+    return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // Workers AI — con AI Gateway para optimizar costos
 // ═══════════════════════════════════════════════════════════════════════
 async function handleAI(request, env, path) {
     if (!env.AI) return jsonResponse({ error: 'Workers AI no disponible' }, 503);
     if (request.method !== 'POST') return jsonResponse({ error: 'Usa POST.' }, 405);
+
+    // Todas las rutas de AI requieren autenticación
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
 
     let body = {};
     try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
@@ -256,9 +509,31 @@ async function handleAI(request, env, path) {
                 ticketData = { raw: result.response };
             }
 
+            // Guardar imagen del recibo en R2 automáticamente
+            let receiptKey = null;
+            if (env.SPLITGASTO_BUCKET) {
+                try {
+                    receiptKey = `receipts/${authUser.userId}/${Date.now()}-receipt.jpg`;
+                    const binaryString = atob(image);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+                    await env.SPLITGASTO_BUCKET.put(receiptKey, bytes, {
+                        httpMetadata: { contentType: 'image/jpeg' },
+                        customMetadata: {
+                            userId: authUser.userId,
+                            uploadedAt: new Date().toISOString(),
+                            type: 'scanned-receipt',
+                        },
+                    });
+                } catch (uploadErr) {
+                    console.error('Error guardando recibo en R2:', uploadErr.message);
+                }
+            }
+
             return jsonResponse({
                 success: true,
                 data: ticketData,
+                receiptKey,
                 model: '@cf/meta/llama-3.2-11b-vision-instruct',
             });
         } catch (err) {
@@ -297,39 +572,44 @@ async function handleAI(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de AI no encontrada', path }, 404);
 }
+
 // ═══════════════════════════════════════════════════════════════════════
 // R2 Storage — Almacenamiento seguro
 // ═══════════════════════════════════════════════════════════════════════
 async function handleStorage(request, env, path) {
     if (!env.SPLITGASTO_BUCKET) return jsonResponse({ error: 'R2 no disponible' }, 503);
+
+    // Todas las rutas de storage requieren autenticación
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+
     const method = request.method;
 
-    if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env);
+    if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
     if (path.startsWith('/api/storage/download/') && method === 'GET') {
         const key = decodeURIComponent(path.replace('/api/storage/download/', ''));
-        return handleStorageDownload(request, env, key);
+        return handleStorageDownload(request, env, key, authUser);
     }
     if (path.startsWith('/api/storage/signed-url/') && method === 'GET') {
         const key = decodeURIComponent(path.replace('/api/storage/signed-url/', ''));
-        return handleSignedUrl(request, env, key);
+        return handleSignedUrl(request, env, key, authUser);
     }
     if (path.startsWith('/api/storage/delete/') && method === 'DELETE') {
         const key = decodeURIComponent(path.replace('/api/storage/delete/', ''));
-        return handleStorageDelete(request, env, key);
+        return handleStorageDelete(request, env, key, authUser);
     }
-    if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env);
+    if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env, authUser);
 
     return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404);
 }
 
-async function handleStorageUpload(request, env) {
+async function handleStorageUpload(request, env, authUser) {
     try {
         const contentType = request.headers.get('Content-Type') || '';
 
         if (contentType.includes('multipart/form-data')) {
             const formData = await request.formData();
             const file = formData.get('file');
-            const userId = formData.get('userId') || 'anonymous';
             const folder = formData.get('folder') || 'general';
 
             if (!file) return jsonResponse({ error: 'Campo "file" requerido' }, 400);
@@ -347,25 +627,24 @@ async function handleStorageUpload(request, env) {
 
             const timestamp = Date.now();
             const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const key = `usuarios/${userId}/${folder}/${timestamp}-${sanitizedName}`;
+            const key = `usuarios/${authUser.userId}/${folder}/${timestamp}-${sanitizedName}`;
 
             await env.SPLITGASTO_BUCKET.put(key, file.stream(), {
                 httpMetadata: { contentType: file.type },
-                customMetadata: { userId, originalName: file.name, uploadedAt: new Date().toISOString() },
+                customMetadata: { userId: authUser.userId, originalName: file.name, uploadedAt: new Date().toISOString() },
             });
 
             return jsonResponse({ success: true, key, size: file.size, type: file.type, message: 'Archivo subido' }, 201);
         }
 
         const body = await request.json();
-        const { data, filename, userId, folder, mimeType } = body;
+        const { data, filename, folder, mimeType } = body;
         if (!data || !filename) return jsonResponse({ error: 'Campos "data" y "filename" requeridos' }, 400);
 
-        const uid = userId || 'anonymous';
         const fld = folder || 'general';
         const timestamp = Date.now();
         const sanitizedName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const key = `usuarios/${uid}/${fld}/${timestamp}-${sanitizedName}`;
+        const key = `usuarios/${authUser.userId}/${fld}/${timestamp}-${sanitizedName}`;
 
         const binaryString = atob(data);
         const bytes = new Uint8Array(binaryString.length);
@@ -373,7 +652,7 @@ async function handleStorageUpload(request, env) {
 
         await env.SPLITGASTO_BUCKET.put(key, bytes, {
             httpMetadata: { contentType: mimeType || 'application/octet-stream' },
-            customMetadata: { userId: uid, originalName: filename, uploadedAt: new Date().toISOString() },
+            customMetadata: { userId: authUser.userId, originalName: filename, uploadedAt: new Date().toISOString() },
         });
 
         return jsonResponse({ success: true, key, message: 'Archivo subido' }, 201);
@@ -382,10 +661,12 @@ async function handleStorageUpload(request, env) {
     }
 }
 
-async function handleStorageDownload(request, env, key) {
+async function handleStorageDownload(request, env, key, authUser) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return jsonResponse({ error: 'Autorización requerida' }, 401);
+        // Verificar que el usuario solo acceda a sus propios archivos
+        if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
+            return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
+        }
 
         const object = await env.SPLITGASTO_BUCKET.get(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
@@ -403,10 +684,11 @@ async function handleStorageDownload(request, env, key) {
     }
 }
 
-async function handleSignedUrl(request, env, key) {
+async function handleSignedUrl(request, env, key, authUser) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return jsonResponse({ error: 'Autorización requerida' }, 401);
+        if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
+            return jsonResponse({ error: 'Acceso denegado' }, 403);
+        }
 
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
@@ -418,10 +700,11 @@ async function handleSignedUrl(request, env, key) {
     }
 }
 
-async function handleStorageDelete(request, env, key) {
+async function handleStorageDelete(request, env, key, authUser) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return jsonResponse({ error: 'Autorización requerida' }, 401);
+        if (!key.startsWith(`usuarios/${authUser.userId}/`)) {
+            return jsonResponse({ error: 'Acceso denegado' }, 403);
+        }
 
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
@@ -433,18 +716,14 @@ async function handleStorageDelete(request, env, key) {
     }
 }
 
-async function handleStorageList(request, env) {
+async function handleStorageList(request, env, authUser) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return jsonResponse({ error: 'Autorización requerida' }, 401);
-
         const url = new URL(request.url);
-        const userId = url.searchParams.get('userId') || 'anonymous';
         const folder = url.searchParams.get('folder') || '';
         const limit = parseInt(url.searchParams.get('limit') || '50', 10);
         const cursor = url.searchParams.get('cursor') || undefined;
 
-        const prefix = `usuarios/${userId}/${folder}`;
+        const prefix = `usuarios/${authUser.userId}/${folder}`;
         const listed = await env.SPLITGASTO_BUCKET.list({ prefix, limit: Math.min(limit, 100), cursor });
 
         const objects = listed.objects.map((obj) => ({
@@ -463,104 +742,28 @@ async function handleStorageList(request, env) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Auth — JWT con Web Crypto API
-// ═══════════════════════════════════════════════════════════════════════
-const AUTH_SECRET = 'splitgasto-2026-secret-key-change-in-production';
-
-async function signJWT(payload) {
-    const header = { alg: 'HS256', typ: 'JWT' };
-    const now = Math.floor(Date.now() / 1000);
-    const data = { ...payload, iat: now, exp: now + 86400 * 7 };
-    const enc = new TextEncoder();
-    const headerB64 = btoa(JSON.stringify(header));
-    const payloadB64 = btoa(JSON.stringify(data));
-    const message = `${headerB64}.${payloadB64}`;
-    const key = await crypto.subtle.importKey('raw', enc.encode(AUTH_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
-    return `${message}.${sigB64}`;
-}
-
-async function verifyJWT(token) {
-    try {
-        const parts = token.split('.');
-        if(parts.length !== 3) return null;
-        const enc = new TextEncoder();
-        const key = await crypto.subtle.importKey('raw', enc.encode(AUTH_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
-        const sig = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
-        const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
-        if(!valid) return null;
-        const payload = JSON.parse(atob(parts[1]));
-        if(payload.exp < Date.now() / 1000) return null;
-        return payload;
-    } catch { return null; }
-}
-
-async function getAuthUser(request) {
-    const authHeader = request.headers.get('Authorization');
-    if(!authHeader || !authHeader.startsWith('Bearer ')) return null;
-    return await verifyJWT(authHeader.substring(7));
-}
-
-async function handleAuth(request, env, path) {
-    if(!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
-
-    if(path === '/api/auth/register' && request.method === 'POST') {
-        let body = {};
-        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
-        const { name, email, password } = body;
-        if(!name || !email || !password) return jsonResponse({ error: 'Campos "name", "email", "password" requeridos' }, 400);
-        if(password.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
-
-        const existing = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-        if(existing) return jsonResponse({ error: 'Este email ya está registrado' }, 409);
-
-        const id = crypto.randomUUID();
-        await env.SPLITGASTO_DB.prepare(
-            'INSERT INTO users (id, name, email, avatar_url) VALUES (?, ?, ?, ?)'
-        ).bind(id, name, email, '').run();
-
-        const token = await signJWT({ userId: id, email });
-        return jsonResponse({ success: true, token, user: { id, name, email } }, 201);
-    }
-
-    if(path === '/api/auth/login' && request.method === 'POST') {
-        let body = {};
-        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
-        const { email, password } = body;
-        if(!email || !password) return jsonResponse({ error: 'Campos "email" y "password" requeridos' }, 400);
-
-        const user = await env.SPLITGASTO_DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
-        if(!user) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
-
-        const token = await signJWT({ userId: user.id, email: user.email });
-        return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
-    }
-
-    if(path === '/api/auth/me' && request.method === 'GET') {
-        const payload = await getAuthUser(request);
-        if(!payload) return jsonResponse({ error: 'No autorizado' }, 401);
-        const user = await env.SPLITGASTO_DB.prepare('SELECT id, name, email, avatar_url FROM users WHERE id = ?').bind(payload.userId).first();
-        if(!user) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
-        return jsonResponse({ success: true, user });
-    }
-
-    return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
-}
-
-// ═══════════════════════════════════════════════════════════════════════
 // Balances — Cálculo de deudas
 // ═══════════════════════════════════════════════════════════════════════
 async function handleBalances(request, env) {
-    if(!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+    if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+
+    // Requiere autenticación
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
 
     const url = new URL(request.url);
     const groupId = url.searchParams.get('groupId');
-    if(!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
+    if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
+
+    // Verificar que el usuario pertenece al grupo
+    const membership = await env.SPLITGASTO_DB.prepare(
+        'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+    ).bind(groupId, authUser.userId).first();
+    if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
 
     const cacheKey = `db:balances:${groupId}`;
     const cached = await getCached(env, cacheKey);
-    if(cached) return jsonResponse({ ...cached, cached: true });
+    if (cached) return jsonResponse({ ...cached, cached: true });
 
     const expenses = await env.SPLITGASTO_DB.prepare(
         'SELECT * FROM expenses WHERE group_id = ?'
@@ -584,15 +787,15 @@ async function handleBalances(request, env) {
         const memberCount = members.results.length;
         const share = amount / memberCount;
 
-        if(balances[paidBy] !== undefined) balances[paidBy] += amount;
+        if (balances[paidBy] !== undefined) balances[paidBy] += amount;
         members.results.forEach(m => {
-            if(balances[m.user_id] !== undefined) balances[m.user_id] -= share;
+            if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
         });
     });
 
     settlements.results.forEach(s => {
-        if(balances[s.from_user] !== undefined) balances[s.from_user] += s.amount;
-        if(balances[s.to_user] !== undefined) balances[s.to_user] -= s.amount;
+        if (balances[s.from_user] !== undefined) balances[s.from_user] += s.amount;
+        if (balances[s.to_user] !== undefined) balances[s.to_user] -= s.amount;
     });
 
     // Simplificar deudas (algoritmo greedy)
@@ -600,8 +803,8 @@ async function handleBalances(request, env) {
     const creditors = [];
     Object.entries(balances).forEach(([userId, balance]) => {
         const rounded = Math.round(balance * 100) / 100;
-        if(rounded < -0.01) debtors.push({ userId, amount: Math.abs(rounded) });
-        else if(rounded > 0.01) creditors.push({ userId, amount: rounded });
+        if (rounded < -0.01) debtors.push({ userId, amount: Math.abs(rounded) });
+        else if (rounded > 0.01) creditors.push({ userId, amount: rounded });
     });
 
     debtors.sort((a, b) => b.amount - a.amount);
@@ -609,9 +812,9 @@ async function handleBalances(request, env) {
 
     const debts = [];
     let di = 0, ci = 0;
-    while(di < debtors.length && ci < creditors.length) {
+    while (di < debtors.length && ci < creditors.length) {
         const amount = Math.min(debtors[di].amount, creditors[ci].amount);
-        if(amount > 0.01) {
+        if (amount > 0.01) {
             debts.push({
                 from: debtors[di].userId,
                 to: creditors[ci].userId,
@@ -620,8 +823,8 @@ async function handleBalances(request, env) {
         }
         debtors[di].amount -= amount;
         creditors[ci].amount -= amount;
-        if(debtors[di].amount < 0.01) di++;
-        if(creditors[ci].amount < 0.01) ci++;
+        if (debtors[di].amount < 0.01) di++;
+        if (creditors[ci].amount < 0.01) ci++;
     }
 
     const response = { success: true, balances, debts, totalExpenses: expenses.results.length };
@@ -630,17 +833,28 @@ async function handleBalances(request, env) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// D1 Database — Base de datos global
+// D1 Database — Base de datos con autenticación
 // ═══════════════════════════════════════════════════════════════════════
 async function handleDatabase(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+
     const method = request.method;
+
+    // Helper para leer body seguro en POST
+    let body = {};
+    if (method === 'POST') {
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+    }
 
     // ── Grupos ────────────────────────────────────────────────────────
     if (path === '/api/db/groups' && method === 'GET') {
         const url = new URL(request.url);
-        const userId = url.searchParams.get('userId');
-        if (!userId) return jsonResponse({ error: 'Parámetro "userId" requerido' }, 400);
+        const userId = url.searchParams.get('userId') || authUser.userId;
+
+        if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403);
 
         const cacheKey = `db:groups:${userId}`;
         const cached = await getCached(env, cacheKey);
@@ -656,10 +870,10 @@ async function handleDatabase(request, env, path) {
     }
 
     if (path === '/api/db/groups' && method === 'POST') {
-        const body = await request.json();
-        const { name, currency, userId } = body;
-        if (!name || !userId) return jsonResponse({ error: 'Campos "name" y "userId" requeridos' }, 400);
+        const { name, currency } = body;
+        if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
 
+        const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO groups (id, name, currency, created_by) VALUES (?, ?, ?, ?)'
@@ -669,7 +883,7 @@ async function handleDatabase(request, env, path) {
             'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
         ).bind(id, userId, 'admin').run();
 
-        await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
 
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
@@ -680,31 +894,54 @@ async function handleDatabase(request, env, path) {
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
 
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+
         const cacheKey = `db:expenses:${groupId}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
 
-        const expenses = await env.SPLITGASTO_DB.prepare(
-            'SELECT * FROM expenses WHERE group_id = ? ORDER BY created_at DESC'
-        ).bind(groupId).all();
+        const page = parseInt(url.searchParams.get('page') || '1', 10);
+        const perPage = Math.min(parseInt(url.searchParams.get('perPage') || '50', 10), 100);
+        const offset = (page - 1) * perPage;
 
-        const response = { success: true, expenses: expenses.results };
+        const expenses = await env.SPLITGASTO_DB.prepare(
+            'SELECT * FROM expenses WHERE group_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
+        ).bind(groupId, perPage, offset).all();
+
+        const total = await env.SPLITGASTO_DB.prepare(
+            'SELECT COUNT(*) as count FROM expenses WHERE group_id = ?'
+        ).bind(groupId).first();
+
+        const response = {
+            success: true,
+            expenses: expenses.results,
+            pagination: { page, perPage, total: total.count, totalPages: Math.ceil(total.count / perPage) },
+        };
         await setCache(env, cacheKey, response, 30);
         return jsonResponse(response);
     }
 
     if (path === '/api/db/expenses' && method === 'POST') {
-        const body = await request.json();
-        const { groupId, userId, amount, currency, category, description, splitType } = body;
-        if (!groupId || !userId || !amount) return jsonResponse({ error: 'Campos "groupId", "userId", "amount" requeridos' }, 400);
+        const { groupId, amount, currency, category, description, splitType } = body;
+        if (!groupId || !amount) return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400);
 
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+
+        const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO expenses (id, group_id, paid_by, amount, currency, category, description, split_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         ).bind(id, groupId, userId, amount, currency || 'USD', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
 
-        await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`);
-        await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:expenses:${groupId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
 
         return jsonResponse({ success: true, id, message: 'Gasto registrado' }, 201);
     }
@@ -715,6 +952,11 @@ async function handleDatabase(request, env, path) {
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
 
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+
         const settlements = await env.SPLITGASTO_DB.prepare(
             'SELECT * FROM settlements WHERE group_id = ? ORDER BY created_at DESC'
         ).bind(groupId).all();
@@ -723,14 +965,20 @@ async function handleDatabase(request, env, path) {
     }
 
     if (path === '/api/db/settlements' && method === 'POST') {
-        const body = await request.json();
         const { groupId, fromUserId, toUserId, amount, currency } = body;
         if (!groupId || !fromUserId || !toUserId || !amount) return jsonResponse({ error: 'Campos "groupId", "fromUserId", "toUserId", "amount" requeridos' }, 400);
+
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
 
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO settlements (id, group_id, from_user, to_user, amount, currency) VALUES (?, ?, ?, ?, ?, ?)'
         ).bind(id, groupId, fromUserId, toUserId, amount, currency || 'USD').run();
+
+        await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
 
         return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201);
     }
@@ -738,15 +986,16 @@ async function handleDatabase(request, env, path) {
     // ── Perfil de usuario ─────────────────────────────────────────────
     if (path === '/api/db/profile' && method === 'GET') {
         const url = new URL(request.url);
-        const userId = url.searchParams.get('userId');
-        if (!userId) return jsonResponse({ error: 'Parámetro "userId" requerido' }, 400);
+        const userId = url.searchParams.get('userId') || authUser.userId;
+
+        if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tu propio perfil' }, 403);
 
         const cacheKey = `db:profile:${userId}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
 
         const profile = await env.SPLITGASTO_DB.prepare(
-            'SELECT * FROM users WHERE id = ?'
+            'SELECT id, name, email, avatar_url FROM users WHERE id = ?'
         ).bind(userId).first();
 
         if (!profile) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
@@ -757,24 +1006,28 @@ async function handleDatabase(request, env, path) {
     }
 
     if (path === '/api/db/profile' && method === 'POST') {
-        const body = await request.json();
-        const { userId, name, email, avatar } = body;
-        if (!userId || !name) return jsonResponse({ error: 'Campos "userId" y "name" requeridos' }, 400);
+        const { name, email, avatar } = body;
+        if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
+
+        const userId = authUser.userId;
+
+        if (email && !isValidEmail(email)) return jsonResponse({ error: 'Email inválido' }, 400);
 
         await env.SPLITGASTO_DB.prepare(
-            'INSERT OR REPLACE INTO users (id, name, email, avatar_url) VALUES (?, ?, ?, ?)'
-        ).bind(userId, name, email || `${userId}@splitgasto.app`, avatar || '').run();
+            'UPDATE users SET name = ?, email = ?, avatar_url = ? WHERE id = ?'
+        ).bind(name, email || `${userId}@splitgasto.app`, avatar || '', userId).run();
 
-        await env.SPLITGASTO_CACHE.delete(`db:profile:${userId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:profile:${userId}`);
 
         return jsonResponse({ success: true, message: 'Perfil actualizado' });
     }
 
-        // ── Notificaciones ────────────────────────────────────────────────
+    // ── Notificaciones ────────────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'GET') {
         const url = new URL(request.url);
-        const userId = url.searchParams.get('userId');
-        if (!userId) return jsonResponse({ error: 'Parámetro "userId" requerido' }, 400);
+        const userId = url.searchParams.get('userId') || authUser.userId;
+
+        if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus notificaciones' }, 403);
 
         const notifications = await env.SPLITGASTO_DB.prepare(
             'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50'
@@ -784,10 +1037,10 @@ async function handleDatabase(request, env, path) {
     }
 
     if (path === '/api/db/notifications' && method === 'POST') {
-        const body = await request.json();
-        const { userId, title, message, type } = body;
-        if (!userId || !title) return jsonResponse({ error: 'Campos "userId" y "title" requeridos' }, 400);
+        const { title, message, type } = body;
+        if (!title) return jsonResponse({ error: 'Campo "title" requerido' }, 400);
 
+        const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)'
@@ -798,25 +1051,37 @@ async function handleDatabase(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404);
 }
+
 // ═══════════════════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════
-function jsonResponse(data, status = 200) {
+const ALLOWED_ORIGINS = [
+    'https://splitgasto.com',
+    'https://www.splitgasto.com',
+    'https://https-splitgasto-2026.reciborapido777.workers.dev',
+];
+
+function getOrigin(request) {
+    const origin = request.headers.get('Origin') || '';
+    return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+}
+
+function jsonResponse(data, status = 200, request = null) {
     return new Response(JSON.stringify(data, null, 2), {
         status,
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': request ? getOrigin(request) : ALLOWED_ORIGINS[0],
             'X-Content-Type-Options': 'nosniff',
         },
     });
 }
 
-function corsResponse() {
+function corsResponse(request) {
     return new Response(null, {
         status: 204,
         headers: {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': getOrigin(request),
             'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
@@ -830,12 +1095,10 @@ function setSecurityHeaders(headers) {
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     headers.set(
         'Permissions-Policy',
-        'camera=(), microphone=(), geolocation=()'
+        'camera=(self), microphone=(), geolocation=(self)'
     );
     const ct = headers.get('Content-Type') || '';
     if (ct.includes('text/html')) {
         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }
-
-
