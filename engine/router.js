@@ -61,14 +61,12 @@ const SGRouter = {
     navigate(routeId, origin = null) {
         // ── Diagnóstico: visible en DevTools de cualquier navegador ──────
         console.log('[SG Router] navigate ›', routeId, origin ? '(from: ' + origin + ')' : '');
-
-        // ── Guard: si la ruta no existe, ir a dashboard (no a error) ─────
+        // ── Guard: si la ruta no existe, ir a landing ────────────────────
         if (!this.routes[routeId]) {
-            console.warn('[SG Router] Ruta desconocida:', routeId, '→ redirigiendo a dashboard');
-            window.location.href = this.routes['dashboard'];
+            console.warn('[SG Router] Ruta desconocida:', routeId, '→ redirigiendo a landing');
+            window.location.href = this.routes['landing'];
             return;
         }
-
         const target = this.routes[routeId];
 
         // ── Anti-loop: compara el archivo actual con el destino ───────────
@@ -115,7 +113,13 @@ const SGRouter = {
 
         setTimeout(() => {
             if (from && this.routes[from]) {
-                window.location.href = this.routes[from];
+                const fromTarget = this.routes[from];
+                const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+                if (fromTarget !== currentFile) {
+                    window.location.href = fromTarget;
+                } else {
+                    window.history.back();
+                }
             } else if (window.history.length > 1) {
                 window.history.back();
             } else {
