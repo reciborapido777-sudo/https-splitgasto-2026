@@ -391,10 +391,11 @@ async function handleAI(request, env, path) {
     // Todas las rutas de AI requieren autenticación
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
-
     let body = {};
-    try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
-
+    if (path !== '/api/ai/scan-ticket-upload') {
+        try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
+    }
+    
     const gatewayOpts = { gateway: { id: 'splitgasto-ai', cacheTtl: 3600 } };
 
     // ── /api/ai/chat — Chat financiero (Llama 3.1) ───────────────────
@@ -567,6 +568,81 @@ async function handleAI(request, env, path) {
             return jsonResponse({ success: true, summary: result.response, model: '@cf/meta/llama-3.1-8b-instruct' });
         } catch (err) {
             return jsonResponse({ error: 'Error generando resumen', detail: err.message }, 500);
+        }
+    }
+
+    // ── /api/ai/scan-ticket-upload — Escanear recibo (multipart) ────
+    if (path === '/api/ai/scan-ticket-upload') {
+        try {
+            const formData = await request.formData();
+            const image = formData.get('image');
+
+            if (!image) return jsonResponse({ error: 'Campo "image" (archivo) requerido' }, 400);
+
+            const MAX_SIZE = 10 * 1024 * 1024;
+            if (image.size > MAX_SIZE) return jsonResponse({ error: 'Imagen excede 10MB' }, 413);
+
+            const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!allowedImageTypes.includes(image.type)) return jsonResponse({ error: `Tipo no permitido: ${image.type}` }, 415);
+
+            // 1. Subir imagen a R2
+            let receiptKey = null;
+            if (env.SPLITGASTO_BUCKET) {
+                receiptKey = `receipts/${authUser.userId}/${Date.now()}-${image.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+                await env.SPLITGASTO_BUCKET.put(receiptKey, image.stream(), {
+                    httpMetadata: { contentType: image.type },
+                    customMetadata: {
+                        userId: authUser.userId,
+                        uploadedAt: new Date().toISOString(),
+                        type: 'scanned-receipt',
+                    },
+                });
+            }
+
+            // 2. Convertir imagen a base64 para AI
+            const arrayBuffer = await image.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+
+            // 3. Enviar a Workers AI Vision
+            const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Eres un escáner de recibos. Extrae: ' +
+                            '{"merchant":"comercio","date":"fecha","total":0.00,' +
+                            '"currency":"moneda","items":[{"name":"producto","price":0.00}], ' +
+                            '"category":"categoría"}. Responde SOLO JSON válido.',
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'image_url', image_url: { url: `data:${image.type};base64,${base64}` } },
+                            { type: 'text', text: 'Extrae los datos de este ticket.' },
+                        ],
+                    },
+                ],
+                max_tokens: 512,
+                temperature: 0.1,
+                ...gatewayOpts,
+            });
+
+            // 4. Parsear respuesta
+            let ticketData = {};
+            try {
+                const jsonMatch = aiResult.response.match(/\{[\s\S]*\}/);
+                ticketData = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: aiResult.response };
+            } catch {
+                ticketData = { raw: aiResult.response };
+            }
+
+            return jsonResponse({
+                success: true,
+                data: ticketData,
+                receiptKey,
+                model: '@cf/meta/llama-3.2-11b-vision-instruct',
+            });
+        } catch (err) {
+            return jsonResponse({ error: 'Error escaneando ticket', detail: err.message }, 500);
         }
     }
 
