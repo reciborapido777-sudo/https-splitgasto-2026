@@ -2,7 +2,7 @@
 <html lang="es" style="background:#050505;overflow-x:hidden">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1">
     <title>Dardos Alpha | SplitGasto 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
@@ -44,6 +44,7 @@
             min-height: 100dvh;
             overflow-y: auto !important;        /* body is scroll container */
             -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
+            touch-action: pan-y;                /* Android 1-finger scroll fix */
             overflow-x: hidden;
         }
         
@@ -626,8 +627,9 @@ const PLAYERS = [
             }
         });
 
+        // touchend with passive:true — preventDefault not needed on touchend
+        // (scroll is determined by touchstart/touchmove, not touchend)
         canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             const t = e.changedTouches[0];
             const scaleX = canvas.width / rect.width;
@@ -637,7 +639,7 @@ const PLAYERS = [
                 y: (t.clientY - rect.top) * scaleY
             };
             if (!gameOver) throwDart(pos.x, pos.y);
-        }, { passive: false });
+        }, { passive: true });
 
         // ─── Init ─────────────────────────────────────────────────────
         drawBoard();
