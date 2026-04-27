@@ -2,7 +2,7 @@
 <html lang="es" style="background:#050505;overflow-x:hidden">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dardos Alpha | SplitGasto 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
@@ -42,9 +42,8 @@
             background: #050505;
             color: white;
             min-height: 100dvh;
-            overflow-y: auto !important;        /* body is scroll container */
-            -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
-            touch-action: pan-y;                /* Android 1-finger scroll fix */
+            overflow-y: auto !important;        /* body is scroll container */  /* iOS momentum scroll */
+            touch-action: manipulation;                /* Android 1-finger scroll fix */
             overflow-x: hidden;
         }
         

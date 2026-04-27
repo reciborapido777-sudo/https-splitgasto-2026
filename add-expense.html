@@ -2,7 +2,7 @@
 <html lang="es" style="background-color:#0a0a0a">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Añadir Gasto | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -11,7 +11,7 @@
 <style>
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh;  touch-action: pan-y; }
+  body { background:#0a0a0a; min-height:100dvh;  touch-action: manipulation; }
 
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
@@ -177,7 +177,7 @@
   <!-- Categories -->
   <div class="space-y-2">
     <label class="text-xs font-bold uppercase tracking-widest opacity-40">Categoría</label>
-    <div class="flex gap-2 overflow-x-auto pb-1" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
+    <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
       <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣<span>Comida</span></button>
       <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗<span>Transporte</span></button>
       <button class="cat-btn" data-cat="leisure" onclick="selectCat(this)">🎬<span>Ocio</span></button>
@@ -210,7 +210,7 @@
       <h3 class="font-bold text-sm">Pagado por</h3>
       <button class="text-xs font-bold" style="color:var(--cyan)">+ Múltiples</button>
     </div>
-    <div class="flex gap-4 overflow-x-auto pb-1" id="payers-row" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
+    <div class="flex gap-4 overflow-x-auto pb-1" id="payers-row" style="scrollbar-width:none">
       <!-- rendered by JS -->
     </div>
   </div>
