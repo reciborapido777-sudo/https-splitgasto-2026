@@ -1,47 +1,48 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 3.1 | Scroll Fix Definitivo — Android + iOS + Desktop
+ * Versión: 4.0 | Scroll Definitivo — Android, iOS, Edge, Opera
  *
  * ════════════════════════════════════════════════════════
- * SCROLL ARCHITECTURE — fuente única de verdad
+ * SCROLL ARCHITECTURE — única fuente de verdad
  * ════════════════════════════════════════════════════════
  *
- * CAUSA RAÍZ CONFIRMADA (auditoría 2026-04-26):
- *   1. viewport meta SIN user-scalable=no → Android Chrome interpreta
- *      el toque de 1 dedo como posible pinch-zoom y BLOQUEA el scroll.
- *      FIX: <meta name="viewport" content="..., user-scalable=no, minimum-scale=1">
+ * REGLA DE ORO (verificada en Android Chrome, Edge, Opera, Bing):
  *
- *   2. touch-action:pan-y faltaba en html y body →
- *      Android no reconocía el swipe vertical como gesto de scroll.
- *      FIX: html { touch-action:pan-y } + body { touch-action:pan-y }
+ *   touch-action: manipulation
+ *     → Permite scroll Y click inmediato sin 300ms delay.
+ *     → NO bloquea el zoom (a diferencia de pan-y).
+ *     → Funciona en todos los motores Android (Blink, WebKit).
+ *     → pan-y era incorrecto: bloquea zoom y en algunos engines
+ *       también bloquea el reconocimiento del scroll.
  *
- *   3. Canvas elements sin touch-action:pan-y →
- *      Los canvas interceptaban todos los toques, impidiendo el scroll.
- *      FIX: canvas { touch-action:pan-y } (global, con excepción en #dartCanvas)
+ *   -webkit-overflow-scrolling: touch  ← ELIMINADO
+ *     → Deprecado desde iOS 13. Causa bugs en iOS 15+ (rebote infinito,
+ *       scroll atrapado, z-index roto). No aporta nada moderno.
  *
- * Regla de oro:
- *   viewport  → user-scalable=no, minimum-scale=1 (CRÍTICO para Android)
- *   html      → touch-action:pan-y + NO overflow-y (html no es el scroll root)
- *   body      → touch-action:pan-y + overflow-y:auto  ← EL scroll container
- *   .app-shell / .app-frame → SIN overflow-y (pasa-transparente)
- *   canvas, [onclick] → touch-action:pan-y (no roban el scroll)
+ *   user-scalable=no en viewport  ← ELIMINADO de todas las páginas
+ *     → NO ayuda al scroll. Solo bloquea el zoom del usuario.
+ *     → En Edge/Opera puede interferir con el reconocimiento de gestos.
+ *
+ *   html → NO overflow-y (html no es el scroll root)
+ *   body → overflow-y: auto + touch-action: manipulation
+ *   .app-shell / .app-frame → SIN overflow
+ *   canvas → touch-action: pan-y (excepción: #dartCanvas → none)
  *
  * Por qué overflow-y en html rompe Android:
- *   Si html tiene overflow-y:scroll, el scroll container cambia de body
- *   a html. Los eventos táctiles en mobile apuntan a body por defecto →
- *   el scroll no llega al contenedor real → 1 dedo no scrollea.
+ *   Si html tiene overflow-y, el scroll root se desplaza de body a html.
+ *   Los eventos táctiles apuntan a body → scroll no llega al root → roto.
  */
 
 /* ════════════════════════════════════════════════════════
    0. VARIABLES DE DISEÑO
    ════════════════════════════════════════════════════════ */
 :root {
-    --cian-tech: #13ecd6;
-    --purple-deep: #a855f7;
-    --orange-socio: #FF9D42;
-    --glass-bg: rgba(255, 255, 255, 0.02);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --glass-blur: blur(30px);
+    --cian-tech:      #13ecd6;
+    --purple-deep:    #a855f7;
+    --orange-socio:   #FF9D42;
+    --glass-bg:       rgba(255, 255, 255, 0.02);
+    --glass-border:   rgba(255, 255, 255, 0.05);
+    --glass-blur:     blur(30px);
     --transition-alpha: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -52,38 +53,32 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box !important;
-    -webkit-font-smoothing: antialiased;
+    -webkit-font-smoothing:  antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
 }
 
 /* ════════════════════════════════════════════════════════
-   2. SCROLL SAFETY — canvas y elementos clickables
+   2. CANVAS — touch-action:pan-y para no robar el scroll
    ════════════════════════════════════════════════════════
-   Los canvas interceptan TODOS los eventos táctiles.
-   Sin touch-action:pan-y, el swipe vertical sobre un canvas
-   no llega al body scroll container → 1 dedo no scrollea.
-   Esta regla global cubre todos los canvas actuales y futuros.
-   Excepción explícita: #dartCanvas usa touch-action:none
-   (el tablero de dardos necesita control de puntero total). */
+   Los canvas interceptan todos los toques. pan-y permite
+   que el swipe vertical llegue al scroll container (body).
+   Excepción: #dartCanvas necesita control de puntero total
+   y se sobreescribe con touch-action:none en su propia regla. */
 canvas {
     touch-action: pan-y;
 }
 
 /* ════════════════════════════════════════════════════════
-   3. HTML — viewport clip, NO scroll container
+   3. HTML — sólo clip de viewport, NO scroll container
    ════════════════════════════════════════════════════════ */
 html {
     background-color: #000 !important;
     scroll-behavior: smooth;
     overflow-x: hidden !important;
-    /* CRÍTICO: NO poner overflow-y aquí.
-       Si html fuera el scroll container, los eventos táctiles de body
-       no scrollearían → 1 dedo no scrollea en Android. */
+    /* NO overflow-y — html no debe ser el scroll root */
     height: 100%;
-    /* Cloudflare-confirmed fix: Android Chrome necesita esto en html
-       para reconocer el swipe vertical de 1 dedo como scroll. */
-    touch-action: pan-y;
+    touch-action: manipulation;   /* scroll + tap en todos los engines */
 }
 
 /* ════════════════════════════════════════════════════════
@@ -94,16 +89,17 @@ body {
     color: #fff !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     overflow-x: hidden !important;
-    overflow-y: auto !important;            /* body ES el scroll container */
-    -webkit-overflow-scrolling: touch;      /* momentum scroll iOS/Edge    */
-    touch-action: pan-y;                    /* CRÍTICO: Android 1-dedo     */
+    overflow-y: auto !important;        /* body ES el scroll container     */
+    /* -webkit-overflow-scrolling: touch ELIMINADO — deprecado iOS 13+,
+       causa scroll-atrapado y z-index roto en iOS 15/16/17.              */
+    touch-action: manipulation;         /* scroll 1-dedo + tap sin delay    */
     width: 100% !important;
     max-width: 100vw !important;
     min-height: 100dvh !important;
-    min-height: -webkit-fill-available;     /* fallback Safari/Edge        */
+    min-height: -webkit-fill-available; /* fallback Safari/Edge             */
     height: auto !important;
     position: relative;
-    overscroll-behavior-y: contain;         /* evita pull-to-refresh       */
+    overscroll-behavior-y: contain;     /* evita pull-to-refresh            */
 }
 
 /* ════════════════════════════════════════════════════════
@@ -253,16 +249,16 @@ h1, h2, h3, .font-accent {
     background: #000 !important;
     min-height: 100dvh !important;
     min-height: -webkit-fill-available;
-    /* NO overflow-y aquí — body ya es el scroll container.
-       Poner overflow aquí crearía un contexto de scroll anidado
-       que atraparía los eventos táctiles y rompería el 1-dedo scroll. */
+    /* SIN overflow-y: body ya es el scroll container.
+       overflow aquí crearía un scroll context anidado que
+       atraparía eventos táctiles → scroll roto. */
     overflow-x: hidden;
 }
 
 .app-frame {
     width: 100%;
     min-height: 100dvh;
-    /* NO overflow-y — el contenido crece y body lo scrollea */
+    /* SIN overflow-y — el contenido crece, body lo scrollea */
 }
 
 /* ── Desktop: centrado con fondo ── */

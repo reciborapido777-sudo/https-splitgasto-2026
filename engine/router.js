@@ -1,7 +1,9 @@
 /**
  * SplitGasto 2026 - Master Navigation Router
- * Versión: 4.2 — Diagnóstico + Anti-Loop + Rutas Relativas + Resiliencia Total
- * Engineering fix: console diagnostics, guard undefined routes, robust SW handling
+ * Versión: 4.3 — Transición sin filter:blur (fix Android Edge/Chrome stacking context)
+ * filter:blur en body crea un stacking context que en algunos engines Android
+ * (Edge, Chrome WebView) consume los eventos táctiles durante la transición,
+ * haciendo que los botones parezcan no funcionar. Reemplazado por opacity-only.
  */
 const SGRouter = {
     // ─── Mapa de Nodos con rutas RELATIVAS ──────────────────────────────
@@ -87,14 +89,16 @@ const SGRouter = {
         const finalTarget = origin ? `${target}?from=${encodeURIComponent(origin)}` : target;
         console.log('[SG Router] → ', finalTarget);
 
-        // ── Transición Visual Alpha (blur + fade) ─────────────────────────
-        document.body.style.transition = 'filter 0.2s ease, opacity 0.2s ease';
-        document.body.style.filter = 'blur(16px)';
+        // ── Transición Visual — opacity-only (sin filter:blur)
+        // filter:blur en body crea un stacking context en Android (Edge/Chrome)
+        // que consume eventos táctiles durante la transición → botones no responden.
+        // opacity solo es seguro: no crea stacking context, funciona en todos los engines.
+        document.body.style.transition = 'opacity 0.15s ease';
         document.body.style.opacity = '0';
 
         setTimeout(() => {
             window.location.href = finalTarget;
-        }, 180);
+        }, 160);
     },
 
     /**
@@ -107,9 +111,8 @@ const SGRouter = {
 
         console.log('[SG Router] back() from=', from || 'none');
 
-        document.body.style.transition = 'filter 0.15s ease, opacity 0.15s ease';
+        document.body.style.transition = 'opacity 0.12s ease';
         document.body.style.opacity = '0';
-        document.body.style.filter = 'blur(10px)';
 
         setTimeout(() => {
             if (from && this.routes[from]) {
@@ -191,11 +194,11 @@ const SGRouter = {
 
 // ─── Restaurar página al entrar / volver (pageshow handles bfcache) ────────
 window.addEventListener('pageshow', (event) => {
-    document.body.style.opacity   = '1';
-    document.body.style.filter    = 'none';
+    // Restore opacity on every page show (including bfcache restores)
+    // No filter to reset — we no longer use filter:blur on body
+    document.body.style.opacity    = '1';
     document.body.style.transition = '';
     if (event.persisted) {
-        // Page restored from bfcache — ensure UI is clean
         console.log('[SG Router] pageshow (bfcache restore)');
     }
 });
@@ -206,4 +209,4 @@ window.addEventListener('pageshow', (event) => {
 Object.freeze(SGRouter);
 
 // ─── Diagnóstico de carga ─────────────────────────────────────────────────
-console.log('[SG Router] v4.2 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
+console.log('[SG Router] v4.3 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
