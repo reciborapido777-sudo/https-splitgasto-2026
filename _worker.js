@@ -492,16 +492,15 @@ async function handleAI(request, env, path) {
                     },
                     {
                         role: 'user',
-                        content: [
-                            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${image}` } },
-                            { type: 'text', text: 'Extrae los datos de este ticket.' },
-                        ],
+                        content: 'Extrae los datos de este ticket.',
                     },
                 ],
+                image: `data:image/jpeg;base64,${image}`,
                 max_tokens: 512,
                 temperature: 0.1,
                 ...gatewayOpts,
             });
+
 
             let ticketData = {};
             try {
@@ -616,16 +615,15 @@ async function handleAI(request, env, path) {
                     },
                     {
                         role: 'user',
-                        content: [
-                            { type: 'image_url', image_url: { url: `data:${image.type};base64,${base64}` } },
-                            { type: 'text', text: 'Extrae los datos de este ticket.' },
-                        ],
+                        content: 'Extrae los datos de este ticket.',
                     },
                 ],
+                image: `data:${image.type};base64,${base64}`,
                 max_tokens: 512,
                 temperature: 0.1,
                 ...gatewayOpts,
             });
+
 
             // 4. Parsear respuesta
             let ticketData = {};
