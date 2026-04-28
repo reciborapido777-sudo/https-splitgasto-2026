@@ -66,7 +66,8 @@ async function checkRateLimit(request, env) {
         if (!success) {
             return jsonResponse(
                 { error: 'Demasiadas peticiones', message: 'Límite 100 req/min excedido.', retry_after: 60 },
-                429
+                429,
+                request
             );
         }
     } catch (err) {
@@ -93,7 +94,7 @@ async function handleAPI(request, env, ctx, path) {
             d1_available: !!env.SPLITGASTO_DB,
             kv_available: !!env.SPLITGASTO_CACHE,
             ratelimit_available: !!env.SPLITGASTO_RATE_LIMITER,
-        });
+        }, 200, request);
     }
 
     if (path.startsWith('/api/auth/')) return handleAuth(request, env, path);
@@ -102,7 +103,7 @@ async function handleAPI(request, env, ctx, path) {
     if (path.startsWith('/api/storage/')) return handleStorage(request, env, path);
     if (path.startsWith('/api/db/')) return handleDatabase(request, env, path);
 
-    return jsonResponse({ error: 'Endpoint no encontrado', path }, 404);
+    return jsonResponse({ error: 'Endpoint no encontrado', path }, 404, request);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -222,7 +223,7 @@ async function getAuthUser(request, env) {
 // ── Middleware de autenticación para rutas protegidas ────────────────
 async function requireAuth(request, env) {
     const user = await getAuthUser(request, env);
-    if (!user) return { error: jsonResponse({ error: 'No autorizado — token inválido o expirado' }, 401), user: null };
+    if (!user) return { error: jsonResponse({ error: 'No autorizado — token inválido o expirado' }, 401, request), user: null };
     return { error: null, user };
 }
 
@@ -1143,11 +1144,12 @@ function getOrigin(request) {
 }
 
 function jsonResponse(data, status = 200, request = null) {
+    const origin = request ? getOrigin(request) : ALLOWED_ORIGINS[0];
     return new Response(JSON.stringify(data, null, 2), {
         status,
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': request ? getOrigin(request) : ALLOWED_ORIGINS[0],
+            'Access-Control-Allow-Origin': origin,
             'X-Content-Type-Options': 'nosniff',
         },
     });
