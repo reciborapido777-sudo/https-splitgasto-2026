@@ -1144,7 +1144,7 @@ function getOrigin(request) {
 }
 
 function jsonResponse(data, status = 200, request = null) {
-    const origin = request ? getOrigin(request) : ALLOWED_ORIGINS[0];
+    const origin = request ? getOrigin(request) : '*';
     return new Response(JSON.stringify(data, null, 2), {
         status,
         headers: {
