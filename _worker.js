@@ -1140,7 +1140,7 @@ const ALLOWED_ORIGINS = [
 
 function getOrigin(request) {
     const origin = request.headers.get('Origin') || '';
-    return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    return ALLOWED_ORIGINS.includes(origin) ? origin : '*';
 }
 
 function jsonResponse(data, status = 200, request = null) {
