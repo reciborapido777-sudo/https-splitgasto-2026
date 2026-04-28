@@ -397,7 +397,10 @@ async function handleAI(request, env, path) {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
     
-    const gatewayOpts = { gateway: { id: 'splitgasto-ai', cacheTtl: 3600 } };
+    // AI Gateway es opcional — si no existe en el dashboard CF, se omite y funciona directamente.
+    // El error {code:403} ocurre cuando el gateway ID no existe en la cuenta.
+    const gatewayId = env.AI_GATEWAY || '';
+    const gatewayOpts = gatewayId ? { gateway: { id: gatewayId, cacheTtl: 3600 } } : {};
 
     // ── /api/ai/chat — Chat financiero (Llama 3.1) ───────────────────
     if (path === '/api/ai/chat') {
