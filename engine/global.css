@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 - Master Design System
- * Versión: 4.0 | Scroll Definitivo — Android, iOS, Edge, Opera
+ * Versión: 4.1 | Scroll Definitivo — Android, iOS, Edge, Opera, Escritorio
  *
  * ════════════════════════════════════════════════════════
  * SCROLL ARCHITECTURE — única fuente de verdad
@@ -71,14 +71,19 @@ canvas {
 
 /* ════════════════════════════════════════════════════════
    3. HTML — sólo clip de viewport, NO scroll container
-   ════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════
+   ⚠️  height:100% en html MATA el scroll en escritorio:
+       fija el contenedor al alto exacto del viewport → nada
+       desborda → body nunca genera scrollbar ni área táctil.
+       Solución: height:auto (html crece con su contenido). */
 html {
     background-color: #000 !important;
     scroll-behavior: smooth;
     overflow-x: hidden !important;
-    /* NO overflow-y — html no debe ser el scroll root */
-    height: 100%;
-    touch-action: manipulation;   /* scroll + tap en todos los engines */
+    /* NO overflow-y — html no debe ser el scroll root        */
+    /* NO height:100% — bloquea scroll en escritorio          */
+    height: auto;                  /* html crece con contenido */
+    touch-action: manipulation;    /* scroll + tap sin delay   */
 }
 
 /* ════════════════════════════════════════════════════════
@@ -97,7 +102,7 @@ body {
     max-width: 100vw !important;
     min-height: 100dvh !important;
     min-height: -webkit-fill-available; /* fallback Safari/Edge             */
-    height: auto !important;
+    height: auto !important;            /* body crece con el contenido      */
     position: relative;
     overscroll-behavior-y: contain;     /* evita pull-to-refresh            */
 }
