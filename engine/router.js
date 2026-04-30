@@ -10,8 +10,8 @@ const SGRouter = {
     routes: {
         // Core Auth
         'landing':       'index.html',
-        'auth':          'auth.html',
-        'auth-login':    'auth.html',
+        'auth':          'auth-login.html',
+        'auth-login':    'auth-login.html',
         'register':      'register.html',
         'auth-register': 'register.html',
         // Main App
