@@ -1,11 +1,12 @@
 /**
- * SplitGasto 2026 - Service Worker v8.0
+ * SplitGasto 2026 - Service Worker v9.0
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
- * v8.0: html{height:auto} desktop scroll fix, Unsplash 403 removido,
- *       AI Gateway 403 fix (gateway opts opcional), mobile-web-app-capable
+ * v9.0: app-shell sin min-height (scroll fix Android+Desktop), imágenes SVG
+ *       coloridas en vault/groups/dashboard, roulette zoom fix (manipulation),
+ *       scanner cámara corregida (script order), receipt-view DOMContentLoaded
  */
 
-const CACHE_NAME = 'splitgasto-v10-2026';
+const CACHE_NAME = 'splitgasto-v11-2026';
 const STATIC_ASSETS = [
     'engine/router.js',
     'engine/global.css',
@@ -28,7 +29,7 @@ const STATIC_ASSETS = [
 
 // ── Install: pre-cache static assets ───────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Installing v8.0…');
+    console.log('[SW] Installing v9.0…');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {
@@ -40,7 +41,7 @@ self.addEventListener('install', event => {
 
 // ── Activate: delete ALL old caches, claim clients ──────────────────────────
 self.addEventListener('activate', event => {
-    console.log('[SW] Activating v8.0…');
+    console.log('[SW] Activating v9.0…');
     event.waitUntil(
         caches.keys()
             .then(keys => Promise.all(

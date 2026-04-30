@@ -54,16 +54,17 @@
     width:min(300px, calc(100% - 8px));
     height:min(300px, calc(100vw - 40px));
     flex-shrink:0;
-    /* Allow vertical scroll to propagate when swiping over the wheel area */
-    touch-action: pan-y;
+    /* manipulation: permite scroll vertical Y pinch-zoom, bloquea sólo el
+       long-press del sistema. pan-y bloqueaba el pinch-zoom (bug reportado). */
+    touch-action: manipulation;
   }
   canvas#wheel {
     display:block;
     width:100% !important;
     height:100% !important;
     border-radius:50%;
-    /* Vertical swipes on the canvas pass through to body scroll */
-    touch-action: pan-y;
+    /* manipulation: scroll 1-dedo + zoom, sin delay 300ms */
+    touch-action: manipulation;
     box-shadow:
       0 0 0 5px rgba(19,236,214,0.12),
       0 0 50px rgba(19,236,214,0.35),
