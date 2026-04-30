@@ -3,220 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evidencia Alpha | SplitGasto 2026</title>
-    
+    <title>Escáner | SplitGasto 2026</title>
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        
-        html, body {  
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box; touch-action: manipulation; }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateZ(0); 
-        }
-
-        .receipt-image-container {
-            position: relative; height: 380px; border-radius: 3.5rem;
-            overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
-            background: #050505;
-            transform: translateZ(0);
-        }
-
-        .receipt-image {
-            width: 100%; height: 100%; object-fit: cover; opacity: 0.5;
-            mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-        }
-
-        .ocr-scanner-line {
-            position: absolute; top: 20%; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent, #13ecd6, transparent);
-            box-shadow: 0 0 20px #13ecd6;
-            animation: scanMove 4s infinite ease-in-out; z-index: 20;
-            transform: translateZ(0); /* Aceleración GPU */
-        }
-
-        @keyframes scanMove {
-            0% { top: 10%; opacity: 0; }
-            50% { opacity: 1; }
-            100% { top: 70%; opacity: 0; }
-        }
-
-        .item-row {
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-            padding: 1.25rem 0.5rem; display: flex;
-            justify-content: space-between; align-items: center;
-        }
-
-        .money-display { 
-            display: inline-block; 
-            padding-right: 0.55em !important; /* Sincronizado v1.62 */
-            white-space: nowrap; 
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .text-gradient-cyan { 
-            background: linear-gradient(135deg, #13ecd6 0%, #10b981 100%); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-        }
-
-        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
+        html, body { background:#000; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; min-height:100dvh; overflow-x:hidden!important; overscroll-behavior:contain; touch-action:manipulation; }
+        .camera-container { position:relative; width:100%; aspect-ratio:3/4; background:#111; border-radius:24px; overflow:hidden; }
+        .camera-container video { width:100%; height:100%; object-fit:cover; }
+        .camera-container canvas { display:none; }
+        .scan-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+        .scan-frame { width:80%; height:70%; border:2px solid rgba(19,236,214,0.4); border-radius:16px; position:relative; }
+        .scan-line { position:absolute; left:5%; right:5%; height:2px; background:linear-gradient(90deg,transparent,#13ecd6,transparent); animation:scanMove 2s ease-in-out infinite; }
+        @keyframes scanMove { 0%,100%{top:10%} 50%{top:85%} }
+        .shutter-btn { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#13ecd6,#10b981); border:4px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; outline:none; }
+        .shutter-btn:active { transform:scale(.9); }
+        .shutter-btn:disabled { opacity:.4; cursor:not-allowed; }
+        .result-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:20px; backdrop-filter:blur(20px); }
+        .glass-panel { background:rgba(255,255,255,0.02); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); }
+        .loading-spinner { width:40px; height:40px; border:3px solid rgba(19,236,214,0.2); border-top-color:#13ecd6; border-radius:50%; animation:spin .8s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+    </style>
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
 </head>
-<body class="app-shell min-h-screen pb-32">
-<div class="app-frame">
-
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-10">
-        
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-5">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-500 text-3xl">arrow_back</span>
-                </button>
-                <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Socio Fundador</p>
-                    <h1 class="text-xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Evidencia Alpha</h1>
-                </div>
-            </div>
-
-            <button onclick="SGRouter.navigate('dashboard', 'receipt')" class="size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all active:scale-95">
-                <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
-            </button>
-        </header>
-
-        <section class="receipt-image-container reveal-node" style="animation-delay: 0.1s">
-            <div class="ocr-scanner-line"></div>
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23111'/%3E%3Crect x='120' y='40' width='160' height='220' rx='8' fill='%23222' stroke='%2313ecd6' stroke-width='1.5' stroke-opacity='0.3'/%3E%3Crect x='140' y='70' width='120' height='8' rx='4' fill='%2313ecd6' fill-opacity='0.5'/%3E%3Crect x='140' y='90' width='80' height='6' rx='3' fill='%23444'/%3E%3Crect x='140' y='110' width='100' height='6' rx='3' fill='%23444'/%3E%3Crect x='140' y='130' width='70' height='6' rx='3' fill='%23444'/%3E%3Crect x='140' y='160' width='120' height='1' fill='%23333'/%3E%3Crect x='140' y='178' width='60' height='10' rx='3' fill='%2313ecd6' fill-opacity='0.6'/%3E%3Crect x='220' y='178' width='40' height='10' rx='3' fill='%23555'/%3E%3Ctext x='200' y='265' text-anchor='middle' fill='%2313ecd6' font-family='monospace' font-size='10' opacity='0.5'%3ERECIBO DIGITALIZADO%3C/text%3E%3C/svg%3E" class="receipt-image">
-            
-            <div class="absolute bottom-10 left-10 right-10 space-y-3">
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Verificado por IA</span>
-                    <p class="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">Hash: 0x8a...42f</p>
-                </div>
-                <h2 class="text-4xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Sushi Kyoto Pro</h2>
-            </div>
-        </section>
-
-        <section class="glass-panel p-10 md:p-14 rounded-[4rem] border-[#13ecd6]/10 space-y-10 reveal-node" style="animation-delay: 0.2s">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div class="space-y-2">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Importe Reconocido</p>
-                    <h3 class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] text-gradient-cyan money-display italic tracking-tighter">25,56€</h3>
-                </div>
-                <div class="text-left md:text-right space-y-1">
-                    <p class="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Fecha Operativa</p>
-                    <p class="text-lg font-bold font-['Space_Grotesk'] text-white">05 MAR 2026</p>
-                </div>
-            </div>
-
-            <div class="space-y-1 border-t border-white/5 pt-8">
-                <div class="item-row">
-                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest">2x Combo Nigiri Alpha</p>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-white money-display">18,50€</p>
-                </div>
-                <div class="item-row">
-                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest">1x Gyoza Auditoría</p>
-                    <p class="text-base font-black font-['Space_Grotesk'] text-white money-display">7,06€</p>
-                </div>
-            </div>
-        </section>
-
-        <footer class="grid grid-cols-1 md:grid-cols-2 gap-6 reveal-node" style="animation-delay: 0.3s">
-            <button onclick="SGRouter.navigate('split', 'receipt')" class="py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
-                Ver Reparto Táctico
-            </button>
-            <button onclick="SGRouter.back()" class="py-7 glass-panel text-zinc-500 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:text-white transition-all">
-                Cerrar Evidencia
-            </button>
-        </footer>
-
-    </div>
-
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
+<body class="app-shell min-h-screen">
+<div class="app-frame p-4 space-y-4" style="max-width:480px;margin:0 auto">
+    <header class="flex items-center justify-between">
+        <button onclick="SGRouter.back()" class="size-10 rounded-xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+            <span class="material-icons-round text-zinc-500">arrow_back</span>
+        </button>
+        <h1 class="text-sm font-black tracking-widest uppercase text-zinc-400">Escáner IA</h1>
+        <div class="size-10"></div>
+    </header>
+    <div id="cameraView">
+        <div class="camera-container">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas"></canvas>
+            <div class="scan-overlay"><div class="scan-frame"><div class="scan-line"></div></div></div>
         </div>
-    </nav>
-
-
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
+        <div class="flex items-center justify-center gap-6 py-6">
+            <button onclick="switchCamera()" class="size-12 rounded-xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+                <span class="material-icons-round text-zinc-400">flip_camera_ios</span>
+            </button>
+            <button id="captureBtn" onclick="captureAndScan()" class="shutter-btn">
+                <span class="material-icons-round text-black text-3xl">photo_camera</span>
+            </button>
+            <label class="size-12 rounded-xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all cursor-pointer">
+                <span class="material-icons-round text-zinc-400">attach_file</span>
+                <input type="file" accept="image/*" onchange="uploadAndScan(event)" class="hidden">
+            </label>
+        </div>
+        <p class="text-center text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Apunta al recibo y pulsa el botón</p>
+    </div>
+    <div id="loadingView" class="hidden flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="loading-spinner"></div>
+        <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Analizando recibo con IA...</p>
+    </div>
+    <div id="resultView" class="hidden space-y-4">
+        <div class="result-card space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="material-icons-round text-[#13ecd6] text-lg">receipt_long</span>
+                <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Datos extraídos</p>
+            </div>
+            <div id="resultContent"></div>
+        </div>
+        <button onclick="resetScanner()" class="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[#13ecd6] transition-all active:scale-95">Escanear otro recibo</button>
+    </div>
+    <div id="errorView" class="hidden flex flex-col items-center justify-center py-20 space-y-4">
+        <span class="material-icons-round text-red-500 text-5xl">error_outline</span>
+        <p id="errorMsg" class="text-sm text-zinc-400 text-center"></p>
+        <button onclick="resetScanner()" class="px-6 py-3 glass-panel rounded-xl text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-all">Reintentar</button>
+    </div>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
+    <script>
+    let stream=null, facingMode='environment';
+    async function startCamera(){
+        try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:1280},height:{ideal:960}}});document.getElementById('cameraVideo').srcObject=stream;}
+        catch(e){console.warn('Cámara no disponible:',e);SGRouter.showToast('Cámara no disponible — usa archivo','warning');}
     }
+    function switchCamera(){facingMode=facingMode==='environment'?'user':'environment';startCamera();}
+    function showView(id){['cameraView','loadingView','resultView','errorView'].forEach(v=>document.getElementById(v).classList.toggle('hidden',v!==id));}
+    async function captureAndScan(){const v=document.getElementById('cameraVideo'),c=document.getElementById('cameraCanvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;c.getContext('2d').drawImage(v,0,0);await scanTicket(c.toDataURL('image/jpeg',0.8).split(',')[1]);}
+    async function uploadAndScan(e){const f=e.target.files[0];if(!f)return;const b=await new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result.split(',')[1]);rd.onerror=j;rd.readAsDataURL(f);});await scanTicket(b);}
+    async function scanTicket(b64){showView('loadingView');document.getElementById('captureBtn').disabled=true;try{const r=await SGApi.aiScanTicket(b64);if(r.success&&r.data){displayResult(r.data);showView('resultView');}else{document.getElementById('errorMsg').textContent=r.error||'No se pudo leer el recibo';showView('errorView');}}catch(e){document.getElementById('errorMsg').textContent='Error de conexión con la IA';showView('errorView');}document.getElementById('captureBtn').disabled=false;}
+    function displayResult(d){const c=document.getElementById('resultContent');const it=(d.items||[]).map(i=>'<div class="flex justify-between text-xs"><span class="text-zinc-400">'+(i.name||'—')+'</span><span class="text-white font-bold">'+(i.price||0)+' '+(d.currency||'EUR')+'</span></div>').join('');c.innerHTML='<div class="space-y-2"><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Comercio</span><span class="text-sm font-black text-white">'+(d.merchant||'—')+'</span></div><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Fecha</span><span class="text-sm text-zinc-300">'+(d.date||'—')+'</span></div><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Categoría</span><span class="text-sm text-[#13ecd6] font-bold">'+(d.category||'—')+'</span></div>'+(it?'<div class="border-t border-white/5 pt-2 space-y-1">'+it+'</div>':'')+'<div class="flex justify-between border-t border-white/10 pt-2"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">TOTAL</span><span class="text-lg font-black text-[#13ecd6]">'+(d.total||0)+' '+(d.currency||'EUR')+'</span></div></div>';}
+    function resetScanner(){showView('cameraView');startCamera();}
+    if(!SGAuth.isLoggedIn()){SGRouter.showToast('Inicia sesión para usar el escáner','error');setTimeout(()=>SGRouter.navigate('auth-login'),1500);}else{startCamera();}
+    </script>
+    <script>
+    if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});r.addEventListener('updatefound',()=>{const s=r.installing;if(!s)return;s.addEventListener('statechange',()=>{if(s.state==='installed'&&navigator.serviceWorker.controller)s.postMessage({type:'SKIP_WAITING'});});});}).catch(e=>console.warn('[SW] Failed:',e));let ref=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!ref){ref=true;window.location.reload();}});});}
     </script>
 </div>
 </body>
 </html>
+
