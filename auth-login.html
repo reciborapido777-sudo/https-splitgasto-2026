@@ -91,17 +91,17 @@
             <div class="space-y-5">
                 <div class="space-y-2">
                     <p class="ml-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Credenciales Alpha</p>
-                    <input type="email" placeholder="ID DE SOCIO FUNDADOR" class="auth-input text-[10px] font-black tracking-[0.4em] uppercase">
+                    <input id="email" type="email" placeholder="ID DE SOCIO FUNDADOR" class="auth-input text-[10px] font-black tracking-[0.4em] uppercase">
                 </div>
                 <div class="space-y-2">
                     <p class="ml-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Cifrado de Seguridad</p>
-                    <input type="password" placeholder="CÓDIGO ALPHA" class="auth-input text-lg tracking-[0.3em]">
+                    <input id="password" type="password" placeholder="CÓDIGO ALPHA" class="auth-input text-lg tracking-[0.3em]">
                 </div>
             </div>
-
-            <button onclick="SGRouter.navigate('dashboard', 'auth')" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
+            <button onclick="doLogin()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
                 Sincronizar Nodo
             </button>
+            
         </main>
 
         <footer class="text-center space-y-4 reveal-node" style="animation-delay: 0.2s">
@@ -113,8 +113,28 @@
 
     </div>
 
-    
-        <script>
+    <script src="engine/auth.js"></script>
+    <script>
+    async function doLogin() {
+        const email = document.getElementById('email').value.trim();
+        const pwd = document.getElementById('password').value;
+        if (!email || !pwd) {
+            SGRouter.showToast('Completa todos los campos', 'error');
+            return;
+        }
+        SGRouter.showToast('Sincronizando nodo...', 'info');
+        try {
+            const result = await SGAuth.login(email, pwd);
+            if (result.success) {
+                SGRouter.navigate('dashboard', 'auth');
+            } else {
+                SGRouter.showToast(result.error || 'Error al iniciar sesión', 'error');
+            }
+        } catch (err) {
+            SGRouter.showToast('Error de conexión', 'error');
+        }
+    }
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
