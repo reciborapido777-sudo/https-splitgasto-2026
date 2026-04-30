@@ -252,17 +252,18 @@ h1, h2, h3, .font-accent {
 /* ── Móvil: pantalla completa ── */
 .app-shell {
     background: #000 !important;
-    min-height: 100dvh !important;
-    min-height: -webkit-fill-available;
+    /* ⚠️  NO min-height:100dvh aquí — fija el contenedor al viewport exacto,
+       impide que el body crezca más allá y rompe el scroll en desktop.
+       El body (con height:auto !important) crece sin límite y body scrollea. */
     /* SIN overflow-y: body ya es el scroll container.
        overflow aquí crearía un scroll context anidado que
-       atraparía eventos táctiles → scroll roto. */
+       atraparía eventos táctiles → scroll roto en Android + Desktop. */
     overflow-x: hidden;
 }
 
 .app-frame {
     width: 100%;
-    min-height: 100dvh;
+    /* SIN min-height fija — el contenido crece libremente, body lo scrollea */
     /* SIN overflow-y — el contenido crece, body lo scrollea */
 }
 
@@ -278,13 +279,14 @@ h1, h2, h3, .font-accent {
     .app-frame {
         max-width: 1200px;
         margin: 0 auto;
-        min-height: 100dvh;
+        /* No min-height:100dvh — permite que el contenido crezca y body scrollee */
         border-radius: 2rem;
         box-shadow:
             0 0 0 1px rgba(255,255,255,0.06),
             0 30px 80px rgba(0,0,0,0.8),
             0 0 120px rgba(19,236,214,0.04);
         background: #000;
+        padding-bottom: 5rem; /* espacio para la nav bar fija */
     }
 
     .app-frame .max-w-lg   { max-width: 100% !important; }
