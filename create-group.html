@@ -90,6 +90,8 @@
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -273,11 +275,42 @@ function removeMember(name) {
   updatePreview();
 }
 
-function createGroup() {
+async function createGroup() {
   const name = document.getElementById('group-name').value.trim();
   if (!name) { SGRouter.showToast('Ponle un nombre al grupo', 'warning'); return; }
-  SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
-  setTimeout(() => SGRouter.navigate('groups', 'create-group'), 1000);
+
+  const btn = document.getElementById('create-btn');
+  const btnMain = document.getElementById('create-btn-main');
+  if (btn) btn.disabled = true;
+  if (btnMain) btnMain.disabled = true;
+
+  try {
+    const currency = document.getElementById('currency-sel').value || 'EUR';
+    // Include emoji+color in name for display purposes
+    const fullName = selectedEmoji + ' ' + name;
+
+    if (!SGAuth.isLoggedIn()) {
+      SGRouter.showToast('Inicia sesión primero', 'error');
+      setTimeout(() => SGRouter.navigate('auth-login'), 1200);
+      return;
+    }
+
+    const result = await SGApi.createGroup(fullName, currency);
+    if (result && result.success) {
+      SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
+      setTimeout(() => SGRouter.navigate('groups', 'create-group'), 900);
+    } else {
+      const errMsg = (result && result.error) ? result.error : 'Error al crear el grupo';
+      SGRouter.showToast(errMsg, 'error');
+      if (btn) btn.disabled = false;
+      if (btnMain) btnMain.disabled = false;
+    }
+  } catch (e) {
+    console.error('createGroup error:', e);
+    SGRouter.showToast('Error de conexión', 'error');
+    if (btn) btn.disabled = false;
+    if (btnMain) btnMain.disabled = false;
+  }
 }
 
 // Init
