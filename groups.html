@@ -89,7 +89,7 @@
     <script src="engine/router.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
 </head>
-<body class="app-shell min-h-screen pb-28">
+<body class="app-shell pb-28">
 <div class="app-frame">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
@@ -106,7 +106,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="SGRouter.showToast('Crear grupo: próximamente disponible', 'info')" 
+                <button onclick="SGRouter.navigate('create-group','groups')" 
                         class="px-5 py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 hover:bg-[#13ecd6]/15 transition-all active:scale-95">
                     <span class="material-icons-round text-[#13ecd6] text-sm">add</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hidden sm:inline">Nuevo</span>
@@ -216,7 +216,7 @@
             <!-- Crear grupo CTA -->
             <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-5 transition-all" 
                  style="animation-delay: 0.3s" 
-                 onclick="SGRouter.showToast('Protocolo de Creación · Próximamente', 'info')">
+                 onclick="SGRouter.navigate('create-group','groups')">
                 <div class="size-16 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
                     <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl transition-colors">add</span>
                 </div>

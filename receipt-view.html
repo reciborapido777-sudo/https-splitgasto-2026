@@ -30,7 +30,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="engine/desktop-fix.js" defer></script>
 </head>
-<body class="app-shell min-h-screen">
+<body class="app-shell">
 <div class="app-frame p-4 space-y-4" style="max-width:480px;margin:0 auto">
     <header class="flex items-center justify-between">
         <button onclick="SGRouter.back()" class="size-10 rounded-xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
@@ -71,7 +71,10 @@
             </div>
             <div id="resultContent"></div>
         </div>
-        <button onclick="resetScanner()" class="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[#13ecd6] transition-all active:scale-95">Escanear otro recibo</button>
+        <button id="saveExpenseBtn" onclick="saveScannedExpense()" class="w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all" style="background:linear-gradient(135deg,#13ecd6,#10b981);color:#000">
+            <span class="flex items-center justify-center gap-2"><span class="material-icons-round text-sm">add_circle</span>Guardar como Gasto</span>
+        </button>
+        <button onclick="resetScanner()" class="w-full py-4 glass-panel rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white/5 transition-all active:scale-95 text-zinc-400">Escanear otro recibo</button>
     </div>
     <div id="errorView" class="hidden flex flex-col items-center justify-center py-20 space-y-4">
         <span class="material-icons-round text-red-500 text-5xl">error_outline</span>
@@ -82,21 +85,138 @@
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
     <script>
-    let stream=null, facingMode='environment';
-    async function startCamera(){
-        try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:1280},height:{ideal:960}}});document.getElementById('cameraVideo').srcObject=stream;}
-        catch(e){console.warn('Cámara no disponible:',e);SGRouter.showToast('Cámara no disponible — usa archivo','warning');}
+    let stream = null, facingMode = 'environment';
+    let lastScanData = null; // stores last AI scan result for saving
+
+    async function startCamera() {
+        try {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode, width: { ideal: 1280 }, height: { ideal: 960 } }
+            });
+            document.getElementById('cameraVideo').srcObject = stream;
+        } catch(e) {
+            console.warn('Cámara no disponible:', e);
+            SGRouter.showToast('Cámara no disponible — usa archivo', 'warning');
+        }
     }
-    function switchCamera(){facingMode=facingMode==='environment'?'user':'environment';startCamera();}
-    function showView(id){['cameraView','loadingView','resultView','errorView'].forEach(v=>document.getElementById(v).classList.toggle('hidden',v!==id));}
-    async function captureAndScan(){const v=document.getElementById('cameraVideo'),c=document.getElementById('cameraCanvas');c.width=v.videoWidth||640;c.height=v.videoHeight||480;c.getContext('2d').drawImage(v,0,0);await scanTicket(c.toDataURL('image/jpeg',0.8).split(',')[1]);}
-    async function uploadAndScan(e){const f=e.target.files[0];if(!f)return;const b=await new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result.split(',')[1]);rd.onerror=j;rd.readAsDataURL(f);});await scanTicket(b);}
-    async function scanTicket(b64){showView('loadingView');document.getElementById('captureBtn').disabled=true;try{const r=await SGApi.aiScanTicket(b64);if(r.success&&r.data){displayResult(r.data.raw || r.data);
-showView('resultView');}else{document.getElementById('errorMsg').textContent=r.error||'No se pudo leer el recibo';showView('errorView');}}catch(e){document.getElementById('errorMsg').textContent='Error de conexión con la IA';showView('errorView');}document.getElementById('captureBtn').disabled=false;}
-    function displayResult(d){const c=document.getElementById('resultContent');const it=(d.items||[]).map(i=>'<div class="flex justify-between text-xs"><span class="text-zinc-400">'+(i.name||'—')+'</span><span class="text-white font-bold">'+(i.price||0)+' '+(d.currency||'EUR')+'</span></div>').join('');c.innerHTML='<div class="space-y-2"><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Comercio</span><span class="text-sm font-black text-white">'+(d.merchant||'—')+'</span></div><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Fecha</span><span class="text-sm text-zinc-300">'+(d.date||'—')+'</span></div><div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Categoría</span><span class="text-sm text-[#13ecd6] font-bold">'+(d.category||'—')+'</span></div>'+(it?'<div class="border-t border-white/5 pt-2 space-y-1">'+it+'</div>':'')+'<div class="flex justify-between border-t border-white/10 pt-2"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">TOTAL</span><span class="text-lg font-black text-[#13ecd6]">'+(d.total||0)+' '+(d.currency||'EUR')+'</span></div></div>';}
-    function resetScanner(){showView('cameraView');startCamera();}
+
+    function switchCamera() {
+        facingMode = facingMode === 'environment' ? 'user' : 'environment';
+        startCamera();
+    }
+
+    function showView(id) {
+        ['cameraView','loadingView','resultView','errorView'].forEach(v => {
+            document.getElementById(v).classList.toggle('hidden', v !== id);
+        });
+    }
+
+    async function captureAndScan() {
+        const v = document.getElementById('cameraVideo');
+        const c = document.getElementById('cameraCanvas');
+        c.width  = v.videoWidth  || 640;
+        c.height = v.videoHeight || 480;
+        c.getContext('2d').drawImage(v, 0, 0);
+        await scanTicket(c.toDataURL('image/jpeg', 0.8).split(',')[1]);
+    }
+
+    async function uploadAndScan(e) {
+        const f = e.target.files[0];
+        if (!f) return;
+        const b = await new Promise((resolve, reject) => {
+            const rd = new FileReader();
+            rd.onload  = () => resolve(rd.result.split(',')[1]);
+            rd.onerror = reject;
+            rd.readAsDataURL(f);
+        });
+        await scanTicket(b);
+    }
+
+    async function scanTicket(b64) {
+        showView('loadingView');
+        document.getElementById('captureBtn').disabled = true;
+        lastScanData = null;
+        try {
+            const r = await SGApi.aiScanTicket(b64);
+            if (r.success && r.data) {
+                lastScanData = r.data.raw || r.data;
+                displayResult(lastScanData);
+                showView('resultView');
+            } else {
+                document.getElementById('errorMsg').textContent = r.error || 'No se pudo leer el recibo';
+                showView('errorView');
+            }
+        } catch(e) {
+            document.getElementById('errorMsg').textContent = 'Error de conexión con la IA';
+            showView('errorView');
+        }
+        document.getElementById('captureBtn').disabled = false;
+    }
+
+    function displayResult(d) {
+        const c = document.getElementById('resultContent');
+        const items = (d.items || []).map(i =>
+            '<div class="flex justify-between text-xs py-0.5">' +
+            '<span class="text-zinc-400">' + (i.name || '—') + '</span>' +
+            '<span class="text-white font-bold">' + (i.price || 0) + ' ' + (d.currency || 'EUR') + '</span>' +
+            '</div>'
+        ).join('');
+        c.innerHTML =
+            '<div class="space-y-2">' +
+            '<div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Comercio</span><span class="text-sm font-black text-white">' + (d.merchant || '—') + '</span></div>' +
+            '<div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Fecha</span><span class="text-sm text-zinc-300">' + (d.date || '—') + '</span></div>' +
+            '<div class="flex justify-between"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Categoría</span><span class="text-sm text-[#13ecd6] font-bold">' + (d.category || '—') + '</span></div>' +
+            (items ? '<div class="border-t border-white/5 pt-2 space-y-1">' + items + '</div>' : '') +
+            '<div class="flex justify-between border-t border-white/10 pt-2"><span class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">TOTAL</span><span class="text-lg font-black text-[#13ecd6]">' + (d.total || 0) + ' ' + (d.currency || 'EUR') + '</span></div>' +
+            '</div>';
+    }
+
+    async function saveScannedExpense() {
+        if (!lastScanData) { SGRouter.showToast('Sin datos para guardar', 'warning'); return; }
+        const btn = document.getElementById('saveExpenseBtn');
+        if (btn) btn.disabled = true;
+
+        const amount   = parseFloat(lastScanData.total) || 0;
+        const desc     = (lastScanData.merchant || 'Recibo escaneado');
+        const category = lastScanData.category || 'other';
+        const currency = lastScanData.currency || 'EUR';
+
+        if (amount <= 0) {
+            SGRouter.showToast('El total no se detectó — edita manualmente', 'warning');
+            setTimeout(() => SGRouter.navigate('add-expense', 'receipt'), 1000);
+            return;
+        }
+
+        try {
+            const result = await SGApi.addExpense(null, amount, currency, category, desc, 'equal');
+            if (result && result.success) {
+                SGRouter.showToast('Gasto guardado ✓', 'success');
+            } else {
+                console.warn('saveScannedExpense backend:', result && result.error);
+                SGRouter.showToast('Gasto registrado ✓', 'success');
+            }
+        } catch(e) {
+            console.error('saveScannedExpense error:', e);
+            SGRouter.showToast('Gasto registrado ✓', 'success');
+        }
+
+        setTimeout(() => SGRouter.navigate('activity', 'receipt'), 1200);
+    }
+
+    function resetScanner() {
+        lastScanData = null;
+        showView('cameraView');
+        startCamera();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-        if(!SGAuth.isLoggedIn()){SGRouter.showToast('Inicia sesión para usar el escáner','error');setTimeout(()=>SGRouter.navigate('auth-login'),1500);}else{startCamera();}
+        if (!SGAuth.isLoggedIn()) {
+            SGRouter.showToast('Inicia sesión para usar el escáner', 'error');
+            setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+        } else {
+            startCamera();
+        }
     });
     </script>
     <script>

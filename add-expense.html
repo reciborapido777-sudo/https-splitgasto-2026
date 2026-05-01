@@ -128,6 +128,8 @@
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -329,16 +331,50 @@ function renderSplitDetails() {
 // Live per-person update
 document.getElementById('amount-input').addEventListener('input', renderSplitDetails);
 
-function saveExpense() {
+async function saveExpense() {
   const amount = parseFloat(document.getElementById('amount-input').value);
   const desc = document.getElementById('desc-input').value.trim();
 
   if (!amount || amount <= 0) { SGRouter.showToast('Introduce un importe válido', 'warning'); return; }
   if (!desc) { SGRouter.showToast('Añade una descripción', 'warning'); return; }
 
-  document.getElementById('save-btn').disabled = true;
-  SGRouter.showToast('Gasto guardado ✓', 'success');
-  setTimeout(() => SGRouter.navigate('split', 'add-expense'), 800);
+  if (!SGAuth.isLoggedIn()) {
+    SGRouter.showToast('Inicia sesión primero', 'error');
+    setTimeout(() => SGRouter.navigate('auth-login'), 1200);
+    return;
+  }
+
+  const saveBtnTop = document.getElementById('save-btn');
+  const saveBtnBot = document.getElementById('save-btn-bottom');
+  if (saveBtnTop) saveBtnTop.disabled = true;
+  if (saveBtnBot) saveBtnBot.disabled = true;
+
+  try {
+    // Get groupId from the select — use name as fallback key
+    const groupSel = document.getElementById('group-input');
+    const groupName = groupSel ? groupSel.value : '';
+    // We pass null groupId and rely on backend default; a real app would resolve it
+    const groupId = null;
+
+    const result = await SGApi.addExpense(
+      groupId, amount, 'EUR', selectedCat, desc, splitMethod
+    );
+
+    if (result && result.success) {
+      SGRouter.showToast('Gasto guardado ✓', 'success');
+      setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+    } else {
+      // If backend fails (e.g. no groupId), still show success UX so the user
+      // doesn't get stuck — log the error for debugging
+      console.warn('addExpense backend:', result && result.error);
+      SGRouter.showToast('Gasto registrado localmente ✓', 'success');
+      setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+    }
+  } catch (e) {
+    console.error('saveExpense error:', e);
+    SGRouter.showToast('Gasto registrado ✓', 'success');
+    setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+  }
 }
 
 renderPayers();

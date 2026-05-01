@@ -65,6 +65,8 @@
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell p-6 md:p-12">
 <div class="app-frame">
@@ -98,14 +100,46 @@
         </div>
 
         <div class="pt-6">
-            <button onclick="SGRouter.navigate('dashboard', 'register')" class="w-full py-7 bg-white text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.6em] hover:bg-[#13ecd6] transition-all shadow-2xl active:scale-95">
+            <button id="reg-btn" onclick="doRegister()" class="w-full py-7 bg-white text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.6em] hover:bg-[#13ecd6] transition-all shadow-2xl active:scale-95">
                 Finalizar Registro
             </button>
             <p class="text-[9px] text-center text-zinc-700 uppercase font-black mt-8 tracking-[0.3em]">Al entrar, acepta los términos de SplitGasto® 2026</p>
         </div>
     </main>
 
-    
+    <script>
+    async function doRegister() {
+        const inputs = document.querySelectorAll('input');
+        const name  = inputs[0] ? inputs[0].value.trim() : '';
+        const email = inputs[1] ? inputs[1].value.trim() : '';
+        const pwd   = inputs[2] ? inputs[2].value       : '';
+
+        if (!name)  { SGRouter.showToast('Introduce tu nombre', 'warning'); return; }
+        if (!email) { SGRouter.showToast('Introduce tu email', 'warning'); return; }
+        if (!pwd || pwd.length < 6) { SGRouter.showToast('La clave debe tener al menos 6 caracteres', 'warning'); return; }
+
+        const btn = document.getElementById('reg-btn');
+        if (btn) btn.disabled = true;
+        SGRouter.showToast('Creando cuenta...', 'info');
+
+        try {
+            const result = await SGAuth.register(name, email, pwd);
+            if (result && result.success) {
+                SGRouter.showToast('Cuenta creada ✓ Bienvenido', 'success');
+                setTimeout(() => SGRouter.navigate('dashboard', 'register'), 900);
+            } else {
+                const msg = (result && result.error) ? result.error : 'Error al crear la cuenta';
+                SGRouter.showToast(msg, 'error');
+                if (btn) btn.disabled = false;
+            }
+        } catch (e) {
+            console.error('doRegister error:', e);
+            SGRouter.showToast('Error de conexión', 'error');
+            if (btn) btn.disabled = false;
+        }
+    }
+    </script>
+
         <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
