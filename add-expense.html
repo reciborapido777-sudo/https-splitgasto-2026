@@ -196,14 +196,12 @@
       <label class="text-xs font-bold uppercase tracking-widest opacity-40">Fecha</label>
       <input type="date" id="date-input" class="sg-input"/>
     </div>
-    <div class="space-y-2">
-      <label class="text-xs font-bold uppercase tracking-widest opacity-40">Grupo</label>
-      <select id="group-input" class="sg-input" style="appearance:none;cursor:pointer">
-        <option>🍣 Sushi Kyoto Pro</option>
-        <option>🏔️ Viaje Pirineos</option>
-        <option>🏠 Piso Alpha 2026</option>
-      </select>
-    </div>
+ <div class="space-y-2">
+  <label class="text-xs font-bold uppercase tracking-widest opacity-40">Grupo</label>
+  <select id="group-input" class="sg-input" style="appearance:none;cursor:pointer">
+    <option value="">Cargando grupos…</option>
+  </select>
+</div>
   </div>
 
   <!-- Paid by -->
@@ -250,20 +248,58 @@
 </main>
 
 <script>
-const members = [
-  {name:'Commander', initials:'C', color:'#13ecd6'},
-  {name:'Mario', initials:'M', color:'#a855f7'},
-  {name:'Elena', initials:'E', color:'#FF9D42'},
-  {name:'Sofia', initials:'S', color:'#ec4899'},
-];
-
+let groups = [];
 let selectedPayer = 0;
 let selectedCat = 'food';
 let splitMethod = 'equal';
+let members = [];
 
 // Set today's date
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('date-input').value = today;
+
+// ── Load groups from API ──
+async function loadGroupMembers(groupId) {
+  if (!groupId) { members = []; renderPayers(); renderSplitDetails(); return; }
+  try {
+    const colors = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#22c55e', '#3b82f6'];
+
+    // 1. Try to get member info from groups data
+    const group = groups.find(g => g.id === groupId);
+    if (group && group.members && group.members.length > 0) {
+      members = group.members.map((m, i) => ({
+        id: m.user_id || m.id,
+        name: m.name || m.email?.split('@')[0] || 'Usuario',
+        initials: (m.name || m.email || 'U')[0].toUpperCase(),
+        color: colors[i % colors.length]
+      }));
+    } else {
+      // 2. Fallback: derive members from balances keys
+      const result = await SGApi.getBalances(groupId);
+      if (result && result.success && result.balances) {
+        const userIds = Object.keys(result.balances);
+        members = userIds.map((uid, i) => ({
+          id: uid,
+          name: uid.substring(0, 8),
+          initials: uid[0].toUpperCase(),
+          color: colors[i % colors.length]
+        }));
+      }
+    }
+
+    if (members.length === 0) {
+      members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: 'self' }];
+    }
+    selectedPayer = 0;
+    renderPayers();
+    renderSplitDetails();
+  } catch (e) {
+    console.error('Error loading members:', e);
+    members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: 'self' }];
+    renderPayers();
+    renderSplitDetails();
+  }
+}
 
 function renderPayers() {
   const row = document.getElementById('payers-row');
@@ -280,11 +316,7 @@ function renderPayers() {
     </div>`;
 }
 
-function selectPayer(idx) {
-  selectedPayer = idx;
-  renderPayers();
-}
-
+function selectPayer(idx) { selectedPayer = idx; renderPayers(); }
 function addPayer() { SGRouter.showToast('Próximamente: múltiples pagadores', 'info'); }
 
 function selectCat(btn) {
@@ -302,7 +334,7 @@ function selectSplit(el, method) {
 
 function renderSplitDetails() {
   const amount = parseFloat(document.getElementById('amount-input').value) || 0;
-  const perPerson = splitMethod === 'equal' ? (amount / members.length).toFixed(2) : '—';
+  const perPerson = splitMethod === 'equal' && members.length > 0 ? (amount / members.length).toFixed(2) : '—';
   document.getElementById('per-person-hint').textContent = splitMethod === 'equal' ? `${perPerson} € por persona` : '— € por persona';
 
   const container = document.getElementById('split-details');
@@ -311,7 +343,7 @@ function renderSplitDetails() {
     if (splitMethod === 'equal') {
       valueContent = `<span class="text-sm font-bold" style="color:var(--cyan)">${perPerson} €</span>`;
     } else if (splitMethod === 'percentage') {
-      valueContent = `<div class="flex items-center gap-1"><input type="number" value="25" min="0" max="100" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">%</span></div>`;
+      valueContent = `<div class="flex items-center gap-1"><input type="number" value="${Math.round(100/members.length)}" min="0" max="100" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">%</span></div>`;
     } else if (splitMethod === 'exact') {
       valueContent = `<input type="number" placeholder="0.00" class="sg-input w-24 text-center py-2 text-sm" style="padding:6px;"/>`;
     } else {
@@ -328,15 +360,17 @@ function renderSplitDetails() {
   }).join('');
 }
 
-// Live per-person update
 document.getElementById('amount-input').addEventListener('input', renderSplitDetails);
 
 async function saveExpense() {
   const amount = parseFloat(document.getElementById('amount-input').value);
   const desc = document.getElementById('desc-input').value.trim();
+  const groupSel = document.getElementById('group-input');
+  const groupId = groupSel ? groupSel.value : null;
 
   if (!amount || amount <= 0) { SGRouter.showToast('Introduce un importe válido', 'warning'); return; }
   if (!desc) { SGRouter.showToast('Añade una descripción', 'warning'); return; }
+  if (!groupId) { SGRouter.showToast('Selecciona un grupo', 'warning'); return; }
 
   if (!SGAuth.isLoggedIn()) {
     SGRouter.showToast('Inicia sesión primero', 'error');
@@ -350,35 +384,29 @@ async function saveExpense() {
   if (saveBtnBot) saveBtnBot.disabled = true;
 
   try {
-    // Get groupId from the select — use name as fallback key
-    const groupSel = document.getElementById('group-input');
-    const groupName = groupSel ? groupSel.value : '';
-    // We pass null groupId and rely on backend default; a real app would resolve it
-    const groupId = null;
-
-    const result = await SGApi.addExpense(
-      groupId, amount, 'EUR', selectedCat, desc, splitMethod
-    );
+    const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod);
 
     if (result && result.success) {
       SGRouter.showToast('Gasto guardado ✓', 'success');
       setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
     } else {
-      // If backend fails (e.g. no groupId), still show success UX so the user
-      // doesn't get stuck — log the error for debugging
       console.warn('addExpense backend:', result && result.error);
-      SGRouter.showToast('Gasto registrado localmente ✓', 'success');
-      setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+      SGRouter.showToast(result?.error || 'Error al guardar el gasto', 'error');
     }
   } catch (e) {
     console.error('saveExpense error:', e);
-    SGRouter.showToast('Gasto registrado ✓', 'success');
-    setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+    SGRouter.showToast('Error de conexión', 'error');
+  } finally {
+    if (saveBtnTop) saveBtnTop.disabled = false;
+    if (saveBtnBot) saveBtnBot.disabled = false;
   }
 }
 
+// ── Initialize ──
+loadGroups();
 renderPayers();
 renderSplitDetails();
+
 </script>
 
     <!-- Bottom Navigation Bar -->
@@ -407,7 +435,6 @@ renderSplitDetails();
             </button>
         </div>
     </nav>
-
 
         <script>
     if ('serviceWorker' in navigator) {
