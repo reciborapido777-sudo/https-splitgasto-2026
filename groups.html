@@ -231,10 +231,10 @@ async function loadGroups() {
       const card = document.createElement('div');
       card.className = 'group-card group reveal-node';
       card.style.animationDelay = `${i * 0.1}s`;
-      card.onclick = () => SGRouter.navigate('split', 'groups');
+      card.onclick = () => window.location.href = `split.html?groupId=${g.id}`;
       card.innerHTML = `
-        <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-1000" alt="">
-        <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
+          <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-110 transition-transform duration-1000" alt="">
+          <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
           <div class="flex justify-between items-center">
             <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
             <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
