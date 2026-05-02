@@ -1,12 +1,12 @@
 /**
- * SplitGasto 2026 - Service Worker v10.0
+ * SplitGasto 2026 - Service Worker v13.0
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
  * v10.0: min-h-screen eliminado de body.app-shell (scroll Android+Desktop), grupos/gastos/registro
  *       conectados a API real, scanner guarda gastos, auth-register funcional,
  *       receipt-view guarda como gasto, create-group/add-expense usan SGApi
  */
 
-const CACHE_NAME = 'splitgasto-v12-2026';
+const CACHE_NAME = 'splitgasto-v13-2026';
 const STATIC_ASSETS = [
     'engine/router.js',
     'engine/global.css',
@@ -29,7 +29,7 @@ const STATIC_ASSETS = [
 
 // ── Install: pre-cache static assets ───────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Installing v10.0…');
+    console.log('[SW] Installing v13.0…');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {
@@ -41,7 +41,7 @@ self.addEventListener('install', event => {
 
 // ── Activate: delete ALL old caches, claim clients ──────────────────────────
 self.addEventListener('activate', event => {
-    console.log('[SW] Activating v10.0…');
+    console.log('[SW] Activating v13.0…');
     event.waitUntil(
         caches.keys()
             .then(keys => Promise.all(
