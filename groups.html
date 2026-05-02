@@ -195,123 +195,92 @@
 
 <script>
 const GROUP_BGS = [
-  'linear-gradient(135deg, #0d0500 0%, #1a0800 100%)',
-  'linear-gradient(135deg, #020c18 0%, #0a3a5a 100%)',
-  'linear-gradient(135deg, #0a0012 0%, #1a0030 100%)',
-  'linear-gradient(135deg, #001a0d 0%, #0a3a1a 100%)',
-  'linear-gradient(135deg, #1a0a00 0%, #3a1a00 100%)',
-  'linear-gradient(135deg, #0a001a 0%, #1a0040 100%)'
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23FF6B35'/><stop offset='1' stop-color='%23C0392B'/></linearGradient><radialGradient id='b' cx='75%25' cy='25%25' r='55%25'><stop offset='0' stop-color='%23FF9D42' stop-opacity='.3'/><stop offset='1' stop-color='%230d0500' stop-opacity='0'/></radialGradient></defs><rect width='800' height='400' fill='%230d0500'/><rect width='800' height='400' fill='url(%23b)'/><ellipse cx='600' cy='110' rx='200' ry='200' fill='url(%23a)' opacity='.15'/><polygon points='0,400 250,200 420,280 620,160 800,240 800,400' fill='%231a0800'/><circle cx='600' cy='115' r='50' fill='%23FF6B35' opacity='.28'/><circle cx='600' cy='115' r='25' fill='%23FF9D42' opacity='.35'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%2313ecd6' stop-opacity='.35'/><stop offset='1' stop-color='%230a3a5a' stop-opacity='.8'/></linearGradient></defs><rect width='800' height='400' fill='%23020c18'/><polygon points='0,400 100,200 250,290 400,130 560,250 700,110 800,190 800,400' fill='url(%23a)'/><polygon points='400,130 560,250 300,280' fill='%23ffffff' opacity='.07'/><circle cx='680' cy='85' r='45' fill='%23ffffff' opacity='.07'/><ellipse cx='400' cy='65' rx='220' ry='28' fill='%2313ecd6' opacity='.05'/><circle cx='100' cy='320' r='80' fill='%230a3a5a' opacity='.4'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23a855f7' stop-opacity='.45'/><stop offset='1' stop-color='%234c1d95' stop-opacity='.65'/></linearGradient><radialGradient id='b' cx='30%25' cy='70%25' r='60%25'><stop offset='0' stop-color='%23a855f7' stop-opacity='.15'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%230a0012'/><rect width='800' height='400' fill='url(%23b)'/><rect x='80' y='80' width='200' height='280' fill='url(%23a)' rx='4'/><rect x='300' y='120' width='160' height='240' fill='url(%23a)' rx='4' opacity='.7'/><rect x='485' y='100' width='190' height='260' fill='url(%23a)' rx='4' opacity='.55'/><rect x='700' y='140' width='60' height='220' fill='url(%23a)' rx='4' opacity='.4'/><rect x='100' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/><rect x='145' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/><rect x='190' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2322c55e' stop-opacity='.35'/><stop offset='1' stop-color='%23059669' stop-opacity='.2'/></linearGradient><radialGradient id='b' cx='70%25' cy='25%25' r='55%25'><stop offset='0' stop-color='%2313ecd6' stop-opacity='.22'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%23010f0d'/><rect width='800' height='400' fill='url(%23b)'/><rect x='50' y='50' width='210' height='130' rx='16' fill='url(%23a)'/><rect x='280' y='50' width='210' height='130' rx='16' fill='url(%23a)' opacity='.7'/><rect x='510' y='50' width='240' height='130' rx='16' fill='url(%23a)' opacity='.55'/><rect x='50' y='200' width='700' height='160' rx='16' fill='url(%23a)' opacity='.4'/><circle cx='680' cy='280' r='55' fill='%2313ecd6' opacity='.08'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f59e0b' stop-opacity='.4'/><stop offset='1' stop-color='%2392400e' stop-opacity='.5'/></linearGradient><radialGradient id='b' cx='50%25' cy='30%25' r='50%25'><stop offset='0' stop-color='%23f59e0b' stop-opacity='.2'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%230a0700'/><rect width='800' height='400' fill='url(%23b)'/><circle cx='200' cy='150' r='80' fill='url(%23a)' opacity='.3'/><circle cx='500' cy='100' r='60' fill='url(%23a)' opacity='.25'/><circle cx='650' cy='250' r='90' fill='url(%23a)' opacity='.2'/><circle cx='350' cy='300' r='50' fill='%23f59e0b' opacity='.1'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%233b82f6' stop-opacity='.35'/><stop offset='1' stop-color='%231e3a5f' stop-opacity='.6'/></linearGradient><radialGradient id='b' cx='40%25' cy='60%25' r='55%25'><stop offset='0' stop-color='%233b82f6' stop-opacity='.15'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%23050a18'/><rect width='800' height='400' fill='url(%23b)'/><rect x='100' y='80' width='250' height='180' rx='20' fill='url(%23a)' opacity='.5'/><rect x='400' y='120' width='280' height='200' rx='20' fill='url(%23a)' opacity='.35'/><circle cx='650' cy='100' r='70' fill='%233b82f6' opacity='.1'/></svg>`
 ];
 const GROUP_ACCENTS = ['#FF9D42', '#13ecd6', '#a855f7', '#22c55e', '#f59e0b', '#3b82f6'];
-const STATUS_LABELS = ['Activo', 'Auditando IA', 'Recurrente', 'Nuevo', 'Pendiente'];
-const STATUS_COLORS = ['#13ecd6', '#a855f7', '#FF9D42', '#22c55e', '#f59e0b'];
-const CAT_ICONS = {
-  food: 'restaurant', transport: 'directions_car', leisure: 'movie',
-  home: 'home', travel: 'flight', health: 'medical_services', other: 'receipt'
-};
-const CAT_COLORS = {
-  food: '#13ecd6', transport: '#a855f7', leisure: '#FF9D42',
-  home: '#ec4899', travel: '#3b82f6', health: '#22c55e', other: '#6b7280'
-};
+const CAT_ICONS = { food:'restaurant', transport:'directions_car', leisure:'movie', home:'home', travel:'flight', health:'medical_services', other:'receipt' };
+const CAT_COLORS = { food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42', home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280' };
 
 async function loadGroups() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
-
   try {
     const result = await SGApi.getGroups();
     if (!result || !result.success || !result.groups) return;
-
     const groups = result.groups;
     const grid = document.getElementById('groups-grid');
     const ctaCard = grid.querySelector('.event-placeholder');
-
-    // Update summary
     document.getElementById('summary-groups').textContent = groups.length;
-
-    let totalBalance = 0;
-    let totalMembers = 0;
-
-    // Load balances for all groups
+    let totalBalance = 0, totalMembers = 0;
     for (let i = 0; i < groups.length; i++) {
       const g = groups[i];
-      const balancesResult = await SGApi.getBalances(g.id).catch(() => null);
-      const userId = SGAuth.getUserId();
-      const myBalance = (balancesResult?.success && balancesResult?.balances) ? (balancesResult.balances[userId] || 0) : 0;
-      totalBalance += myBalance;
-
-      const memberCount = g.members ? g.members.length : 1;
-      totalMembers += memberCount;
-
+      const balRes = await SGApi.getBalances(g.id).catch(() => null);
+      const uid = SGAuth.getUserId();
+      const myBal = (balRes?.success && balRes?.balances) ? (balRes.balances[uid] || 0) : 0;
+      totalBalance += myBal;
+      const mc = g.members ? g.members.length : 1;
+      totalMembers += mc;
       const accent = GROUP_ACCENTS[i % GROUP_ACCENTS.length];
       const bg = GROUP_BGS[i % GROUP_BGS.length];
-      const statusIdx = i % STATUS_LABELS.length;
-      const balanceSign = myBalance >= 0 ? '+' : '';
-      const balanceColor = myBalance >= 0 ? '#13ecd6' : '#ef4444';
-
+      const bSign = myBal >= 0 ? '+' : '';
+      const bColor = myBal >= 0 ? '#13ecd6' : '#ef4444';
       const card = document.createElement('div');
       card.className = 'group-card group reveal-node';
       card.style.animationDelay = `${i * 0.1}s`;
       card.onclick = () => SGRouter.navigate('split', 'groups');
       card.innerHTML = `
-        <div class="absolute inset-0" style="background:${bg}"></div>
+        <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-1000" alt="">
         <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
           <div class="flex justify-between items-center">
-            <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">${STATUS_LABELS[statusIdx]}</span>
-            <p class="text-[8px] text-zinc-600 uppercase">${memberCount} socio${memberCount !== 1 ? 's' : ''}</p>
+            <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
+            <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
           </div>
           <div class="space-y-0.5">
             <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${g.name}</h3>
-            <div class="flex justify-between items-center">
-              <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="money-display" style="color:${balanceColor}">${balanceSign}${myBalance.toFixed(2)}€</span></p>
-            </div>
+            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="money-display" style="color:${bColor}">${bSign}${myBal.toFixed(2)}€</span></p>
           </div>
         </div>`;
-
       grid.insertBefore(card, ctaCard);
     }
-
-    // Update summary totals
-    const balSign = totalBalance >= 0 ? '+' : '';
-    const balColor = totalBalance >= 0 ? '#13ecd6' : '#ef4444';
-    const balanceEl = document.getElementById('summary-balance');
-    balanceEl.textContent = `${balSign}${totalBalance.toFixed(2)}€`;
-    balanceEl.style.color = balColor;
+    const tSign = totalBalance >= 0 ? '+' : '';
+    const tColor = totalBalance >= 0 ? '#13ecd6' : '#ef4444';
+    const balEl = document.getElementById('summary-balance');
+    balEl.textContent = `${tSign}${totalBalance.toFixed(2)}€`;
+    balEl.style.color = tColor;
     document.getElementById('summary-members').textContent = totalMembers;
-
-    // Load recent activity from first group
     if (groups.length > 0) {
-      const expResult = await SGApi.getExpenses(groups[0].id).catch(() => null);
-      const activityEl = document.getElementById('groups-activity');
-      if (expResult?.success && expResult.expenses?.length > 0) {
-        const recent = expResult.expenses.slice(0, 3);
-        activityEl.innerHTML = recent.map((exp, idx) => {
+      const expRes = await SGApi.getExpenses(groups[0].id).catch(() => null);
+      const actEl = document.getElementById('groups-activity');
+      if (expRes?.success && expRes.expenses?.length > 0) {
+        const recent = expRes.expenses.slice(0, 3);
+        actEl.innerHTML = recent.map((exp, idx) => {
           const icon = CAT_ICONS[exp.category] || 'receipt';
           const color = CAT_COLORS[exp.category] || '#6b7280';
-          const sign = exp.amount >= 0 ? '+' : '';
-          const amtColor = exp.amount >= 0 ? '#13ecd6' : '#ef4444';
-          return `
-            <div class="flex justify-between items-center py-3.5 ${idx < recent.length - 1 ? 'border-b border-white/5' : ''}">
-              <div class="flex items-center gap-4">
-                <div class="size-9 rounded-xl border flex items-center justify-center" style="background:${color}10;border-color:${color}15">
-                  <span class="material-icons-round text-sm" style="color:${color}">${icon}</span>
-                </div>
-                <div>
-                  <p class="text-xs font-black uppercase">${exp.description || exp.category}</p>
-                  <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
-                </div>
+          const s = exp.amount >= 0 ? '+' : '';
+          const ac = exp.amount >= 0 ? '#13ecd6' : '#ef4444';
+          return `<div class="flex justify-between items-center py-3.5 ${idx<recent.length-1?'border-b border-white/5':''}">
+            <div class="flex items-center gap-4">
+              <div class="size-9 rounded-xl border flex items-center justify-center" style="background:${color}10;border-color:${color}15">
+                <span class="material-icons-round text-sm" style="color:${color}">${icon}</span>
               </div>
-              <p class="text-base font-black font-['Space_Grotesk'] money-display" style="color:${amtColor}">${sign}${exp.amount?.toFixed(2)}€</p>
-            </div>`;
+              <div>
+                <p class="text-xs font-black uppercase">${exp.description||exp.category}</p>
+                <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
+              </div>
+            </div>
+            <p class="text-base font-black font-['Space_Grotesk'] money-display" style="color:${ac}">${s}${exp.amount?.toFixed(2)}€</p>
+          </div>`;
         }).join('');
       } else {
-        activityEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin actividad reciente</p>';
+        actEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin actividad reciente</p>';
       }
     }
-  } catch (e) {
-    console.error('Groups load error:', e);
-  }
+  } catch (e) { console.error('Groups load error:', e); }
 }
-
 loadGroups();
 </script>
 
