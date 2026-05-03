@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
         .control-display {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(19, 236, 214, 0.05) 100%);
             border: 1px solid rgba(255,255,255,0.1);
@@ -44,8 +44,9 @@
             border-color: #13ecd6 !important;
             box-shadow: 0 0 20px rgba(19, 236, 214, 0.2);
         }
-</style>
-<link rel="manifest" href="manifest.json">
+    </style>
+
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -56,6 +57,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <script src="engine/router.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell pb-32">
 <div class="app-frame">
@@ -125,90 +128,118 @@
             <div class="flex justify-between items-center border-b border-white/5 pb-6">
                 <div class="flex items-center gap-4">
                     <span class="size-3 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Sushi Kyoto Pro</h2>
+                    <h2 id="split-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Cargando…</h2>
                 </div>
-                <p class="text-4xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display leading-none">25,56€</p>
+                <p id="split-total" class="text-4xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display leading-none">0,00€</p>
             </div>
-            
-            <div class="grid grid-cols-1 gap-4">
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
-                    <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl border border-[#FF9D42]/30 transition-all duration-500">
-                        <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Usted</p>
-                            <p class="text-xs font-black uppercase text-white">Comandante</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-black font-['Space_Grotesk'] money-display text-white leading-none">8,52€</p>
-                        <span class="text-[8px] font-black text-[#13ecd6] uppercase tracking-widest">Liquidado</span>
-                    </div>
-                </div>
-
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 opacity-60">
-                    <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=MR&backgroundColor=0a2a1a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl grayscale transition-all duration-500">
-                        <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Socio Alpha</p>
-                            <p class="text-xs font-black uppercase">Mario</p>
-                        </div>
-                    </div>
-                    <p class="font-black font-['Space_Grotesk'] money-display text-zinc-400 leading-none">8,52€</p>
-                </div>
-
-                <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 opacity-60">
-                    <div class="flex items-center gap-4">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=EL&backgroundColor=1a0a2a&fontFamily=Arial&fontSize=40" class="avatar-img size-10 rounded-xl grayscale transition-all duration-500" alt="Elena">
-                        <div>
-                            <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Socia Alpha</p>
-                            <p class="text-xs font-black uppercase">Elena</p>
-                        </div>
-                    </div>
-                    <p class="font-black font-['Space_Grotesk'] money-display text-zinc-400 leading-none">8,52€</p>
-                </div>
+            <div id="split-participants" class="grid grid-cols-1 gap-4">
+                <p class="text-xs text-zinc-600 text-center py-6">Cargando participantes…</p>
             </div>
         </main>
-    </div>
 
-        <script>
-        let selectedGame = null;
+<script>
+async function loadSplitData() {
+  if (!SGAuth || !SGAuth.isLoggedIn()) return;
+  const params = new URLSearchParams(window.location.search);
+  const groupId = params.get('groupId');
+  if (!groupId) return;
 
-        function updateControl(element, game) {
-            document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
-            selectedGame = game;
-            element.classList.add('active-glow');
-            
-            const label = document.getElementById('active-game-label');
-            const icon = document.getElementById('game-icon');
-            
-            label.innerText = game.toUpperCase() + ' ACTIVA';
-            label.style.color = '#a855f7';
-            
-            const icons = {
-                'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on'
-            };
-            icon.innerText = icons[game] || 'psychology';
-            
-            SGRouter.showToast(`${game} lista para ejecución`, 'info');
-        }
+  try {
+    const groupsResult = await SGApi.getGroups();
+    const group = groupsResult?.success && groupsResult?.groups?.find(g => g.id === groupId);
+    const groupName = group ? group.name : 'Grupo';
 
-        const gameRoutes = {
-            'Ruleta': 'game-roulette',
-            'Carta Alta': 'game-cards',
-            'Dardos': 'game-darts',
-            'Moneda': 'game-coin'
+    const expResult = await SGApi.getExpenses(groupId);
+    let total = 0;
+    if (expResult?.success && expResult.expenses) {
+      total = expResult.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    }
+
+    const balResult = await SGApi.getBalances(groupId);
+    const balances = (balResult?.success && balResult.balances) ? balResult.balances : {};
+    const userId = SGAuth.getUserId();
+    const memberIds = Object.keys(balances);
+    const perPerson = memberIds.length > 0 ? total / memberIds.length : total;
+
+    document.getElementById('split-group-name').textContent = groupName;
+    document.getElementById('split-total').textContent = `${total.toFixed(2)}€`;
+
+    const container = document.getElementById('split-participants');
+    const colors = ['#FF9D42', '#a855f7', '#13ecd6', '#ec4899', '#22c55e', '#3b82f6'];
+    container.innerHTML = memberIds.map((uid, i) => {
+      const bal = balances[uid] || 0;
+      const isMe = uid === userId;
+      const color = colors[i % colors.length];
+      const name = isMe ? 'Comandante' : `Socio ${i}`;
+      const initials = name[0].toUpperCase();
+      const balSign = bal >= 0 ? '+' : '';
+      const balColor = bal >= 0 ? '#13ecd6' : '#ef4444';
+      const share = perPerson.toFixed(2);
+      return `
+        <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 ${isMe ? '' : 'opacity-60'}">
+          <div class="flex items-center gap-4">
+            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all duration-500" style="background:${color}22;color:${color};border-color:${color}33;${isMe ? '' : 'filter:grayscale(1)'}">${initials}</div>
+            <div>
+              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${isMe ? 'Usted' : 'Socio'}</p>
+              <p class="text-xs font-black uppercase text-white">${name}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">${share}€</p>
+            ${isMe ? `<span class="text-[8px] font-black text-[#13ecd6] uppercase tracking-widest">Liquidado</span>` : ''}
+            <p class="text-[8px] font-black uppercase tracking-widest" style="color:${balColor}">Balance: ${balSign}${bal.toFixed(2)}€</p>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (memberIds.length === 0) {
+      container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin participantes</p>';
+    }
+  } catch (e) {
+    console.error('Split load error:', e);
+  }
+}
+loadSplitData();
+</script>
+<script>
+    let selectedGame = null;
+
+    function updateControl(element, game) {
+        document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
+        selectedGame = game;
+        element.classList.add('active-glow');
+        
+        const label = document.getElementById('active-game-label');
+        const icon = document.getElementById('game-icon');
+        
+        label.innerText = game.toUpperCase() + ' ACTIVA';
+        label.style.color = '#a855f7';
+        
+        const icons = {
+            'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on'
         };
+        icon.innerText = icons[game] || 'psychology';
+        
+        SGRouter.showToast(`${game} lista para ejecución`, 'info');
+    }
 
-        function executeSplit() {
-            if (!selectedGame) {
-                SGRouter.showToast('Seleccione un protocolo de azar', 'error');
-                return;
-            }
-            const route = gameRoutes[selectedGame];
-            SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
-            setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+    const gameRoutes = {
+        'Ruleta': 'game-roulette',
+        'Carta Alta': 'game-cards',
+        'Dardos': 'game-darts',
+        'Moneda': 'game-coin'
+    };
+
+    function executeSplit() {
+        if (!selectedGame) {
+            SGRouter.showToast('Seleccione un protocolo de azar', 'error');
+            return;
         }
-    </script>
+        const route = gameRoutes[selectedGame];
+        SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
+        setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+    }
+</script>
 
     <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
@@ -236,7 +267,7 @@
         </div>
     </nav>
 
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
