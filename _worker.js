@@ -755,24 +755,20 @@ async function handleBalances(request, env) {
     members.results.forEach(m => { balances[m.user_id] = 0; });
 
     // ── FIX: Calcular share según split_type ────────────────────────
-    expenses.results.forEach(e => {
+    for (const e of expenses.results) {
         const amount = e.amount;
         const paidBy = e.paid_by;
         const splitType = e.split_type || 'equal';
         const memberCount = members.results.length;
 
-        // El que paga siempre recibe crédito completo
         if (balances[paidBy] !== undefined) balances[paidBy] += amount;
 
         if (splitType === 'equal') {
-            // División igualitaria
             const share = amount / memberCount;
             members.results.forEach(m => {
                 if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
             });
         } else if (splitType === 'exact' || splitType === 'percentage' || splitType === 'shares') {
-            // Para exact/percentage/shares: buscar splits individuales
-            // Si no hay tabla expense_splits, fallback a equal
             try {
                 const splits = await env.SPLITGASTO_DB.prepare(
                     'SELECT user_id, share_amount FROM expense_splits WHERE expense_id = ?'
@@ -789,21 +785,19 @@ async function handleBalances(request, env) {
                         }
                     });
                 } else {
-                    // Sin splits definidos → fallback a equal
                     const share = amount / memberCount;
                     members.results.forEach(m => {
                         if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                     });
                 }
             } catch {
-                // Tabla expense_splits no existe → fallback a equal
                 const share = amount / memberCount;
                 members.results.forEach(m => {
                     if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                 });
             }
         }
-    });
+    }
 
     settlements.results.forEach(s => {
         if (balances[s.from_user] !== undefined) balances[s.from_user] += s.amount;
