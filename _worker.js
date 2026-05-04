@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.0 — 2026-04-26
+ * Versión: 4.1 — 2026-05-04
  *
  * Bindings:
  *  - env.ASSETS                  → Assets estáticos
@@ -86,7 +86,7 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.0',
+            version: env.APP_VERSION ?? '4.1',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -177,6 +177,16 @@ async function verifyPassword(password, storedHash) {
 // ═══════════════════════════════════════════════════════════════════════
 // Auth — JWT con Web Crypto API + PBKDF2 passwords
 // ═══════════════════════════════════════════════════════════════════════
+
+// ── Helper: Base64 URL-safe para Unicode ────────────────────────────
+function b64Encode(data) {
+    return btoa(unescape(encodeURIComponent(data)));
+}
+
+function b64Decode(b64) {
+    return decodeURIComponent(escape(atob(b64)));
+}
+
 function getJwtSecret(env) {
     return env.JWT_SECRET || 'splitgasto-2026-fallback-secret-change-me';
 }
@@ -186,8 +196,8 @@ async function signJWT(payload, env) {
     const now = Math.floor(Date.now() / 1000);
     const data = { ...payload, iat: now, exp: now + 86400 * 7 };
     const enc = new TextEncoder();
-    const headerB64 = btoa(JSON.stringify(header));
-    const payloadB64 = btoa(JSON.stringify(data));
+    const headerB64 = b64Encode(JSON.stringify(header));
+    const payloadB64 = b64Encode(JSON.stringify(data));
     const message = `${headerB64}.${payloadB64}`;
     const key = await crypto.subtle.importKey(
         'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
@@ -208,7 +218,7 @@ async function verifyJWT(token, env) {
         const sig = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
         const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
         if (!valid) return null;
-        const payload = JSON.parse(atob(parts[1]));
+        const payload = JSON.parse(b64Decode(parts[1]));
         if (payload.exp < Date.now() / 1000) return null;
         return payload;
     } catch { return null; }
@@ -220,14 +230,12 @@ async function getAuthUser(request, env) {
     return await verifyJWT(authHeader.substring(7), env);
 }
 
-// ── Middleware de autenticación para rutas protegidas ────────────────
 async function requireAuth(request, env) {
     const user = await getAuthUser(request, env);
     if (!user) return { error: jsonResponse({ error: 'No autorizado — token inválido o expirado' }, 401, request), user: null };
     return { error: null, user };
 }
 
-// ── Generar código de recuperación (6 dígitos) ─────────────────────
 function generateRecoveryCode() {
     return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -235,7 +243,6 @@ function generateRecoveryCode() {
 async function handleAuth(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
 
-    // ── Registro ────────────────────────────────────────────────────
     if (path === '/api/auth/register' && request.method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
@@ -259,7 +266,6 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, token, user: { id, name, email } }, 201);
     }
 
-    // ── Login ───────────────────────────────────────────────────────
     if (path === '/api/auth/login' && request.method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
@@ -271,7 +277,6 @@ async function handleAuth(request, env, path) {
         ).bind(email).first();
         if (!user) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
 
-        // Verificar contraseña con PBKDF2
         if (!user.password_hash) return jsonResponse({ error: 'Cuenta sin contraseña. Usa recuperación.' }, 401);
         const validPassword = await verifyPassword(password, user.password_hash);
         if (!validPassword) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
@@ -280,7 +285,6 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
     }
 
-    // ── Perfil actual ───────────────────────────────────────────────
     if (path === '/api/auth/me' && request.method === 'GET') {
         const { error, user: authUser } = await requireAuth(request, env);
         if (error) return error;
@@ -292,7 +296,6 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, user });
     }
 
-    // ── Cambiar contraseña ──────────────────────────────────────────
     if (path === '/api/auth/change-password' && request.method === 'POST') {
         const { error, user: authUser } = await requireAuth(request, env);
         if (error) return error;
@@ -319,7 +322,6 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, message: 'Contraseña actualizada' });
     }
 
-        // ── Solicitar recuperación de contraseña ─────────────────────────
     if (path === '/api/auth/forgot-password' && request.method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
@@ -340,13 +342,9 @@ async function handleAuth(request, env, path) {
             );
         }
 
-        return jsonResponse({
-            success: true,
-            message: 'Si el email existe, recibirás un código',
-        });
+        return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
     }
 
-   // ── Verificar código y restablecer contraseña ───────────────────
     if (path === '/api/auth/reset-password' && request.method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
@@ -359,7 +357,6 @@ async function handleAuth(request, env, path) {
         const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400);
 
-        // Verificar que no hayan pasado más de 15 minutos
         if (Date.now() - stored.createdAt > 900000) {
             await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
             return jsonResponse({ error: 'Código expirado' }, 400);
@@ -373,7 +370,6 @@ async function handleAuth(request, env, path) {
             'UPDATE users SET password_hash = ? WHERE id = ?'
         ).bind(hashedPassword, userId).run();
 
-        // Eliminar código usado
         await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
 
         return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' });
@@ -381,28 +377,24 @@ async function handleAuth(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
 }
-
 // ═══════════════════════════════════════════════════════════════════════
 // Workers AI — con AI Gateway para optimizar costos
 // ═══════════════════════════════════════════════════════════════════════
+
 async function handleAI(request, env, path) {
     if (!env.AI) return jsonResponse({ error: 'Workers AI no disponible' }, 503);
     if (request.method !== 'POST') return jsonResponse({ error: 'Usa POST.' }, 405);
 
-    // Todas las rutas de AI requieren autenticación
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
     let body = {};
     if (path !== '/api/ai/scan-ticket-upload') {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
-    
-    // AI Gateway es opcional — si no existe en el dashboard CF, se omite y funciona directamente.
-    // El error {code:403} ocurre cuando el gateway ID no existe en la cuenta.
+
     const gatewayId = env.AI_GATEWAY || '';
     const gatewayOpts = gatewayId ? { gateway: { id: gatewayId, cacheTtl: 3600 } } : {};
 
-    // ── /api/ai/chat — Chat financiero (Llama 3.1) ───────────────────
     if (path === '/api/ai/chat') {
         const userMessage = body.message || body.prompt || '';
         if (!userMessage) return jsonResponse({ error: 'Campo "message" requerido' }, 400);
@@ -426,7 +418,6 @@ async function handleAI(request, env, path) {
                 temperature: body.temperature ?? 0.7,
                 ...gatewayOpts,
             });
-
             const response = { success: true, response: result.response, model: '@cf/meta/llama-3.1-8b-instruct' };
             await setCache(env, cacheKey, response, 600);
             return jsonResponse(response);
@@ -435,7 +426,6 @@ async function handleAI(request, env, path) {
         }
     }
 
-    // ── /api/ai/classify — Clasificar gasto (Llama 3.2 1B) ──────────
     if (path === '/api/ai/classify') {
         const expense = body.expense || '';
         if (!expense) return jsonResponse({ error: 'Campo "expense" requerido' }, 400);
@@ -460,7 +450,6 @@ async function handleAI(request, env, path) {
                 temperature: 0.1,
                 ...gatewayOpts,
             });
-
             let category = 'otro';
             try {
                 const parsed = JSON.parse(result.response);
@@ -469,7 +458,6 @@ async function handleAI(request, env, path) {
                 const match = result.response.match(/"category"\s*:\s*"([^"]+)"/);
                 if (match) category = match[1];
             }
-
             const response = { success: true, category, expense };
             await setCache(env, cacheKey, response, 3600);
             return jsonResponse(response);
@@ -478,42 +466,27 @@ async function handleAI(request, env, path) {
         }
     }
 
-    // ── /api/ai/scan-ticket — Escanear recibo (Vision) ──────────────
     if (path === '/api/ai/scan-ticket') {
         const { image } = body;
         if (!image) return jsonResponse({ error: 'Campo "image" (base64) requerido' }, 400);
-
         try {
             const result = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
-                    {
-                        role: 'system',
-                        content: 'Eres un escáner de recibos. Extrae: ' +
-                            '{"merchant":"comercio","date":"fecha","total":0.00,' +
-                            '"currency":"moneda","items":[{"name":"producto","price":0.00}], ' +
-                            '"category":"categoría"}. Responde SOLO JSON válido.',
-                    },
-                    {
-                        role: 'user',
-                        content: 'Extrae los datos de este ticket.',
-                    },
+                    { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
+                        '{"merchant":"comercio","date":"fecha","total":0.00,' +
+                        '"currency":"moneda","items":[{"name":"producto","price":0.00}], ' +
+                        '"category":"categoría"}. Responde SOLO JSON válido.' },
+                    { role: 'user', content: 'Extrae los datos de este ticket.' },
                 ],
                 image: `data:image/jpeg;base64,${image}`,
-                max_tokens: 512,
-                temperature: 0.1,
-                ...gatewayOpts,
+                max_tokens: 512, temperature: 0.1, ...gatewayOpts,
             });
-
-
             let ticketData = {};
             try {
                 const jsonMatch = result.response.match(/\{[\s\S]*\}/);
                 ticketData = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: result.response };
-            } catch {
-                ticketData = { raw: result.response };
-            }
+            } catch { ticketData = { raw: result.response }; }
 
-            // Guardar imagen del recibo en R2 automáticamente
             let receiptKey = null;
             if (env.SPLITGASTO_BUCKET) {
                 try {
@@ -523,124 +496,78 @@ async function handleAI(request, env, path) {
                     for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
                     await env.SPLITGASTO_BUCKET.put(receiptKey, bytes, {
                         httpMetadata: { contentType: 'image/jpeg' },
-                        customMetadata: {
-                            userId: authUser.userId,
-                            uploadedAt: new Date().toISOString(),
-                            type: 'scanned-receipt',
-                        },
+                        customMetadata: { userId: authUser.userId, uploadedAt: new Date().toISOString(), type: 'scanned-receipt' },
                     });
-                } catch (uploadErr) {
-                    console.error('Error guardando recibo en R2:', uploadErr.message);
-                }
+                } catch (uploadErr) { console.error('Error guardando recibo en R2:', uploadErr.message); }
             }
-
-            return jsonResponse({
-                success: true,
-                data: ticketData,
-                receiptKey,
-                model: '@cf/meta/llama-3.2-11b-vision-instruct',
-            });
+            return jsonResponse({ success: true, data: ticketData, receiptKey, model: '@cf/meta/llama-3.2-11b-vision-instruct' });
         } catch (err) {
             return jsonResponse({ error: 'Error escaneando ticket', detail: err.message }, 500);
         }
     }
 
-    // ── /api/ai/summary — Resumen financiero (Llama 3.1) ────────────
     if (path === '/api/ai/summary') {
         const data = body.data || body.expenses || '';
         if (!data) return jsonResponse({ error: 'Campo "data" requerido' }, 400);
-
         const prompt = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-
         try {
             const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
                 messages: [
-                    {
-                        role: 'system',
-                        content: 'Eres un analista financiero. Analiza gastos compartidos y genera ' +
-                            'un resumen en español (máx 3 párrafos): quién debe más, categorías principales, ' +
-                            'y 2 recomendaciones para ahorrar.',
-                    },
+                    { role: 'system', content: 'Eres un analista financiero. Analiza gastos compartidos y genera ' +
+                        'un resumen en español (máx 3 párrafos): quién debe más, categorías principales, ' +
+                        'y 2 recomendaciones para ahorrar.' },
                     { role: 'user', content: `Analiza estos gastos:\n${prompt}` },
                 ],
-                max_tokens: 400,
-                temperature: 0.5,
-                ...gatewayOpts,
+                max_tokens: 400, temperature: 0.5, ...gatewayOpts,
             });
-
             return jsonResponse({ success: true, summary: result.response, model: '@cf/meta/llama-3.1-8b-instruct' });
         } catch (err) {
             return jsonResponse({ error: 'Error generando resumen', detail: err.message }, 500);
         }
     }
 
-    // ── /api/ai/scan-ticket-upload — Escanear recibo (multipart) ────
     if (path === '/api/ai/scan-ticket-upload') {
         try {
             const formData = await request.formData();
             const image = formData.get('image');
-
             if (!image) return jsonResponse({ error: 'Campo "image" (archivo) requerido' }, 400);
-
             const MAX_SIZE = 10 * 1024 * 1024;
             if (image.size > MAX_SIZE) return jsonResponse({ error: 'Imagen excede 10MB' }, 413);
-
             const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
             if (!allowedImageTypes.includes(image.type)) return jsonResponse({ error: `Tipo no permitido: ${image.type}` }, 415);
 
-            // 1. Subir imagen a R2
             let receiptKey = null;
             if (env.SPLITGASTO_BUCKET) {
                 receiptKey = `receipts/${authUser.userId}/${Date.now()}-${image.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
                 await env.SPLITGASTO_BUCKET.put(receiptKey, image.stream(), {
                     httpMetadata: { contentType: image.type },
-                    customMetadata: {
-                        userId: authUser.userId,
-                        uploadedAt: new Date().toISOString(),
-                        type: 'scanned-receipt',
-                    },
+                    customMetadata: { userId: authUser.userId, uploadedAt: new Date().toISOString(), type: 'scanned-receipt' },
                 });
             }
 
-            // 2. Convertir imagen a base64 para AI
             const arrayBuffer = await image.arrayBuffer();
             const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
-            // 3. Enviar a Workers AI Vision
             const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
-                    {
-                        role: 'system',
-                        content: 'Eres un escáner de recibos. Extrae: ' +
-                            '{"merchant":"comercio","date":"fecha","total":0.00,' +
-                            '"currency":"moneda","items":[{"name":"producto","price":0.00}], ' +
-                            '"category":"categoría"}. Responde SOLO JSON válido.',
-                    },
-                    {
-                        role: 'user',
-                        content: 'Extrae los datos de este ticket.',
-                    },
+                    { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
+                        '{"merchant":"comercio","date":"fecha","total":0.00,' +
+                        '"currency":"moneda","items":[{"name":"producto","price":0.00}], ' +
+                        '"category":"categoría"}. Responde SOLO JSON válido.' },
+                    { role: 'user', content: 'Extrae los datos de este ticket.' },
                 ],
                 image: `data:${image.type};base64,${base64}`,
-                max_tokens: 512,
-                temperature: 0.1,
-                ...gatewayOpts,
+                max_tokens: 512, temperature: 0.1, ...gatewayOpts,
             });
 
-
-            // 4. Parsear respuesta
             let ticketData = {};
             try {
                 const jsonMatch = aiResult.response.match(/\{[\s\S]*\}/);
                 ticketData = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: aiResult.response };
-            } catch {
-                ticketData = { raw: aiResult.response };
-            }
+            } catch { ticketData = { raw: aiResult.response }; }
 
             return jsonResponse({
-                success: true,
-                data: ticketData,
-                receiptKey,
+                success: true, data: ticketData, receiptKey,
                 model: '@cf/meta/llama-3.2-11b-vision-instruct',
             });
         } catch (err) {
@@ -650,17 +577,13 @@ async function handleAI(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de AI no encontrada', path }, 404);
 }
-
 // ═══════════════════════════════════════════════════════════════════════
 // R2 Storage — Almacenamiento seguro
 // ═══════════════════════════════════════════════════════════════════════
 async function handleStorage(request, env, path) {
     if (!env.SPLITGASTO_BUCKET) return jsonResponse({ error: 'R2 no disponible' }, 503);
-
-    // Todas las rutas de storage requieren autenticación
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
-
     const method = request.method;
 
     if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
@@ -677,24 +600,19 @@ async function handleStorage(request, env, path) {
         return handleStorageDelete(request, env, key, authUser);
     }
     if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env, authUser);
-
     return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404);
 }
 
 async function handleStorageUpload(request, env, authUser) {
     try {
         const contentType = request.headers.get('Content-Type') || '';
-
         if (contentType.includes('multipart/form-data')) {
             const formData = await request.formData();
             const file = formData.get('file');
             const folder = formData.get('folder') || 'general';
-
             if (!file) return jsonResponse({ error: 'Campo "file" requerido' }, 400);
-
             const MAX_SIZE = 10 * 1024 * 1024;
             if (file.size > MAX_SIZE) return jsonResponse({ error: 'Archivo excede 10MB' }, 413);
-
             const allowedTypes = [
                 'image/jpeg', 'image/png', 'image/gif', 'image/webp',
                 'application/pdf', 'text/plain', 'text/csv',
@@ -702,37 +620,29 @@ async function handleStorageUpload(request, env, authUser) {
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ];
             if (!allowedTypes.includes(file.type)) return jsonResponse({ error: `Tipo no permitido: ${file.type}` }, 415);
-
             const timestamp = Date.now();
             const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
             const key = `usuarios/${authUser.userId}/${folder}/${timestamp}-${sanitizedName}`;
-
             await env.SPLITGASTO_BUCKET.put(key, file.stream(), {
                 httpMetadata: { contentType: file.type },
                 customMetadata: { userId: authUser.userId, originalName: file.name, uploadedAt: new Date().toISOString() },
             });
-
             return jsonResponse({ success: true, key, size: file.size, type: file.type, message: 'Archivo subido' }, 201);
         }
-
         const body = await request.json();
         const { data, filename, folder, mimeType } = body;
         if (!data || !filename) return jsonResponse({ error: 'Campos "data" y "filename" requeridos' }, 400);
-
         const fld = folder || 'general';
         const timestamp = Date.now();
         const sanitizedName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
         const key = `usuarios/${authUser.userId}/${fld}/${timestamp}-${sanitizedName}`;
-
         const binaryString = atob(data);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-
         await env.SPLITGASTO_BUCKET.put(key, bytes, {
             httpMetadata: { contentType: mimeType || 'application/octet-stream' },
             customMetadata: { userId: authUser.userId, originalName: filename, uploadedAt: new Date().toISOString() },
         });
-
         return jsonResponse({ success: true, key, message: 'Archivo subido' }, 201);
     } catch (err) {
         return jsonResponse({ error: 'Error subiendo archivo', detail: err.message }, 500);
@@ -741,21 +651,17 @@ async function handleStorageUpload(request, env, authUser) {
 
 async function handleStorageDownload(request, env, key, authUser) {
     try {
-        // Verificar que el usuario solo acceda a sus propios archivos
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
         }
-
         const object = await env.SPLITGASTO_BUCKET.get(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
-
         const headers = new Headers();
         object.writeHttpMetadata(headers);
         headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
         headers.set('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
         headers.set('Cache-Control', 'private, max-age=3600');
         setSecurityHeaders(headers);
-
         return new Response(object.body, { headers });
     } catch (err) {
         return jsonResponse({ error: 'Error descargando', detail: err.message }, 500);
@@ -767,10 +673,8 @@ async function handleSignedUrl(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado' }, 403);
         }
-
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
-
         const signedUrl = await env.SPLITGASTO_BUCKET.createSignedUrl(key, { expiresIn: 3600 });
         return jsonResponse({ success: true, url: signedUrl, expiresIn: 3600, key });
     } catch (err) {
@@ -783,10 +687,8 @@ async function handleStorageDelete(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`)) {
             return jsonResponse({ error: 'Acceso denegado' }, 403);
         }
-
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
-
         await env.SPLITGASTO_BUCKET.delete(key);
         return jsonResponse({ success: true, message: 'Archivo eliminado', key });
     } catch (err) {
@@ -800,16 +702,13 @@ async function handleStorageList(request, env, authUser) {
         const folder = url.searchParams.get('folder') || '';
         const limit = parseInt(url.searchParams.get('limit') || '50', 10);
         const cursor = url.searchParams.get('cursor') || undefined;
-
         const prefix = `usuarios/${authUser.userId}/${folder}`;
         const listed = await env.SPLITGASTO_BUCKET.list({ prefix, limit: Math.min(limit, 100), cursor });
-
         const objects = listed.objects.map((obj) => ({
             key: obj.key, size: obj.size,
             uploaded: obj.uploaded.toISOString(),
             type: obj.httpMetadata?.contentType || 'unknown',
         }));
-
         return jsonResponse({
             success: true, objects, truncated: listed.truncated,
             cursor: listed.truncated ? listed.cursor : null, count: objects.length,
@@ -820,12 +719,10 @@ async function handleStorageList(request, env, authUser) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Balances — Cálculo de deudas
+// Balances — Cálculo de deudas (FIX: respeta split_type)
 // ═══════════════════════════════════════════════════════════════════════
 async function handleBalances(request, env) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
-
-    // Requiere autenticación
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
 
@@ -833,7 +730,6 @@ async function handleBalances(request, env) {
     const groupId = url.searchParams.get('groupId');
     if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
 
-    // Verificar que el usuario pertenece al grupo
     const membership = await env.SPLITGASTO_DB.prepare(
         'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
     ).bind(groupId, authUser.userId).first();
@@ -855,20 +751,58 @@ async function handleBalances(request, env) {
         'SELECT user_id, role FROM group_members WHERE group_id = ?'
     ).bind(groupId).all();
 
-    // Calcular saldos netos
     const balances = {};
     members.results.forEach(m => { balances[m.user_id] = 0; });
 
+    // ── FIX: Calcular share según split_type ────────────────────────
     expenses.results.forEach(e => {
         const amount = e.amount;
         const paidBy = e.paid_by;
+        const splitType = e.split_type || 'equal';
         const memberCount = members.results.length;
-        const share = amount / memberCount;
 
+        // El que paga siempre recibe crédito completo
         if (balances[paidBy] !== undefined) balances[paidBy] += amount;
-        members.results.forEach(m => {
-            if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
-        });
+
+        if (splitType === 'equal') {
+            // División igualitaria
+            const share = amount / memberCount;
+            members.results.forEach(m => {
+                if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
+            });
+        } else if (splitType === 'exact' || splitType === 'percentage' || splitType === 'shares') {
+            // Para exact/percentage/shares: buscar splits individuales
+            // Si no hay tabla expense_splits, fallback a equal
+            try {
+                const splits = await env.SPLITGASTO_DB.prepare(
+                    'SELECT user_id, share_amount FROM expense_splits WHERE expense_id = ?'
+                ).bind(e.id).all();
+
+                if (splits.results.length > 0) {
+                    splits.results.forEach(s => {
+                        if (balances[s.user_id] !== undefined) {
+                            if (splitType === 'percentage') {
+                                balances[s.user_id] -= (amount * s.share_amount / 100);
+                            } else {
+                                balances[s.user_id] -= s.share_amount;
+                            }
+                        }
+                    });
+                } else {
+                    // Sin splits definidos → fallback a equal
+                    const share = amount / memberCount;
+                    members.results.forEach(m => {
+                        if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
+                    });
+                }
+            } catch {
+                // Tabla expense_splits no existe → fallback a equal
+                const share = amount / memberCount;
+                members.results.forEach(m => {
+                    if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
+                });
+            }
+        }
     });
 
     settlements.results.forEach(s => {
@@ -884,7 +818,6 @@ async function handleBalances(request, env) {
         if (rounded < -0.01) debtors.push({ userId, amount: Math.abs(rounded) });
         else if (rounded > 0.01) creditors.push({ userId, amount: rounded });
     });
-
     debtors.sort((a, b) => b.amount - a.amount);
     creditors.sort((a, b) => b.amount - a.amount);
 
@@ -893,11 +826,7 @@ async function handleBalances(request, env) {
     while (di < debtors.length && ci < creditors.length) {
         const amount = Math.min(debtors[di].amount, creditors[ci].amount);
         if (amount > 0.01) {
-            debts.push({
-                from: debtors[di].userId,
-                to: creditors[ci].userId,
-                amount: Math.round(amount * 100) / 100
-            });
+            debts.push({ from: debtors[di].userId, to: creditors[ci].userId, amount: Math.round(amount * 100) / 100 });
         }
         debtors[di].amount -= amount;
         creditors[ci].amount -= amount;
@@ -915,215 +844,221 @@ async function handleBalances(request, env) {
 // ═══════════════════════════════════════════════════════════════════════
 async function handleDatabase(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
-
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
-
     const method = request.method;
-
-    // Helper para leer body seguro en POST
     let body = {};
     if (method === 'POST') {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
 
-    // ── Grupos ────────────────────────────────────────────────────────
+    // ── Grupos GET ────────────────────────────────────────────────────
     if (path === '/api/db/groups' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
-
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403);
-
         const cacheKey = `db:groups:${userId}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
-
         const groups = await env.SPLITGASTO_DB.prepare(
             'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY g.updated_at DESC'
         ).bind(userId).all();
-
         const response = { success: true, groups: groups.results };
         await setCache(env, cacheKey, response, 60);
         return jsonResponse(response);
     }
 
+    // ── Grupos POST (FIX: currency default EUR) ──────────────────────
     if (path === '/api/db/groups' && method === 'POST') {
-        const { name, currency } = body;
+        const { name, currency, members } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
-
         const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO groups (id, name, currency, created_by) VALUES (?, ?, ?, ?)'
-        ).bind(id, name, currency || 'USD', userId).run();
+        ).bind(id, name, currency || 'EUR', userId).run();
 
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
         ).bind(id, userId, 'admin').run();
 
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
+        // FIX: Añadir miembros si se envían
+        if (Array.isArray(members) && members.length > 0) {
+            for (const memberId of members) {
+                if (memberId && memberId !== userId) {
+                    try {
+                        const exists = await env.SPLITGASTO_DB.prepare(
+                            'SELECT id FROM users WHERE id = ?'
+                        ).bind(memberId).first();
+                        if (exists) {
+                            await env.SPLITGASTO_DB.prepare(
+                                'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                            ).bind(id, memberId, 'member').run();
+                        }
+                    } catch {}
+                }
+            }
+        }
 
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
 
-    // ── Gastos ────────────────────────────────────────────────────────
-    if (path === '/api/db/expenses' && method === 'GET') {
-        const url = new URL(request.url);
-        const groupId = url.searchParams.get('groupId');
-        if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-
+    // ── Añadir miembros a grupo (NUEVO ENDPOINT) ─────────────────────
+    if (path === '/api/db/group-members' && method === 'POST') {
+        const { groupId, userId: memberUserId, role } = body;
+        if (!groupId || !memberUserId) return jsonResponse({ error: 'Campos "groupId" y "userId" requeridos' }, 400);
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+        if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
 
+        const userExists = await env.SPLITGASTO_DB.prepare(
+            'SELECT id FROM users WHERE id = ?'
+        ).bind(memberUserId).first();
+        if (!userExists) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+
+        await env.SPLITGASTO_DB.prepare(
+            'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+        ).bind(groupId, memberUserId, role || 'member').run();
+
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${authUser.userId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${memberUserId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
+
+        return jsonResponse({ success: true, message: 'Miembro añadido' }, 201);
+    }
+
+    // ── Gastos GET ────────────────────────────────────────────────────
+    if (path === '/api/db/expenses' && method === 'GET') {
+        const url = new URL(request.url);
+        const groupId = url.searchParams.get('groupId');
+        if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
         const cacheKey = `db:expenses:${groupId}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
-
         const page = parseInt(url.searchParams.get('page') || '1', 10);
         const perPage = Math.min(parseInt(url.searchParams.get('perPage') || '50', 10), 100);
         const offset = (page - 1) * perPage;
-
         const expenses = await env.SPLITGASTO_DB.prepare(
             'SELECT * FROM expenses WHERE group_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
         ).bind(groupId, perPage, offset).all();
-
         const total = await env.SPLITGASTO_DB.prepare(
             'SELECT COUNT(*) as count FROM expenses WHERE group_id = ?'
         ).bind(groupId).first();
-
         const response = {
-            success: true,
-            expenses: expenses.results,
+            success: true, expenses: expenses.results,
             pagination: { page, perPage, total: total.count, totalPages: Math.ceil(total.count / perPage) },
         };
         await setCache(env, cacheKey, response, 30);
         return jsonResponse(response);
     }
 
+    // ── Gastos POST (FIX: currency default EUR) ──────────────────────
     if (path === '/api/db/expenses' && method === 'POST') {
         const { groupId, amount, currency, category, description, splitType } = body;
         if (!groupId || !amount) return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400);
-
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-
         const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO expenses (id, group_id, paid_by, amount, currency, category, description, split_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(id, groupId, userId, amount, currency || 'USD', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
-
+        ).bind(id, groupId, userId, amount, currency || 'EUR', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
         await env.SPLITGASTO_CACHE?.delete(`db:expenses:${groupId}`);
         await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
         await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
-
         return jsonResponse({ success: true, id, message: 'Gasto registrado' }, 201);
     }
 
-    // ── Liquidaciones ─────────────────────────────────────────────────
+    // ── Liquidaciones GET ─────────────────────────────────────────────
     if (path === '/api/db/settlements' && method === 'GET') {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-
         const settlements = await env.SPLITGASTO_DB.prepare(
             'SELECT * FROM settlements WHERE group_id = ? ORDER BY created_at DESC'
         ).bind(groupId).all();
-
         return jsonResponse({ success: true, settlements: settlements.results });
     }
 
+    // ── Liquidaciones POST (FIX: currency default EUR) ───────────────
     if (path === '/api/db/settlements' && method === 'POST') {
         const { groupId, fromUserId, toUserId, amount, currency } = body;
         if (!groupId || !fromUserId || !toUserId || !amount) return jsonResponse({ error: 'Campos "groupId", "fromUserId", "toUserId", "amount" requeridos' }, 400);
-
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO settlements (id, group_id, from_user, to_user, amount, currency) VALUES (?, ?, ?, ?, ?, ?)'
-        ).bind(id, groupId, fromUserId, toUserId, amount, currency || 'USD').run();
-
+        ).bind(id, groupId, fromUserId, toUserId, amount, currency || 'EUR').run();
         await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
-
         return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201);
     }
 
-    // ── Perfil de usuario ─────────────────────────────────────────────
+    // ── Perfil GET ────────────────────────────────────────────────────
     if (path === '/api/db/profile' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
-
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tu propio perfil' }, 403);
-
         const cacheKey = `db:profile:${userId}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
-
         const profile = await env.SPLITGASTO_DB.prepare(
             'SELECT id, name, email, avatar_url FROM users WHERE id = ?'
         ).bind(userId).first();
-
         if (!profile) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
-
         const response = { success: true, profile };
         await setCache(env, cacheKey, response, 120);
         return jsonResponse(response);
     }
 
+    // ── Perfil POST ───────────────────────────────────────────────────
     if (path === '/api/db/profile' && method === 'POST') {
         const { name, email, avatar } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
-
         const userId = authUser.userId;
-
         if (email && !isValidEmail(email)) return jsonResponse({ error: 'Email inválido' }, 400);
-
         await env.SPLITGASTO_DB.prepare(
             'UPDATE users SET name = ?, email = ?, avatar_url = ? WHERE id = ?'
         ).bind(name, email || `${userId}@splitgasto.app`, avatar || '', userId).run();
-
         await env.SPLITGASTO_CACHE?.delete(`db:profile:${userId}`);
-
         return jsonResponse({ success: true, message: 'Perfil actualizado' });
     }
 
-    // ── Notificaciones ────────────────────────────────────────────────
+    // ── Notificaciones GET ────────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
-
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus notificaciones' }, 403);
-
         const notifications = await env.SPLITGASTO_DB.prepare(
             'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50'
         ).bind(userId).all();
-
         return jsonResponse({ success: true, notifications: notifications.results });
     }
 
+    // ── Notificaciones POST ───────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'POST') {
         const { title, message, type } = body;
         if (!title) return jsonResponse({ error: 'Campo "title" requerido' }, 400);
-
         const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)'
         ).bind(id, userId, title, message || '', type || 'info').run();
-
         return jsonResponse({ success: true, id, message: 'Notificación creada' }, 201);
     }
 
@@ -1131,17 +1066,23 @@ async function handleDatabase(request, env, path) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Helpers
+// Helpers (FIX: CORS mejorado)
 // ═══════════════════════════════════════════════════════════════════════
 const ALLOWED_ORIGINS = [
     'https://splitgasto.com',
     'https://www.splitgasto.com',
     'https://https-splitgasto-2026.reciborapido777.workers.dev',
+    'https://splitgasto-2026.pages.dev',
 ];
 
 function getOrigin(request) {
     const origin = request.headers.get('Origin') || '';
-    return ALLOWED_ORIGINS.includes(origin) ? origin : '*';
+    if (ALLOWED_ORIGINS.includes(origin)) return origin;
+    // Permitir cualquier workers.dev subdominio del usuario
+    if (origin.match(/^https:\/\/[a-z0-9-]+\.reciborapido777\.workers\.dev$/)) return origin;
+    // Permitir localhost para desarrollo
+    if (origin.match(/^http:\/\/localhost:\d+$/)) return origin;
+    return '*';
 }
 
 function jsonResponse(data, status = 200, request = null) {
@@ -1172,10 +1113,7 @@ function setSecurityHeaders(headers) {
     headers.set('X-Frame-Options', 'SAMEORIGIN');
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set(
-        'Permissions-Policy',
-        'camera=(self), microphone=(), geolocation=(self)'
-    );
+    headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
     const ct = headers.get('Content-Type') || '';
     if (ct.includes('text/html')) {
         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
