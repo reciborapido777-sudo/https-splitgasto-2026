@@ -254,48 +254,74 @@ let selectedCat = 'food';
 let splitMethod = 'equal';
 let members = [];
 
-// Set today's date
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('date-input').value = today;
 
-// ── Load groups from API ──
+// ── Load groups from API into select ──
+async function loadGroups() {
+  if (!SGAuth || !SGAuth.isLoggedIn()) return;
+  try {
+    const result = await SGApi.getGroups();
+    if (result && result.success && result.groups) {
+      groups = result.groups;
+      const sel = document.getElementById('group-input');
+      sel.innerHTML = '<option value="">Selecciona un grupo</option>';
+      groups.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = g.name;
+        sel.appendChild(opt);
+      });
+      // Auto-select if groupId in URL
+      const params = new URLSearchParams(window.location.search);
+      const preGroup = params.get('groupId');
+      if (preGroup) {
+        sel.value = preGroup;
+        loadGroupMembers(preGroup);
+      }
+    }
+  } catch (e) {
+    console.error('Error loading groups:', e);
+    const sel = document.getElementById('group-input');
+    sel.innerHTML = '<option value="">Error al cargar</option>';
+  }
+}
+
+// ── Listen for group selection ──
+document.getElementById('group-input').addEventListener('change', function() {
+  loadGroupMembers(this.value);
+});
+
 async function loadGroupMembers(groupId) {
   if (!groupId) { members = []; renderPayers(); renderSplitDetails(); return; }
   try {
     const colors = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#22c55e', '#3b82f6'];
+    const uid = SGAuth.getUserId();
 
-    // 1. Try to get member info from groups data
-    const group = groups.find(g => g.id === groupId);
-    if (group && group.members && group.members.length > 0) {
-      members = group.members.map((m, i) => ({
-        id: m.user_id || m.id,
-        name: m.name || m.email?.split('@')[0] || 'Usuario',
-        initials: (m.name || m.email || 'U')[0].toUpperCase(),
+    const balResult = await SGApi.getBalances(groupId);
+    if (balResult && balResult.success && balResult.balances) {
+      const userIds = Object.keys(balResult.balances);
+      const isMe = (id) => id === uid;
+      members = userIds.map((id, i) => ({
+        id: id,
+        name: isMe(id) ? 'Tú' : `Socio ${i + 1}`,
+        initials: isMe(id) ? 'T' : `S${i + 1}`,
         color: colors[i % colors.length]
       }));
-    } else {
-      // 2. Fallback: derive members from balances keys
-      const result = await SGApi.getBalances(groupId);
-      if (result && result.success && result.balances) {
-        const userIds = Object.keys(result.balances);
-        members = userIds.map((uid, i) => ({
-          id: uid,
-          name: uid.substring(0, 8),
-          initials: uid[0].toUpperCase(),
-          color: colors[i % colors.length]
-        }));
-      }
+      // Put "Tú" first
+      members.sort((a, b) => (a.id === uid ? -1 : b.id === uid ? 1 : 0));
     }
 
     if (members.length === 0) {
-      members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: 'self' }];
+      members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: uid || 'self' }];
     }
     selectedPayer = 0;
     renderPayers();
     renderSplitDetails();
   } catch (e) {
     console.error('Error loading members:', e);
-    members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: 'self' }];
+    const uid = SGAuth.getUserId();
+    members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: uid || 'self' }];
     renderPayers();
     renderSplitDetails();
   }
@@ -390,7 +416,6 @@ async function saveExpense() {
       SGRouter.showToast('Gasto guardado ✓', 'success');
       setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
     } else {
-      console.warn('addExpense backend:', result && result.error);
       SGRouter.showToast(result?.error || 'Error al guardar el gasto', 'error');
     }
   } catch (e) {
