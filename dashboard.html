@@ -16,14 +16,16 @@
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap');
         .experience-card{position:relative;height:280px;border-radius:3rem;overflow:hidden;border:1px solid rgba(255,255,255,.05);background:#0a0a0a;transform:translateZ(0)}
         .premium-badge{background:linear-gradient(135deg,#D4AF37,#F9E076);color:#000;font-size:8px;font-weight:900;padding:2px 6px;border-radius:999px;letter-spacing:.15em;text-transform:uppercase}
         .action-card:hover{background:rgba(255,255,255,.05) !important}
         .action-card:active{transform:scale(.95)}
     </style>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
@@ -33,12 +35,10 @@
 <div class="app-frame">
 
     <div class="max-w-lg mx-auto px-4 py-6 space-y-6">
-
         <header class="flex justify-between items-center py-2 sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4">
-            <button onclick="localStorage.removeItem('sg_token');localStorage.removeItem('sg_user');window.location.href='auth-login.html'" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
+            <button onclick="SGAuth.logout(); SGRouter.navigate('auth-login')" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
                 <span class="material-icons-round text-zinc-500 text-xl">logout</span>
             </button>
-
 
             <div class="flex items-center gap-3 cursor-pointer group flex-1 mx-3" onclick="SGRouter.navigate('profile','dashboard')">
                 <div class="relative">
