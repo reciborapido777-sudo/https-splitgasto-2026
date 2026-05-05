@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil Alpha | SplitGasto 2026</title>
-    
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
         .elite-card {
             background: linear-gradient(135deg, rgba(255, 157, 66, 0.05) 0%, rgba(0,0,0,1) 100%);
             border: 1px solid rgba(255, 157, 66, 0.15);
@@ -32,8 +30,8 @@
             letter-spacing: 2.5px;
             border-radius: 20px;
         }
-</style>
-<link rel="manifest" href="manifest.json">
+    </style>
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,8 +40,10 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <script src="engine/router.js" defer></script>
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell pb-40">
 <div class="app-frame">
@@ -51,6 +51,7 @@
     <div class="max-w-7xl mx-auto px-6 py-8 space-y-12">
         
         <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50">
+
             <div class="flex items-center gap-6">
                 <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
                     <span class="material-icons-round text-zinc-500 text-2xl">arrow_back</span>
@@ -60,10 +61,10 @@
                     <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Perfil</h1>
                 </div>
             </div>
-            <button onclick="SGRouter.navigate('landing')" class="size-14 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90">
+            <button onclick="SGAuth.logout(); SGRouter.navigate('auth-login')" class="size-14 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90">
                 <span class="material-icons-round">logout</span>
             </button>
-        </header>
+                    </header>
 
         <section class="elite-card p-12 md:p-16 reveal-node shadow-2xl">
             <div class="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
@@ -73,13 +74,11 @@
             <div class="flex flex-col md:flex-row items-center gap-12 relative z-10">
                 <div class="relative group">
                     <div class="absolute -inset-2 bg-[#FF9D42] rounded-[3.8rem] blur-xl opacity-10 group-hover:opacity-30 transition-all"></div>
-                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40" class="relative size-40 md:size-52 rounded-[3.5rem] border-2 border-[#FF9D42]/30 object-cover shadow-2xl" alt="Socio Fundador">
-                </div>
-                
-                <div class="text-center md:text-left space-y-8">
+                    <img id="profile-avatar" src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40" class="relative size-40 md:size-52 rounded-[3.5rem] border-2 border-[#FF9D42]/30 object-cover shadow-2xl" alt="Socio Fundador">    
+                </div>                <div class="text-center md:text-left space-y-8">
                     <div class="space-y-4">
                         <span class="status-tag">Socio Fundador Élite</span>
-                        <h2 class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-gradient-orange leading-none">Comandante</h2>
+                        <h2 id="profile-name" class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-gradient-orange leading-none">Comandante</h2>
                     </div>
                     <p class="text-zinc-500 text-[11px] font-bold max-w-lg uppercase tracking-widest leading-relaxed">
                         Protocolo de Auditoría Alpha activo. Acceso total a nodos de capital y herramientas de digitalización de Grado Militar.
@@ -200,7 +199,50 @@
             </button>
         </div>
     </nav>
-    
+    <script>
+    async function loadProfileData() {
+      if (!SGAuth || !SGAuth.isLoggedIn()) {
+        SGRouter.showToast('Inicia sesión primero', 'error');
+        setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+        return;
+      }
+
+      try {
+        const result = await SGApi.getProfile();
+        if (result && result.success && result.profile) {
+          const p = result.profile;
+
+          // Update name
+          const nameEl = document.getElementById('profile-name');
+          if (nameEl) nameEl.textContent = p.name || 'Comandante';
+
+          // Update avatar
+          const avatarEl = document.getElementById('profile-avatar');
+          if (avatarEl && p.avatar_url) {
+            avatarEl.src = p.avatar_url;
+          } else if (avatarEl) {
+            const initials = (p.name || 'SG')[0].toUpperCase();
+            avatarEl.src = `https://api.dicebear.com/9.x/initials/svg?seed=${initials}&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40`;
+          }
+        }
+
+        // Load groups count
+        const groupsResult = await SGApi.getGroups();
+        const groups = (groupsResult?.success && groupsResult?.groups) ? groupsResult.groups : [];
+        const statsEls = document.querySelectorAll('.grid.grid-cols-2 .space-y-2');
+        if (statsEls[0]) {
+          const countEl = statsEls[0].querySelector('.font-black');
+          if (countEl) countEl.textContent = groups.length;
+        }
+
+      } catch (e) {
+        console.error('Profile load error:', e);
+      }
+    }
+
+    loadProfileData();
+    </script>
+  
         <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
