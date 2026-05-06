@@ -11,7 +11,7 @@
 <style>
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh;  touch-action: manipulation; }
+  body { background:#0a0a0a; min-height:100vh;  touch-action: manipulation; }
 
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
@@ -88,8 +88,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
 </head>
@@ -286,7 +286,6 @@ async function createGroup() {
 
   try {
     const currency = document.getElementById('currency-sel').value || 'EUR';
-    // Include emoji+color in name for display purposes
     const fullName = selectedEmoji + ' ' + name;
 
     if (!SGAuth.isLoggedIn()) {
@@ -297,6 +296,20 @@ async function createGroup() {
 
     const result = await SGApi.createGroup(fullName, currency);
     if (result && result.success) {
+      const groupId = result.group?.id || result.group_id || result.id;
+
+      // Añadir miembros invitados al grupo (excluyendo al creador que ya está)
+      const invitedMembers = members.filter(m => m.name !== 'Commander' && m.name !== 'Tú');
+      if (groupId && invitedMembers.length > 0) {
+        for (const m of invitedMembers) {
+          try {
+            await SGApi.addGroupMember(groupId, m.name, m.role || 'Member');
+          } catch(e) {
+            console.warn('No se pudo añadir miembro:', m.name, e);
+          }
+        }
+      }
+
       SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
       setTimeout(() => SGRouter.navigate('groups', 'create-group'), 900);
     } else {
