@@ -322,11 +322,27 @@
             chartEl.innerHTML = html;
         }
 
-        function renderMembers(balances) {
+        function renderMembers(balancesData) {
             var container = document.getElementById('members-container');
             if (!container) return;
 
-            var list = (balances && balances.balances) ? balances.balances : [];
+            var list = [];
+            if (Array.isArray(balancesData)) {
+                list = balancesData;
+            } else if (balancesData && typeof balancesData === 'object') {
+                if (Array.isArray(balancesData.balances)) {
+                    list = balancesData.balances;
+                } else {
+                    Object.keys(balancesData).forEach(function(key) {
+                        if (key === 'success' || key === 'group_id') return;
+                        var val = parseFloat(balancesData[key]);
+                        if (!isNaN(val)) {
+                            list.push({ name: key, balance: val });
+                        }
+                    });
+                }
+            }
+
             if (list.length === 0) {
                 container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Sin balances pendientes</p>';
                 return;
@@ -334,7 +350,7 @@
 
             var html = '';
             list.forEach(function(b) {
-                var name = b.name || b.user_name || 'Socio';
+                var name = b.name || b.user_name || b.userName || String(b.user_id || b.userId || 'Socio');
                 var amount = parseFloat(b.balance || b.amount || 0);
                 var isPositive = amount >= 0;
                 var initials = name.substring(0, 2).toUpperCase();
@@ -344,7 +360,7 @@
                 var label = isPositive ? ' neto' : ' pendiente';
 
                 html += '<div class="flex items-center gap-4">' +
-                    '<img src="https://api.dicebear.com/9.x/initials/svg?seed=' + initials + '&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">' +
+                    '<img src="https://api.dicebear.com/9.x/initials/svg?seed=' + encodeURIComponent(initials) + '&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">' +
                     '<div class="flex-1">' +
                         '<div class="flex justify-between mb-1.5">' +
                             '<p class="text-[10px] font-black uppercase text-zinc-400">' + name + '</p>' +
@@ -358,47 +374,74 @@
             });
             container.innerHTML = html;
         }
-
+ 
         // === CARGA PRINCIPAL ===
         async function loadAnalytics() {
             try {
-                // Cargar gastos para categorías y gráfico
-                var expensesResult = await SGApi.getExpenses();
-                var expenses = [];
-                if (expensesResult && expensesResult.success && expensesResult.expenses) {
-                    expenses = expensesResult.expenses;
+                // 1. Cargar grupos del usuario
+                var groupsResult = await SGApi.getGroups();
+                var groups = [];
+                if (groupsResult && groupsResult.success && groupsResult.groups) {
+                    groups = groupsResult.groups;
                 }
 
-                // Cargar balances
-                var balancesResult = await SGApi.getBalances();
+                if (groups.length === 0) {
+                    document.getElementById('total-balance').textContent = formatMoney(0);
+                    document.getElementById('chart-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Únete a un grupo para ver métricas</p>';
+                    document.getElementById('categories-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Sin gastos registrados</p>';
+                    document.getElementById('members-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Sin balances pendientes</p>';
+                    return;
+                }
+
+                // 2. Cargar gastos y balances de TODOS los grupos
+                var allExpenses = [];
+                var allBalances = {};
                 var netBalance = 0;
-                if (balancesResult && balancesResult.success && balancesResult.balances) {
-                    balancesResult.balances.forEach(function(b) {
-                        netBalance += parseFloat(b.balance || b.amount || 0);
-                    });
+
+                for (var i = 0; i < groups.length; i++) {
+                    var gid = groups[i].id || groups[i].group_id;
+
+                    try {
+                        var expResult = await SGApi.getExpenses(gid);
+                        if (expResult && expResult.success && expResult.expenses) {
+                            allExpenses = allExpenses.concat(expResult.expenses);
+                        }
+                    } catch(e) {}
+
+                    try {
+                        var balResult = await SGApi.getBalances(gid);
+                        if (balResult) {
+                            if (Array.isArray(balResult.balances)) {
+                                balResult.balances.forEach(function(b) {
+                                    var key = b.name || b.user_name || b.user_id || 'unknown';
+                                    allBalances[key] = (allBalances[key] || 0) + parseFloat(b.balance || b.amount || 0);
+                                });
+                            } else {
+                                Object.keys(balResult).forEach(function(k) {
+                                    if (k === 'success' || k === 'group_id') return;
+                                    var val = parseFloat(balResult[k]);
+                                    if (!isNaN(val)) allBalances[k] = (allBalances[k] || 0) + val;
+                                });
+                            }
+                        }
+                    } catch(e) {}
                 }
 
-                // Renderizar balance total
-                var balEl = document.getElementById('total-balance');
-                if (balEl) {
-                    balEl.textContent = formatMoney(netBalance);
-                }
+                // 3. Calcular balance neto
+                Object.keys(allBalances).forEach(function(k) { netBalance += allBalances[k]; });
 
-                // Renderizar gráfico
-                renderChart(expenses);
+                // 4. Renderizar
+                document.getElementById('total-balance').textContent = formatMoney(netBalance);
+                renderChart(allExpenses);
+                renderCategories(allExpenses);
+                renderMembers(allBalances);
 
-                // Renderizar categorías
-                renderCategories(expenses);
-
-                // Renderizar miembros
-                renderMembers(balancesResult);
-
-                // Previsión simple
+                // 5. Previsión
                 var forecastEl = document.getElementById('forecast-text');
-                if (forecastEl && expenses.length > 0) {
-                    var totalExp = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
-                    var avgMonthly = totalExp / Math.max(1, new Set(expenses.map(function(e) { return (e.created_at || e.date || '').substring(0,7); })).size);
-                    var saving = Math.round(avgMonthly * 0.12);
+                if (forecastEl && allExpenses.length > 0) {
+                    var totalExp = allExpenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+                    var uniqueMonths = new Set(allExpenses.map(function(e) { return (e.created_at || e.date || '').substring(0,7); }));
+                    var saving = Math.round((totalExp / Math.max(1, uniqueMonths.size)) * 0.12);
                     forecastEl.innerHTML = 'El sistema estima un ahorro de <span class="text-white">' + saving.toLocaleString('es-ES') + '€</span> mensuales basado en su flujo de liquidación actual.';
                 } else if (forecastEl) {
                     forecastEl.textContent = 'Datos insuficientes para generar previsión.';
@@ -406,8 +449,7 @@
 
             } catch (e) {
                 console.error('[Analytics] Load error:', e);
-                var balEl = document.getElementById('total-balance');
-                if (balEl) balEl.textContent = 'Error';
+                document.getElementById('total-balance').textContent = 'Error';
             }
         }
 
