@@ -25,12 +25,7 @@ const SGApi = (function(){
     }
 
     // ── Auth ──────────────────────────────────────────────────────────
-    async function register(name, email, password) {
-        return request('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ name, email, password })
-        });
-    }
+    // register() eliminado — usar SGAuth.register() que además guarda la sesión
 
     async function login(email, password) {
         return request('/api/auth/login', {
@@ -50,6 +45,15 @@ const SGApi = (function(){
         return request('/api/db/groups', {
             method: 'POST',
             body: JSON.stringify({ name, currency: currency || 'EUR', userId })
+        });
+    }
+
+    async function addGroupMember(groupId, name, role) {
+        const userId = SGAuth.getUserId();
+        return request('/api/db/group-members', {
+            method: 'POST',
+            body: JSON.stringify({ groupId, userId, name, role: role || 'Member' }) 
+
         });
     }
 
@@ -102,6 +106,16 @@ const SGApi = (function(){
         const userId = SGAuth.getUserId();
         return request(`/api/db/notifications?userId=${userId}`);
     }
+
+    async function markNotificationsRead() {
+        const userId = SGAuth.getUserId();
+        return request('/api/db/notifications/read', {
+            method: 'POST',
+            body: JSON.stringify({ userId })
+        });
+    }
+
+
 
     // ── Storage (R2) ──────────────────────────────────────────────────
     async function uploadFile(file, folder) {
@@ -168,17 +182,18 @@ const SGApi = (function(){
     async function health() {
         return request('/api/health');
     }
-
     return {
-        register, login,
-        getGroups, createGroup,
+        login,
+        getGroups, createGroup, addGroupMember,
         getExpenses, addExpense,
         getBalances,
         getSettlements, createSettlement,
         getProfile, updateProfile,
-        getNotifications,
+        getNotifications, markNotificationsRead,
         uploadFile, getSignedUrl, listFiles, deleteFile,
         aiChat, aiClassify, aiScanTicket, aiSummary,
         health
     };
-})();
+
+
+    })();
