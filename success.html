@@ -12,12 +12,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
         
-        body, html {  
-            background: #000; color: #fff; 
-            font-family: 'Inter', sans-serif; 
-            height: 100vh; overflow: hidden !important; margin: 0; 
-            box-sizing: border-box;
-            overscroll-behavior: contain; touch-action: manipulation; }
+       body, html {  
+           background: #000; color: #fff; 
+           font-family: 'Inter', sans-serif; 
+           min-height: 100vh; margin: 0; 
+           overflow-x: hidden !important;
+           box-sizing: border-box;
+           overscroll-behavior: contain; touch-action: manipulation; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
@@ -81,8 +82,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
 </head>
 <body class="app-shell p-6 text-center space-y-12">
 <div class="app-frame">
@@ -103,11 +105,11 @@
         <div class="flex justify-between items-center border-b border-white/5 pb-8">
             <div class="text-left">
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Activo Procesado</p>
-                <p class="text-xl font-bold font-['Space_Grotesk'] uppercase tracking-tight">Sushi Kyoto Pro</p>
+                <p class="text-xl font-bold font-['Space_Grotesk'] uppercase tracking-tight" id="success-group">—</p>
             </div>
             <div class="text-right">
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Valor Final</p>
-                <p class="text-3xl font-black font-['Space_Grotesk'] text-gradient-cyan leading-none">25,56€</p>
+                <p class="text-3xl font-black font-['Space_Grotesk'] text-gradient-cyan leading-none" id="success-amount">—</p>
             </div>
         </div>
 
@@ -121,12 +123,12 @@
             </div>
             <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
                 <span>Distribución</span>
-                <span class="text-white">Simétrica Alpha</span>
+                <span id="success-split" class="text-white">—</span>
             </div>
         </div>
     </section>
 
-    <footer class="w-full max-w-xs space-y-4 reveal-node" style="animation-delay: 0.4s">
+        <footer class="w-full max-w-xs space-y-4 reveal-node" style="animation-delay: 0.4s">
         <button onclick="SGRouter.navigate('dashboard', 'success')" class="w-full py-7 bg-white text-black rounded-[2.2rem] font-black text-xs uppercase tracking-[0.5em] btn-premium-cyan transition-all shadow-2xl active:scale-95">
             Volver al Dashboard
         </button>
@@ -135,6 +137,36 @@
         </button>
     </footer>
 
+    <script>
+    (function() {
+        // Leer datos del último gasto desde sessionStorage (puesto por add-expense o receipt-view)
+        var lastExpense = null;
+        try { lastExpense = JSON.parse(sessionStorage.getItem('sg_last_expense') || 'null'); } catch(e) {}
+
+        if (lastExpense) {
+            var groupEl = document.getElementById('success-group');
+            var amountEl = document.getElementById('success-amount');
+            var splitEl = document.getElementById('success-split');
+
+            if (groupEl) groupEl.textContent = lastExpense.groupName || lastExpense.groupId || 'Grupo';
+            if (amountEl) amountEl.textContent = (lastExpense.amount || 0).toFixed(2) + '€';
+
+            var splitLabels = { equal: 'Simétrica Alpha', percentage: 'Porcentual', exact: 'Exacta', shares: 'Por partes' };
+            if (splitEl) splitEl.textContent = splitLabels[lastExpense.splitMethod] || lastExpense.splitMethod || 'Simétrica Alpha';
+
+            // Limpiar para que no se muestre de nuevo al recargar
+            sessionStorage.removeItem('sg_last_expense');
+        } else {
+            // Sin datos, mostrar genérico
+            var groupEl = document.getElementById('success-group');
+            var amountEl = document.getElementById('success-amount');
+            var splitEl = document.getElementById('success-split');
+            if (groupEl) groupEl.textContent = 'Operación registrada';
+            if (amountEl) amountEl.textContent = '✓';
+            if (splitEl) splitEl.textContent = 'Completada';
+        }
+    })();
+    </script>
     
     <!-- Bottom Navigation Bar -->
         <!-- Bottom Nav -->
