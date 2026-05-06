@@ -15,10 +15,10 @@
         body, html { 
             background: #000; color: #fff; 
             font-family: 'Inter', sans-serif; 
-            min-height: 100dvh; overflow-x: hidden !important; margin: 0; padding: 0; 
+            min-height: 100vh; overflow-x: hidden !important; margin: 0; padding: 0; 
             touch-action: manipulation; overscroll-behavior: contain; 
         }
-
+ 
         .glass-panel { 
             background: rgba(255, 255, 255, 0.02); 
             backdrop-filter: blur(40px); 
@@ -92,8 +92,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
+
 </head>
 <body class="app-shell pb-32">
 <div class="app-frame">
@@ -128,21 +130,21 @@
 
     <footer class="ui-layer p-10 flex flex-col items-center gap-10 reveal-node" style="animation-delay: 0.2s">
         <div class="flex justify-between items-center w-full max-w-sm px-4">
-            <button class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
-                <span class="material-icons-round text-3xl text-white">flash_on</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Flash</span>
-            </button>
-            
+        <button id="flash-btn" onclick="toggleFlash()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
+            <span class="material-icons-round text-3xl text-white">flash_on</span>
+            <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Flash</span>
+        </button>
+
             <button onclick="SGRouter.navigate('receipt', 'scanner')" class="size-24 shutter-alpha rounded-full flex items-center justify-center border-8 border-black/30 group" title="Abrir cámara">
                 <div class="size-20 rounded-full border-2 border-white/20 flex items-center justify-center">
                     <span class="material-icons-round text-black text-4xl">photo_camera</span>
                 </div>
             </button>
-            
-            <button class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
+
+            <button onclick="openGallery()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
                 <span class="material-icons-round text-3xl text-white">photo_library</span>
                 <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Galería</span>
-            </button>
+            </button>    
         </div>
         <p class="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em]">Digitalización de <span class="text-[#13ecd6]">Grado Militar</span></p>
     </footer>
@@ -175,8 +177,35 @@
         </div>
     </nav>
 
+      <script>
+      var flashOn = false;
 
-        <script>
+    function toggleFlash() {
+        flashOn = !flashOn;
+        var btn = document.getElementById('flash-btn');
+        if (flashOn) {
+            btn.classList.remove('opacity-30');
+            btn.classList.add('opacity-100');
+            btn.querySelector('span:last-child').textContent = 'Flash ON';
+            // El torch real se activa en receipt-view.html al abrir la cámara
+            sessionStorage.setItem('sg_flash', 'on');
+            SGRouter.showToast('Flash activado — se aplicará al abrir cámara', 'info');
+        } else {
+            btn.classList.remove('opacity-100');
+            btn.classList.add('opacity-30');
+            btn.querySelector('span:last-child').textContent = 'Flash';
+            sessionStorage.removeItem('sg_flash');
+            SGRouter.showToast('Flash desactivado', 'info');
+        }
+    }
+
+    function openGallery() {
+        // Navegar a receipt-view en modo galería
+        SGRouter.navigate('receipt', 'scanner');
+    }
+    </script>
+  
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
