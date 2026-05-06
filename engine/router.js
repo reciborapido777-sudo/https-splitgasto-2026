@@ -12,9 +12,9 @@ const SGRouter = {
         'landing':       'index.html',
         'auth':          'auth-login.html',
         'auth-login':    'auth-login.html',
-        'register':      'register.html',
-        'auth-register': 'register.html',
-        // Main App
+        'register':      'auth-register.html',
+        'auth-register': 'auth-register.html',
+                // Main App
         'dashboard':     'dashboard.html',
         'groups':        'groups.html',
         'activity':      'activity.html',
