@@ -11,16 +11,15 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        
+
         html, body {  
             background: #000; color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            display: flex; flex-direction: column; 
             min-height: 100vh; margin: 0; padding: 0;
             overflow-x: hidden !important;
             overscroll-behavior: contain; touch-action: manipulation; }
 
-        .glass-panel {
+                .glass-panel {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
@@ -63,8 +62,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
 </head>
@@ -81,7 +80,7 @@
         </div>
     </header>
 
-    <main class="space-y-10 flex-1 max-w-md mx-auto w-full reveal-node" style="animation-delay: 0.1s">
+        <main class="space-y-10 max-w-md mx-auto w-full reveal-node" style="animation-delay: 0.1s">
         <div class="space-y-8">
             <div class="space-y-3">
                 <p class="text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Identidad de Socio</p>
