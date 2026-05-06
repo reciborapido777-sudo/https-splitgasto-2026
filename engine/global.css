@@ -79,9 +79,8 @@ canvas {
 html {
     background-color: #000 !important;
     scroll-behavior: smooth;
-    overflow-x: hidden !important;
-    /* NO overflow-y — html no debe ser el scroll root        */
-    /* NO height:100% — bloquea scroll en escritorio          */
+    /* ⚠️ NO overflow-x:hidden aquí — convierte html en scroll root
+       y rompe el scroll táctil en Android. overflow-x va en body. */
     height: auto;                  /* html crece con contenido */
     touch-action: manipulation;    /* scroll + tap sin delay   */
 }
