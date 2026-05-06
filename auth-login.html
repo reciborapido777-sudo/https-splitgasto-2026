@@ -15,7 +15,7 @@
         html, body {  
             background: #000; color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            min-height: 100dvh; overflow-x: hidden !important; overflow-y: auto !important;
+            min-height: 100vh; overflow-x: hidden !important; overflow-y: auto !important;
             overscroll-behavior: contain; touch-action: manipulation; }
 
         .auth-input { 
@@ -47,7 +47,7 @@
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @media (min-width: 768px) {
-            .app-frame { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; min-height:calc(100dvh - 4rem) !important; padding:2rem !important; }
+            .app-frame { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; min-height:calc(100vh - 4rem) !important;
             .app-frame > div.w-full { max-width:520px !important; width:100% !important; }
         }
     </style>
@@ -62,8 +62,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
 </head>
 <body class="app-shell">
 <div class="app-frame">
@@ -113,7 +114,6 @@
 
     </div>
 
-        <script src="engine/auth.js"></script>
     <script>
     async function doLogin() {
         const email = document.getElementById('email').value.trim();
