@@ -17,22 +17,22 @@
         if (!frame) return;
 
         // ── Fixed bottom nav ──────────────────────────────────────────
-        var fixedBotEls = frame.querySelectorAll('[class*="fixed bottom"]');
+        var fixedBotEls = Array.from(frame.querySelectorAll('[class].fixed')).filter(function(el) {
+            return el.classList.contains('fixed') &&
+                   Array.from(el.classList).some(function(c) { return c.startsWith('bottom'); });
+        });
         fixedBotEls.forEach(function (el) {
             if (isDesktop) {
-                // Keep position:fixed but constrain to the frame column
                 el.style.left = 'auto';
                 el.style.right = 'auto';
                 el.style.width = frame.getBoundingClientRect().width + 'px';
                 el.style.marginLeft = '0';
                 el.style.marginRight = '0';
-                // horizontally centre the nav bar under the frame
                 var frameRect = frame.getBoundingClientRect();
                 el.style.left = frameRect.left + 'px';
                 el.style.maxWidth = '1200px';
                 el.style.borderRadius = '0 0 2rem 2rem';
             } else {
-                // Mobile: restore full-width fixed
                 el.style.left = '0';
                 el.style.right = '0';
                 el.style.width = '';
@@ -42,7 +42,10 @@
         });
 
         // ── Fixed top headers ─────────────────────────────────────────
-        var fixedTopEls = frame.querySelectorAll('[class*="fixed top"]');
+        var fixedTopEls = Array.from(frame.querySelectorAll('[class].fixed')).filter(function(el) {
+            return el.classList.contains('fixed') &&
+                   Array.from(el.classList).some(function(c) { return c.startsWith('top'); });
+        });
         fixedTopEls.forEach(function (el) {
             if (isDesktop) {
                 var frameRect = frame.getBoundingClientRect();
