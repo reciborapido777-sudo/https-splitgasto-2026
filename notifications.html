@@ -33,10 +33,14 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <!-- FIX: router.js SIN defer para evitar race condition -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
-</head>
+    <!-- FIX: auth.js y api.js añadidos para datos reales y auth guard -->
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
+
+    </head>
 <body class="app-shell pb-20">
 <div class="app-frame">
     <div class="max-w-3xl mx-auto px-6 py-8 space-y-10">
@@ -56,104 +60,146 @@
             </button>
         </header>
 
-        <!-- Hoy -->
-        <section class="space-y-3 reveal-node">
-            <p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">Hoy</p>
-
-            <div class="notif-row unread glass-panel p-5 rounded-[2rem] flex items-start gap-5 border-[#FF9D42]" style="border-left-color:#FF9D42" onclick="SGRouter.navigate('split', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#FF9D42] text-lg">pending_actions</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start gap-2">
-                        <p class="text-sm font-bold leading-tight">Reparto pendiente: Hotel Pirineos</p>
-                        <span class="size-2 bg-[#FF9D42] rounded-full flex-shrink-0 mt-1.5 animate-pulse"></span>
-                    </div>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">210,00€ sin dividir entre 3 socios • Toca para repartir</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">hace 2 horas</p>
-                </div>
-            </div>
-
-            <div class="notif-row unread glass-panel p-5 rounded-[2rem] flex items-start gap-5 border-[#13ecd6]" style="border-left-color:#13ecd6" onclick="SGRouter.navigate('receipt', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#13ecd6] text-lg">payments</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start gap-2">
-                        <p class="text-sm font-bold leading-tight">Mario te ha pagado 8,52€</p>
-                        <span class="size-2 bg-[#13ecd6] rounded-full flex-shrink-0 mt-1.5 animate-pulse"></span>
-                    </div>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">Liquidación: Sushi Kyoto Central • Ver recibo</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">hace 4 horas</p>
-                </div>
-            </div>
-
-            <div class="notif-row glass-panel p-5 rounded-[2rem] flex items-start gap-5 opacity-70" onclick="SGRouter.navigate('vault', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#a855f7] text-lg">receipt_long</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold leading-tight">Ticket digitalizado correctamente</p>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">Mercadona 42,15€ — guardado en la Bóveda</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">hace 6 horas</p>
-                </div>
-            </div>
+        <!-- Notificaciones dinámicas -->
+        <section id="notifications-container" class="space-y-10">
+            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12">Cargando notificaciones...</p>
         </section>
 
-        <!-- Ayer -->
-        <section class="space-y-3 reveal-node" style="animation-delay:0.1s">
-            <p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">Ayer</p>
-
-            <div class="notif-row glass-panel p-5 rounded-[2rem] flex items-start gap-5 opacity-70" onclick="SGRouter.navigate('groups', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#13ecd6] text-lg">group_add</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold leading-tight">Elena se ha unido a "Viaje Pirineos"</p>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">El grupo ahora tiene 4 socios activos</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">ayer, 19:32</p>
-                </div>
-            </div>
-
-            <div class="notif-row glass-panel p-5 rounded-[2rem] flex items-start gap-5 opacity-70" onclick="SGRouter.navigate('analytics', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#FF9D42] text-lg">trending_up</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold leading-tight">Alerta IA: Gasto en Ocio +4% este mes</p>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">El sistema detectó un incremento respecto a febrero • Ver métricas</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">ayer, 08:00</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Esta semana -->
-        <section class="space-y-3 reveal-node" style="animation-delay:0.2s">
-            <p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">Esta semana</p>
-
-            <div class="notif-row glass-panel p-5 rounded-[2rem] flex items-start gap-5 opacity-50" onclick="SGRouter.navigate('membership', 'notifications')">
-                <div class="size-11 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0 mt-0.5">
-                    <span class="material-icons-round text-[#FF9D42] text-lg">workspace_premium</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold leading-tight">Membresía Élite renovada automáticamente</p>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">Tu acceso Socio Fundador sigue activo hasta Marzo 2027</p>
-                    <p class="text-[8px] text-zinc-700 uppercase mt-2">Mar 10</p>
-                </div>
-            </div>
-        </section>
     </div>
 
-        <script>
-        function markAllRead() {
-            document.querySelectorAll('.notif-row.unread').forEach(row => {
+    <script>
+    (function() {
+        // === AUTH GUARD ===
+        if (!SGAuth || !SGAuth.isLoggedIn()) {
+            SGRouter.showToast('Inicia sesión primero', 'error');
+            setTimeout(function() { SGRouter.navigate('auth-login'); }, 1500);
+            return;
+        }
+
+        var ICON_MAP = {
+            'payment':     { icon: 'payments',         color: '#13ecd6' },
+            'expense':     { icon: 'pending_actions',   color: '#FF9D42' },
+            'settlement':  { icon: 'payments',          color: '#13ecd6' },
+            'scan':        { icon: 'receipt_long',      color: '#a855f7' },
+            'member':      { icon: 'group_add',         color: '#13ecd6' },
+            'alert':       { icon: 'trending_up',       color: '#FF9D42' },
+            'membership':  { icon: 'workspace_premium',  color: '#FF9D42' },
+            'group':       { icon: 'group_add',         color: '#13ecd6' },
+            'default':     { icon: 'notifications',     color: '#71717a' }
+        };
+
+        function getIconMeta(type) {
+            return ICON_MAP[type] || ICON_MAP['default'];
+        }
+
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            var diff = Date.now() - new Date(dateStr).getTime();
+            var mins = Math.floor(diff / 60000);
+            if (mins < 60) return 'hace ' + mins + ' min';
+            var hours = Math.floor(mins / 60);
+            if (hours < 24) return 'hace ' + hours + ' hora' + (hours > 1 ? 's' : '');
+            var days = Math.floor(hours / 24);
+            if (days === 1) return 'ayer';
+            if (days < 7) return 'hace ' + days + ' días';
+            return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+        }
+
+        function renderNotifications(notifications) {
+            var container = document.getElementById('notifications-container');
+            if (!container) return;
+
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML =
+                    '<div class="flex flex-col items-center py-20 space-y-4">' +
+                        '<span class="material-icons-round text-zinc-700 text-5xl">notifications_off</span>' +
+                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest">Sin notificaciones</p>' +
+                    '</div>';
+                return;
+            }
+
+            // Agrupar por período
+            var now = Date.now();
+            var groups = { 'Hoy': [], 'Ayer': [], 'Esta semana': [], 'Anterior': [] };
+            notifications.forEach(function(n) {
+                var d = new Date(n.created_at || n.date || Date.now()).getTime();
+                var diff = now - d;
+                var days = diff / 86400000;
+                if (days < 1) groups['Hoy'].push(n);
+                else if (days < 2) groups['Ayer'].push(n);
+                else if (days < 7) groups['Esta semana'].push(n);
+                else groups['Anterior'].push(n);
+            });
+
+            var html = '';
+            Object.keys(groups).forEach(function(period) {
+                var items = groups[period];
+                if (items.length === 0) return;
+
+                html += '<section class="space-y-3 reveal-node">' +
+                    '<p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">' + period + '</p>';
+
+                items.forEach(function(n) {
+                    var meta = getIconMeta(n.type);
+                    var isUnread = !n.read && !n.read_at;
+                    var unreadClass = isUnread ? 'unread' : '';
+                    var opacityStyle = isUnread ? '' : 'opacity:0.7;';
+                    var borderStyle = isUnread ? 'border-left-color:' + meta.color : '';
+                    var target = n.target_page || n.link || '';
+
+                    html += '<div class="notif-row ' + unreadClass + ' glass-panel p-5 rounded-[2rem] flex items-start gap-5" style="' + opacityStyle + borderStyle + '"' +
+                        (target ? ' onclick="SGRouter.navigate(\'' + target + '\')"' : '') + '>' +
+                        '<div class="size-11 rounded-2xl flex items-center justify-center border flex-shrink-0 mt-0.5" style="background:' + meta.color + '10;border-color:' + meta.color + '33">' +
+                            '<span class="material-icons-round text-lg" style="color:' + meta.color + '">' + meta.icon + '</span>' +
+                        '</div>' +
+                        '<div class="flex-1 min-w-0">' +
+                            '<div class="flex justify-between items-start gap-2">' +
+                                '<p class="text-sm font-bold leading-tight">' + (n.title || n.message || '') + '</p>' +
+                                (isUnread ? '<span class="size-2 rounded-full flex-shrink-0 mt-1.5 animate-pulse" style="background:' + meta.color + '"></span>' : '') +
+                            '</div>' +
+                            '<p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">' + (n.body || n.description || '') + '</p>' +
+                            '<p class="text-[8px] text-zinc-700 uppercase mt-2">' + timeAgo(n.created_at || n.date) + '</p>' +
+                        '</div>' +
+                    '</div>';
+                });
+
+                html += '</section>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // === CARGA ===
+        async function loadNotifications() {
+            try {
+                var result = await SGApi.getNotifications();
+                var notifs = [];
+                if (result && result.success && result.notifications) {
+                    notifs = result.notifications;
+                }
+                renderNotifications(notifs);
+            } catch (e) {
+                console.error('[Notifications] Load error:', e);
+                renderNotifications([]);
+            }
+        }
+
+        // === MARK ALL READ ===
+        window.markAllRead = async function() {
+            document.querySelectorAll('.notif-row.unread').forEach(function(row) {
                 row.classList.remove('unread');
                 row.style.borderLeft = '';
                 row.style.opacity = '0.7';
-                row.querySelectorAll('.animate-pulse').forEach(dot => dot.remove());
+                row.querySelectorAll('.animate-pulse').forEach(function(dot) { dot.remove(); });
             });
+            try {
+                await SGApi.markNotificationsRead();
+            } catch (e) { /* silencioso */ }
             SGRouter.showToast('Todas leídas', 'success');
-        }
+        };
+
+        loadNotifications();
+    })();
     </script>
 
     <!-- Bottom Navigation Bar -->
