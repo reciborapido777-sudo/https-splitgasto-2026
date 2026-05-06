@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght=800&family=Space_Grotesk:wght@500;700;900&display=swap');
         
         html, body {  
             background: #000; color: #fff; 
@@ -32,7 +32,7 @@
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
             display: inline-block;
-            padding-right: 0.55em !important; /* Blindaje Alpha v1.62 */
+            padding-right: 0.55em !important;
         }
 
         .chart-frame {
@@ -62,6 +62,12 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+
+        .cat-icon-restaurant { background: rgba(255,157,66,0.1); border: 1px solid rgba(255,157,66,0.2); }
+        .cat-icon-flight { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); }
+        .cat-icon-cart { background: rgba(19,236,214,0.1); border: 1px solid rgba(19,236,214,0.2); }
+        .cat-icon-bolt { background: rgba(113,113,122,0.3); border: 1px solid rgba(255,255,255,0.05); }
+        .cat-icon-default { background: rgba(113,113,122,0.15); border: 1px solid rgba(255,255,255,0.05); }
 </style>
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
@@ -72,8 +78,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <script src="engine/router.js" defer></script>
+    <!-- FIX: router.js SIN defer para evitar race condition con onclick inline -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
+    <!-- FIX: auth.js y api.js añadidos para datos reales y auth guard -->
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell pb-40">
 <div class="app-frame">
@@ -97,34 +107,21 @@
             </button>
         </header>
 
+        <!-- Balance total dinámico -->
         <section class="glass-panel p-12 rounded-[3.5rem] border-[#13ecd6]/10 space-y-14 reveal-node">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div class="space-y-3">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Crecimiento Trimestral Auditado</p>
-                    <h2 class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] tracking-tighter text-gradient-cyan">+326,45€</h2>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Balance Neto Total</p>
+                    <h2 id="total-balance" class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] tracking-tighter text-gradient-cyan">—</h2>
                 </div>
                 <div class="px-6 py-3 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20">
                     <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest leading-none">IA Protocol: Active</p>
                 </div>
             </div>
 
-            <div class="chart-frame">
-                <div class="flex flex-col items-center gap-6 w-full">
-                    <div class="bar-entity bg-purple-deep" style="height: 110px; animation-delay: 0.1s"></div>
-                    <span class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Ene</span>
-                </div>
-                <div class="flex flex-col items-center gap-6 w-full">
-                    <div class="bar-entity bg-purple-deep" style="height: 165px; animation-delay: 0.2s"></div>
-                    <span class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Feb</span>
-                </div>
-                <div class="flex flex-col items-center gap-6 w-full">
-                    <div class="bar-entity bg-cyan-tech shadow-[0_0_40px_rgba(19,236,214,0.3)]" style="height: 240px; border: 1px solid rgba(19, 236, 214, 0.4); animation-delay: 0.3s"></div>
-                    <span class="text-[9px] font-black text-white uppercase tracking-widest">Mar</span>
-                </div>
-                <div class="flex flex-col items-center gap-6 w-full">
-                    <div class="bar-entity bg-cyan-tech opacity-30" style="height: 135px; border: 1px dashed rgba(19, 236, 214, 0.4); animation-delay: 0.4s"></div>
-                    <span class="text-[9px] font-black text-zinc-800 uppercase tracking-widest">Abr</span>
-                </div>
+            <div id="chart-container" class="chart-frame">
+                <!-- Barras dinámicas se insertan aquí -->
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Cargando datos...</p>
             </div>
         </section>
 
@@ -134,8 +131,8 @@
                     <span class="material-icons-round">auto_awesome</span>
                     <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic">Previsión Alpha</h3>
                 </div>
-                <p class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
-                    El sistema estima un ahorro del <span class="text-white">12%</span> basado en su flujo de liquidación actual.
+                <p id="forecast-text" class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
+                    Cargando previsión...
                 </p>
             </div>
             
@@ -144,127 +141,35 @@
                     <span class="material-icons-round">warning</span>
                     <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic">Alertas de Nodo</h3>
                 </div>
-                <p class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
-                    Incremento del 4% detectado en el nodo "Ocio" respecto a febrero. Revisar activos en la Bóveda.
+                <p id="alerts-text" class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
+                    Sin alertas activas.
                 </p>
             </div>
         </main>
     </div>
 
 
-        <!-- Desglose por categorías -->
+        <!-- Desglose por categorías dinámico -->
         <section class="space-y-6 reveal-node" style="animation-delay:0.25s">
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter">Gasto por Categoría</h2>
                 <button onclick="SGRouter.navigate('activity', 'analytics')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline">Ver todo →</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-5">
-                    <div class="size-12 rounded-2xl bg-[#FF9D42]/10 flex items-center justify-center border border-[#FF9D42]/20 flex-shrink-0">
-                        <span class="material-icons-round text-[#FF9D42]">restaurant</span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-2">
-                            <p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Gastronomía</p>
-                            <p class="text-[10px] font-black text-white money-display">312,40€</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-[#FF9D42] rounded-full" style="width:37%"></div>
-                        </div>
-                        <p class="text-[8px] text-zinc-700 uppercase mt-1">37% del gasto total</p>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-5">
-                    <div class="size-12 rounded-2xl bg-[#a855f7]/10 flex items-center justify-center border border-[#a855f7]/20 flex-shrink-0">
-                        <span class="material-icons-round text-[#a855f7]">flight</span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-2">
-                            <p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Viajes</p>
-                            <p class="text-[10px] font-black text-white money-display">255,50€</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-[#a855f7] rounded-full" style="width:30%"></div>
-                        </div>
-                        <p class="text-[8px] text-zinc-700 uppercase mt-1">30% del gasto total</p>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-5">
-                    <div class="size-12 rounded-2xl bg-[#13ecd6]/10 flex items-center justify-center border border-[#13ecd6]/20 flex-shrink-0">
-                        <span class="material-icons-round text-[#13ecd6]">shopping_cart</span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-2">
-                            <p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Alimentación</p>
-                            <p class="text-[10px] font-black text-white money-display">168,20€</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-[#13ecd6] rounded-full" style="width:20%"></div>
-                        </div>
-                        <p class="text-[8px] text-zinc-700 uppercase mt-1">20% del gasto total</p>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-[2rem] flex items-center gap-5">
-                    <div class="size-12 rounded-2xl bg-zinc-700/30 flex items-center justify-center border border-white/5 flex-shrink-0">
-                        <span class="material-icons-round text-zinc-400">bolt</span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-2">
-                            <p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Suministros</p>
-                            <p class="text-[10px] font-black text-white money-display">104,26€</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-zinc-500 rounded-full" style="width:13%"></div>
-                        </div>
-                        <p class="text-[8px] text-zinc-700 uppercase mt-1">13% del gasto total</p>
-                    </div>
-                </div>
+            <div id="categories-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Categorías dinámicas -->
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Cargando categorías...</p>
             </div>
         </section>
 
-        <!-- Socios más activos -->
+        <!-- Socios más activos dinámico -->
         <section class="glass-panel p-10 rounded-[3.5rem] border-[#a855f7]/10 space-y-8 reveal-node" style="animation-delay:0.35s">
             <div class="flex items-center gap-4">
                 <span class="material-icons-round text-[#a855f7]">group</span>
                 <h2 class="text-lg font-black font-['Space_Grotesk'] uppercase italic tracking-tighter">Socios del Nodo</h2>
             </div>
-            <div class="space-y-5">
-                <div class="flex items-center gap-4">
-                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-[#FF9D42]/30">
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-1.5">
-                            <p class="text-[10px] font-black uppercase text-white">Tú</p>
-                            <p class="text-[10px] font-black text-[#13ecd6] money-display">+150,50€ neto</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full" style="width:65%; background:linear-gradient(90deg,#13ecd6,#10b981)"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=MR&backgroundColor=0a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-1.5">
-                            <p class="text-[10px] font-black uppercase text-zinc-400">Mario</p>
-                            <p class="text-[10px] font-black text-[#FF9D42] money-display">-45,20€ pendiente</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full bg-[#FF9D42]" style="width:35%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <img src="https://api.dicebear.com/9.x/initials/svg?seed=EL&backgroundColor=1a0a2a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-1.5">
-                            <p class="text-[10px] font-black uppercase text-zinc-400">Elena</p>
-                            <p class="text-[10px] font-black text-[#a855f7] money-display">-60,30€ pendiente</p>
-                        </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full bg-[#a855f7]" style="width:42%"></div>
-                        </div>
-                    </div>
-                </div>
+            <div id="members-container" class="space-y-5">
+                <!-- Miembros dinámicos -->
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Cargando balances...</p>
             </div>
             <button onclick="SGRouter.navigate('split', 'analytics')" class="w-full py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] hover:bg-[#a855f7]/10 hover:border-[#a855f7]/30 transition-all active:scale-95">
                 Ejecutar Reparto Pendiente
@@ -275,15 +180,15 @@
         <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
@@ -291,13 +196,225 @@
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
     
+    <script>
+    (function() {
+        // === AUTH GUARD ===
+        if (!SGAuth || !SGAuth.isLoggedIn()) {
+            SGRouter.showToast('Inicia sesión primero', 'error');
+            setTimeout(function() { SGRouter.navigate('auth-login'); }, 1500);
+            return;
+        }
+
+        const CATEGORY_MAP = {
+            'food':          { icon: 'restaurant',    label: 'Gastronomía', color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'transport':     { icon: 'directions_car', label: 'Transporte',  color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'travel':        { icon: 'flight',        label: 'Viajes',      color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'shopping':      { icon: 'shopping_cart',  label: 'Compras',     color: '#13ecd6', iconClass: 'cat-icon-cart' },
+            'groceries':     { icon: 'shopping_cart',  label: 'Alimentación',color: '#13ecd6', iconClass: 'cat-icon-cart' },
+            'entertainment': { icon: 'movie',         label: 'Ocio',        color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'bills':         { icon: 'bolt',          label: 'Suministros',  color: '#71717a', iconClass: 'cat-icon-bolt' },
+            'health':        { icon: 'local_hospital',label: 'Salud',       color: '#f43f5e', iconClass: 'cat-icon-default' },
+            'other':         { icon: 'category',      label: 'Otros',       color: '#71717a', iconClass: 'cat-icon-default' }
+        };
+
+        function getCatMeta(cat) {
+            return CATEGORY_MAP[cat] || CATEGORY_MAP['other'];
+        }
+
+        function formatMoney(val) {
+            var abs = Math.abs(val);
+            var formatted = abs.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return (val < 0 ? '-' : '+') + formatted + '€';
+        }
+
+        function renderCategories(expenses) {
+            var container = document.getElementById('categories-container');
+            if (!container) return;
+
+            var catTotals = {};
+            var grandTotal = 0;
+            (expenses || []).forEach(function(exp) {
+                var cat = exp.category || 'other';
+                var amt = parseFloat(exp.amount) || 0;
+                catTotals[cat] = (catTotals[cat] || 0) + amt;
+                grandTotal += amt;
+            });
+
+            var entries = Object.entries(catTotals).sort(function(a, b) { return b[1] - a[1]; });
+
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Sin gastos registrados</p>';
+                return;
+            }
+
+            var html = '';
+            entries.forEach(function(entry) {
+                var cat = entry[0];
+                var total = entry[1];
+                var meta = getCatMeta(cat);
+                var pct = grandTotal > 0 ? Math.round((total / grandTotal) * 100) : 0;
+                html += '<div class="glass-panel p-6 rounded-[2rem] flex items-center gap-5">' +
+                    '<div class="size-12 rounded-2xl ' + meta.iconClass + ' flex items-center justify-center flex-shrink-0">' +
+                        '<span class="material-icons-round" style="color:' + meta.color + '">' + meta.icon + '</span>' +
+                    '</div>' +
+                    '<div class="flex-1">' +
+                        '<div class="flex justify-between mb-2">' +
+                            '<p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">' + meta.label + '</p>' +
+                            '<p class="text-[10px] font-black text-white money-display">' + total.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€</p>' +
+                        '</div>' +
+                        '<div class="h-1.5 bg-white/5 rounded-full overflow-hidden">' +
+                            '<div class="h-full rounded-full" style="width:' + pct + '%;background:' + meta.color + '"></div>' +
+                        '</div>' +
+                        '<p class="text-[8px] text-zinc-700 uppercase mt-1">' + pct + '% del gasto total</p>' +
+                    '</div>' +
+                '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function renderChart(expenses) {
+            var chartEl = document.getElementById('chart-container');
+            if (!chartEl) return;
+
+            // Agrupar gastos por mes
+            var monthTotals = {};
+            var monthLabels = { '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr', '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic' };
+
+            (expenses || []).forEach(function(exp) {
+                var d = (exp.created_at || exp.date || '').substring(0, 7); // "2026-03"
+                if (d) {
+                    monthTotals[d] = (monthTotals[d] || 0) + (parseFloat(exp.amount) || 0);
+                }
+            });
+
+            var months = Object.keys(monthTotals).sort();
+            if (months.length === 0) {
+                chartEl.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Sin datos para gráfico</p>';
+                return;
+            }
+
+            var maxVal = Math.max.apply(null, months.map(function(m) { return monthTotals[m]; }));
+            if (maxVal === 0) maxVal = 1;
+
+            var html = '';
+            months.forEach(function(m, i) {
+                var val = monthTotals[m];
+                var h = Math.max(30, Math.round((val / maxVal) * 220));
+                var monthNum = m.split('-')[1];
+                var label = monthLabels[monthNum] || monthNum;
+                var isLast = i === months.length - 1;
+                var barClass = isLast ? 'bg-cyan-tech shadow-[0_0_40px_rgba(19,236,214,0.3)]' : 'bg-purple-deep';
+                var borderStyle = isLast ? 'border:1px solid rgba(19,236,214,0.4)' : '';
+                var labelColor = isLast ? 'text-white' : 'text-zinc-600';
+
+                html += '<div class="flex flex-col items-center gap-6 w-full">' +
+                    '<div class="bar-entity ' + barClass + '" style="height:' + h + 'px;animation-delay:' + (0.1 * (i + 1)) + 's;' + borderStyle + '"></div>' +
+                    '<span class="text-[9px] font-black ' + labelColor + ' uppercase tracking-widest">' + label + '</span>' +
+                '</div>';
+            });
+            chartEl.innerHTML = html;
+        }
+
+        function renderMembers(balances) {
+            var container = document.getElementById('members-container');
+            if (!container) return;
+
+            var list = (balances && balances.balances) ? balances.balances : [];
+            if (list.length === 0) {
+                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Sin balances pendientes</p>';
+                return;
+            }
+
+            var html = '';
+            list.forEach(function(b) {
+                var name = b.name || b.user_name || 'Socio';
+                var amount = parseFloat(b.balance || b.amount || 0);
+                var isPositive = amount >= 0;
+                var initials = name.substring(0, 2).toUpperCase();
+                var barColor = isPositive ? 'background:linear-gradient(90deg,#13ecd6,#10b981)' : 'background:#FF9D42';
+                var amtColor = isPositive ? '#13ecd6' : '#FF9D42';
+                var barWidth = Math.min(Math.abs(amount) > 0 ? Math.max(10, Math.round((Math.abs(amount) / 200) * 100)) : 0, 100);
+                var label = isPositive ? ' neto' : ' pendiente';
+
+                html += '<div class="flex items-center gap-4">' +
+                    '<img src="https://api.dicebear.com/9.x/initials/svg?seed=' + initials + '&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">' +
+                    '<div class="flex-1">' +
+                        '<div class="flex justify-between mb-1.5">' +
+                            '<p class="text-[10px] font-black uppercase text-zinc-400">' + name + '</p>' +
+                            '<p class="text-[10px] font-black money-display" style="color:' + amtColor + '">' + formatMoney(amount) + label + '</p>' +
+                        '</div>' +
+                        '<div class="h-1.5 bg-white/5 rounded-full overflow-hidden">' +
+                            '<div class="h-full rounded-full" style="width:' + barWidth + '%;' + barColor + '"></div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        // === CARGA PRINCIPAL ===
+        async function loadAnalytics() {
+            try {
+                // Cargar gastos para categorías y gráfico
+                var expensesResult = await SGApi.getExpenses();
+                var expenses = [];
+                if (expensesResult && expensesResult.success && expensesResult.expenses) {
+                    expenses = expensesResult.expenses;
+                }
+
+                // Cargar balances
+                var balancesResult = await SGApi.getBalances();
+                var netBalance = 0;
+                if (balancesResult && balancesResult.success && balancesResult.balances) {
+                    balancesResult.balances.forEach(function(b) {
+                        netBalance += parseFloat(b.balance || b.amount || 0);
+                    });
+                }
+
+                // Renderizar balance total
+                var balEl = document.getElementById('total-balance');
+                if (balEl) {
+                    balEl.textContent = formatMoney(netBalance);
+                }
+
+                // Renderizar gráfico
+                renderChart(expenses);
+
+                // Renderizar categorías
+                renderCategories(expenses);
+
+                // Renderizar miembros
+                renderMembers(balancesResult);
+
+                // Previsión simple
+                var forecastEl = document.getElementById('forecast-text');
+                if (forecastEl && expenses.length > 0) {
+                    var totalExp = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+                    var avgMonthly = totalExp / Math.max(1, new Set(expenses.map(function(e) { return (e.created_at || e.date || '').substring(0,7); })).size);
+                    var saving = Math.round(avgMonthly * 0.12);
+                    forecastEl.innerHTML = 'El sistema estima un ahorro de <span class="text-white">' + saving.toLocaleString('es-ES') + '€</span> mensuales basado en su flujo de liquidación actual.';
+                } else if (forecastEl) {
+                    forecastEl.textContent = 'Datos insuficientes para generar previsión.';
+                }
+
+            } catch (e) {
+                console.error('[Analytics] Load error:', e);
+                var balEl = document.getElementById('total-balance');
+                if (balEl) balEl.textContent = 'Error';
+            }
+        }
+
+        loadAnalytics();
+    })();
+    </script>
+  
         <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -325,3 +442,5 @@
 </div>
 </body>
 </html>
+
+    
