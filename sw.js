@@ -6,14 +6,16 @@
  *       receipt-view guarda como gasto, create-group/add-expense usan SGApi
  */
 
-const CACHE_NAME = 'splitgasto-v13-2026';
+const CACHE_NAME = 'splitgasto-v14-2026';
 const STATIC_ASSETS = [
+    // Engine
     'engine/router.js',
     'engine/global.css',
     'engine/audio.js',
     'engine/desktop-fix.js',
     'engine/auth.js',
     'engine/api.js',
+    // Icons & Manifest
     'favicon.svg',
     'favicon-32.png',
     'favicon-16.png',
@@ -24,7 +26,23 @@ const STATIC_ASSETS = [
     'icons/icon-128.png',
     'icons/icon-144.png',
     'icons/icon-192.png',
-    'icons/icon-512.png'
+    'icons/icon-512.png',
+    // Auth pages (offline login/register)
+    'auth-login.html',
+    'auth-register.html',
+    // Core app pages (offline navigation)
+    'dashboard.html',
+    'groups.html',
+    'activity.html',
+    'profile.html',
+    'analytics.html',
+    'notifications.html',
+    'add-expense.html',
+    'create-group.html',
+    'receipt-view.html',
+    'success.html',
+    'scanner.html',
+    'split.html'
 ];
 
 // ── Install: pre-cache static assets ───────────────────────────────────────
