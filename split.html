@@ -55,7 +55,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <script src="engine/router.js" defer></script>
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
@@ -139,46 +139,91 @@
 
 <script>
 async function loadSplitData() {
-  if (!SGAuth || !SGAuth.isLoggedIn()) return;
+  if (!SGAuth || !SGAuth.isLoggedIn()) {
+    SGRouter.showToast('Inicia sesión primero', 'error');
+    setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+    return;
+  }
+
+  // Obtener groupId de la URL; si no hay, usar el primer grupo del usuario
   const params = new URLSearchParams(window.location.search);
-  const groupId = params.get('groupId');
-  if (!groupId) return;
+  let groupId = params.get('groupId');
 
   try {
     const groupsResult = await SGApi.getGroups();
-    const group = groupsResult?.success && groupsResult?.groups?.find(g => g.id === groupId);
-    const groupName = group ? group.name : 'Grupo';
+    const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
 
-    const expResult = await SGApi.getExpenses(groupId);
-    let total = 0;
-    if (expResult?.success && expResult.expenses) {
-      total = expResult.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    if (groups.length === 0) {
+      document.getElementById('split-group-name').textContent = 'Sin grupos';
+      document.getElementById('split-participants').innerHTML =
+        '<p class="text-xs text-zinc-600 text-center py-6">Crea un grupo primero</p>';
+      return;
     }
 
-    const balResult = await SGApi.getBalances(groupId);
-    const balances = (balResult?.success && balResult.balances) ? balResult.balances : {};
-    const userId = SGAuth.getUserId();
-    const memberIds = Object.keys(balances);
+    // Si no hay groupId en URL, usar el primero
+    if (!groupId) groupId = groups[0].id;
+    const group = groups.find(g => String(g.id) === String(groupId)) || groups[0];
+    const groupName = group ? group.name : 'Grupo';
+
+    // Gastos totales del grupo
+    const expResult = await SGApi.getExpenses(group.id);
+    let total = 0;
+    if (expResult?.success && expResult.expenses) {
+      total = expResult.expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+    }
+
+    // Balances — objeto { userId: balance }
+    const balResult = await SGApi.getBalances(group.id);
+    const balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
+
+    const myUserId = SGAuth.getUserId();
+
+    // Cargar nombre real del usuario actual
+    let myName = 'Tú';
+    try {
+      const profileRes = await SGApi.getProfile();
+      if (profileRes?.success && profileRes.profile?.name) myName = profileRes.profile.name;
+    } catch (_) {}
+
+    // Mapa uid→nombre desde debts si el worker los incluye
+    const nameMap = {};
+    const debts = balResult?.debts || [];
+    debts.forEach(d => {
+      if (d.from_id && d.from_name) nameMap[d.from_id] = d.from_name;
+      if (d.to_id && d.to_name) nameMap[d.to_id] = d.to_name;
+    });
+
+    const memberIds = Object.keys(balancesRaw);
     const perPerson = memberIds.length > 0 ? total / memberIds.length : total;
 
     document.getElementById('split-group-name').textContent = groupName;
-    document.getElementById('split-total').textContent = `${total.toFixed(2)}€`;
+    document.getElementById('split-total').textContent =
+      total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+
+    if (memberIds.length === 0) {
+      document.getElementById('split-participants').innerHTML =
+        '<p class="text-xs text-zinc-600 text-center py-6">Sin participantes en este grupo</p>';
+      return;
+    }
 
     const container = document.getElementById('split-participants');
     const colors = ['#FF9D42', '#a855f7', '#13ecd6', '#ec4899', '#22c55e', '#3b82f6'];
+
     container.innerHTML = memberIds.map((uid, i) => {
-      const bal = balances[uid] || 0;
-      const isMe = uid === userId;
+      const bal = parseFloat(balancesRaw[uid]) || 0;
+      const isMe = String(uid) === String(myUserId);
       const color = colors[i % colors.length];
-      const name = isMe ? 'Comandante' : `Socio ${i}`;
-      const initials = name[0].toUpperCase();
+      const name = isMe ? myName : (nameMap[uid] || ('Socio ' + uid.slice(0, 4).toUpperCase()));
+      const initials = name.slice(0, 2).toUpperCase();
       const balSign = bal >= 0 ? '+' : '';
       const balColor = bal >= 0 ? '#13ecd6' : '#ef4444';
       const share = perPerson.toFixed(2);
+
       return `
-        <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5 ${isMe ? '' : 'opacity-60'}">
+        <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
           <div class="flex items-center gap-4">
-            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all duration-500" style="background:${color}22;color:${color};border-color:${color}33;${isMe ? '' : 'filter:grayscale(1)'}">${initials}</div>
+            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all"
+                 style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
             <div>
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${isMe ? 'Usted' : 'Socio'}</p>
               <p class="text-xs font-black uppercase text-white">${name}</p>
@@ -186,17 +231,17 @@ async function loadSplitData() {
           </div>
           <div class="text-right">
             <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">${share}€</p>
-            ${isMe ? `<span class="text-[8px] font-black text-[#13ecd6] uppercase tracking-widest">Liquidado</span>` : ''}
-            <p class="text-[8px] font-black uppercase tracking-widest" style="color:${balColor}">Balance: ${balSign}${bal.toFixed(2)}€</p>
+            <p class="text-[8px] font-black uppercase tracking-widest mt-0.5" style="color:${balColor}">
+              ${balSign}${bal.toFixed(2)}€ balance
+            </p>
           </div>
         </div>`;
     }).join('');
 
-    if (memberIds.length === 0) {
-      container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin participantes</p>';
-    }
   } catch (e) {
     console.error('Split load error:', e);
+    document.getElementById('split-participants').innerHTML =
+      '<p class="text-xs text-zinc-600 text-center py-6">Error al cargar datos</p>';
   }
 }
 loadSplitData();

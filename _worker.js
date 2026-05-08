@@ -1056,6 +1056,18 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, message: 'Notificación creada' }, 201);
     }
 
+    // ── Búsqueda de usuario por email (para invitar miembros) ─────────
+    if (path === '/api/db/users' && method === 'GET') {
+        const url = new URL(request.url);
+        const email = url.searchParams.get('email');
+        if (!email) return jsonResponse({ error: 'Parámetro "email" requerido' }, 400);
+        const user = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, name, email, avatar_url FROM users WHERE email = ?'
+        ).bind(email.toLowerCase().trim()).first();
+        if (!user) return jsonResponse({ success: false, error: 'Usuario no encontrado' }, 404);
+        return jsonResponse({ success: true, user });
+    }
+
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404);
 }
 

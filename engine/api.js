@@ -48,12 +48,14 @@ const SGApi = (function(){
         });
     }
 
-    async function addGroupMember(groupId, name, role) {
-        const userId = SGAuth.getUserId();
+    async function getUserByEmail(email) {
+        return request(`/api/db/users?email=${encodeURIComponent(email)}`);
+    }
+
+    async function addGroupMember(groupId, memberUserId, role) {
         return request('/api/db/group-members', {
             method: 'POST',
-            body: JSON.stringify({ groupId, userId, name, role: role || 'Member' }) 
-
+            body: JSON.stringify({ groupId, userId: memberUserId, role: role || 'member' })
         });
     }
 
@@ -184,7 +186,7 @@ const SGApi = (function(){
     }
     return {
         login,
-        getGroups, createGroup, addGroupMember,
+        getGroups, createGroup, addGroupMember, getUserByEmail,
         getExpenses, addExpense,
         getBalances,
         getSettlements, createSettlement,
