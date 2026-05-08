@@ -250,23 +250,71 @@ function renderMembers() {
     <div class="member-row">
       <div class="member-avatar" style="background:${m.color}22;color:${m.color}">${m.initials}</div>
       <div class="flex-1">
-        <p class="text-sm font-bold">${m.name}${m.name==='Commander'?' <span class="text-xs opacity-40">(tú)</span>':''}</p>
-        <p class="text-xs opacity-40">${m.role==='Admin'?'Administrador':'Miembro'}</p>
+        <p class="text-sm font-bold">${m.name}${m.role==='Admin'?' <span class="text-xs opacity-40">(tú)</span>':''}</p>
+        <p class="text-xs opacity-40">${m.role==='Admin'?'Administrador': m.pending ? 'Invitación pendiente' : 'Miembro'}</p>
       </div>
-      ${m.name!=='Commander'?`<button onclick="removeMember('${m.name}')" class="opacity-30 hover:opacity-70 transition-opacity"><span class="material-icons-round text-sm">remove_circle</span></button>`:'<span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Admin</span>'}
+      ${m.role!=='Admin'
+        ? `<button onclick="removeMember('${m.name}')" class="opacity-30 hover:opacity-70 transition-opacity"><span class="material-icons-round text-sm">remove_circle</span></button>`
+        : '<span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Admin</span>'
+      }
     </div>`).join('');
   document.getElementById('invite-input').value = '';
 }
 
-function addMember() {
+async function addMember() {
   const input = document.getElementById('invite-input');
-  const name = input.value.trim();
-  if (!name) { input.focus(); return; }
+  const value = input.value.trim();
+  if (!value) { input.focus(); return; }
+
   const colors = ['#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e'];
-  members.push({name, initials:name[0].toUpperCase(), color:colors[(members.length-1)%colors.length], role:'Member'});
-  renderMembers();
-  updatePreview();
-  SGRouter.showToast(`${name} añadido`, 'success');
+  const isEmail = value.includes('@');
+
+  if (isEmail) {
+    // Buscar usuario real por email en el backend
+    SGRouter.showToast('Buscando usuario…', 'info');
+    try {
+      const res = await SGApi.getUserByEmail(value);
+      if (res && res.success && res.user) {
+        const u = res.user;
+        // Evitar duplicados
+        if (members.find(m => m.userId === u.id)) {
+          SGRouter.showToast('Ya está en el grupo', 'warning');
+          return;
+        }
+        members.push({
+          name: u.name,
+          userId: u.id,
+          initials: (u.name || value)[0].toUpperCase(),
+          color: colors[(members.length - 1) % colors.length],
+          role: 'Member'
+        });
+        renderMembers();
+        updatePreview();
+        SGRouter.showToast(`${u.name} añadido ✓`, 'success');
+      } else {
+        SGRouter.showToast('Usuario no encontrado. Debe registrarse primero.', 'error');
+      }
+    } catch (e) {
+      SGRouter.showToast('Error buscando usuario', 'error');
+    }
+  } else {
+    // Nombre de display local (pendiente de registrarse) — se guarda como pendiente
+    if (members.find(m => m.name === value)) {
+      SGRouter.showToast('Ya está en la lista', 'warning');
+      return;
+    }
+    members.push({
+      name: value,
+      userId: null, // pendiente — no se puede añadir al backend todavía
+      initials: value[0].toUpperCase(),
+      color: colors[(members.length - 1) % colors.length],
+      role: 'Member',
+      pending: true
+    });
+    renderMembers();
+    updatePreview();
+    SGRouter.showToast(`${value} añadido (invitación pendiente)`, 'info');
+  }
 }
 
 function removeMember(name) {
@@ -298,12 +346,12 @@ async function createGroup() {
     if (result && result.success) {
       const groupId = result.group?.id || result.group_id || result.id;
 
-      // Añadir miembros invitados al grupo (excluyendo al creador que ya está)
-      const invitedMembers = members.filter(m => m.name !== 'Commander' && m.name !== 'Tú');
+      // Añadir miembros con userId real al grupo (excluir Admin y pendientes sin userId)
+      const invitedMembers = members.filter(m => m.role !== 'Admin' && m.userId);
       if (groupId && invitedMembers.length > 0) {
         for (const m of invitedMembers) {
           try {
-            await SGApi.addGroupMember(groupId, m.name, m.role || 'Member');
+            await SGApi.addGroupMember(groupId, m.userId, 'member');
           } catch(e) {
             console.warn('No se pudo añadir miembro:', m.name, e);
           }
