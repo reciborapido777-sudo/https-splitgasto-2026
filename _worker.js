@@ -855,7 +855,7 @@ async function handleDatabase(request, env, path) {
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true });
         const groups = await env.SPLITGASTO_DB.prepare(
-            'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY g.updated_at DESC'
+            'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC'
         ).bind(userId).all();
         const response = { success: true, groups: groups.results };
         await setCache(env, cacheKey, response, 60);
@@ -898,7 +898,26 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
 
-    // ── Añadir miembros a grupo (NUEVO ENDPOINT) ─────────────────────
+    // ── Listar miembros de un grupo (GET) ────────────────────────────
+    if (path === '/api/db/group-members' && method === 'GET') {
+        const url = new URL(request.url);
+        const groupId = url.searchParams.get('groupId');
+        if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+        const members = await env.SPLITGASTO_DB.prepare(
+            `SELECT u.id, u.name, u.email, u.avatar_url, gm.role
+             FROM group_members gm
+             JOIN users u ON u.id = gm.user_id
+             WHERE gm.group_id = ?
+             ORDER BY gm.role DESC, u.name ASC`
+        ).bind(groupId).all();
+        return jsonResponse({ success: true, members: members.results });
+    }
+
+    // ── Añadir miembros a grupo (POST) ───────────────────────────────
     if (path === '/api/db/group-members' && method === 'POST') {
         const { groupId, userId: memberUserId, role } = body;
         if (!groupId || !memberUserId) return jsonResponse({ error: 'Campos "groupId" y "userId" requeridos' }, 400);

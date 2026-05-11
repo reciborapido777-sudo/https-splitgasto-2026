@@ -126,8 +126,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
 </head>
@@ -294,37 +294,30 @@ document.getElementById('group-input').addEventListener('change', function() {
 
 async function loadGroupMembers(groupId) {
   if (!groupId) { members = []; renderPayers(); renderSplitDetails(); return; }
+  const colors = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#22c55e', '#3b82f6'];
+  const uid = SGAuth.getUserId();
   try {
-    const colors = ['#13ecd6', '#a855f7', '#FF9D42', '#ec4899', '#22c55e', '#3b82f6'];
-    const uid = SGAuth.getUserId();
-
-    const balResult = await SGApi.getBalances(groupId);
-    if (balResult && balResult.success && balResult.balances) {
-      const userIds = Object.keys(balResult.balances);
-      const isMe = (id) => id === uid;
-      members = userIds.map((id, i) => ({
-        id: id,
-        name: isMe(id) ? 'Tú' : `Socio ${i + 1}`,
-        initials: isMe(id) ? 'T' : `S${i + 1}`,
-        color: colors[i % colors.length]
-      }));
-      // Put "Tú" first
+    // Obtener miembros reales del grupo con nombres
+    const memResult = await SGApi.getGroupMembers(groupId);
+    if (memResult?.success && memResult.members && memResult.members.length > 0) {
+      members = memResult.members.map((m, i) => {
+        const isMe = m.id === uid;
+        const displayName = isMe ? 'Tú' : (m.name || `Socio ${i + 1}`);
+        const initials = displayName.slice(0, 2).toUpperCase();
+        return { id: m.id, name: displayName, initials, color: colors[i % colors.length] };
+      });
+      // «Tú» siempre primero
       members.sort((a, b) => (a.id === uid ? -1 : b.id === uid ? 1 : 0));
+    } else {
+      members = [{ name: 'Tú', initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
     }
-
-    if (members.length === 0) {
-      members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: uid || 'self' }];
-    }
-    selectedPayer = 0;
-    renderPayers();
-    renderSplitDetails();
   } catch (e) {
     console.error('Error loading members:', e);
-    const uid = SGAuth.getUserId();
-    members = [{ name: 'Tú', initials: 'T', color: '#13ecd6', id: uid || 'self' }];
-    renderPayers();
-    renderSplitDetails();
+    members = [{ name: 'Tú', initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
   }
+  selectedPayer = 0;
+  renderPayers();
+  renderSplitDetails();
 }
 
 function renderPayers() {
