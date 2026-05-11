@@ -145,79 +145,83 @@ async function loadSplitData() {
     return;
   }
 
-  // Obtener groupId de la URL; si no hay, usar el primer grupo del usuario
-  const params = new URLSearchParams(window.location.search);
-  let groupId = params.get('groupId');
+  const params  = new URLSearchParams(window.location.search);
+  let   groupId = params.get('groupId');
+
+  const nameEl  = document.getElementById('split-group-name');
+  const totalEl = document.getElementById('split-total');
+  const contEl  = document.getElementById('split-participants');
+  const myUid   = SGAuth.getUserId();
 
   try {
+    // 1. Todos los grupos del usuario
     const groupsResult = await SGApi.getGroups();
     const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
 
     if (groups.length === 0) {
-      document.getElementById('split-group-name').textContent = 'Sin grupos';
-      document.getElementById('split-participants').innerHTML =
-        '<p class="text-xs text-zinc-600 text-center py-6">Crea un grupo primero</p>';
+      nameEl.textContent = 'Sin grupos';
+      contEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Crea un grupo primero</p>';
       return;
     }
 
-    // Si no hay groupId en URL, usar el primero
+    // Si no hay groupId en URL, usar el primer grupo
     if (!groupId) groupId = groups[0].id;
     const group = groups.find(g => String(g.id) === String(groupId)) || groups[0];
-    const groupName = group ? group.name : 'Grupo';
 
-    // Gastos totales del grupo
-    const expResult = await SGApi.getExpenses(group.id);
-    let total = 0;
-    if (expResult?.success && expResult.expenses) {
-      total = expResult.expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-    }
+    nameEl.textContent = group.name;
 
-    // Balances — objeto { userId: balance }
-    const balResult = await SGApi.getBalances(group.id);
-    const balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
+    // 2. Cargar miembros reales, gastos y balances en paralelo
+    const [memResult, expResult, balResult] = await Promise.all([
+      SGApi.getGroupMembers(group.id).catch(() => null),
+      SGApi.getExpenses(group.id).catch(() => null),
+      SGApi.getBalances(group.id).catch(() => null)
+    ]);
 
-    const myUserId = SGAuth.getUserId();
+    // Total de gastos
+    const total = (expResult?.success && expResult.expenses)
+      ? expResult.expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0)
+      : 0;
 
-    // Cargar nombre real del usuario actual
-    let myName = 'Tú';
-    try {
-      const profileRes = await SGApi.getProfile();
-      if (profileRes?.success && profileRes.profile?.name) myName = profileRes.profile.name;
-    } catch (_) {}
-
-    // Mapa uid→nombre desde debts si el worker los incluye
-    const nameMap = {};
-    const debts = balResult?.debts || [];
-    debts.forEach(d => {
-      if (d.from_id && d.from_name) nameMap[d.from_id] = d.from_name;
-      if (d.to_id && d.to_name) nameMap[d.to_id] = d.to_name;
-    });
-
-    const memberIds = Object.keys(balancesRaw);
-    const perPerson = memberIds.length > 0 ? total / memberIds.length : total;
-
-    document.getElementById('split-group-name').textContent = groupName;
-    document.getElementById('split-total').textContent =
+    totalEl.textContent =
       total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
-    if (memberIds.length === 0) {
-      document.getElementById('split-participants').innerHTML =
-        '<p class="text-xs text-zinc-600 text-center py-6">Sin participantes en este grupo</p>';
+    // Balances por usuario
+    const balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
+
+    // Miembros con nombres reales
+    const members = (memResult?.success && memResult.members && memResult.members.length > 0)
+      ? memResult.members
+      : Object.keys(balancesRaw).map(id => ({ id, name: null, role: 'member' }));
+
+    if (members.length === 0) {
+      contEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin participantes en este grupo</p>';
       return;
     }
 
-    const container = document.getElementById('split-participants');
-    const colors = ['#FF9D42', '#a855f7', '#13ecd6', '#ec4899', '#22c55e', '#3b82f6'];
+    // Actualizar header: nombre del usuario actual
+    const myMember = members.find(m => String(m.id) === String(myUid));
+    if (myMember?.name) {
+      const headerName = document.querySelector('header h1');
+      if (headerName) headerName.textContent = myMember.name;
+      const headerAvatar = document.querySelector('header img[alt="Comandante"]');
+      if (headerAvatar) {
+        const seed = encodeURIComponent(myMember.name.slice(0,2).toUpperCase());
+        headerAvatar.src = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40`;
+      }
+    }
 
-    container.innerHTML = memberIds.map((uid, i) => {
-      const bal = parseFloat(balancesRaw[uid]) || 0;
-      const isMe = String(uid) === String(myUserId);
-      const color = colors[i % colors.length];
-      const name = isMe ? myName : (nameMap[uid] || ('Socio ' + uid.slice(0, 4).toUpperCase()));
-      const initials = name.slice(0, 2).toUpperCase();
+    const perPerson = members.length > 0 ? total / members.length : total;
+    const colors    = ['#FF9D42', '#a855f7', '#13ecd6', '#ec4899', '#22c55e', '#3b82f6'];
+
+    contEl.innerHTML = members.map((m, i) => {
+      const isMe    = String(m.id) === String(myUid);
+      const name    = isMe ? (m.name || 'Tú') : (m.name || `Socio ${i + 1}`);
+      const initials= name.slice(0, 2).toUpperCase();
+      const color   = colors[i % colors.length];
+      const bal     = parseFloat(balancesRaw[m.id]) || 0;
       const balSign = bal >= 0 ? '+' : '';
-      const balColor = bal >= 0 ? '#13ecd6' : '#ef4444';
-      const share = perPerson.toFixed(2);
+      const balColor= bal >= 0 ? '#13ecd6' : '#ef4444';
+      const roleLabel = m.role === 'admin' ? 'Admin' : (isMe ? 'Usted' : 'Socio');
 
       return `
         <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
@@ -225,14 +229,16 @@ async function loadSplitData() {
             <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all"
                  style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
             <div>
-              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${isMe ? 'Usted' : 'Socio'}</p>
+              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${roleLabel}</p>
               <p class="text-xs font-black uppercase text-white">${name}</p>
             </div>
           </div>
           <div class="text-right">
-            <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">${share}€</p>
+            <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">
+              ${perPerson.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
+            </p>
             <p class="text-[8px] font-black uppercase tracking-widest mt-0.5" style="color:${balColor}">
-              ${balSign}${bal.toFixed(2)}€ balance
+              ${balSign}${bal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€ balance
             </p>
           </div>
         </div>`;
@@ -240,8 +246,7 @@ async function loadSplitData() {
 
   } catch (e) {
     console.error('Split load error:', e);
-    document.getElementById('split-participants').innerHTML =
-      '<p class="text-xs text-zinc-600 text-center py-6">Error al cargar datos</p>';
+    contEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Error al cargar datos</p>';
   }
 }
 loadSplitData();

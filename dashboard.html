@@ -218,91 +218,165 @@
 
     </div>
 <script>
+const DASH_CAT_ICONS = {
+  food:'restaurant', transport:'directions_car', leisure:'movie',
+  home:'home', travel:'flight', health:'medical_services', other:'receipt'
+};
+const DASH_CAT_COLORS = {
+  food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42',
+  home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280'
+};
+
 async function loadDashboardData() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
 
   try {
-    // 1. Load user profile
+    // 1. Perfil real del usuario
     const profile = await SGApi.getProfile();
-    if (profile && profile.success && profile.profile) {
+    if (profile?.success && profile.profile) {
       const p = profile.profile;
-      const nameEl = document.querySelector('header h1, header .font-black');
+      // Nombre en header
+      const nameEl = document.querySelector('header h1');
       if (nameEl) nameEl.textContent = p.name || 'Comandante';
+      // Avatar con iniciales reales
+      const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
+      if (avatarEl && p.name) {
+        const seed = encodeURIComponent(p.name.slice(0,2).toUpperCase());
+        avatarEl.src = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=0d1f0d&fontFamily=Arial&fontSize=40`;
+      }
     }
 
-    // 2. Load groups
+    // 2. Todos los grupos
     const groupsResult = await SGApi.getGroups();
-    const groups = (groupsResult?.success && groupsResult?.groups) ? groupsResult.groups : [];
+    const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
 
-    if (groups.length > 0) {
-      // Update "Grupo Activo" card
-      const activeGroup = groups[0];
+    if (groups.length === 0) {
+      // Sin grupos: limpiar card de grupo activo
       const cardTitle = document.querySelector('.experience-card h3');
-      if (cardTitle) cardTitle.textContent = activeGroup.name;
+      if (cardTitle) cardTitle.textContent = 'Sin grupos';
+      const cardSub = document.querySelector('.experience-card .text-zinc-400');
+      if (cardSub) cardSub.textContent = 'Crea tu primer grupo';
+      document.querySelector('.text-gradient-cyan').textContent = '0,00€';
+      document.getElementById('settlements-value').textContent = '0,00€';
+      document.getElementById('to-receive-value').textContent = '0,00€';
+      document.getElementById('activity-list').innerHTML =
+        '<p class="text-xs text-zinc-600 text-center py-4">Sin actividad. Crea un grupo y añade gastos.</p>';
+      return;
+    }
 
-      // 3. Load balances for first group
-      const balancesResult = await SGApi.getBalances(activeGroup.id);
-      if (balancesResult?.success && balancesResult.balances) {
-        const userId = SGAuth.getUserId();
-        const balances = balancesResult.balances;
-        const myBalance = balances[userId] || 0;
+    const uid = SGAuth.getUserId();
 
-        // Update net worth display
-        const netWorthEl = document.querySelector('.text-gradient-cyan');
-        if (netWorthEl) {
-          const sign = myBalance >= 0 ? '+' : '';
-          netWorthEl.textContent = `${sign}${myBalance.toFixed(2)}€`;
-        }
+    // 3. Balances de TODOS los grupos — sumamos lo que debemos / nos deben
+    let totalOwed = 0;      // suma de balances negativos (debo)
+    let totalReceive = 0;   // suma de balances positivos (me deben)
+    let totalMembers = 0;
 
-        // Update settlements (negative = you owe)
-        const settlementsEl = document.getElementById('settlements-value');
-        if (settlementsEl) {
-          const owed = myBalance < 0 ? myBalance : 0;
-          settlementsEl.textContent = `${owed.toFixed(2)}€`;
-        }
+    // Recopilar todo en paralelo
+    const balancePromises = groups.map(g => SGApi.getBalances(g.id).catch(() => null));
+    const memberPromises  = groups.map(g => SGApi.getGroupMembers(g.id).catch(() => null));
+    const [allBalResults, allMemberResults] = await Promise.all([
+      Promise.all(balancePromises),
+      Promise.all(memberPromises)
+    ]);
 
-        // Update to receive (positive = owed to you)
-        const toReceiveEl = document.getElementById('to-receive-value');
-        if (toReceiveEl) {
-          const receivable = myBalance > 0 ? myBalance : 0;
-          toReceiveEl.textContent = receivable > 0 ? `+${receivable.toFixed(2)}€` : '0,00€';
-        }
+    groups.forEach((g, i) => {
+      const balRes = allBalResults[i];
+      if (balRes?.success && balRes.balances) {
+        const myBal = balRes.balances[uid] || 0;
+        if (myBal > 0) totalReceive += myBal;
+        else           totalOwed    += myBal;
       }
+      const memRes = allMemberResults[i];
+      if (memRes?.success && memRes.members) totalMembers += memRes.members.length;
+    });
 
-      // 4. Load recent expenses
-      const expensesResult = await SGApi.getExpenses(activeGroup.id);
-      if (expensesResult?.success && expensesResult.expenses && expensesResult.expenses.length > 0) {
-        const recentExpenses = expensesResult.expenses.slice(0, 3);
-        const activityContainer = document.getElementById('activity-list');
-        if (activityContainer) {
-          const catIcons = {
-            food: 'restaurant', transport: 'directions_car',
-            leisure: 'movie', home: 'home', travel: 'flight',
-            health: 'medical_services', other: 'receipt'
-          };
-          const catColors = {
-            food: '#13ecd6', transport: '#a855f7', leisure: '#FF9D42',
-            home: '#ec4899', travel: '#3b82f6', health: '#22c55e', other: '#6b7280'
-          };
-          activityContainer.innerHTML = recentExpenses.map(exp => {
-            const icon = catIcons[exp.category] || 'receipt';
-            const color = catColors[exp.category] || '#6b7280';
-            const sign = exp.amount >= 0 ? '+' : '';
-            return `
-              <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/3 transition-all cursor-pointer" onclick="SGRouter.navigate('activity','dashboard')">
-                <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}15">
-                  <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[11px] font-bold truncate">${exp.description || exp.category}</p>
-                  <p class="text-[9px] text-zinc-500 font-medium">${activeGroup.name}</p>
-                </div>
-                <p class="text-sm font-black money-display" style="color:${color}">${sign}${exp.amount?.toFixed(2)}€</p>
-              </div>`;
-          }).join('');
-        }
+    const netWorth = totalReceive + totalOwed;
+
+    // Actualizar resumen financiero
+    const netEl = document.querySelector('.text-gradient-cyan');
+    if (netEl) {
+      netEl.textContent = (netWorth >= 0 ? '+' : '') +
+        netWorth.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    }
+    const settEl = document.getElementById('settlements-value');
+    if (settEl) settEl.textContent = totalOwed.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    const recEl = document.getElementById('to-receive-value');
+    if (recEl) recEl.textContent = (totalReceive > 0 ? '+' : '') +
+      totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+
+    // 4. Tarjeta "Grupo Activo" — muestra el grupo con más actividad (primero de la lista)
+    const activeGroup = groups[0];
+    const cardTitle = document.querySelector('.experience-card h3');
+    if (cardTitle) cardTitle.textContent = activeGroup.name;
+
+    const balRes0 = allBalResults[0];
+    const myBal0  = (balRes0?.success && balRes0.balances) ? (balRes0.balances[uid] || 0) : 0;
+    const memRes0 = allMemberResults[0];
+    const mc0     = (memRes0?.success && memRes0.members) ? memRes0.members.length : 1;
+
+    // Socios y monto en juego en la tarjeta
+    const cardSub = document.querySelector('.experience-card .text-zinc-400');
+    if (cardSub) {
+      const totalExp = (balRes0?.success && balRes0.balances)
+        ? Object.values(balRes0.balances).reduce((s, v) => s + Math.abs(v), 0) / 2
+        : 0;
+      cardSub.innerHTML = `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+    }
+
+    // Avatares de miembros en la tarjeta
+    const avatarRow = document.querySelector('.experience-card .flex.-space-x-2');
+    if (avatarRow && memRes0?.success && memRes0.members) {
+      const shown = memRes0.members.slice(0, 3);
+      const extra = memRes0.members.length - 3;
+      avatarRow.innerHTML = shown.map(m => {
+        const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
+        return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name}">`;
+      }).join('') + (extra > 0
+        ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
+        : '');
+    }
+
+    // 5. Actividad reciente de TODOS los grupos (últimos 3 gastos en total)
+    const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
+    const allExpResults = await Promise.all(expPromises);
+
+    let allExpenses = [];
+    groups.forEach((g, i) => {
+      const expRes = allExpResults[i];
+      if (expRes?.success && expRes.expenses) {
+        expRes.expenses.forEach(exp => allExpenses.push({ ...exp, _groupName: g.name }));
+      }
+    });
+
+    // Ordenar por fecha descendente y tomar los 3 más recientes
+    allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    const recent = allExpenses.slice(0, 3);
+
+    const activityContainer = document.getElementById('activity-list');
+    if (activityContainer) {
+      if (recent.length === 0) {
+        activityContainer.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Sin gastos todavía. ¡Añade el primero!</p>';
+      } else {
+        activityContainer.innerHTML = recent.map(exp => {
+          const icon  = DASH_CAT_ICONS[exp.category]  || 'receipt';
+          const color = DASH_CAT_COLORS[exp.category] || '#6b7280';
+          const amt   = parseFloat(exp.amount) || 0;
+          const sign  = amt >= 0 ? '+' : '';
+          return `
+            <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/3 transition-all cursor-pointer" onclick="SGRouter.navigate('activity','dashboard')">
+              <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}15">
+                <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[11px] font-bold truncate">${exp.description || exp.category}</p>
+                <p class="text-[9px] text-zinc-500 font-medium">${exp._groupName}</p>
+              </div>
+              <p class="text-sm font-black money-display" style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
+            </div>`;
+        }).join('');
       }
     }
+
   } catch (e) {
     console.error('Dashboard load error:', e);
   }

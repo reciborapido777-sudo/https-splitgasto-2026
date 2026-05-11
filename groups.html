@@ -15,13 +15,7 @@
        
         body {  
             background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box;
-            /* overscroll-behavior:none removed — it blocks one-finger scroll
-               on some Android WebViews. Use 'contain' (allows scroll,
-               prevents pull-to-refresh/navigation on bounce) instead. */
-            overscroll-behavior: contain; touch-action: manipulation; }
+            font-family: 'Plus Jakarta Sans', sans-serif; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
@@ -223,7 +217,8 @@ async function loadGroups() {
       const uid = SGAuth.getUserId();
       const myBal = (balRes?.success && balRes?.balances) ? (balRes.balances[uid] || 0) : 0;
       totalBalance += myBal;
-      const mc = g.members ? g.members.length : 1;
+      const memRes = await SGApi.getGroupMembers(g.id).catch(() => null);
+      const mc = (memRes?.success && memRes.members) ? memRes.members.length : 1;
       totalMembers += mc;
       const accent = GROUP_ACCENTS[i % GROUP_ACCENTS.length];
       const bg = encodeURIComponent(GROUP_BGS[i % GROUP_BGS.length]);
@@ -232,7 +227,7 @@ async function loadGroups() {
       const card = document.createElement('div');
       card.className = 'group-card group reveal-node';
       card.style.animationDelay = `${i * 0.1}s`;
-      card.onclick = () => SGRouter.navigate('split', 'groups', { groupId: g.id });
+      card.onclick = () => SGRouter.navigate('split', 'groups', g.id);
       card.innerHTML = `
           <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-110 transition-transform duration-1000" alt="">
           <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
@@ -242,7 +237,7 @@ async function loadGroups() {
           </div>
           <div class="space-y-0.5">
             <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${g.name}</h3>
-            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">Balance: <span class="money-display" style="color:${bColor}">${bSign}${myBal.toFixed(2)}€</span></p>
+            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} soci${mc!==1?'os':'o'} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
           </div>
         </div>`;
       grid.insertBefore(card, ctaCard);

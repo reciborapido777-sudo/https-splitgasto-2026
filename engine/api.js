@@ -52,6 +52,10 @@ const SGApi = (function(){
         return request(`/api/db/users?email=${encodeURIComponent(email)}`);
     }
 
+    async function getGroupMembers(groupId) {
+        return request(`/api/db/group-members?groupId=${groupId}`);
+    }
+
     async function addGroupMember(groupId, memberUserId, role) {
         return request('/api/db/group-members', {
             method: 'POST',
@@ -186,7 +190,7 @@ const SGApi = (function(){
     }
     return {
         login,
-        getGroups, createGroup, addGroupMember, getUserByEmail,
+        getGroups, createGroup, getGroupMembers, addGroupMember, getUserByEmail,
         getExpenses, addExpense,
         getBalances,
         getSettlements, createSettlement,
