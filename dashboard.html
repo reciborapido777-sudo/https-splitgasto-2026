@@ -67,19 +67,19 @@
             <div class="space-y-6 relative z-10">
                 <div>
                     <p class="text-[8px] font-black text-zinc-500 uppercase tracking-[.5em] mb-1">Patrimonio Neto Auditado</p>
-                    <h2 class="text-5xl sm:text-6xl font-black font-['Space_Grotesk'] tracking-tighter italic text-gradient-cyan">
-                        1.450,26€
+                    <h2 id="net-worth-value" class="text-5xl sm:text-6xl font-black font-['Space_Grotesk'] tracking-tighter italic text-gradient-cyan">
+                        —
                     </h2>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6 border-t border-white/5 pt-6">
                     <div>
                         <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Liquidaciones</p>
-                        <p class="text-lg font-bold font-['Space_Grotesk'] text-[#FF9D42] money-display" id="settlements-value">-84,50€</p>
+                        <p class="text-lg font-bold font-['Space_Grotesk'] text-[#FF9D42] money-display" id="settlements-value">—</p>
                     </div>
                     <div class="text-right">
                         <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">A Recibir</p>
-                        <p class="text-lg font-bold font-['Space_Grotesk'] text-[#13ecd6] money-display" id="to-receive-value">+210,00€</p>
+                        <p class="text-lg font-bold font-['Space_Grotesk'] text-[#13ecd6] money-display" id="to-receive-value">—</p>
                     </div>
                 </div>
 
@@ -138,25 +138,18 @@
             </div>
         </section>
 
-        <section class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s" onclick="SGRouter.navigate('split','dashboard')">
+        <section id="active-group-card" class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s" onclick="SGRouter.navigate('split','dashboard')">
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.3'/%3E%3Cstop offset='1' stop-color='%23059669' stop-opacity='.2'/%3E%3C/linearGradient%3E%3CradialGradient id='b' cx='70%25' cy='25%25' r='55%25'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='transparent'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='800' height='400' fill='%23010f0d'/%3E%3Crect width='800' height='400' fill='url(%23b)'/%3E%3Crect x='50' y='50' width='210' height='130' rx='16' fill='url(%23a)'/%3E%3Crect x='280' y='50' width='210' height='130' rx='16' fill='url(%23a)' opacity='.7'/%3E%3Crect x='510' y='50' width='240' height='130' rx='16' fill='url(%23a)' opacity='.55'/%3E%3Crect x='50' y='200' width='700' height='160' rx='16' fill='url(%23a)' opacity='.4'/%3E%3Ccircle cx='680' cy='280' r='55' fill='%2313ecd6' opacity='.08'/%3E%3C/svg%3E"
-                 class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700" alt="Sushi">
+                 class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700" alt="Grupo activo">
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-8 space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="size-2 bg-[#13ecd6] rounded-full animate-pulse"></span>
                     <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[.5em]">Grupo Activo</p>
                 </div>
-                <h3 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Sushi Kyoto Pro</h3>
+                <h3 id="active-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Cargando…</h3>
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">12 Socios · <span class="text-white font-black money-display">256,00€</span> en juego</p>
-                    <div class="flex -space-x-2">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=AM&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=LR&backgroundColor=0d1f2d&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">
-                        <img src="https://api.dicebear.com/9.x/initials/svg?seed=MV&backgroundColor=1a0d1f&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">
-                        <div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center">
-                            <span class="text-[8px] font-black text-white">+9</span>
-                        </div>
-                    </div>
+                    <p id="active-group-sub" class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">— socios</p>
+                    <div id="active-group-avatars" class="flex -space-x-2"></div>
                 </div>
             </div>
         </section>
@@ -166,26 +159,7 @@
                 <button onclick="SGRouter.navigate('activity','dashboard')" class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hover:text-[#10b981] transition-colors">Ver todo</button>
             </div>
             <div class="space-y-2" id="activity-list">
-                <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/3 transition-all cursor-pointer" onclick="SGRouter.navigate('activity','dashboard')">
-                    <div class="size-10 rounded-xl bg-[#13ecd6]/10 flex items-center justify-center flex-shrink-0">
-                        <span class="material-icons-round text-[#13ecd6] text-base">restaurant</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold truncate">Sushi Kyoto Pro</p>
-                        <p class="text-[9px] text-zinc-500 font-medium">Ana pagó · Hace 2h</p>
-                    </div>
-                    <p class="text-[#13ecd6] text-sm font-black money-display">+7,50€</p>
-                </div>
-                <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/3 transition-all cursor-pointer" onclick="SGRouter.navigate('activity','dashboard')">
-                    <div class="size-10 rounded-xl bg-[#FF9D42]/10 flex items-center justify-center flex-shrink-0">
-                        <span class="material-icons-round text-[#FF9D42] text-base">bolt</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold truncate">Electricidad · Piso Alpha</p>
-                        <p class="text-[9px] text-zinc-500 font-medium">Ayer</p>
-                    </div>
-                    <p class="text-[#FF9D42] text-sm font-black money-display">-84,16€</p>
-                </div>
+                <p class="text-xs text-zinc-600 text-center py-4">Cargando actividad…</p>
             </div>
         </section>
 
@@ -227,18 +201,32 @@ const DASH_CAT_COLORS = {
   home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280'
 };
 
+function dashReset(msg) {
+  // Reset all dashboard values to safe defaults — called on error or no-groups
+  const netEl   = document.getElementById('net-worth-value');
+  const settEl  = document.getElementById('settlements-value');
+  const recEl   = document.getElementById('to-receive-value');
+  const nameEl  = document.getElementById('active-group-name');
+  const subEl   = document.getElementById('active-group-sub');
+  const actEl   = document.getElementById('activity-list');
+  if (netEl)  netEl.textContent  = '0,00€';
+  if (settEl) settEl.textContent = '0,00€';
+  if (recEl)  recEl.textContent  = '0,00€';
+  if (nameEl) nameEl.textContent = msg || 'Sin grupos';
+  if (subEl)  subEl.textContent  = 'Crea tu primer grupo';
+  if (actEl)  actEl.innerHTML    = '<p class="text-xs text-zinc-600 text-center py-4">Sin actividad. Crea un grupo y añade gastos.</p>';
+}
+
 async function loadDashboardData() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
 
   try {
     // 1. Perfil real del usuario
-    const profile = await SGApi.getProfile();
+    const profile = await SGApi.getProfile().catch(() => null);
     if (profile?.success && profile.profile) {
       const p = profile.profile;
-      // Nombre en header
       const nameEl = document.querySelector('header h1');
       if (nameEl) nameEl.textContent = p.name || 'Comandante';
-      // Avatar con iniciales reales
       const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
       if (avatarEl && p.name) {
         const seed = encodeURIComponent(p.name.slice(0,2).toUpperCase());
@@ -247,97 +235,85 @@ async function loadDashboardData() {
     }
 
     // 2. Todos los grupos
-    const groupsResult = await SGApi.getGroups();
+    const groupsResult = await SGApi.getGroups().catch(() => null);
     const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
 
     if (groups.length === 0) {
-      // Sin grupos: limpiar card de grupo activo
-      const cardTitle = document.querySelector('.experience-card h3');
-      if (cardTitle) cardTitle.textContent = 'Sin grupos';
-      const cardSub = document.querySelector('.experience-card .text-zinc-400');
-      if (cardSub) cardSub.textContent = 'Crea tu primer grupo';
-      document.querySelector('.text-gradient-cyan').textContent = '0,00€';
-      document.getElementById('settlements-value').textContent = '0,00€';
-      document.getElementById('to-receive-value').textContent = '0,00€';
-      document.getElementById('activity-list').innerHTML =
-        '<p class="text-xs text-zinc-600 text-center py-4">Sin actividad. Crea un grupo y añade gastos.</p>';
+      dashReset();
       return;
     }
 
     const uid = SGAuth.getUserId();
 
-    // 3. Balances de TODOS los grupos — sumamos lo que debemos / nos deben
-    let totalOwed = 0;      // suma de balances negativos (debo)
-    let totalReceive = 0;   // suma de balances positivos (me deben)
-    let totalMembers = 0;
-
-    // Recopilar todo en paralelo
+    // 3. Balances de TODOS los grupos en paralelo (sin getGroupMembers — puede fallar)
     const balancePromises = groups.map(g => SGApi.getBalances(g.id).catch(() => null));
-    const memberPromises  = groups.map(g => SGApi.getGroupMembers(g.id).catch(() => null));
-    const [allBalResults, allMemberResults] = await Promise.all([
-      Promise.all(balancePromises),
-      Promise.all(memberPromises)
-    ]);
+    const allBalResults   = await Promise.all(balancePromises);
 
+    let totalOwed = 0;
+    let totalReceive = 0;
     groups.forEach((g, i) => {
       const balRes = allBalResults[i];
       if (balRes?.success && balRes.balances) {
-        const myBal = balRes.balances[uid] || 0;
+        const myBal = parseFloat(balRes.balances[uid]) || 0;
         if (myBal > 0) totalReceive += myBal;
         else           totalOwed    += myBal;
       }
-      const memRes = allMemberResults[i];
-      if (memRes?.success && memRes.members) totalMembers += memRes.members.length;
     });
 
     const netWorth = totalReceive + totalOwed;
 
-    // Actualizar resumen financiero
-    const netEl = document.querySelector('.text-gradient-cyan');
-    if (netEl) {
-      netEl.textContent = (netWorth >= 0 ? '+' : '') +
-        netWorth.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
-    }
-    const settEl = document.getElementById('settlements-value');
-    if (settEl) settEl.textContent = totalOwed.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
-    const recEl = document.getElementById('to-receive-value');
-    if (recEl) recEl.textContent = (totalReceive > 0 ? '+' : '') +
+    // Actualizar resumen financiero — usando IDs, no clases
+    document.getElementById('net-worth-value').textContent =
+      (netWorth >= 0 ? '+' : '') +
+      netWorth.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    document.getElementById('settlements-value').textContent =
+      totalOwed.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    document.getElementById('to-receive-value').textContent =
+      (totalReceive > 0 ? '+' : '') +
       totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
-    // 4. Tarjeta "Grupo Activo" — muestra el grupo con más actividad (primero de la lista)
+    // 4. Tarjeta "Grupo Activo" — primer grupo de la lista
     const activeGroup = groups[0];
-    const cardTitle = document.querySelector('.experience-card h3');
-    if (cardTitle) cardTitle.textContent = activeGroup.name;
+    document.getElementById('active-group-name').textContent = activeGroup.name;
 
+    // Enlazar la tarjeta al split con el groupId correcto
+    const card = document.getElementById('active-group-card');
+    if (card) {
+      card.onclick = () => { window.location.href = 'split.html?groupId=' + activeGroup.id + '&from=dashboard'; };
+    }
+
+    // Contar socios desde los balances (fallback si getGroupMembers falla)
     const balRes0 = allBalResults[0];
-    const myBal0  = (balRes0?.success && balRes0.balances) ? (balRes0.balances[uid] || 0) : 0;
-    const memRes0 = allMemberResults[0];
-    const mc0     = (memRes0?.success && memRes0.members) ? memRes0.members.length : 1;
+    const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
+    const totalExp = (balRes0?.success && balRes0.balances)
+      ? Object.values(balRes0.balances).reduce((s, v) => s + Math.abs(parseFloat(v) || 0), 0) / 2
+      : 0;
 
-    // Socios y monto en juego en la tarjeta
-    const cardSub = document.querySelector('.experience-card .text-zinc-400');
-    if (cardSub) {
-      const totalExp = (balRes0?.success && balRes0.balances)
-        ? Object.values(balRes0.balances).reduce((s, v) => s + Math.abs(v), 0) / 2
-        : 0;
-      cardSub.innerHTML = `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+    document.getElementById('active-group-sub').innerHTML =
+      `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+
+    // Avatares: intentar getGroupMembers, si falla usar iniciales del nombre del grupo
+    const memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null);
+    const avatarRow = document.getElementById('active-group-avatars');
+    if (avatarRow) {
+      if (memRes0?.success && memRes0.members && memRes0.members.length > 0) {
+        const shown = memRes0.members.slice(0, 3);
+        const extra = memRes0.members.length - 3;
+        avatarRow.innerHTML = shown.map(m => {
+          const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
+          return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name || ''}">` ;
+        }).join('') + (extra > 0
+          ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
+          : '');
+      } else {
+        // Fallback: avatar del grupo
+        const seed = encodeURIComponent(activeGroup.name.slice(0,2).toUpperCase());
+        avatarRow.innerHTML = `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">`;
+      }
     }
 
-    // Avatares de miembros en la tarjeta
-    const avatarRow = document.querySelector('.experience-card .flex.-space-x-2');
-    if (avatarRow && memRes0?.success && memRes0.members) {
-      const shown = memRes0.members.slice(0, 3);
-      const extra = memRes0.members.length - 3;
-      avatarRow.innerHTML = shown.map(m => {
-        const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
-        return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name}">`;
-      }).join('') + (extra > 0
-        ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
-        : '');
-    }
-
-    // 5. Actividad reciente de TODOS los grupos (últimos 3 gastos en total)
-    const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
+    // 5. Actividad reciente de TODOS los grupos (últimos 3 gastos)
+    const expPromises  = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
     const allExpResults = await Promise.all(expPromises);
 
     let allExpenses = [];
@@ -348,16 +324,15 @@ async function loadDashboardData() {
       }
     });
 
-    // Ordenar por fecha descendente y tomar los 3 más recientes
     allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
     const recent = allExpenses.slice(0, 3);
 
-    const activityContainer = document.getElementById('activity-list');
-    if (activityContainer) {
+    const actEl = document.getElementById('activity-list');
+    if (actEl) {
       if (recent.length === 0) {
-        activityContainer.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Sin gastos todavía. ¡Añade el primero!</p>';
+        actEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Sin gastos todavía. ¡Añade el primero!</p>';
       } else {
-        activityContainer.innerHTML = recent.map(exp => {
+        actEl.innerHTML = recent.map(exp => {
           const icon  = DASH_CAT_ICONS[exp.category]  || 'receipt';
           const color = DASH_CAT_COLORS[exp.category] || '#6b7280';
           const amt   = parseFloat(exp.amount) || 0;
@@ -368,7 +343,7 @@ async function loadDashboardData() {
                 <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-[11px] font-bold truncate">${exp.description || exp.category}</p>
+                <p class="text-[11px] font-bold truncate">${exp.description || exp.category || 'Gasto'}</p>
                 <p class="text-[9px] text-zinc-500 font-medium">${exp._groupName}</p>
               </div>
               <p class="text-sm font-black money-display" style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
@@ -379,6 +354,7 @@ async function loadDashboardData() {
 
   } catch (e) {
     console.error('Dashboard load error:', e);
+    dashReset('Error al cargar');
   }
 }
 
