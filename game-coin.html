@@ -164,14 +164,18 @@
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">¿Quién elige?</p>
     <div class="grid grid-cols-2 gap-3">
       <div>
-        <p class="text-xs opacity-50 mb-2" id="player1-name">Commander</p>
+        <input type="text" id="player1-input" maxlength="16" placeholder="Jugador 1"
+          class="text-xs font-bold opacity-70 bg-transparent border-b border-white/10 outline-none w-full mb-2 pb-0.5"
+          oninput="updatePlayerName(1,this.value)" value="Jugador 1"/>
         <div class="flex gap-2">
           <button class="choice-btn flex-1 py-2 px-3 text-sm idle" id="p1-heads" onclick="selectChoice('p1','heads')">👆 Cara</button>
           <button class="choice-btn flex-1 py-2 px-3 text-sm idle" id="p1-tails" onclick="selectChoice('p1','tails')">✋ Cruz</button>
         </div>
       </div>
       <div>
-        <p class="text-xs opacity-50 mb-2" id="player2-name">Mario</p>
+        <input type="text" id="player2-input" maxlength="16" placeholder="Jugador 2"
+          class="text-xs font-bold opacity-70 bg-transparent border-b border-white/10 outline-none w-full mb-2 pb-0.5"
+          oninput="updatePlayerName(2,this.value)" value="Jugador 2"/>
         <div class="flex gap-2">
           <button class="choice-btn flex-1 py-2 px-3 text-sm idle" id="p2-heads" onclick="selectChoice('p2','heads')">👆 Cara</button>
           <button class="choice-btn flex-1 py-2 px-3 text-sm idle" id="p2-tails" onclick="selectChoice('p2','tails')">✋ Cruz</button>
@@ -384,8 +388,13 @@ let headsCount = 0, tailsCount = 0, totalFlips = 0;
 let isFlipping = false;
 let choices    = { p1: null, p2: null };
 let history    = [];
-const players  = [{name:'Commander', color:'#13ecd6'}, {name:'Mario', color:'#a855f7'}];
+let players  = [{name:'Jugador 1', color:'#13ecd6'}, {name:'Jugador 2', color:'#a855f7'}];
 let lastResult = null;
+
+function updatePlayerName(num, val) {
+  const name = val.trim() || (num === 1 ? 'Jugador 1' : 'Jugador 2');
+  players[num - 1].name = name;
+}
 
 // Audio shims
 function playCoinSpin()  { if (window.SGAudio) SGAudio.coinSpin(); }
@@ -595,8 +604,6 @@ function launchConfetti(color) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-document.getElementById('player1-name').textContent = players[0].name;
-document.getElementById('player2-name').textContent = players[1].name;
 drawCoin(0);  // initial draw: heads facing
 </script>
 

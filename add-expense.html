@@ -322,21 +322,18 @@ async function loadGroupMembers(groupId) {
 
 function renderPayers() {
   const row = document.getElementById('payers-row');
+  if (members.length === 0) {
+    row.innerHTML = '<p class="text-xs opacity-30 py-3">Selecciona un grupo primero</p>';
+    return;
+  }
   row.innerHTML = members.map((m, i) => `
     <div class="payer-chip ${i === selectedPayer ? 'selected' : ''}" onclick="selectPayer(${i})">
       <div class="payer-avatar" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.initials}</div>
       <span class="payer-name">${m.name}</span>
-    </div>`).join('') + `
-    <div class="payer-chip" onclick="addPayer()">
-      <div class="payer-avatar" style="border:2px dashed rgba(255,255,255,0.2)">
-        <span class="material-icons-round text-sm opacity-30">add</span>
-      </div>
-      <span class="payer-name opacity-40">Añadir</span>
-    </div>`;
+    </div>`).join('');
 }
 
 function selectPayer(idx) { selectedPayer = idx; renderPayers(); }
-function addPayer() { SGRouter.showToast('Próximamente: múltiples pagadores', 'info'); }
 
 function selectCat(btn) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
