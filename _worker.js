@@ -829,7 +829,7 @@ async function handleBalances(request, env) {
     }
 
     const response = { success: true, balances, debts, totalExpenses: expenses.results.length };
-    await setCache(env, cacheKey, response, 30);
+    await setCache(env, cacheKey, response, 10);  // TTL corto: balances cambian al añadir gastos
     return jsonResponse(response);
 }
 
@@ -858,7 +858,7 @@ async function handleDatabase(request, env, path) {
             'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC'
         ).bind(userId).all();
         const response = { success: true, groups: groups.results };
-        await setCache(env, cacheKey, response, 60);
+        await setCache(env, cacheKey, response, 5);  // TTL corto: grupos cambian frecuentemente
         return jsonResponse(response);
     }
 
