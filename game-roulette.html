@@ -167,6 +167,8 @@
 <script src="engine/audio.js"></script>
 <script src="engine/desktop-fix.js" defer></script>
 <script src="engine/router.js"></script>
+<script src="engine/auth.js"></script>
+<script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -189,16 +191,19 @@
 <!-- px-3 instead of px-4 gives 6px more side room for the glow shadow on small iOS screens -->
 <main class="max-w-md mx-auto px-3 pt-6 space-y-6">
 
-  <!-- Group selector -->
-  <div class="glass p-4 flex items-center justify-between">
+  <!-- Group selector — FIX: dinámico, carga grupos reales -->
+  <div class="glass p-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:rgba(168,85,247,0.2)">🍣</div>
-      <div>
-        <p class="font-bold text-sm">Sushi Kyoto Pro</p>
-        <p class="text-xs opacity-50">4 participantes activos</p>
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.2)">🎮</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Grupo</p>
+        <select id="group-select" class="w-full bg-transparent text-white font-bold text-sm outline-none cursor-pointer"
+          style="border:none;background:transparent" onchange="onGroupChange(this.value)">
+          <option value="">Cargando grupos…</option>
+        </select>
       </div>
     </div>
-    <span class="material-icons-round text-sm opacity-40">expand_more</span>
+    <p class="text-xs opacity-40 mt-2 pl-13" id="group-member-count">— participantes</p>
   </div>
 
   <!-- Roulette Wheel (flat, no 3D tilt) -->
@@ -328,12 +333,8 @@ const COLORS = [
   '#f59e0b','#ef4444','#8b5cf6','#06b6d4'
 ];
 
-let players = [
-  {name:'Commander', color:'#13ecd6',  active:true},
-  {name:'Mario',     color:'#a855f7',  active:true},
-  {name:'Elena',     color:'#FF9D42',  active:true},
-  {name:'Sofia',     color:'#ec4899',  active:true},
-];
+// FIX: players arrancará vacío; se llena con miembros reales del grupo
+let players = [];
 
 let currentAngle = 0;   // wheel rotation offset in radians
 let spinCount = 0;
@@ -708,9 +709,67 @@ function launchConfetti(color) {
   }
 }
 
+// ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
+async function loadRouletteGroups() {
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    // Si no hay sesión, usar jugadores de ejemplo para que la ruleta funcione
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', active:true},
+      {name:'Jugador 2', color:'#a855f7', active:true},
+    ];
+    renderPlayers(); drawWheel(0); updatePlayerCount();
+    return;
+  }
+  try {
+    const res = await SGApi.getGroups();
+    const sel = document.getElementById('group-select');
+    if (res && res.success && res.groups && res.groups.length > 0) {
+      sel.innerHTML = res.groups.map(g =>
+        `<option value="${g.id}">${g.name}</option>`
+      ).join('');
+      // Cargar miembros del primer grupo
+      await onGroupChange(res.groups[0].id);
+    } else {
+      sel.innerHTML = '<option value="">Sin grupos — añade jugadores manualmente</option>';
+      players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
+      renderPlayers(); drawWheel(0); updatePlayerCount();
+    }
+  } catch(e) {
+    console.error('loadRouletteGroups error:', e);
+    players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
+    renderPlayers(); drawWheel(0); updatePlayerCount();
+  }
+}
+
+async function onGroupChange(groupId) {
+  if (!groupId) return;
+  const countEl = document.getElementById('group-member-count');
+  if (countEl) countEl.textContent = 'Cargando miembros…';
+  try {
+    const res = await SGApi.getGroupMembers(groupId);
+    if (res && res.success && res.members && res.members.length > 0) {
+      players = res.members.map((m, i) => ({
+        name: m.name || `Jugador ${i+1}`,
+        color: COLORS[i % COLORS.length],
+        active: true
+      }));
+      if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
+    } else {
+      // Grupo sin miembros cargados aún — usar 2 jugadores por defecto
+      players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
+      if (countEl) countEl.textContent = '2 participantes (por defecto)';
+    }
+  } catch(e) {
+    players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
+    if (countEl) countEl.textContent = '2 participantes (por defecto)';
+  }
+  renderPlayers();
+  drawWheel(0);
+  updatePlayerCount();
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
-renderPlayers();
-drawWheel(0);
+loadRouletteGroups();
 </script>
 
 <script>

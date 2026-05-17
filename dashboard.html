@@ -225,8 +225,9 @@ async function loadDashboardData() {
     const profile = await SGApi.getProfile().catch(() => null);
     if (profile?.success && profile.profile) {
       const p = profile.profile;
-      const nameEl = document.querySelector('header h1');
-      if (nameEl) nameEl.textContent = p.name || 'Comandante';
+      // FIX: usar el h1 dentro del header que tiene el nombre del usuario
+      const headerDiv = document.querySelector('header .flex-1 h1');
+      if (headerDiv) headerDiv.textContent = p.name || 'Comandante';
       const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
       if (avatarEl && p.name) {
         const seed = encodeURIComponent(p.name.slice(0,2).toUpperCase());
@@ -253,10 +254,11 @@ async function loadDashboardData() {
     let totalReceive = 0;
     groups.forEach((g, i) => {
       const balRes = allBalResults[i];
-      if (balRes?.success && balRes.balances) {
-        const myBal = parseFloat(balRes.balances[uid]) || 0;
+      // FIX: aceptar tanto balances vacío {} como null — no crashear
+      if (balRes && balRes.success) {
+        const myBal = parseFloat((balRes.balances || {})[uid]) || 0;
         if (myBal > 0) totalReceive += myBal;
-        else           totalOwed    += myBal;
+        else if (myBal < 0) totalOwed += myBal;
       }
     });
 
@@ -359,6 +361,11 @@ async function loadDashboardData() {
 }
 
 loadDashboardData();
+
+// FIX bfcache: recargar datos reales cuando el navegador restaura desde caché
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) loadDashboardData();
+});
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

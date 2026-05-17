@@ -186,12 +186,12 @@
       </button>
     </div>
     <div id="members-list" class="space-y-2">
-      <!-- Commander (you) -->
-      <div class="member-row">
-        <div class="member-avatar" style="background:rgba(19,236,214,0.15);color:#13ecd6">C</div>
+      <!-- Me (you) — filled dynamically by loadMyProfile() -->
+      <div class="member-row" id="my-member-row">
+        <div class="member-avatar" id="my-avatar" style="background:rgba(19,236,214,0.15);color:#13ecd6">?</div>
         <div class="flex-1">
-          <p class="text-sm font-bold">Commander <span class="text-xs opacity-40">(tú)</span></p>
-          <p class="text-xs opacity-40">Socio Fundador</p>
+          <p class="text-sm font-bold" id="my-name">Cargando… <span class="text-xs opacity-40">(tú)</span></p>
+          <p class="text-xs opacity-40">Administrador</p>
         </div>
         <span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Admin</span>
       </div>
@@ -219,7 +219,7 @@
 <script>
 let selectedEmoji = '🍣';
 let selectedColor = '#13ecd6';
-let members = [{name:'Commander', color:'#13ecd6', initials:'C', role:'Admin'}];
+let members = [{name:'Yo', color:'#13ecd6', initials:'?', role:'Admin', isMe:true}]; // real name loaded by loadMyProfile()
 
 function updatePreview() {
   const name = document.getElementById('group-name').value || 'Mi Nuevo Grupo';
@@ -374,9 +374,32 @@ async function createGroup() {
   }
 }
 
+// ── FIX: cargar nombre real del usuario para el miembro admin ──
+async function loadMyProfile() {
+  try {
+    if (!SGAuth || !SGAuth.isLoggedIn()) return;
+    const res = await SGApi.getProfile();
+    if (res && res.success && res.profile) {
+      const p = res.profile;
+      const displayName = p.name || 'Yo';
+      const initials = displayName.slice(0,2).toUpperCase();
+      // Actualizar array de members
+      members[0].name = displayName;
+      members[0].initials = initials;
+      // Actualizar HTML del member-row
+      const nameEl = document.getElementById('my-name');
+      const avatarEl = document.getElementById('my-avatar');
+      if (nameEl) nameEl.innerHTML = `${displayName} <span class="text-xs opacity-40">(tú)</span>`;
+      if (avatarEl) avatarEl.textContent = initials;
+      updatePreview();
+    }
+  } catch(e) { /* silenciar — no crítico */ }
+}
+
 // Init
 document.getElementById('group-name').addEventListener('input', updatePreview);
 updatePreview();
+loadMyProfile();
 </script>
 
     <!-- Bottom Navigation Bar -->

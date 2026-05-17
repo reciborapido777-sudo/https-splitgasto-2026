@@ -141,6 +141,8 @@
     <script src="engine/audio.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js"></script>
+<script src="engine/auth.js"></script>
+<script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -160,6 +162,20 @@
 </header>
 
 <main class="max-w-md mx-auto px-4 pt-6 space-y-5">
+
+  <!-- Group selector — FIX: dinámico -->
+  <div class="glass p-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-lg flex-shrink-0" style="background:rgba(168,85,247,0.2)">🃏</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Grupo</p>
+        <select id="group-select-cards" class="w-full text-white font-bold text-sm outline-none cursor-pointer"
+          style="border:none;background:transparent" onchange="onCardsGroupChange(this.value)">
+          <option value="">Cargando grupos…</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
   <!-- Game stats -->
   <div class="grid grid-cols-3 gap-3">
@@ -243,12 +259,8 @@ const RANK_VALUES = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J'
 function playCardFlip() { if(window.SGAudio) SGAudio.cardFlip(); }
 function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
 let deck = [];
-let players = [
-  {name:'Commander', color:'#13ecd6', initials:'C', wins:0, active:true},
-  {name:'Mario', color:'#a855f7', initials:'M', wins:0, active:true},
-  {name:'Elena', color:'#FF9D42', initials:'E', wins:0, active:true},
-  {name:'Sofia', color:'#ec4899', initials:'S', wins:0, active:true},
-];
+// FIX: players cargados desde el grupo seleccionado
+let players = [];
 let roundNum = 1;
 let dealtCards = [];
 let isDealing = false;
@@ -464,11 +476,70 @@ function launchConfetti(color) {
   }
 }
 
+// ─── FIX: LOAD GROUPS FROM API ───────────────────────────────────────────────
+const CARD_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#22c55e','#3b82f6'];
+
+async function loadCardsGroups() {
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+    buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
+    return;
+  }
+  try {
+    const res = await SGApi.getGroups();
+    const sel = document.getElementById('group-select-cards');
+    if (res && res.success && res.groups && res.groups.length > 0) {
+      sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+      await onCardsGroupChange(res.groups[0].id);
+    } else {
+      sel.innerHTML = '<option value="">Sin grupos</option>';
+      players = [
+        {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+        {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+      ];
+      buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
+    }
+  } catch(e) {
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+    buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
+  }
+}
+
+async function onCardsGroupChange(groupId) {
+  if (!groupId) return;
+  try {
+    const res = await SGApi.getGroupMembers(groupId);
+    if (res && res.success && res.members && res.members.length > 0) {
+      players = res.members.map((m, i) => ({
+        name: m.name || `Jugador ${i+1}`,
+        color: CARD_COLORS[i % CARD_COLORS.length],
+        initials: (m.name || 'J').slice(0,2).toUpperCase(),
+        wins: 0,
+        active: true
+      }));
+    } else {
+      players = [
+        {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+        {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+      ];
+    }
+  } catch(e) {
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+  }
+  buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-buildDeck();
-renderPlayers();
-renderScoreboard();
-updateStats();
+loadCardsGroups();
 </script>
 
         <script>

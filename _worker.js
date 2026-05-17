@@ -1087,6 +1087,19 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, user });
     }
 
+    // ── Marcar notificaciones como leídas ────────────────────────────
+    if (path === '/api/db/notifications/read' && method === 'POST') {
+        const userId = authUser.userId;
+        try {
+            await env.SPLITGASTO_DB.prepare(
+                "UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0"
+            ).bind(userId).run();
+        } catch {
+            // La columna 'read' puede no existir en todos los deployments — silenciar
+        }
+        return jsonResponse({ success: true, message: 'Notificaciones marcadas como leídas' });
+    }
+
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404);
 }
 

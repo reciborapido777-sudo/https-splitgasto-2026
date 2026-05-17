@@ -208,6 +208,11 @@ async function loadGroups() {
   const ctaCard  = grid.querySelector('.event-placeholder');
   const uid      = SGAuth.getUserId();
 
+  // ── FIX: limpiar cards previas para evitar duplicados en bfcache/reload ──
+  Array.from(grid.children).forEach(child => {
+    if (child !== ctaCard) child.remove();
+  });
+
   // --- Fetch groups ---
   let groups = [];
   try {
@@ -310,6 +315,13 @@ async function loadGroups() {
   }
 }
 loadGroups();
+
+// FIX bfcache: cuando el navegador restaura la página desde caché, recargar datos
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) {
+    loadGroups();
+  }
+});
 </script>
 
         <script>

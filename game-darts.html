@@ -138,6 +138,8 @@
 </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
     <script src="engine/audio.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js"></script>
@@ -201,6 +203,20 @@
             <div class="px-3 py-1 rounded-full" style="background:rgba(19,236,214,0.1);border:1px solid rgba(19,236,214,0.2)">
                 <span style="font-size:10px;font-weight:900;letter-spacing:0.2em;color:#13ecd6" id="dartsLeft">⦿ ⦿ ⦿</span>
             </div>
+        </div>
+
+        <!-- Group selector — FIX: dinámico -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:16px">🎯</span>
+            <div style="flex:1;min-width:0">
+              <p style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.2em;opacity:0.4;margin-bottom:2px">Grupo</p>
+              <select id="group-select-darts" style="background:transparent;border:none;color:white;font-weight:700;font-size:13px;outline:none;width:100%;cursor:pointer"
+                onchange="onDartsGroupChange(this.value)">
+                <option value="">Cargando grupos…</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- Players -->
@@ -288,12 +304,7 @@ function playDartHit(score) { if(window.SGAudio) SGAudio.dartHit(score); }
 function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
 const PLAYER_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ef4444','#22c55e','#3b82f6','#D4AF37','#ec4899'];
 const PLAYER_EMOJIS = ['🎯','🏆','⚡','🔥','🌟','🎮','👑','💫'];
-let PLAYERS = [
-  { name: 'Tú',    emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-  { name: 'Alex',  emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-  { name: 'María', emoji: '⚡', color: '#FF9D42', score: 0, darts: [] },
-  { name: 'David', emoji: '🔥', color: '#ef4444', score: 0, darts: [] }
-];
+let PLAYERS = []; // populated dynamically by loadDartsGroups()
 
 function showAddPlayer() {
   if (PLAYERS.length >= 8) {
@@ -709,10 +720,72 @@ function removeLastPlayer() {
             if (!gameOver) throwDart(pos.x, pos.y);
         }, { passive: true });
 
+        // ─── FIX: Load groups from API ───────────────────────────────
+        const DARTS_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ef4444','#22c55e','#3b82f6','#D4AF37','#ec4899'];
+        const DARTS_EMOJIS = ['🎯','🏆','⚡','🔥','🌟','🎮','👑','💫'];
+
+        async function loadDartsGroups() {
+          if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+            PLAYERS = [
+              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+            ];
+            drawBoard(); renderPlayers(); updateDartsLeft();
+            return;
+          }
+          try {
+            const res = await SGApi.getGroups();
+            const sel = document.getElementById('group-select-darts');
+            if (res && res.success && res.groups && res.groups.length > 0) {
+              sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+              await onDartsGroupChange(res.groups[0].id);
+            } else {
+              sel.innerHTML = '<option value="">Sin grupos</option>';
+              PLAYERS = [
+                { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+              ];
+              drawBoard(); renderPlayers(); updateDartsLeft();
+            }
+          } catch(e) {
+            PLAYERS = [
+              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+            ];
+            drawBoard(); renderPlayers(); updateDartsLeft();
+          }
+        }
+
+        async function onDartsGroupChange(groupId) {
+          if (!groupId) return;
+          try {
+            const res = await SGApi.getGroupMembers(groupId);
+            if (res && res.success && res.members && res.members.length > 0) {
+              PLAYERS = res.members.map((m, i) => ({
+                name: m.name || `Jugador ${i+1}`,
+                emoji: DARTS_EMOJIS[i % DARTS_EMOJIS.length],
+                color: DARTS_COLORS[i % DARTS_COLORS.length],
+                score: 0, darts: []
+              }));
+            } else {
+              PLAYERS = [
+                { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+              ];
+            }
+          } catch(e) {
+            PLAYERS = [
+              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+            ];
+          }
+          currentPlayer = 0; currentRound = 1; gameOver = false;
+          drawBoard(); renderPlayers(); updateDartsLeft();
+        }
+
         // ─── Init ─────────────────────────────────────────────────────
         drawBoard();
-        renderPlayers();
-        updateDartsLeft();
+        loadDartsGroups();
     </script>
 
         <script>
