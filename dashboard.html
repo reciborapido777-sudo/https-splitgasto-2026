@@ -50,7 +50,7 @@
                 </div>
                 <div>
                     <p class="text-[8px] font-black text-[#D4AF37] uppercase tracking-[.35em]">Socio Fundador</p>
-                    <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Comandante</h1>
+                    <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" id="dash-user-name">—</h1>
                 </div>
             </div>
 
@@ -225,9 +225,9 @@ async function loadDashboardData() {
     const profile = await SGApi.getProfile().catch(() => null);
     if (profile?.success && profile.profile) {
       const p = profile.profile;
-      // FIX: usar el h1 dentro del header que tiene el nombre del usuario
-      const headerDiv = document.querySelector('header .flex-1 h1');
-      if (headerDiv) headerDiv.textContent = p.name || 'Comandante';
+      // Actualizar nombre en el header (usando el ID específico)
+      const headerDiv = document.getElementById('dash-user-name') || document.querySelector('header .flex-1 h1');
+      if (headerDiv) headerDiv.textContent = p.name || 'Usuario';
       const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
       if (avatarEl && p.name) {
         const seed = encodeURIComponent(p.name.slice(0,2).toUpperCase());
@@ -282,6 +282,11 @@ async function loadDashboardData() {
     const card = document.getElementById('active-group-card');
     if (card) {
       card.onclick = () => { window.location.href = 'split.html?groupId=' + activeGroup.id + '&from=dashboard'; };
+    }
+    // Enlazar el botón "Gasto" con el groupId del grupo activo
+    const gastoBtn = document.querySelector('[onclick*="add-expense"]');
+    if (gastoBtn) {
+      gastoBtn.onclick = () => { window.location.href = 'add-expense.html?groupId=' + activeGroup.id + '&from=dashboard'; };
     }
 
     // Contar socios desde los balances (fallback si getGroupMembers falla)

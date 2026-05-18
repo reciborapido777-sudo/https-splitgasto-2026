@@ -82,6 +82,7 @@ async function checkRateLimit(request, env) {
 async function handleAPI(request, env, ctx, path) {
     const method = request.method;
     if (method === 'OPTIONS') return corsResponse(request);
+    // Allow DELETE to pass through to handleDatabase
     if (path === '/api/health') {
         return jsonResponse({
             status: 'ok',
@@ -842,7 +843,7 @@ async function handleDatabase(request, env, path) {
     if (authError) return authError;
     const method = request.method;
     let body = {};
-    if (method === 'POST') {
+    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
 
@@ -857,8 +858,11 @@ async function handleDatabase(request, env, path) {
         const groups = await env.SPLITGASTO_DB.prepare(
             'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC'
         ).bind(userId).all();
+        // Invalidar cualquier cache previa y devolver frescos
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(cacheKey); } catch {}
+        }
         const response = { success: true, groups: groups.results };
-        await setCache(env, cacheKey, response, 5);  // TTL corto: grupos cambian frecuentemente
         return jsonResponse(response);
     }
 
@@ -968,7 +972,7 @@ async function handleDatabase(request, env, path) {
             success: true, expenses: expenses.results,
             pagination: { page, perPage, total: total.count, totalPages: Math.ceil(total.count / perPage) },
         };
-        await setCache(env, cacheKey, response, 30);
+        // NO cachear expenses — siempre frescos para reflejar eliminaciones
         return jsonResponse(response);
     }
 
@@ -1085,6 +1089,118 @@ async function handleDatabase(request, env, path) {
         ).bind(email.toLowerCase().trim()).first();
         if (!user) return jsonResponse({ success: false, error: 'Usuario no encontrado' }, 404);
         return jsonResponse({ success: true, user });
+    }
+
+    // ── Eliminar gasto (DELETE) ───────────────────────────────────────
+    if (path.startsWith('/api/db/expenses/') && method === 'DELETE') {
+        const expenseId = path.replace('/api/db/expenses/', '');
+        if (!expenseId) return jsonResponse({ error: 'ID de gasto requerido' }, 400);
+
+        // Verificar que el gasto existe y el usuario tiene acceso
+        const expense = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, group_id, paid_by FROM expenses WHERE id = ?'
+        ).bind(expenseId).first();
+
+        if (!expense) return jsonResponse({ error: 'Gasto no encontrado' }, 404);
+
+        // Verificar que el usuario pertenece al grupo
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(expense.group_id, authUser.userId).first();
+
+        if (!membership) return jsonResponse({ error: 'No tienes acceso a este gasto' }, 403);
+
+        // Solo el pagador o un admin puede eliminar
+        const canDelete = expense.paid_by === authUser.userId || membership.role === 'admin';
+        if (!canDelete) return jsonResponse({ error: 'Solo el pagador o un admin puede eliminar este gasto' }, 403);
+
+        await env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE id = ?').bind(expenseId).run();
+
+        // Invalidar KV cache
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.delete(`db:expenses:${expense.group_id}`);
+            await env.SPLITGASTO_CACHE.delete(`db:balances:${expense.group_id}`);
+            await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`);
+        }
+
+        return jsonResponse({ success: true, message: 'Gasto eliminado' });
+    }
+
+    // ── Eliminar grupo (DELETE) ────────────────────────────────────────
+    if (path.startsWith('/api/db/groups/') && method === 'DELETE') {
+        const groupId = path.replace('/api/db/groups/', '');
+        if (!groupId) return jsonResponse({ error: 'ID de grupo requerido' }, 400);
+
+        // Solo el admin puede eliminar el grupo
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+        if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede eliminar el grupo' }, 403);
+
+        // Obtener todos los miembros para invalidar su KV
+        const membersForCache = await env.SPLITGASTO_DB.prepare(
+            'SELECT user_id FROM group_members WHERE group_id = ?'
+        ).bind(groupId).all();
+
+        // Eliminar en cascada: gastos, liquidaciones, miembros, grupo
+        await env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE group_id = ?').bind(groupId).run();
+        await env.SPLITGASTO_DB.prepare('DELETE FROM settlements WHERE group_id = ?').bind(groupId).run();
+        await env.SPLITGASTO_DB.prepare('DELETE FROM group_members WHERE group_id = ?').bind(groupId).run();
+        await env.SPLITGASTO_DB.prepare('DELETE FROM groups WHERE id = ?').bind(groupId).run();
+
+        // Invalidar KV de todos los miembros
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`);
+            await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`);
+            for (const m of (membersForCache.results || [])) {
+                await env.SPLITGASTO_CACHE.delete(`db:groups:${m.user_id}`);
+            }
+        }
+
+        return jsonResponse({ success: true, message: 'Grupo eliminado' });
+    }
+
+    // ── Eliminar miembro de grupo (DELETE) ───────────────────────────
+    if (path.startsWith('/api/db/group-members/') && method === 'DELETE') {
+        const parts = path.replace('/api/db/group-members/', '').split('/');
+        const groupId = parts[0];
+        const memberUserId = parts[1];
+        if (!groupId || !memberUserId) return jsonResponse({ error: 'groupId y userId requeridos en la ruta' }, 400);
+
+        const membership = await env.SPLITGASTO_DB.prepare(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, authUser.userId).first();
+
+        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+
+        // Un admin puede eliminar a cualquiera; un miembro solo puede eliminarse a sí mismo
+        if (membership.role !== 'admin' && memberUserId !== authUser.userId) {
+            return jsonResponse({ error: 'Solo el admin puede eliminar otros miembros' }, 403);
+        }
+
+        // No eliminar al último admin
+        if (memberUserId === authUser.userId && membership.role === 'admin') {
+            const adminCount = await env.SPLITGASTO_DB.prepare(
+                "SELECT COUNT(*) as cnt FROM group_members WHERE group_id = ? AND role = 'admin'"
+            ).bind(groupId).first();
+            if (adminCount && adminCount.cnt <= 1) {
+                return jsonResponse({ error: 'No puedes abandonar el grupo siendo el único admin. Elimina el grupo o asigna otro admin primero.' }, 400);
+            }
+        }
+
+        await env.SPLITGASTO_DB.prepare(
+            'DELETE FROM group_members WHERE group_id = ? AND user_id = ?'
+        ).bind(groupId, memberUserId).run();
+
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.delete(`db:groups:${memberUserId}`);
+            await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`);
+            await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`);
+        }
+
+        return jsonResponse({ success: true, message: 'Miembro eliminado del grupo' });
     }
 
     // ── Marcar notificaciones como leídas ────────────────────────────

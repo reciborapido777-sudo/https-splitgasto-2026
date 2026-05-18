@@ -256,13 +256,21 @@ async function loadGroups() {
     card.className = 'group-card group reveal-node';
     card.style.animationDelay = `${i * 0.1}s`;
     // IMPORTANT: pass groupId via URL — SGRouter.navigate() only accepts 2 params
+    // Click en la card navega al grupo; el botón de eliminar tiene stopPropagation
     card.onclick = () => { window.location.href = 'split.html?groupId=' + g.id + '&from=groups'; };
     card.innerHTML = `
         <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-110 transition-transform duration-1000" alt="">
         <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
           <div class="flex justify-between items-center">
             <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
-            <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
+            <div class="flex items-center gap-2">
+              <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
+              <button onclick="event.stopPropagation(); deleteGroup('${g.id}','${g.name.replace(/'/g,"\\'")}')"
+                class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/20 transition-all"
+                title="Eliminar grupo" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)">
+                <span class="material-icons-round text-red-400 text-xs">delete</span>
+              </button>
+            </div>
           </div>
           <div class="space-y-0.5">
             <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${g.name}</h3>
@@ -314,6 +322,23 @@ async function loadGroups() {
     }
   }
 }
+async function deleteGroup(groupId, groupName) {
+  if (!confirm(`¿Eliminar el grupo "${groupName}"?\n\nEsto eliminará TODOS los gastos y liquidaciones del grupo. Esta acción no se puede deshacer.`)) return;
+  try {
+    const res = await SGApi.deleteGroup(groupId);
+    if (res && res.success) {
+      SGRouter.showToast(`Grupo "${groupName}" eliminado`, 'success');
+      // Recargar la lista de grupos
+      setTimeout(() => loadGroups(), 400);
+    } else {
+      SGRouter.showToast(res?.error || 'Error al eliminar el grupo', 'error');
+    }
+  } catch(e) {
+    console.error('deleteGroup error:', e);
+    SGRouter.showToast('Error de conexión', 'error');
+  }
+}
+
 loadGroups();
 
 // FIX bfcache: cuando el navegador restaura la página desde caché, recargar datos
