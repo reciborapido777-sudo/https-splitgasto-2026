@@ -109,6 +109,9 @@
     const CAT_ICONS = { food:'restaurant', transport:'directions_car', leisure:'movie', home:'home', travel:'flight', health:'medical_services', other:'receipt', bolt:'bolt' };
     const CAT_COLORS = { food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42', home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280' };
 
+    // Global cache for delete confirmation
+    let _allExpensesCache = [];
+
     async function loadActivityData() {
       if (!SGAuth || !SGAuth.isLoggedIn()) {
         SGRouter.showToast('Inicia sesión primero', 'error');
@@ -116,60 +119,81 @@
         return;
       }
 
+      const container = document.getElementById('activity-content');
+      container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-12">Cargando movimientos…</p>';
+
       try {
         const groupsResult = await SGApi.getGroups();
         const groups = (groupsResult?.success && groupsResult?.groups) ? groupsResult.groups : [];
 
         if (groups.length === 0) {
-          document.getElementById('activity-content').innerHTML = '<p class="text-xs text-zinc-600 text-center py-12">No hay grupos aún. Crea uno para empezar.</p>';
+          container.innerHTML = `<div class="text-center py-16 space-y-4">
+            <p class="text-zinc-600 text-sm">No hay grupos todavía</p>
+            <button onclick="SGRouter.navigate('create-group','activity')" class="px-6 py-3 rounded-2xl text-sm font-bold" style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
+              + Crear primer grupo
+            </button>
+          </div>`;
           return;
         }
 
-        // Load expenses from first group (or all groups)
-        const allExpenses = [];
-        for (const g of groups) {
-          const expResult = await SGApi.getExpenses(g.id).catch(() => null);
-          if (expResult?.success && expResult.expenses) {
-            expResult.expenses.forEach(e => { e._groupName = g.name; });
-            allExpenses.push(...expResult.expenses);
-          }
-        }
+        // Cargar gastos de TODOS los grupos en paralelo
+        const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
+        const allExpResults = await Promise.all(expPromises);
 
-        // Sort by date descending
-        allExpenses.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const allExpenses = [];
+        groups.forEach((g, i) => {
+          const expResult = allExpResults[i];
+          if (expResult?.success && expResult.expenses) {
+            expResult.expenses.forEach(e => {
+              allExpenses.push({ ...e, _groupName: g.name, _groupId: g.id });
+            });
+          }
+        });
+
+        _allExpensesCache = allExpenses;
+
+        // Ordenar por fecha descendente
+        allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
         if (allExpenses.length === 0) {
-          document.getElementById('activity-content').innerHTML = '<p class="text-xs text-zinc-600 text-center py-12">Sin movimientos todavía</p>';
+          container.innerHTML = `<div class="text-center py-16 space-y-4">
+            <span class="material-icons-round text-5xl text-zinc-800">receipt_long</span>
+            <p class="text-zinc-600 text-sm">Sin gastos todavía</p>
+            <button onclick="SGRouter.navigate('add-expense','activity')" class="px-6 py-3 rounded-2xl text-sm font-bold" style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
+              + Añadir primer gasto
+            </button>
+          </div>`;
+
+          // Actualizar resumen con ceros reales
+          updateSummary(allExpenses, SGAuth.getUserId());
           return;
         }
 
-        // Group by date
+        // Agrupar por fecha
         const today = new Date().toISOString().split('T')[0];
         const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        const groups_by_date = {};
+        const byDate = {};
         allExpenses.forEach(exp => {
           const d = (exp.created_at || today).split('T')[0];
-          if (!groups_by_date[d]) groups_by_date[d] = [];
-          groups_by_date[d].push(exp);
+          if (!byDate[d]) byDate[d] = [];
+          byDate[d].push(exp);
         });
 
         const uid = SGAuth.getUserId();
-        const container = document.getElementById('activity-content');
         let html = '';
 
-        for (const [date, expenses] of Object.entries(groups_by_date)) {
-          let label, dayTotal = 0;
-          if (date === today) { label = `Hoy — ${formatDate(date)}`; }
-          else if (date === yesterday) { label = `Ayer — ${formatDate(date)}`; }
-          else { label = formatDate(date); }
+        for (const [date, expenses] of Object.entries(byDate)) {
+          let label;
+          if (date === today) label = `Hoy — ${formatDate(date)}`;
+          else if (date === yesterday) label = `Ayer — ${formatDate(date)}`;
+          else label = formatDate(date);
 
+          let dayTotal = 0;
           expenses.forEach(e => {
-            const isMine = e.paid_by === uid;
-            dayTotal += isMine ? e.amount : -e.amount;
+            dayTotal += (e.paid_by === uid) ? parseFloat(e.amount) : -parseFloat(e.amount);
           });
 
           const daySign = dayTotal >= 0 ? '+' : '';
-          const dayColor = dayTotal >= 0 ? '#13ecd6' : 'text-zinc-500';
 
           html += `<div class="space-y-3">
             <div class="flex items-center gap-4 px-2 reveal-node">
@@ -183,27 +207,29 @@
             const icon = CAT_ICONS[exp.category] || 'receipt';
             const color = CAT_COLORS[exp.category] || '#6b7280';
             const txType = isMine ? 'income' : 'expense';
-            const amount = isMine ? `+${exp.amount?.toFixed(2)}€` : `-${exp.amount?.toFixed(2)}€`;
+            const amt = parseFloat(exp.amount) || 0;
+            const amountStr = isMine ? `+${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€` : `-${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€`;
             const amountColor = isMine ? '#13ecd6' : '#FF9D42';
             const time = exp.created_at ? new Date(exp.created_at).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) : '';
+            const expId = exp.id;
 
             html += `
-            <div class="tx-row ${txType} settled glass-panel p-5 rounded-[2rem] flex items-center justify-between reveal-node" onclick="SGRouter.navigate('receipt', 'activity')">
-              <div class="flex items-center gap-5 min-w-0">
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center border flex-shrink-0" style="background:${color}10;border-color:${color}20">
-                  <span class="material-icons-round" style="color:${color}">${icon}</span>
-                </div>
-                <div class="space-y-1 truncate">
-                  <h4 class="text-sm font-bold truncate">${exp.description || exp.category}</h4>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="status-pill bg-[#13ecd6]/20 text-[#13ecd6]">Registrado</span>
-                    <p class="text-[9px] text-zinc-600 font-bold uppercase tracking-tight">${exp._groupName} • ${exp.category}</p>
-                  </div>
+            <div class="tx-row ${txType} settled glass-panel p-4 rounded-[1.5rem] flex items-center gap-3 reveal-node" id="exp-row-${expId}">
+              <div class="w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0" style="background:${color}10;border-color:${color}20">
+                <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-bold truncate">${exp.description || exp.category || 'Gasto'}</h4>
+                <div class="flex items-center gap-2 flex-wrap mt-0.5">
+                  <span class="status-pill bg-[#13ecd6]/20 text-[#13ecd6]">Registrado</span>
+                  <p class="text-[9px] text-zinc-600 font-bold uppercase">${exp._groupName} · ${time}</p>
                 </div>
               </div>
-              <div class="text-right flex-shrink-0 pl-4">
-                <p class="text-lg font-black money-display" style="color:${amountColor}">${amount}</p>
-                <p class="text-[8px] text-zinc-700 uppercase font-black">${time}</p>
+              <div class="text-right flex-shrink-0">
+                <p class="text-base font-black money-display" style="color:${amountColor}">${amountStr}</p>
+                ${isMine ? `<button onclick="deleteExpense('${expId}','${exp._groupId}')" class="text-[8px] text-zinc-700 hover:text-red-400 transition-colors font-bold uppercase tracking-wider mt-0.5 flex items-center gap-0.5 ml-auto">
+                  <span class="material-icons-round text-xs">delete</span>Borrar
+                </button>` : `<p class="text-[8px] text-zinc-700 uppercase font-black mt-0.5">pagó otro</p>`}
               </div>
             </div>`;
           });
@@ -212,26 +238,65 @@
         }
 
         container.innerHTML = html;
-
-        // Update summary
-        const totalExpense = allExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-        const myExpenses = allExpenses.filter(e => e.paid_by === uid);
-        const myTotal = myExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-        const summaryEl = document.querySelector('.glass-panel .grid');
-        if (summaryEl) {
-          const cells = summaryEl.querySelectorAll('.space-y-1');
-          if (cells[0]) cells[0].querySelector('.money-display').textContent = `${totalExpense.toFixed(2)}€`;
-          if (cells[2]) cells[2].querySelector('.money-display').textContent = `${allExpenses.length}`;
-        }
+        updateSummary(allExpenses, uid);
 
       } catch (e) {
         console.error('Activity load error:', e);
-        document.getElementById('activity-content').innerHTML = '<p class="text-xs text-zinc-600 text-center py-12">Error al cargar movimientos</p>';
+        container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-12">Error al cargar movimientos</p>';
+      }
+    }
+
+    function updateSummary(expenses, uid) {
+      const totalGasto = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+      const pendientes = expenses.filter(e => e.paid_by !== uid).length;
+      const totalCount = expenses.length;
+
+      const summaryEl = document.querySelector('.glass-panel .grid');
+      if (!summaryEl) return;
+      const cells = summaryEl.querySelectorAll('.space-y-1');
+      if (cells[0]) {
+        const el = cells[0].querySelector('.money-display');
+        if (el) el.textContent = totalGasto.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + '€';
+        const sub = cells[0].querySelector('p:last-child');
+        if (sub) sub.textContent = 'este período';
+      }
+      if (cells[2]) {
+        const el = cells[2].querySelector('.money-display');
+        if (el) el.textContent = totalCount;
+      }
+      if (cells[3]) {
+        const el = cells[3].querySelector('.money-display');
+        if (el) el.textContent = pendientes;
+      }
+    }
+
+    async function deleteExpense(expenseId, groupId) {
+      if (!confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) return;
+      try {
+        const res = await SGApi.deleteExpense(expenseId);
+        if (res && res.success) {
+          SGRouter.showToast('Gasto eliminado ✓', 'success');
+          // Eliminar la fila visualmente sin recargar toda la página
+          const row = document.getElementById(`exp-row-${expenseId}`);
+          if (row) {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)';
+            row.style.transition = 'all 0.3s ease';
+            setTimeout(() => { row.remove(); }, 300);
+          }
+          // Recargar después de un momento para actualizar totales
+          setTimeout(() => loadActivityData(), 600);
+        } else {
+          SGRouter.showToast(res?.error || 'Error al eliminar gasto', 'error');
+        }
+      } catch(e) {
+        console.error('deleteExpense error:', e);
+        SGRouter.showToast('Error de conexión', 'error');
       }
     }
 
     function formatDate(dateStr) {
-      const d = new Date(dateStr);
+      const d = new Date(dateStr + 'T12:00:00');
       const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
@@ -243,21 +308,18 @@
         b.style.color = '';
       });
       btn.classList.add('active');
-
       document.querySelectorAll('.tx-row').forEach(row => {
-        if (type === 'all') {
-          row.classList.remove('hidden-tx');
-        } else {
-          if (row.classList.contains(type)) {
-            row.classList.remove('hidden-tx');
-          } else {
-            row.classList.add('hidden-tx');
-          }
-        }
+        if (type === 'all') row.classList.remove('hidden-tx');
+        else row.classList.contains(type) ? row.classList.remove('hidden-tx') : row.classList.add('hidden-tx');
       });
     }
 
     loadActivityData();
+
+    // Recargar al volver con botón atrás (bfcache)
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) loadActivityData();
+    });
     </script>
         
     <!-- Bottom Navigation Bar -->

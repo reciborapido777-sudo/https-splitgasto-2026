@@ -52,6 +52,14 @@ const SGApi = (function(){
         return request(`/api/db/users?email=${encodeURIComponent(email)}`);
     }
 
+    async function deleteGroup(groupId) {
+        return request(`/api/db/groups/${groupId}`, { method: 'DELETE' });
+    }
+
+    async function removeGroupMember(groupId, memberUserId) {
+        return request(`/api/db/group-members/${groupId}/${memberUserId}`, { method: 'DELETE' });
+    }
+
     async function getGroupMembers(groupId) {
         return request(`/api/db/group-members?groupId=${groupId}`);
     }
@@ -74,6 +82,10 @@ const SGApi = (function(){
             method: 'POST',
             body: JSON.stringify({ groupId, userId, amount, currency, category, description, splitType })
         });
+    }
+
+    async function deleteExpense(expenseId) {
+        return request(`/api/db/expenses/${expenseId}`, { method: 'DELETE' });
     }
 
     // ── Saldos / Balances ─────────────────────────────────────────────
@@ -190,8 +202,8 @@ const SGApi = (function(){
     }
     return {
         login,
-        getGroups, createGroup, getGroupMembers, addGroupMember, getUserByEmail,
-        getExpenses, addExpense,
+        getGroups, createGroup, deleteGroup, getGroupMembers, addGroupMember, removeGroupMember, getUserByEmail,
+        getExpenses, addExpense, deleteExpense,
         getBalances,
         getSettlements, createSettlement,
         getProfile, updateProfile,
