@@ -261,10 +261,16 @@ document.getElementById('date-input').value = today;
 async function loadGroups() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
   try {
+    // Purgar cache antes de cargar para evitar datos obsoletos que causan 403
+    try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
     const result = await SGApi.getGroups();
     if (result && result.success && result.groups) {
       groups = result.groups;
       const sel = document.getElementById('group-input');
+      if (groups.length === 0) {
+        sel.innerHTML = '<option value="">Sin grupos — crea uno primero</option>';
+        return;
+      }
       sel.innerHTML = '<option value="">Selecciona un grupo</option>';
       groups.forEach(g => {
         const opt = document.createElement('option');
@@ -278,7 +284,14 @@ async function loadGroups() {
       if (preGroup) {
         sel.value = preGroup;
         loadGroupMembers(preGroup);
+      } else if (groups.length === 1) {
+        // Si solo hay un grupo, seleccionarlo automáticamente
+        sel.value = groups[0].id;
+        loadGroupMembers(groups[0].id);
       }
+    } else {
+      const sel = document.getElementById('group-input');
+      sel.innerHTML = '<option value="">Error al cargar grupos</option>';
     }
   } catch (e) {
     console.error('Error loading groups:', e);
@@ -394,19 +407,39 @@ async function saveExpense() {
     return;
   }
 
+  // Obtener el UUID real del pagador seleccionado
+  const payerMember = members[selectedPayer];
+  const payerId = payerMember?.id || SGAuth.getUserId();
+
   const saveBtnTop = document.getElementById('save-btn');
   const saveBtnBot = document.getElementById('save-btn-bottom');
   if (saveBtnTop) saveBtnTop.disabled = true;
   if (saveBtnBot) saveBtnBot.disabled = true;
 
   try {
-    const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod);
+    const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
 
     if (result && result.success) {
       SGRouter.showToast('Gasto guardado ✓', 'success');
       setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
     } else {
-      SGRouter.showToast(result?.error || 'Error al guardar el gasto', 'error');
+      const errMsg = result?.error || 'Error al guardar el gasto';
+      console.error('saveExpense backend error:', errMsg);
+      // Si el error es de membresía, intentar reparar y reintentar
+      if (errMsg.includes('perteneces') || errMsg.includes('403')) {
+        SGRouter.showToast('Reparando membresía… reintentando', 'warning');
+        try {
+          await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } });
+          await new Promise(r => setTimeout(r, 500));
+          const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
+          if (retry && retry.success) {
+            SGRouter.showToast('Gasto guardado ✓', 'success');
+            setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+            return;
+          }
+        } catch {}
+      }
+      SGRouter.showToast(errMsg, 'error');
     }
   } catch (e) {
     console.error('saveExpense error:', e);
@@ -418,9 +451,25 @@ async function saveExpense() {
 }
 
 // ── Initialize ──
-loadGroups();
-renderPayers();
-renderSplitDetails();
+async function init() {
+  // Reparar membresías huérfanas al cargar la página
+  try {
+    await fetch('/api/db/repair-memberships', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` }
+    });
+  } catch {}
+  await loadGroups();
+  renderPayers();
+  renderSplitDetails();
+}
+
+// bfcache: recargar grupos al volver atrás
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) { loadGroups(); }
+});
+
+init();
 
 </script>
 

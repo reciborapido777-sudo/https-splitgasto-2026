@@ -40,11 +40,16 @@ const SGApi = (function(){
         return request(`/api/db/groups?userId=${userId}`);
     }
 
-    async function createGroup(name, currency) {
+    async function createGroup(name, currency, members) {
         const userId = SGAuth.getUserId();
         return request('/api/db/groups', {
             method: 'POST',
-            body: JSON.stringify({ name, currency: currency || 'EUR', userId })
+            body: JSON.stringify({
+                name,
+                currency: currency || 'EUR',
+                userId,
+                members: Array.isArray(members) ? members : []
+            })
         });
     }
 
@@ -76,11 +81,13 @@ const SGApi = (function(){
         return request(`/api/db/expenses?groupId=${groupId}`);
     }
 
-    async function addExpense(groupId, amount, currency, category, description, splitType) {
+    async function addExpense(groupId, amount, currency, category, description, splitType, payerId) {
         const userId = SGAuth.getUserId();
+        // payerId es el UUID del pagador real; si no se pasa, usa el usuario actual
+        const paidBy = payerId || userId;
         return request('/api/db/expenses', {
             method: 'POST',
-            body: JSON.stringify({ groupId, userId, amount, currency, category, description, splitType })
+            body: JSON.stringify({ groupId, userId, paidBy, amount, currency, category, description, splitType })
         });
     }
 
