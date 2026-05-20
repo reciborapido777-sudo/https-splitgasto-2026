@@ -847,23 +847,19 @@ async function handleDatabase(request, env, path) {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
 
-    // ── Grupos GET ────────────────────────────────────────────────────
+    // ── Grupos GET — SIEMPRE frescos desde D1, sin KV cache ───────────
     if (path === '/api/db/groups' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403);
-        const cacheKey = `db:groups:${userId}`;
-        const cached = await getCached(env, cacheKey);
-        if (cached) return jsonResponse({ ...cached, cached: true });
+        // CRÍTICO: Purgar cualquier entrada KV obsoleta antes de leer D1
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
+        }
         const groups = await env.SPLITGASTO_DB.prepare(
             'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC'
         ).bind(userId).all();
-        // Invalidar cualquier cache previa y devolver frescos
-        if (env.SPLITGASTO_CACHE) {
-            try { await env.SPLITGASTO_CACHE.delete(cacheKey); } catch {}
-        }
-        const response = { success: true, groups: groups.results };
-        return jsonResponse(response);
+        return jsonResponse({ success: true, groups: groups.results });
     }
 
     // ── Grupos POST (FIX: currency default EUR) ──────────────────────
@@ -947,7 +943,7 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Miembro añadido' }, 201);
     }
 
-    // ── Gastos GET ────────────────────────────────────────────────────
+    // ── Gastos GET — SIEMPRE frescos desde D1, sin KV cache ────────────
     if (path === '/api/db/expenses' && method === 'GET') {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
@@ -956,9 +952,10 @@ async function handleDatabase(request, env, path) {
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-        const cacheKey = `db:expenses:${groupId}`;
-        const cached = await getCached(env, cacheKey);
-        if (cached) return jsonResponse({ ...cached, cached: true });
+        // Purgar KV obsoleto
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`); } catch {}
+        }
         const page = parseInt(url.searchParams.get('page') || '1', 10);
         const perPage = Math.min(parseInt(url.searchParams.get('perPage') || '50', 10), 100);
         const offset = (page - 1) * perPage;
@@ -968,30 +965,38 @@ async function handleDatabase(request, env, path) {
         const total = await env.SPLITGASTO_DB.prepare(
             'SELECT COUNT(*) as count FROM expenses WHERE group_id = ?'
         ).bind(groupId).first();
-        const response = {
+        return jsonResponse({
             success: true, expenses: expenses.results,
             pagination: { page, perPage, total: total.count, totalPages: Math.ceil(total.count / perPage) },
-        };
-        // NO cachear expenses — siempre frescos para reflejar eliminaciones
-        return jsonResponse(response);
+        });
     }
 
-    // ── Gastos POST (FIX: currency default EUR) ──────────────────────
+    // ── Gastos POST ───────────────────────────────────────────────────
     if (path === '/api/db/expenses' && method === 'POST') {
-        const { groupId, amount, currency, category, description, splitType } = body;
+        const { groupId, amount, currency, category, description, splitType, paidBy } = body;
         if (!groupId || !amount) return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400);
+        // Verificar que el usuario autenticado pertenece al grupo
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-        const userId = authUser.userId;
+        // El pagador puede ser otro miembro del grupo; verificar que también pertenece
+        const actualPaidBy = paidBy || authUser.userId;
+        if (actualPaidBy !== authUser.userId) {
+            const payerMembership = await env.SPLITGASTO_DB.prepare(
+                'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
+            ).bind(groupId, actualPaidBy).first();
+            if (!payerMembership) return jsonResponse({ error: 'El pagador no pertenece al grupo' }, 400);
+        }
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO expenses (id, group_id, paid_by, amount, currency, category, description, split_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(id, groupId, userId, amount, currency || 'EUR', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
-        await env.SPLITGASTO_CACHE?.delete(`db:expenses:${groupId}`);
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
-        await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
+        ).bind(id, groupId, actualPaidBy, amount, currency || 'EUR', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`); } catch {}
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+            try { await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`); } catch {}
+        }
         return jsonResponse({ success: true, id, message: 'Gasto registrado' }, 201);
     }
 
@@ -1132,9 +1137,22 @@ async function handleDatabase(request, env, path) {
         if (!groupId) return jsonResponse({ error: 'ID de grupo requerido' }, 400);
 
         // Solo el admin puede eliminar el grupo
-        const membership = await env.SPLITGASTO_DB.prepare(
+        let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
+
+        // Auto-reparar: si el grupo existe y fue creado por este usuario, insertar membresía
+        if (!membership) {
+            const group = await env.SPLITGASTO_DB.prepare(
+                'SELECT id, created_by FROM groups WHERE id = ?'
+            ).bind(groupId).first();
+            if (group && group.created_by === authUser.userId) {
+                await env.SPLITGASTO_DB.prepare(
+                    'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                ).bind(groupId, authUser.userId, 'admin').run();
+                membership = { role: 'admin' };
+            }
+        }
 
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede eliminar el grupo' }, 403);
@@ -1201,6 +1219,58 @@ async function handleDatabase(request, env, path) {
         }
 
         return jsonResponse({ success: true, message: 'Miembro eliminado del grupo' });
+    }
+
+    // ── Reparar membresías huérfanas (grupos creados sin group_members) ──
+    if (path === '/api/db/repair-memberships' && method === 'POST') {
+        const userId = authUser.userId;
+        // Encontrar grupos creados por el usuario que no tienen su registro en group_members
+        const orphanGroups = await env.SPLITGASTO_DB.prepare(
+            `SELECT g.id, g.name FROM groups g
+             WHERE g.created_by = ?
+             AND NOT EXISTS (
+                 SELECT 1 FROM group_members gm
+                 WHERE gm.group_id = g.id AND gm.user_id = ?
+             )`
+        ).bind(userId, userId).all();
+        let repaired = 0;
+        for (const g of (orphanGroups.results || [])) {
+            try {
+                await env.SPLITGASTO_DB.prepare(
+                    'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                ).bind(g.id, userId, 'admin').run();
+                repaired++;
+                // Purgar KV de este grupo
+                if (env.SPLITGASTO_CACHE) {
+                    try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
+                    try { await env.SPLITGASTO_CACHE.delete(`db:balances:${g.id}`); } catch {}
+                }
+            } catch {}
+        }
+        return jsonResponse({
+            success: true,
+            orphansFound: orphanGroups.results?.length || 0,
+            repaired,
+            message: repaired > 0 ? `Se repararon ${repaired} grupo(s) huérfano(s)` : 'No se encontraron grupos huérfanos'
+        });
+    }
+
+    // ── Purgar toda la KV cache del usuario ──────────────────────────
+    if (path === '/api/db/purge-cache' && method === 'POST') {
+        const userId = authUser.userId;
+        // Obtener todos los grupos del usuario directamente de D1
+        const userGroups = await env.SPLITGASTO_DB.prepare(
+            'SELECT g.id FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ?'
+        ).bind(userId).all();
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
+            try { await env.SPLITGASTO_CACHE.delete(`db:profile:${userId}`); } catch {}
+            for (const g of (userGroups.results || [])) {
+                try { await env.SPLITGASTO_CACHE.delete(`db:balances:${g.id}`); } catch {}
+                try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${g.id}`); } catch {}
+            }
+        }
+        return jsonResponse({ success: true, message: 'Cache purgada correctamente' });
     }
 
     // ── Marcar notificaciones como leídas ────────────────────────────

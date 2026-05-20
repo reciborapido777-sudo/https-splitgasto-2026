@@ -219,7 +219,8 @@
 <script>
 let selectedEmoji = '🍣';
 let selectedColor = '#13ecd6';
-let members = [{name:'Yo', color:'#13ecd6', initials:'?', role:'Admin', isMe:true}]; // real name loaded by loadMyProfile()
+let myUserId = null; // se rellena en loadMyProfile()
+let members = [{name:'Yo', color:'#13ecd6', initials:'?', role:'Admin', isMe:true, userId:null}]; // real name+id loaded by loadMyProfile()
 
 function updatePreview() {
   const name = document.getElementById('group-name').value || 'Mi Nuevo Grupo';
@@ -342,22 +343,14 @@ async function createGroup() {
       return;
     }
 
-    const result = await SGApi.createGroup(fullName, currency);
+    // Recopilar IDs de miembros reales (excluir Admin propio y pendientes sin userId)
+    const memberIds = members
+      .filter(m => !m.isMe && m.userId && !m.pending)
+      .map(m => m.userId);
+
+    // Enviar nombre, moneda y miembros en un solo POST — el backend los inserta directamente
+    const result = await SGApi.createGroup(fullName, currency, memberIds);
     if (result && result.success) {
-      const groupId = result.group?.id || result.group_id || result.id;
-
-      // Añadir miembros con userId real al grupo (excluir Admin y pendientes sin userId)
-      const invitedMembers = members.filter(m => m.role !== 'Admin' && m.userId);
-      if (groupId && invitedMembers.length > 0) {
-        for (const m of invitedMembers) {
-          try {
-            await SGApi.addGroupMember(groupId, m.userId, 'member');
-          } catch(e) {
-            console.warn('No se pudo añadir miembro:', m.name, e);
-          }
-        }
-      }
-
       SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
       setTimeout(() => SGRouter.navigate('groups', 'create-group'), 900);
     } else {
@@ -374,18 +367,24 @@ async function createGroup() {
   }
 }
 
-// ── FIX: cargar nombre real del usuario para el miembro admin ──
+// ── Cargar nombre real + userId del usuario actual para el miembro admin ──
 async function loadMyProfile() {
   try {
     if (!SGAuth || !SGAuth.isLoggedIn()) return;
+    // Cargar userId desde localStorage inmediatamente
+    myUserId = SGAuth.getUserId();
+    members[0].userId = myUserId;
+
     const res = await SGApi.getProfile();
     if (res && res.success && res.profile) {
       const p = res.profile;
       const displayName = p.name || 'Yo';
       const initials = displayName.slice(0,2).toUpperCase();
-      // Actualizar array de members
+      // Actualizar array de members (admin = yo)
       members[0].name = displayName;
       members[0].initials = initials;
+      members[0].userId = p.id || myUserId;
+      myUserId = members[0].userId;
       // Actualizar HTML del member-row
       const nameEl = document.getElementById('my-name');
       const avatarEl = document.getElementById('my-avatar');
