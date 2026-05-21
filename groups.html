@@ -213,6 +213,9 @@ async function loadGroups() {
     if (child !== ctaCard) child.remove();
   });
 
+  // Reparar membresías huérfanas antes de cargar (silencioso)
+  try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+
   // --- Fetch groups ---
   let groups = [];
   try {

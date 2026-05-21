@@ -219,8 +219,9 @@
 <script>
 let selectedEmoji = '🍣';
 let selectedColor = '#13ecd6';
-let myUserId = null; // se rellena en loadMyProfile()
-let members = [{name:'Yo', color:'#13ecd6', initials:'?', role:'Admin', isMe:true, userId:null}]; // real name+id loaded by loadMyProfile()
+// myUserId se rellena desde localStorage inmediatamente (síncrono) y luego se confirma con loadMyProfile
+let myUserId = (function() { try { return JSON.parse(localStorage.getItem('sg_user'))?.id || null; } catch { return null; } })();
+let members = [{name:'Yo', color:'#13ecd6', initials:'?', role:'Admin', isMe:true, userId: myUserId}]; // real name+id loaded by loadMyProfile()
 
 function updatePreview() {
   const name = document.getElementById('group-name').value || 'Mi Nuevo Grupo';
@@ -343,14 +344,24 @@ async function createGroup() {
       return;
     }
 
-    // Recopilar IDs de miembros reales (excluir Admin propio y pendientes sin userId)
+    // Asegurar que myUserId está definido (puede que loadMyProfile aún no terminó)
+    if (!myUserId) {
+      myUserId = SGAuth.getUserId();
+      if (members[0]) members[0].userId = myUserId;
+    }
+
+    // Recopilar IDs de miembros invitados reales (excluir Admin propio y pendientes sin userId)
     const memberIds = members
       .filter(m => !m.isMe && m.userId && !m.pending)
       .map(m => m.userId);
 
+    console.log('[CreateGroup] Creando grupo con', memberIds.length, 'miembro(s) invitado(s):', memberIds);
+
     // Enviar nombre, moneda y miembros en un solo POST — el backend los inserta directamente
     const result = await SGApi.createGroup(fullName, currency, memberIds);
     if (result && result.success) {
+      // Purgar KV cache para que groups.html vea el nuevo grupo inmediatamente
+      try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
       SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
       setTimeout(() => SGRouter.navigate('groups', 'create-group'), 900);
     } else {
@@ -395,10 +406,15 @@ async function loadMyProfile() {
   } catch(e) { /* silenciar — no crítico */ }
 }
 
-// Init
+// ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('group-name').addEventListener('input', updatePreview);
 updatePreview();
 loadMyProfile();
+
+// bfcache: al volver atrás desde groups, re-leer el perfil por si cambió
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) loadMyProfile();
+});
 </script>
 
     <!-- Bottom Navigation Bar -->
