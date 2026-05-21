@@ -829,7 +829,15 @@ async function handleBalances(request, env) {
         if (creditors[ci].amount < 0.01) ci++;
     }
 
-    const response = { success: true, balances, debts, totalExpenses: expenses.results.length };
+    // totalAmount: suma real en euros de todos los gastos del grupo
+    const totalAmount = expenses.results.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    const response = {
+        success: true,
+        balances,
+        debts,
+        totalExpenses: expenses.results.length,
+        totalAmount: Math.round(totalAmount * 100) / 100
+    };
     await setCache(env, cacheKey, response, 10);  // TTL corto: balances cambian al añadir gastos
     return jsonResponse(response);
 }

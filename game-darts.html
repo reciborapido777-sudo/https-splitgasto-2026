@@ -42,14 +42,16 @@
             background: #050505;
             color: white;
             min-height: 100dvh;
-            overflow-y: auto !important;        /* body is scroll container */  /* iOS momentum scroll */
-            touch-action: manipulation;                /* Android 1-finger scroll fix */
+            overflow-y: auto !important;        /* body is scroll container */
             overflow-x: hidden;
+            touch-action: pan-y;                /* Android: permite scroll vertical en todo excepto el canvas */
         }
         
-        /* touch-action:none is intentional here — the dartboard needs full
-           pointer control. Everywhere else on the page vertical swipes scroll. */
-        #dartCanvas { cursor: crosshair; touch-action: none; }
+        /* touch-action:none solo en el canvas — permite scroll fuera de él */
+        #dartCanvas { cursor: crosshair; touch-action: none; display: block; margin: 0 auto; }
+        
+        /* El contenedor del canvas NO bloquea el scroll */
+        .dart-board { touch-action: pan-y; }
         
         .dart-board {
             position: relative;
@@ -164,7 +166,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="pt-16 pb-24 px-4 max-w-lg mx-auto">
+    <main class="pt-20 pb-28 px-4 max-w-lg mx-auto" style="min-height:100vh">
 
         <!-- Manage Players -->
         <div class="mt-4 mb-3 flex items-center gap-2">
@@ -733,6 +735,8 @@ function removeLastPlayer() {
             drawBoard(); renderPlayers(); updateDartsLeft();
             return;
           }
+          // Reparar membresías huérfanas antes de cargar grupos
+          try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
           try {
             const res = await SGApi.getGroups();
             const sel = document.getElementById('group-select-darts');

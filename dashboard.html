@@ -292,9 +292,8 @@ async function loadDashboardData() {
     // Contar socios desde los balances (fallback si getGroupMembers falla)
     const balRes0 = allBalResults[0];
     const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
-    const totalExp = (balRes0?.success && balRes0.balances)
-      ? Object.values(balRes0.balances).reduce((s, v) => s + Math.abs(parseFloat(v) || 0), 0) / 2
-      : 0;
+    // totalAmount: suma en euros de todos los gastos del grupo (viene del backend en balRes0.totalAmount)
+    const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
 
     document.getElementById('active-group-sub').innerHTML =
       `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
