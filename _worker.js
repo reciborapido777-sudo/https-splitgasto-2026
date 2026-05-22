@@ -907,19 +907,26 @@ async function handleDatabase(request, env, path) {
             'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
         ).bind(id, userId, 'admin').run();
 
-        // FIX: Añadir miembros si se envían
+        // FIX: Añadir miembros si se envían (acepta IDs o emails)
         if (Array.isArray(members) && members.length > 0) {
-            for (const memberId of members) {
+            for (const member of members) {
+                let memberId = null;
+                if (typeof member === 'string' && member.includes('@')) {
+                    const user = await env.SPLITGASTO_DB.prepare(
+                        'SELECT id FROM users WHERE email = ?'
+                    ).bind(member.toLowerCase().trim()).first();
+                    if (user) memberId = user.id;
+                } else {
+                    const exists = await env.SPLITGASTO_DB.prepare(
+                        'SELECT id FROM users WHERE id = ?'
+                    ).bind(member).first();
+                    if (exists) memberId = member;
+                }
                 if (memberId && memberId !== userId) {
                     try {
-                        const exists = await env.SPLITGASTO_DB.prepare(
-                            'SELECT id FROM users WHERE id = ?'
-                        ).bind(memberId).first();
-                        if (exists) {
-                            await env.SPLITGASTO_DB.prepare(
-                                'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
-                            ).bind(id, memberId, 'member').run();
-                        }
+                        await env.SPLITGASTO_DB.prepare(
+                            'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                        ).bind(id, memberId, 'member').run();
                     } catch {}
                 }
             }
@@ -949,26 +956,37 @@ async function handleDatabase(request, env, path) {
     }
 
     // ── Añadir miembros a grupo (POST) ───────────────────────────────
-    if (path === '/api/db/group-members' && method === 'POST') {
-        const { groupId, userId: memberUserId, role } = body;
-        if (!groupId || !memberUserId) return jsonResponse({ error: 'Campos "groupId" y "userId" requeridos' }, 400);
+        if (path === '/api/db/group-members' && method === 'POST') {
+        const { groupId, userId: memberUserId, email: memberEmail, role } = body;
+        if (!groupId || (!memberUserId && !memberEmail)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400);
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
 
-        const userExists = await env.SPLITGASTO_DB.prepare(
-            'SELECT id FROM users WHERE id = ?'
-        ).bind(memberUserId).first();
-        if (!userExists) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+        // Buscar por email si se proporciona, si no por ID
+        let actualMemberUserId = memberUserId;
+        if (!actualMemberUserId && memberEmail) {
+            const user = await env.SPLITGASTO_DB.prepare(
+                'SELECT id FROM users WHERE email = ?'
+            ).bind(memberEmail.toLowerCase().trim()).first();
+            if (!user) return jsonResponse({ error: 'Usuario no encontrado con ese email' }, 404);
+            actualMemberUserId = user.id;
+        } else if (actualMemberUserId) {
+            const userExists = await env.SPLITGASTO_DB.prepare(
+                'SELECT id FROM users WHERE id = ?'
+            ).bind(actualMemberUserId).first();
+            if (!userExists) return jsonResponse({ error: 'Usuario no encontrado' }, 404);
+        }
 
         await env.SPLITGASTO_DB.prepare(
             'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
-        ).bind(groupId, memberUserId, role || 'member').run();
+        ).bind(groupId, actualMemberUserId, role || 'member').run();
 
         await env.SPLITGASTO_CACHE?.delete(`db:groups:${authUser.userId}`);
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${memberUserId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${actualMemberUserId}`);
+
         await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
 
         return jsonResponse({ success: true, message: 'Miembro añadido' }, 201);
