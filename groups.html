@@ -267,7 +267,11 @@ async function loadGroups() {
           <div class="flex justify-between items-center">
             <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
             <div class="flex items-center gap-2">
-              <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
+              <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <button onclick="event.stopPropagation(); inviteMember('${g.id}','${g.name.replace(/'/g,"\\'")}')" 
+                class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-[#13ecd6]/20 transition-all" 
+                title="Invitar participante" style="background:rgba(19,236,214,0.1);border:1px solid rgba(19,236,214,0.2)">
+                <span class="material-icons-round text-[#13ecd6] text-xs">person_add</span>
+              </button>
               <button onclick="event.stopPropagation(); deleteGroup('${g.id}','${g.name.replace(/'/g,"\\'")}')"
                 class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/20 transition-all"
                 title="Eliminar grupo" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)">
@@ -340,6 +344,22 @@ async function deleteGroup(groupId, groupName) {
     console.error('deleteGroup error:', e);
     SGRouter.showToast('Error de conexión', 'error');
   }
+}
+async function inviteMember(groupId, groupName) {
+    const email = prompt(`Invitar participante a "${groupName}"\n\nIntroduce el email del usuario:`);
+    if (!email || !email.trim()) return;
+    
+    try {
+        const res = await SGApi.addGroupMemberByEmail(groupId, email.trim());
+        if (res && res.success) {
+            SGRouter.showToast('Participante añadido ✓', 'success');
+            loadGroups();
+        } else {
+            SGRouter.showToast(res?.error || 'Error al invitar', 'error');
+        }
+    } catch (e) {
+        SGRouter.showToast('Error de conexión', 'error');
+    }
 }
 
 loadGroups();
