@@ -189,7 +189,8 @@ function b64Decode(b64) {
 }
 
 function getJwtSecret(env) {
-    return env.JWT_SECRET || 'splitgasto-2026-fallback-secret-change-me';
+    if (!env.JWT_SECRET) throw new Error('JWT_SECRET no configurado');
+    return env.JWT_SECRET;
 }
 
 async function signJWT(payload, env) {
@@ -238,7 +239,9 @@ async function requireAuth(request, env) {
 }
 
 function generateRecoveryCode() {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return (array[0] % 1000000).toString().padStart(6, '0');
 }
 
 async function handleAuth(request, env, path) {
@@ -335,7 +338,7 @@ async function handleAuth(request, env, path) {
         const code = generateRecoveryCode();
         const codeHash = await hashPassword(code);
 
-        if (env.SPLITGASTO_CACHE) {
+                if (env.SPLITGASTO_CACHE) {
             await env.SPLITGASTO_CACHE.put(
                 `recovery:${user.id}`,
                 JSON.stringify({ codeHash, email, createdAt: Date.now() }),
@@ -343,7 +346,27 @@ async function handleAuth(request, env, path) {
             );
         }
 
+        // Enviar código por email via MailChannels
+        try {
+            await fetch('https://api.mailchannels.net/tx/v1/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    personalizations: [{ to: [{ email }] }],
+                    from: { email: 'noreply@splitgasto.com', name: 'SplitGasto' },
+                    subject: 'Código de recuperación — SplitGasto',
+                    content: [{
+                        type: 'text/plain',
+                        value: `Tu código de recuperación es: ${code}\n\nExpira en 15 minutos.\n\nSi no solicitaste esto, ignora este email.`
+                    }],
+                }),
+            });
+        } catch (emailErr) {
+            console.error('Error enviando email:', emailErr.message);
+        }
+
         return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
+
     }
 
     if (path === '/api/auth/reset-password' && request.method === 'POST') {
