@@ -246,6 +246,8 @@ function generateRecoveryCode() {
 
 async function handleAuth(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
+    // JWT_SECRET es obligatorio para firmar y verificar tokens
+    if (!env.JWT_SECRET) return jsonResponse({ error: 'Servicio de autenticación no disponible', detail: 'JWT_SECRET no configurado' }, 503);
 
     if (path === '/api/auth/register' && request.method === 'POST') {
         let body = {};
@@ -335,16 +337,17 @@ async function handleAuth(request, env, path) {
         const user = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
         if (!user) return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
 
+        // KV es obligatorio para guardar el código antes de enviarlo
+        if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
+
         const code = generateRecoveryCode();
         const codeHash = await hashPassword(code);
 
-                if (env.SPLITGASTO_CACHE) {
-            await env.SPLITGASTO_CACHE.put(
-                `recovery:${user.id}`,
-                JSON.stringify({ codeHash, email, createdAt: Date.now() }),
-                { expirationTtl: 900 }
-            );
-        }
+        await env.SPLITGASTO_CACHE.put(
+            `recovery:${user.id}`,
+            JSON.stringify({ codeHash, email, createdAt: Date.now() }),
+            { expirationTtl: 900 }
+        );
 
         // Enviar código por email via MailChannels
         try {
@@ -379,12 +382,8 @@ async function handleAuth(request, env, path) {
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
 
         const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
+        // Si KV no devuelve nada, el TTL ya expiró (900s) o el código es inválido
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400);
-
-        if (Date.now() - stored.createdAt > 900000) {
-            await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
-            return jsonResponse({ error: 'Código expirado' }, 400);
-        }
 
         const validCode = await verifyPassword(code, stored.codeHash);
         if (!validCode) return jsonResponse({ error: 'Código incorrecto' }, 400);
@@ -932,7 +931,7 @@ async function handleDatabase(request, env, path) {
             }
         }
 
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`);
+        try { await env.SPLITGASTO_CACHE?.delete(`db:groups:${userId}`); } catch {}
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
 
@@ -956,7 +955,7 @@ async function handleDatabase(request, env, path) {
     }
 
     // ── Añadir miembros a grupo (POST) ───────────────────────────────
-        if (path === '/api/db/group-members' && method === 'POST') {
+    if (path === '/api/db/group-members' && method === 'POST') {
         const { groupId, userId: memberUserId, email: memberEmail, role } = body;
         if (!groupId || (!memberUserId && !memberEmail)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400);
         const membership = await env.SPLITGASTO_DB.prepare(
@@ -984,10 +983,9 @@ async function handleDatabase(request, env, path) {
             'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
         ).bind(groupId, actualMemberUserId, role || 'member').run();
 
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${authUser.userId}`);
-        await env.SPLITGASTO_CACHE?.delete(`db:groups:${actualMemberUserId}`);
-
-        await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
+        try { await env.SPLITGASTO_CACHE?.delete(`db:groups:${authUser.userId}`); } catch {}
+        try { await env.SPLITGASTO_CACHE?.delete(`db:groups:${actualMemberUserId}`); } catch {}
+        try { await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`); } catch {}
 
         return jsonResponse({ success: true, message: 'Miembro añadido' }, 201);
     }
