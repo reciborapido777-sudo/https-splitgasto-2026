@@ -207,6 +207,8 @@ const SGApi = (function(){
     async function health() {
         return request('/api/health');
     }
+
+    // ── Miembros por email ────────────────────────────────────────────
     async function addGroupMemberByEmail(groupId, email, role) {
         return request('/api/db/group-members', {
             method: 'POST',
@@ -214,7 +216,7 @@ const SGApi = (function(){
         });
     }
 
-        return {
+    return {
         login,
         getGroups, createGroup, deleteGroup, getGroupMembers, addGroupMember, addGroupMemberByEmail, removeGroupMember, getUserByEmail,
         getExpenses, addExpense, deleteExpense,
