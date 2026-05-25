@@ -457,12 +457,36 @@ function togglePlayerCard(idx) {
 }
 
 function addPlayer() {
-  const name = prompt('Nombre del jugador:');
-  if (!name || !name.trim()) return;
-  const colors = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e'];
-  players.push({name: name.trim(), color: colors[players.length % colors.length], initials: name[0].toUpperCase(), wins:0, active:true});
-  renderPlayers();
-  SGRouter.showToast(`${name} añadido`, 'success');
+  const mid = 'add-player-modal';
+  const existing = document.getElementById(mid); if (existing) existing.remove();
+  const m = document.createElement('div');
+  m.id = mid;
+  m.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)';
+  m.innerHTML = `<div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;max-width:320px;width:90%;text-align:center">
+    <span class="material-icons-round" style="font-size:32px;color:#13ecd6;margin-bottom:10px;display:block">person_add</span>
+    <h3 style="font-size:15px;font-weight:800;margin-bottom:14px">Añadir jugador</h3>
+    <input id="new-player-name" type="text" placeholder="Nombre del jugador" autocomplete="off"
+      style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:white;padding:12px 14px;width:100%;font-size:0.9rem;font-weight:600;outline:none;margin-bottom:14px;box-sizing:border-box"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('${mid}').remove()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+      <button id="add-player-btn" style="flex:1;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,#13ecd6,#0fbfaf);color:#000;font-weight:800;font-size:13px;cursor:pointer">Añadir</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('new-player-name')?.focus(), 60);
+  function doAdd() {
+    const input = document.getElementById('new-player-name');
+    const name = input?.value?.trim();
+    if (!name) { input?.focus(); return; }
+    m.remove();
+    const colors = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e'];
+    players.push({name, color: colors[players.length % colors.length], initials: name[0].toUpperCase(), wins:0, active:true});
+    renderPlayers();
+    SGRouter.showToast(`${name} añadido`, 'success');
+  }
+  document.getElementById('add-player-btn').addEventListener('click', doAdd);
+  document.getElementById('new-player-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+  m.addEventListener('click', (e) => { if (e.target === m) m.remove(); });
 }
 
 function launchConfetti(color) {

@@ -887,7 +887,12 @@ async function handleDatabase(request, env, path) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
         }
         const groups = await env.SPLITGASTO_DB.prepare(
-            'SELECT g.* FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ? ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC'
+            `SELECT g.*,
+                (SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id = g.id) AS member_count
+             FROM groups g
+             JOIN group_members gm ON g.id = gm.group_id
+             WHERE gm.user_id = ?
+             ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC`
         ).bind(userId).all();
         return jsonResponse({ success: true, groups: groups.results });
     }
@@ -1183,6 +1188,12 @@ async function handleDatabase(request, env, path) {
         const groupId = path.replace('/api/db/groups/', '');
         if (!groupId) return jsonResponse({ error: 'ID de grupo requerido' }, 400);
 
+        // FIX D1 Read Replication: purgar KV ANTES de consultar membresía
+        // para forzar lectura fresca desde D1 primario (no réplica stale)
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+        }
+
         // Solo el admin puede eliminar el grupo
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
@@ -1198,6 +1209,9 @@ async function handleDatabase(request, env, path) {
                     'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
                 ).bind(groupId, authUser.userId, 'admin').run();
                 membership = { role: 'admin' };
+            } else if (!group) {
+                // El grupo ni siquiera existe — éxito silencioso (ya fue eliminado)
+                return jsonResponse({ success: true, message: 'Grupo ya eliminado' });
             }
         }
 

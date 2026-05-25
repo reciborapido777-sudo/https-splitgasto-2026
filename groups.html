@@ -363,10 +363,23 @@ async function deleteGroup(groupId, groupName) {
     document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
         _closeModal(modalId);
         try {
+            // Reparar membresías ANTES de eliminar (D1 Read Replication — eventual consistency)
+            try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
             const res = await SGApi.deleteGroup(groupId);
             if (res && res.success) {
                 SGRouter.showToast(`Grupo eliminado`, 'success');
                 setTimeout(() => loadGroups(), 400);
+            } else if (res?.error && (res.error.includes('admin') || res.error.includes('perteneces'))) {
+                // Segundo intento tras purgar cache
+                try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+                await new Promise(r => setTimeout(r, 300));
+                const retry = await SGApi.deleteGroup(groupId);
+                if (retry && retry.success) {
+                    SGRouter.showToast(`Grupo eliminado`, 'success');
+                    setTimeout(() => loadGroups(), 400);
+                } else {
+                    SGRouter.showToast(retry?.error || 'Error al eliminar el grupo', 'error');
+                }
             } else {
                 SGRouter.showToast(res?.error || 'Error al eliminar el grupo', 'error');
             }
@@ -415,7 +428,12 @@ function inviteMember(groupId, groupName) {
             _closeModal(modalId);
             if (res && res.success) {
                 SGRouter.showToast('Participante añadido ✓', 'success');
-                loadGroups();
+                // Purgar cache para asegurar recarga con datos frescos
+                try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+                // Marcar para que split.html sepa que debe recargar miembros
+                try { sessionStorage.setItem('sg_member_added', Date.now()); } catch {}
+                // Pequeño delay para que D1 propague el cambio antes de recargar
+                setTimeout(() => loadGroups(), 350);
             } else {
                 SGRouter.showToast(res?.error || 'Error al invitar', 'error');
             }

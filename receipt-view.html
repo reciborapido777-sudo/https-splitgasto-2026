@@ -196,19 +196,38 @@
     groupId = params.get('groupId');
 
     if (!groupId) {
-        // Cargar grupos y pedir selección
+        // Cargar grupos y pedir selección con modal custom (prompt() bloqueado en PWA)
         try {
             const groupsResult = await SGApi.getGroups();
             if (groupsResult && groupsResult.success && groupsResult.groups && groupsResult.groups.length > 0) {
                 if (groupsResult.groups.length === 1) {
                     groupId = groupsResult.groups[0].id;
                 } else {
-                    const names = groupsResult.groups.map((g, i) => `${i + 1}. ${g.name}`).join('\n');
-                    const choice = prompt(`Selecciona un grupo:\n${names}`, '1');
-                    const idx = parseInt(choice) - 1;
-                    if (idx >= 0 && idx < groupsResult.groups.length) {
-                        groupId = groupsResult.groups[idx].id;
-                    }
+                    // Modal de selección de grupo
+                    groupId = await new Promise((resolve) => {
+                        const mid = 'select-group-modal';
+                        const existing = document.getElementById(mid); if (existing) existing.remove();
+                        const m = document.createElement('div');
+                        m.id = mid;
+                        m.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)';
+                        const btns = groupsResult.groups.map((g, i) =>
+                            `<button data-idx="${i}" style="width:100%;text-align:left;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:6px">${g.name}</button>`
+                        ).join('');
+                        m.innerHTML = `<div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;max-width:340px;width:90%">
+                          <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;text-align:center">Selecciona un grupo</h3>
+                          <div id="group-sel-list">${btns}</div>
+                          <button onclick="document.getElementById('${mid}').remove()" style="width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">Cancelar</button>
+                        </div>`;
+                        document.body.appendChild(m);
+                        document.getElementById('group-sel-list').addEventListener('click', (e) => {
+                            const btn = e.target.closest('[data-idx]');
+                            if (btn) {
+                                m.remove();
+                                resolve(groupsResult.groups[parseInt(btn.dataset.idx)].id);
+                            }
+                        });
+                        m.addEventListener('click', (e) => { if (e.target === m) { m.remove(); resolve(null); } });
+                    });
                 }
             }
         } catch (e) {
