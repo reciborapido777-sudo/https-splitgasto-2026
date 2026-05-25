@@ -11,7 +11,7 @@
 <style>
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
   * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
-  body { background:#0a0a0a; min-height:100dvh;  touch-action: manipulation; }
+  body { background:#0a0a0a; min-height:100dvh; touch-action: manipulation; }
 
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
@@ -41,7 +41,20 @@
     font-size:0.7rem;
     font-weight:700;
     min-width:72px;
+    flex-shrink:0;
   }
+  /* Categories scroll container — visible scrollbar on desktop */
+  .cats-scroll {
+    display:flex; gap:8px;
+    overflow-x:auto;
+    padding-bottom:8px;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  .cats-scroll::-webkit-scrollbar { height:3px; }
+  .cats-scroll::-webkit-scrollbar-track { background:transparent; }
+  .cats-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+  .cats-scroll .cat-btn { scroll-snap-align:start; }
   .cat-btn.active { border-color:var(--cyan); background:rgba(19,236,214,0.1); color:var(--cyan); }
   .cat-btn:hover { background:rgba(255,255,255,0.07); }
 
@@ -143,7 +156,7 @@
   <button id="save-btn" class="px-5 py-2 text-sm" onclick="saveExpense()">Guardar</button>
 </header>
 
-<main class="max-w-md mx-auto px-4 pt-4 space-y-5">
+<main class="max-w-md mx-auto px-4 pt-4 space-y-5 w-full">
 
   <!-- Scanner shortcut -->
   <div class="scanner-cta p-4 flex items-center gap-4" onclick="SGRouter.navigate('scanner','add-expense')">
@@ -179,7 +192,7 @@
   <!-- Categories -->
   <div class="space-y-2">
     <label class="text-xs font-bold uppercase tracking-widest opacity-40">Categoría</label>
-    <div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none">
+    <div class="cats-scroll">
       <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣<span>Comida</span></button>
       <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗<span>Transporte</span></button>
       <button class="cat-btn" data-cat="leisure" onclick="selectCat(this)">🎬<span>Ocio</span></button>
@@ -421,6 +434,8 @@ async function saveExpense() {
 
     if (result && result.success) {
       SGRouter.showToast('Gasto guardado ✓', 'success');
+      // Marcar para que activity.html sepa que debe recargar datos frescos
+      try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
       setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
     } else {
       const errMsg = result?.error || 'Error al guardar el gasto';
@@ -434,6 +449,7 @@ async function saveExpense() {
           const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
           if (retry && retry.success) {
             SGRouter.showToast('Gasto guardado ✓', 'success');
+            try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
             setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
             return;
           }

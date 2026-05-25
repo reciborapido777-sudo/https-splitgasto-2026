@@ -270,29 +270,48 @@
       }
     }
 
+    function _closeModal(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
     async function deleteExpense(expenseId, groupId) {
-      if (!confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) return;
-      try {
-        const res = await SGApi.deleteExpense(expenseId);
-        if (res && res.success) {
-          SGRouter.showToast('Gasto eliminado ✓', 'success');
-          // Eliminar la fila visualmente sin recargar toda la página
-          const row = document.getElementById(`exp-row-${expenseId}`);
-          if (row) {
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(20px)';
-            row.style.transition = 'all 0.3s ease';
-            setTimeout(() => { row.remove(); }, 300);
+      const modalId = 'delete-expense-modal';
+      _closeModal(modalId);
+      const modal = document.createElement('div');
+      modal.id = modalId;
+      modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)';
+      modal.innerHTML = `
+        <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:340px;width:90%;text-align:center">
+          <span class="material-icons-round" style="font-size:36px;color:#ef4444;margin-bottom:10px;display:block">delete_forever</span>
+          <h3 style="font-size:15px;font-weight:800;margin-bottom:6px">Eliminar gasto</h3>
+          <p style="font-size:11px;color:#666;margin-bottom:20px">Esta acción no se puede deshacer.</p>
+          <div style="display:flex;gap:10px">
+            <button onclick="_closeModal('${modalId}')" style="flex:1;padding:11px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+            <button id="confirm-del-exp-btn" style="flex:1;padding:11px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">Eliminar</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) _closeModal(modalId); });
+      document.getElementById('confirm-del-exp-btn').addEventListener('click', async () => {
+        _closeModal(modalId);
+        try {
+          const res = await SGApi.deleteExpense(expenseId);
+          if (res && res.success) {
+            SGRouter.showToast('Gasto eliminado ✓', 'success');
+            const row = document.getElementById(`exp-row-${expenseId}`);
+            if (row) {
+              row.style.opacity = '0';
+              row.style.transform = 'translateX(20px)';
+              row.style.transition = 'all 0.3s ease';
+              setTimeout(() => { row.remove(); }, 300);
+            }
+            setTimeout(() => loadActivityData(), 600);
+          } else {
+            SGRouter.showToast(res?.error || 'Error al eliminar gasto', 'error');
           }
-          // Recargar después de un momento para actualizar totales
-          setTimeout(() => loadActivityData(), 600);
-        } else {
-          SGRouter.showToast(res?.error || 'Error al eliminar gasto', 'error');
+        } catch(e) {
+          console.error('deleteExpense error:', e);
+          SGRouter.showToast('Error de conexión', 'error');
         }
-      } catch(e) {
-        console.error('deleteExpense error:', e);
-        SGRouter.showToast('Error de conexión', 'error');
-      }
+      });
     }
 
     function formatDate(dateStr) {
@@ -316,9 +335,21 @@
 
     loadActivityData();
 
-    // Recargar al volver con botón atrás (bfcache)
+    // Recargar al volver con botón atrás (bfcache) o tras añadir gasto
     window.addEventListener('pageshow', (e) => {
-      if (e.persisted) loadActivityData();
+      if (e.persisted) {
+        // Siempre recargar en bfcache para mostrar gastos recién añadidos
+        loadActivityData();
+      } else {
+        // Página cargada normalmente: comprobar si venimos de add-expense
+        try {
+          const flag = sessionStorage.getItem('sg_expense_added');
+          if (flag) {
+            sessionStorage.removeItem('sg_expense_added');
+            loadActivityData();
+          }
+        } catch {}
+      }
     });
     </script>
         
