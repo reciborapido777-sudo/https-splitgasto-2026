@@ -454,9 +454,19 @@ function inviteMember(groupId, groupName) {
 loadGroups();
 
 // FIX bfcache: cuando el navegador restaura la página desde caché, recargar datos
+// También detecta flag sg_group_added para recargar tras crear un grupo nuevo
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
     loadGroups();
+  } else {
+    try {
+      const flag = sessionStorage.getItem('sg_group_added');
+      if (flag) {
+        sessionStorage.removeItem('sg_group_added');
+        // Pequeño delay para que D1 propague el nuevo grupo antes de leer
+        setTimeout(() => loadGroups(), 400);
+      }
+    } catch {}
   }
 });
 </script>

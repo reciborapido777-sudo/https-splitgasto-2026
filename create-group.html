@@ -362,6 +362,8 @@ async function createGroup() {
     if (result && result.success) {
       // Purgar KV cache para que groups.html vea el nuevo grupo inmediatamente
       try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+      // Marcar para que groups.html sepa que hay un grupo nuevo y recargue datos frescos
+      try { sessionStorage.setItem('sg_group_added', Date.now()); } catch {}
       SGRouter.showToast(`Grupo "${name}" creado ✓`, 'success');
       setTimeout(() => SGRouter.navigate('groups', 'create-group'), 900);
     } else {

@@ -945,10 +945,27 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-        const membership = await env.SPLITGASTO_DB.prepare(
+        // FIX D1 Read Replication: purgar KV antes de leer membresía para evitar stale reads
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+        }
+        let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
-        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+        // Auto-repair: si no hay membresía pero el usuario es created_by, repararla
+        if (!membership) {
+            const group = await env.SPLITGASTO_DB.prepare(
+                'SELECT id, created_by FROM groups WHERE id = ?'
+            ).bind(groupId).first();
+            if (group && group.created_by === authUser.userId) {
+                await env.SPLITGASTO_DB.prepare(
+                    'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                ).bind(groupId, authUser.userId, 'admin').run();
+                membership = { role: 'admin' };
+            } else {
+                return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+            }
+        }
         const members = await env.SPLITGASTO_DB.prepare(
             `SELECT u.id, u.name, u.email, u.avatar_url, gm.role
              FROM group_members gm
@@ -963,10 +980,27 @@ async function handleDatabase(request, env, path) {
     if (path === '/api/db/group-members' && method === 'POST') {
         const { groupId, userId: memberUserId, email: memberEmail, role } = body;
         if (!groupId || (!memberUserId && !memberEmail)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400);
-        const membership = await env.SPLITGASTO_DB.prepare(
+        // FIX D1 Read Replication: purgar KV antes de verificar admin
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+        }
+        let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
-        if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+        // Auto-repair: si no hay membresía pero el usuario es created_by, repararla
+        if (!membership) {
+            const grp = await env.SPLITGASTO_DB.prepare(
+                'SELECT id, created_by FROM groups WHERE id = ?'
+            ).bind(groupId).first();
+            if (grp && grp.created_by === authUser.userId) {
+                await env.SPLITGASTO_DB.prepare(
+                    'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                ).bind(groupId, authUser.userId, 'admin').run();
+                membership = { role: 'admin' };
+            } else {
+                return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
+            }
+        }
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
 
         // Buscar por email si se proporciona, si no por ID
