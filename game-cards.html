@@ -188,7 +188,7 @@
       <p class="text-xs opacity-40">Cartas</p>
     </div>
     <div class="glass p-3 text-center">
-      <p class="text-lg font-bold" style="color:var(--orange)" id="pot">84,20 €</p>
+      <p class="text-lg font-bold" style="color:var(--orange)" id="pot">—</p>
       <p class="text-xs opacity-40">En juego</p>
     </div>
   </div>
@@ -539,10 +539,16 @@ async function loadCardsGroups() {
 
 async function onCardsGroupChange(groupId) {
   if (!groupId) return;
+  const potEl = document.getElementById('pot');
+  if (potEl) potEl.textContent = '—';
   try {
-    const res = await SGApi.getGroupMembers(groupId);
-    if (res && res.success && res.members && res.members.length > 0) {
-      players = res.members.map((m, i) => ({
+    // Cargar miembros y balances en paralelo
+    const [membersRes, balRes] = await Promise.all([
+      SGApi.getGroupMembers(groupId).catch(() => null),
+      SGApi.getBalances(groupId).catch(() => null)
+    ]);
+    if (membersRes && membersRes.success && membersRes.members && membersRes.members.length > 0) {
+      players = membersRes.members.map((m, i) => ({
         name: m.name || `Jugador ${i+1}`,
         color: CARD_COLORS[i % CARD_COLORS.length],
         initials: (m.name || 'J').slice(0,2).toUpperCase(),
@@ -555,11 +561,18 @@ async function onCardsGroupChange(groupId) {
         {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
       ];
     }
+    // Actualizar "En juego" con el total real de gastos del grupo
+    if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
+      if (potEl) potEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    } else {
+      if (potEl) potEl.textContent = '0,00 €';
+    }
   } catch(e) {
     players = [
       {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
       {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
     ];
+    if (potEl) potEl.textContent = '0,00 €';
   }
   buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
 }

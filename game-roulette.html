@@ -262,7 +262,7 @@
       </div>
       <div class="w-px bg-white/10"></div>
       <div>
-        <p class="text-lg font-bold" style="color:var(--orange)" id="group-total">84,20 €</p>
+        <p class="text-lg font-bold" style="color:var(--orange)" id="group-total">—</p>
         <p class="text-xs opacity-40">En juego</p>
       </div>
     </div>
@@ -745,25 +745,37 @@ async function loadRouletteGroups() {
 
 async function onGroupChange(groupId) {
   if (!groupId) return;
-  const countEl = document.getElementById('group-member-count');
+  const countEl   = document.getElementById('group-member-count');
+  const totalEl   = document.getElementById('group-total');
   if (countEl) countEl.textContent = 'Cargando miembros…';
+  if (totalEl) totalEl.textContent = '—';
   try {
-    const res = await SGApi.getGroupMembers(groupId);
-    if (res && res.success && res.members && res.members.length > 0) {
-      players = res.members.map((m, i) => ({
+    // Cargar miembros y balances en paralelo
+    const [membersRes, balRes] = await Promise.all([
+      SGApi.getGroupMembers(groupId).catch(() => null),
+      SGApi.getBalances(groupId).catch(() => null)
+    ]);
+    if (membersRes && membersRes.success && membersRes.members && membersRes.members.length > 0) {
+      players = membersRes.members.map((m, i) => ({
         name: m.name || `Jugador ${i+1}`,
         color: COLORS[i % COLORS.length],
         active: true
       }));
       if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
     } else {
-      // Grupo sin miembros cargados aún — usar 2 jugadores por defecto
       players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
       if (countEl) countEl.textContent = '2 participantes (por defecto)';
+    }
+    // Actualizar "En juego" con el total real de gastos del grupo
+    if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
+      if (totalEl) totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    } else {
+      if (totalEl) totalEl.textContent = '0,00 €';
     }
   } catch(e) {
     players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
     if (countEl) countEl.textContent = '2 participantes (por defecto)';
+    if (totalEl) totalEl.textContent = '0,00 €';
   }
   renderPlayers();
   drawWheel(0);

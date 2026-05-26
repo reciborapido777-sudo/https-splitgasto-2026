@@ -161,6 +161,20 @@
     </div>
   </div>
 
+  <!-- Group selector — dinámico, carga grupos reales -->
+  <div class="glass p-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-lg flex-shrink-0" style="background:rgba(19,236,214,0.15)">🪙</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Grupo</p>
+        <select id="group-select-coin" class="w-full text-white font-bold text-sm outline-none cursor-pointer"
+          style="border:none;background:transparent" onchange="onCoinGroupChange(this.value)">
+          <option value="">Cargando grupos…</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <!-- Who chooses -->
   <div class="glass p-4">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">¿Quién elige?</p>
@@ -605,8 +619,52 @@ function launchConfetti(color) {
   }
 }
 
+// ── FIX: LOAD GROUPS FROM API ─────────────────────────────────────────────────
+// Actualiza los nombres de los jugadores (inputs visibles) y el estado interno
+function setCoinPlayers(p1name, p2name) {
+  players[0].name = p1name || 'Jugador 1';
+  players[1].name = p2name || 'Jugador 2';
+  const inp1 = document.getElementById('player1-input');
+  const inp2 = document.getElementById('player2-input');
+  if (inp1) inp1.value = players[0].name;
+  if (inp2) inp2.value = players[1].name;
+}
+
+async function onCoinGroupChange(groupId) {
+  if (!groupId) return;
+  try {
+    const res = await SGApi.getGroupMembers(groupId);
+    if (res && res.success && res.members && res.members.length >= 2) {
+      setCoinPlayers(res.members[0].name, res.members[1].name);
+      SGRouter.showToast('Jugadores cargados del grupo ✓', 'success');
+    } else if (res && res.success && res.members && res.members.length === 1) {
+      setCoinPlayers(res.members[0].name, 'Jugador 2');
+    }
+  } catch(e) { /* silenciar — jugadores por defecto ya están puestos */ }
+}
+
+async function loadCoinGroups() {
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) return; // jugadores por defecto
+  try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+  try {
+    const res = await SGApi.getGroups();
+    const sel = document.getElementById('group-select-coin');
+    if (res && res.success && res.groups && res.groups.length > 0) {
+      sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+      // Cargar miembros del primer grupo
+      await onCoinGroupChange(res.groups[0].id);
+    } else {
+      sel.innerHTML = '<option value="">Sin grupos — jugadores manuales</option>';
+    }
+  } catch(e) {
+    const sel = document.getElementById('group-select-coin');
+    if (sel) sel.innerHTML = '<option value="">Sin grupos — jugadores manuales</option>';
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 drawCoin(0);  // initial draw: heads facing
+loadCoinGroups();
 </script>
 
 <script>

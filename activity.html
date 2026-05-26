@@ -136,9 +136,24 @@
           return;
         }
 
-        // Cargar gastos de TODOS los grupos en paralelo
+        // Cargar gastos Y miembros de TODOS los grupos en paralelo
         const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
-        const allExpResults = await Promise.all(expPromises);
+        const memPromises = groups.map(g => SGApi.getGroupMembers(g.id).catch(() => null));
+        const [allExpResults, allMemResults] = await Promise.all([
+          Promise.all(expPromises),
+          Promise.all(memPromises)
+        ]);
+
+        // Construir mapa global userId → nombre para mostrar quién pagó
+        const _memberNameMap = {};
+        groups.forEach((g, i) => {
+          const memResult = allMemResults[i];
+          if (memResult?.success && memResult.members) {
+            memResult.members.forEach(m => {
+              if (m.id && m.name) _memberNameMap[m.id] = m.name;
+            });
+          }
+        });
 
         const allExpenses = [];
         groups.forEach((g, i) => {
@@ -149,6 +164,8 @@
             });
           }
         });
+        // Exponer el mapa para uso en la función de renderizado
+        window._activityMemberNames = _memberNameMap;
 
         _allExpensesCache = allExpenses;
 
@@ -229,7 +246,7 @@
                 <p class="text-base font-black money-display" style="color:${amountColor}">${amountStr}</p>
                 ${isMine ? `<button onclick="deleteExpense('${expId}','${exp._groupId}')" class="text-[8px] text-zinc-700 hover:text-red-400 transition-colors font-bold uppercase tracking-wider mt-0.5 flex items-center gap-0.5 ml-auto">
                   <span class="material-icons-round text-xs">delete</span>Borrar
-                </button>` : `<p class="text-[8px] text-zinc-700 uppercase font-black mt-0.5">pagó otro</p>`}
+                </button>` : `<p class="text-[8px] text-zinc-600 uppercase font-black mt-0.5">${(window._activityMemberNames && window._activityMemberNames[exp.paid_by]) ? "Pagó " + window._activityMemberNames[exp.paid_by] : "pagó otro"}</p>`}
               </div>
             </div>`;
           });
