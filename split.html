@@ -353,6 +353,12 @@ function removeMemberFromGroup(groupId, memberId, memberName) {
       const res = await SGApi.removeGroupMember(groupId, memberId);
       if (res && res.success) {
         SGRouter.showToast(`${memberName} eliminado del grupo`, 'success');
+        // FIX D1 Read Replication: purgar cache ANTES de recargar para evitar stale read
+        try {
+          await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } });
+        } catch {}
+        // Delay para asegurar propagación D1 antes de leer lista actualizada
+        await new Promise(r => setTimeout(r, 600));
         await loadGroupData(groupId);
       } else {
         SGRouter.showToast(res?.error || 'Error al eliminar miembro', 'error');
@@ -374,8 +380,16 @@ window.addEventListener('pageshow', (e) => {
       const flag = sessionStorage.getItem('sg_member_added');
       if (flag) {
         sessionStorage.removeItem('sg_member_added');
-        // Pequeño delay para asegurar propagación D1
-        setTimeout(() => initSplit(), 300);
+        // FIX D1 Read Replication: purgar cache + delay mayor para propagación D1
+        // Primer intento a los 800ms, segundo intento a los 2500ms (replicación eventual)
+        const token = (typeof SGAuth !== 'undefined') ? SGAuth.getToken() : null;
+        if (token) {
+          fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }).catch(() => {});
+        }
+        setTimeout(() => initSplit(), 800);
+        setTimeout(() => {
+          if (_currentGroupId) loadGroupData(_currentGroupId);
+        }, 2500);
       }
     } catch {}
   }

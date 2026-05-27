@@ -428,12 +428,12 @@ function inviteMember(groupId, groupName) {
             _closeModal(modalId);
             if (res && res.success) {
                 SGRouter.showToast('Participante añadido ✓', 'success');
-                // Purgar cache para asegurar recarga con datos frescos
+                // FIX D1 Read Replication: purgar cache ANTES de recargar
                 try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
                 // Marcar para que split.html sepa que debe recargar miembros
                 try { sessionStorage.setItem('sg_member_added', Date.now()); } catch {}
-                // Pequeño delay para que D1 propague el cambio antes de recargar
-                setTimeout(() => loadGroups(), 350);
+                // Delay mayor para que D1 propague el cambio (replicación eventual ~800ms)
+                setTimeout(() => loadGroups(), 900);
             } else {
                 SGRouter.showToast(res?.error || 'Error al invitar', 'error');
             }
