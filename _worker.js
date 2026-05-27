@@ -1422,6 +1422,7 @@ function jsonResponse(data, status = 200, request = null) {
     const headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store',
     };
     if (origin) {
         headers['Access-Control-Allow-Origin'] = origin;
