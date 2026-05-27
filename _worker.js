@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.1 — 2026-05-04
+ * Versión: 4.2 — 2026-05-27
  *
  * Bindings:
  *  - env.ASSETS                  → Assets estáticos
@@ -258,7 +258,14 @@ async function handleAuth(request, env, path) {
         if (password.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
         if (password.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
 
-        const existing = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        // SECURITY: Normalizar email a minúsculas para evitar duplicados y problemas de case (Hotmail, Gmail, etc.)
+        const normalizedEmail = email.toLowerCase().trim();
+        if (!isValidEmail(normalizedEmail)) return jsonResponse({ error: 'Email inválido' }, 400);
+        // SECURITY: Limitar longitud de campos para evitar ataques de payload grande
+        if (name.length > 100) return jsonResponse({ error: 'Nombre máximo 100 caracteres' }, 400);
+        if (normalizedEmail.length > 254) return jsonResponse({ error: 'Email demasiado largo' }, 400);
+
+        const existing = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE LOWER(email) = ?').bind(normalizedEmail).first();
         if (existing) return jsonResponse({ error: 'Este email ya está registrado' }, 409);
 
         const id = crypto.randomUUID();
@@ -266,10 +273,10 @@ async function handleAuth(request, env, path) {
 
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO users (id, name, email, password_hash, avatar_url) VALUES (?, ?, ?, ?, ?)'
-        ).bind(id, name, email, hashedPassword, '').run();
+        ).bind(id, name.trim(), normalizedEmail, hashedPassword, '').run();
 
-        const token = await signJWT({ userId: id, email }, env);
-        return jsonResponse({ success: true, token, user: { id, name, email } }, 201);
+        const token = await signJWT({ userId: id, email: normalizedEmail }, env);
+        return jsonResponse({ success: true, token, user: { id, name: name.trim(), email: normalizedEmail } }, 201);
     }
 
     if (path === '/api/auth/login' && request.method === 'POST') {
@@ -278,9 +285,11 @@ async function handleAuth(request, env, path) {
         const { email, password } = body;
         if (!email || !password) return jsonResponse({ error: 'Campos "email" y "password" requeridos' }, 400);
 
+        // SECURITY: Normalizar email a minúsculas — case-insensitive login (Hotmail, Gmail, etc.)
+        const normalizedEmail = email.toLowerCase().trim();
         const user = await env.SPLITGASTO_DB.prepare(
-            'SELECT id, name, email, password_hash, avatar_url FROM users WHERE email = ?'
-        ).bind(email).first();
+            'SELECT id, name, email, password_hash, avatar_url FROM users WHERE LOWER(email) = ?'
+        ).bind(normalizedEmail).first();
         if (!user) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
 
         if (!user.password_hash) return jsonResponse({ error: 'Cuenta sin contraseña. Usa recuperación.' }, 401);
@@ -311,6 +320,7 @@ async function handleAuth(request, env, path) {
         const { currentPassword, newPassword } = body;
         if (!currentPassword || !newPassword) return jsonResponse({ error: 'Campos "currentPassword" y "newPassword" requeridos' }, 400);
         if (newPassword.length < 6) return jsonResponse({ error: 'Nueva contraseña mínimo 6 caracteres' }, 400);
+        if (newPassword.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
 
         const user = await env.SPLITGASTO_DB.prepare(
             'SELECT password_hash FROM users WHERE id = ?'
@@ -334,7 +344,9 @@ async function handleAuth(request, env, path) {
         const { email } = body;
         if (!email) return jsonResponse({ error: 'Campo "email" requerido' }, 400);
 
-        const user = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        // SECURITY: Normalizar email a minúsculas — case-insensitive lookup
+        const normalizedForgotEmail = email.toLowerCase().trim();
+        const user = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE LOWER(email) = ?').bind(normalizedForgotEmail).first();
         if (!user) return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
 
         // KV es obligatorio para guardar el código antes de enviarlo
@@ -901,11 +913,15 @@ async function handleDatabase(request, env, path) {
     if (path === '/api/db/groups' && method === 'POST') {
         const { name, currency, members } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
+        // SECURITY: Limitar longitud de inputs
+        if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) return jsonResponse({ error: 'Nombre de grupo inválido (máx 100 caracteres)' }, 400);
+        const ALLOWED_CURRENCIES = ['EUR', 'USD', 'GBP', 'MXN', 'ARS', 'CLP', 'COP', 'PEN', 'BRL'];
+        const safeCurrency = ALLOWED_CURRENCIES.includes(currency) ? currency : 'EUR';
         const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO groups (id, name, currency, created_by) VALUES (?, ?, ?, ?)'
-        ).bind(id, name, currency || 'EUR', userId).run();
+        ).bind(id, name.trim(), safeCurrency, userId).run();
 
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
@@ -917,7 +933,7 @@ async function handleDatabase(request, env, path) {
                 let memberId = null;
                 if (typeof member === 'string' && member.includes('@')) {
                     const user = await env.SPLITGASTO_DB.prepare(
-                        'SELECT id FROM users WHERE email = ?'
+                        'SELECT id FROM users WHERE LOWER(email) = ?'
                     ).bind(member.toLowerCase().trim()).first();
                     if (user) memberId = user.id;
                 } else {
@@ -945,9 +961,10 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-        // FIX D1 Read Replication: purgar KV antes de leer membresía para evitar stale reads
+        // FIX D1 Read Replication: purgar KV (groups + balances) antes de leer para evitar stale reads
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+            try { await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`); } catch {}
         }
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
@@ -1003,12 +1020,14 @@ async function handleDatabase(request, env, path) {
         }
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
 
-        // Buscar por email si se proporciona, si no por ID
+        // SECURITY: Buscar por email case-insensitive — cubre Hotmail, Gmail, Yahoo, etc.
         let actualMemberUserId = memberUserId;
         if (!actualMemberUserId && memberEmail) {
+            const normalizedMemberEmail = memberEmail.toLowerCase().trim();
+            if (!isValidEmail(normalizedMemberEmail)) return jsonResponse({ error: 'Email inválido' }, 400);
             const user = await env.SPLITGASTO_DB.prepare(
-                'SELECT id FROM users WHERE email = ?'
-            ).bind(memberEmail.toLowerCase().trim()).first();
+                'SELECT id FROM users WHERE LOWER(email) = ?'
+            ).bind(normalizedMemberEmail).first();
             if (!user) return jsonResponse({ error: 'Usuario no encontrado con ese email' }, 404);
             actualMemberUserId = user.id;
         } else if (actualMemberUserId) {
@@ -1061,6 +1080,17 @@ async function handleDatabase(request, env, path) {
     if (path === '/api/db/expenses' && method === 'POST') {
         const { groupId, amount, currency, category, description, splitType, paidBy } = body;
         if (!groupId || !amount) return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400);
+        // SECURITY: Validar amount numérico y rango razonable
+        const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 999999.99) {
+            return jsonResponse({ error: 'Importe inválido (debe ser > 0 y < 1.000.000)' }, 400);
+        }
+        // SECURITY: Limitar longitud de descripción y categoría
+        if (description && description.length > 500) return jsonResponse({ error: 'Descripción máximo 500 caracteres' }, 400);
+        const ALLOWED_CATEGORIES = ['comida','transporte','entretenimiento','alojamiento','compras','salud','servicios','otro'];
+        const safeCategory = ALLOWED_CATEGORIES.includes(category) ? category : 'otro';
+        const ALLOWED_SPLIT_TYPES = ['equal','exact','percentage','shares'];
+        const safeSplitType = ALLOWED_SPLIT_TYPES.includes(splitType) ? splitType : 'equal';
         // Verificar que el usuario autenticado pertenece al grupo
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
@@ -1075,9 +1105,11 @@ async function handleDatabase(request, env, path) {
             if (!payerMembership) return jsonResponse({ error: 'El pagador no pertenece al grupo' }, 400);
         }
         const id = crypto.randomUUID();
+        const ALLOWED_CURRENCIES_EXP = ['EUR', 'USD', 'GBP', 'MXN', 'ARS', 'CLP', 'COP', 'PEN', 'BRL'];
+        const safeCurrencyExp = ALLOWED_CURRENCIES_EXP.includes(currency) ? currency : 'EUR';
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO expenses (id, group_id, paid_by, amount, currency, category, description, split_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(id, groupId, actualPaidBy, amount, currency || 'EUR', category || 'otro', description || 'Sin descripción', splitType || 'equal').run();
+        ).bind(id, groupId, actualPaidBy, parsedAmount, safeCurrencyExp, safeCategory, (description || 'Sin descripción').slice(0, 500), safeSplitType).run();
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`); } catch {}
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
@@ -1139,10 +1171,13 @@ async function handleDatabase(request, env, path) {
         const { name, email, avatar } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
         const userId = authUser.userId;
-        if (email && !isValidEmail(email)) return jsonResponse({ error: 'Email inválido' }, 400);
+        // SECURITY: Normalizar y validar email en actualización de perfil
+        const emailToStore = email ? email.toLowerCase().trim() : `${userId}@splitgasto.app`;
+        if (email && !isValidEmail(emailToStore)) return jsonResponse({ error: 'Email inválido' }, 400);
+        if (name.length > 100) return jsonResponse({ error: 'Nombre máximo 100 caracteres' }, 400);
         await env.SPLITGASTO_DB.prepare(
             'UPDATE users SET name = ?, email = ?, avatar_url = ? WHERE id = ?'
-        ).bind(name, email || `${userId}@splitgasto.app`, avatar || '', userId).run();
+        ).bind(name.trim(), emailToStore, avatar || '', userId).run();
         await env.SPLITGASTO_CACHE?.delete(`db:profile:${userId}`);
         return jsonResponse({ success: true, message: 'Perfil actualizado' });
     }
@@ -1162,11 +1197,16 @@ async function handleDatabase(request, env, path) {
     if (path === '/api/db/notifications' && method === 'POST') {
         const { title, message, type } = body;
         if (!title) return jsonResponse({ error: 'Campo "title" requerido' }, 400);
+        // SECURITY: Limitar longitud de inputs para evitar payload abuse
+        if (title.length > 200) return jsonResponse({ error: 'Título máximo 200 caracteres' }, 400);
+        if (message && message.length > 1000) return jsonResponse({ error: 'Mensaje máximo 1000 caracteres' }, 400);
+        const ALLOWED_NOTIF_TYPES = ['info', 'success', 'warning', 'error'];
+        const safeType = ALLOWED_NOTIF_TYPES.includes(type) ? type : 'info';
         const userId = authUser.userId;
         const id = crypto.randomUUID();
         await env.SPLITGASTO_DB.prepare(
             'INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)'
-        ).bind(id, userId, title, message || '', type || 'info').run();
+        ).bind(id, userId, title.slice(0, 200), (message || '').slice(0, 1000), safeType).run();
         return jsonResponse({ success: true, id, message: 'Notificación creada' }, 201);
     }
 
@@ -1175,9 +1215,11 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const email = url.searchParams.get('email');
         if (!email) return jsonResponse({ error: 'Parámetro "email" requerido' }, 400);
+        // SECURITY: Búsqueda case-insensitive — LOWER(email) para Hotmail/Gmail/etc.
+        const normalizedSearchEmail = email.toLowerCase().trim();
         const user = await env.SPLITGASTO_DB.prepare(
-            'SELECT id, name, email, avatar_url FROM users WHERE email = ?'
-        ).bind(email.toLowerCase().trim()).first();
+            'SELECT id, name, email, avatar_url FROM users WHERE LOWER(email) = ?'
+        ).bind(normalizedSearchEmail).first();
         if (!user) return jsonResponse({ success: false, error: 'Usuario no encontrado' }, 404);
         return jsonResponse({ success: true, user });
     }
@@ -1282,9 +1324,27 @@ async function handleDatabase(request, env, path) {
         const memberUserId = parts[1];
         if (!groupId || !memberUserId) return jsonResponse({ error: 'groupId y userId requeridos en la ruta' }, 400);
 
-        const membership = await env.SPLITGASTO_DB.prepare(
+        // FIX D1 Read Replication: purgar KV antes de verificar membresía
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
+        }
+
+        let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
+
+        // Auto-repair: si no hay membresía pero el usuario es created_by
+        if (!membership) {
+            const grpCheck = await env.SPLITGASTO_DB.prepare(
+                'SELECT id, created_by FROM groups WHERE id = ?'
+            ).bind(groupId).first();
+            if (grpCheck && grpCheck.created_by === authUser.userId) {
+                await env.SPLITGASTO_DB.prepare(
+                    'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                ).bind(groupId, authUser.userId, 'admin').run();
+                membership = { role: 'admin' };
+            }
+        }
 
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
 
@@ -1399,21 +1459,26 @@ function getOrigin(request) {
     if (ALLOWED_ORIGINS.includes(origin)) return origin;
     // Permitir cualquier workers.dev subdominio del usuario
     if (origin.match(/^https:\/\/[a-z0-9-]+\.reciborapido777\.workers\.dev$/)) return origin;
-    // Permitir localhost para desarrollo
+    // Permitir previews de Pages (*.pages.dev)
+    if (origin.match(/^https:\/\/[a-z0-9-]+\.splitgasto-2026\.pages\.dev$/)) return origin;
+    // Permitir localhost para desarrollo (solo http)
     if (origin.match(/^http:\/\/localhost:\d+$/)) return origin;
-    return '*';
+    // SECURITY: No usar '*' como fallback — devolver null para rechazar origen desconocido
+    return null;
 }
 
 function jsonResponse(data, status = 200, request = null) {
-    const origin = request ? getOrigin(request) : '*';
-    return new Response(JSON.stringify(data, null, 2), {
-        status,
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Access-Control-Allow-Origin': origin,
-            'X-Content-Type-Options': 'nosniff',
-        },
-    });
+    const origin = request ? getOrigin(request) : null;
+    const headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+    };
+    // SECURITY: Solo añadir CORS header si el origen es permitido (no usar '*' ciego)
+    if (origin) {
+        headers['Access-Control-Allow-Origin'] = origin;
+        headers['Vary'] = 'Origin';
+    }
+    return new Response(JSON.stringify(data, null, 2), { status, headers });
 }
 
 function corsResponse(request) {
@@ -1433,6 +1498,18 @@ function setSecurityHeaders(headers) {
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
+    // SECURITY: Content-Security-Policy para mitigar XSS
+    headers.set('Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: blob: https:; " +
+        "connect-src 'self' https://splitgasto.com https://splitgasto-2026.pages.dev; " +
+        "frame-ancestors 'none';"
+    );
+    // SECURITY: Strict-Transport-Security — forzar HTTPS
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     const ct = headers.get('Content-Type') || '';
     if (ct.includes('text/html')) {
         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
