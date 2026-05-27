@@ -1,20 +1,20 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.2 — 2026-05-27
+ * Versión: 4.21 — 2026-05-27
  *
  * Bindings:
- *  - env.ASSETS                  → Assets estáticos
- *  - env.AI                      → Workers AI + AI Gateway
- *  - env.SPLITGASTO_BUCKET       → R2 Bucket (splitgasto-storage)
- *  - env.SPLITGASTO_RATE_LIMITER → Rate Limiter (100 req/60s)
- *  - env.SPLITGASTO_DB           → D1 Database (splitgasto-db)
- *  - env.SPLITGASTO_CACHE        → KV Namespace (splitgasto-cache)
- *  - env.JWT_SECRET              → Secret para JWT (obligatorio)
+ * - env.ASSETS                  → Assets estáticos
+ * - env.AI                      → Workers AI + AI Gateway
+ * - env.SPLITGASTO_BUCKET       → R2 Bucket (splitgasto-storage)
+ * - env.SPLITGASTO_RATE_LIMITER → Rate Limiter (100 req/60s)
+ * - env.SPLITGASTO_DB           → D1 Database (splitgasto-db)
+ * - env.SPLITGASTO_CACHE        → KV Namespace (splitgasto-cache)
+ * - env.JWT_SECRET              → Secret para JWT (obligatorio)
  *
  * Modelos IA:
- *  - Chat/Análisis:    @cf/meta/llama-3.1-8b-instruct
- *  - Escaneo tickets:  @cf/meta/llama-3.2-11b-vision-instruct
- *  - Clasificación:    @cf/meta/llama-3.2-1b-instruct
+ * - Chat/Análisis:    @cf/meta/llama-3.1-8b-instruct
+ * - Escaneo tickets:  @cf/meta/llama-3.2-11b-vision-instruct
+ * - Clasificación:    @cf/meta/llama-3.2-1b-instruct
  */
 
 export default {
@@ -59,8 +59,7 @@ export default {
 async function checkRateLimit(request, env) {
     if (!env.SPLITGASTO_RATE_LIMITER) return null;
     const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const url = new URL(request.url);
-    const key = `${clientIP}:${url.pathname}`;
+    const key = clientIP;
     try {
         const { success } = await env.SPLITGASTO_RATE_LIMITER.limit({ key });
         if (!success) {
@@ -82,12 +81,12 @@ async function checkRateLimit(request, env) {
 async function handleAPI(request, env, ctx, path) {
     const method = request.method;
     if (method === 'OPTIONS') return corsResponse(request);
-    // Allow DELETE to pass through to handleDatabase
+    
     if (path === '/api/health') {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.1',
+            version: env.APP_VERSION ?? '4.21',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -178,8 +177,6 @@ async function verifyPassword(password, storedHash) {
 // ═══════════════════════════════════════════════════════════════════════
 // Auth — JWT con Web Crypto API + PBKDF2 passwords
 // ═══════════════════════════════════════════════════════════════════════
-
-// ── Helper: Base64 URL-safe para Unicode ────────────────────────────
 function b64Encode(data) {
     return btoa(unescape(encodeURIComponent(data)));
 }
@@ -246,7 +243,6 @@ function generateRecoveryCode() {
 
 async function handleAuth(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
-    // JWT_SECRET es obligatorio para firmar y verificar tokens
     if (!env.JWT_SECRET) return jsonResponse({ error: 'Servicio de autenticación no disponible', detail: 'JWT_SECRET no configurado' }, 503);
 
     if (path === '/api/auth/register' && request.method === 'POST') {
@@ -258,10 +254,8 @@ async function handleAuth(request, env, path) {
         if (password.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
         if (password.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
 
-        // SECURITY: Normalizar email a minúsculas para evitar duplicados y problemas de case (Hotmail, Gmail, etc.)
         const normalizedEmail = email.toLowerCase().trim();
         if (!isValidEmail(normalizedEmail)) return jsonResponse({ error: 'Email inválido' }, 400);
-        // SECURITY: Limitar longitud de campos para evitar ataques de payload grande
         if (name.length > 100) return jsonResponse({ error: 'Nombre máximo 100 caracteres' }, 400);
         if (normalizedEmail.length > 254) return jsonResponse({ error: 'Email demasiado largo' }, 400);
 
@@ -285,7 +279,6 @@ async function handleAuth(request, env, path) {
         const { email, password } = body;
         if (!email || !password) return jsonResponse({ error: 'Campos "email" y "password" requeridos' }, 400);
 
-        // SECURITY: Normalizar email a minúsculas — case-insensitive login (Hotmail, Gmail, etc.)
         const normalizedEmail = email.toLowerCase().trim();
         const user = await env.SPLITGASTO_DB.prepare(
             'SELECT id, name, email, password_hash, avatar_url FROM users WHERE LOWER(email) = ?'
@@ -344,12 +337,10 @@ async function handleAuth(request, env, path) {
         const { email } = body;
         if (!email) return jsonResponse({ error: 'Campo "email" requerido' }, 400);
 
-        // SECURITY: Normalizar email a minúsculas — case-insensitive lookup
         const normalizedForgotEmail = email.toLowerCase().trim();
         const user = await env.SPLITGASTO_DB.prepare('SELECT id FROM users WHERE LOWER(email) = ?').bind(normalizedForgotEmail).first();
         if (!user) return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
 
-        // KV es obligatorio para guardar el código antes de enviarlo
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
 
         const code = generateRecoveryCode();
@@ -361,7 +352,6 @@ async function handleAuth(request, env, path) {
             { expirationTtl: 900 }
         );
 
-        // Enviar código por email via MailChannels
         try {
             await fetch('https://api.mailchannels.net/tx/v1/send', {
                 method: 'POST',
@@ -381,7 +371,6 @@ async function handleAuth(request, env, path) {
         }
 
         return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
-
     }
 
     if (path === '/api/auth/reset-password' && request.method === 'POST') {
@@ -394,7 +383,6 @@ async function handleAuth(request, env, path) {
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
 
         const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
-        // Si KV no devuelve nada, el TTL ya expiró (900s) o el código es inválido
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400);
 
         const validCode = await verifyPassword(code, stored.codeHash);
@@ -412,10 +400,10 @@ async function handleAuth(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
 }
+
 // ═══════════════════════════════════════════════════════════════════════
 // Workers AI — con AI Gateway para optimizar costos
 // ═══════════════════════════════════════════════════════════════════════
-
 async function handleAI(request, env, path) {
     if (!env.AI) return jsonResponse({ error: 'Workers AI no disponible' }, 503);
     if (request.method !== 'POST') return jsonResponse({ error: 'Usa POST.' }, 405);
@@ -581,7 +569,12 @@ async function handleAI(request, env, path) {
             }
 
             const arrayBuffer = await image.arrayBuffer();
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            const bytes = new Uint8Array(arrayBuffer);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i += 8192) {
+                binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + 8192, bytes.length)));
+            }
+            const base64 = btoa(binary);
 
             const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
@@ -612,6 +605,7 @@ async function handleAI(request, env, path) {
 
     return jsonResponse({ error: 'Ruta de AI no encontrada', path }, 404);
 }
+
 // ═══════════════════════════════════════════════════════════════════════
 // R2 Storage — Almacenamiento seguro
 // ═══════════════════════════════════════════════════════════════════════
@@ -689,15 +683,23 @@ async function handleStorageDownload(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
         }
-        const object = await env.SPLITGASTO_BUCKET.get(key);
+        // OPTIMIZACIÓN APLICADA: Unificación táctica en un solo HEAD call de R2
+        const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+
+        if (key.startsWith('receipts/') && object.customMetadata?.userId !== authUser.userId) {
+            return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
+        }
+        
+        // Ejecución de la lectura física posterior al filtro de seguridad
+        const actualObject = await env.SPLITGASTO_BUCKET.get(key);
         const headers = new Headers();
-        object.writeHttpMetadata(headers);
-        headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+        actualObject.writeHttpMetadata(headers);
+        headers.set('Content-Type', actualObject.httpMetadata?.contentType || 'application/octet-stream');
         headers.set('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
         headers.set('Cache-Control', 'private, max-age=3600');
         setSecurityHeaders(headers);
-        return new Response(object.body, { headers });
+        return new Response(actualObject.body, { headers });
     } catch (err) {
         return jsonResponse({ error: 'Error descargando', detail: err.message }, 500);
     }
@@ -708,8 +710,14 @@ async function handleSignedUrl(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado' }, 403);
         }
+        // OPTIMIZACIÓN APLICADA: Unificación táctica en un solo HEAD call de R2
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+
+        if (key.startsWith('receipts/') && object.customMetadata?.userId !== authUser.userId) {
+            return jsonResponse({ error: 'Acceso denegado' }, 403);
+        }
+        
         const signedUrl = await env.SPLITGASTO_BUCKET.createSignedUrl(key, { expiresIn: 3600 });
         return jsonResponse({ success: true, url: signedUrl, expiresIn: 3600, key });
     } catch (err) {
@@ -754,7 +762,7 @@ async function handleStorageList(request, env, authUser) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Balances — Cálculo de deudas (FIX: respeta split_type)
+// Balances — Cálculo de deudas
 // ═══════════════════════════════════════════════════════════════════════
 async function handleBalances(request, env) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
@@ -789,7 +797,6 @@ async function handleBalances(request, env) {
     const balances = {};
     members.results.forEach(m => { balances[m.user_id] = 0; });
 
-    // ── FIX: Calcular share según split_type ────────────────────────
     for (const e of expenses.results) {
         const amount = e.amount;
         const paidBy = e.paid_by;
@@ -839,7 +846,6 @@ async function handleBalances(request, env) {
         if (balances[s.to_user] !== undefined) balances[s.to_user] -= s.amount;
     });
 
-    // Simplificar deudas (algoritmo greedy)
     const debtors = [];
     const creditors = [];
     Object.entries(balances).forEach(([userId, balance]) => {
@@ -863,7 +869,6 @@ async function handleBalances(request, env) {
         if (creditors[ci].amount < 0.01) ci++;
     }
 
-    // totalAmount: suma real en euros de todos los gastos del grupo
     const totalAmount = expenses.results.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
     const response = {
         success: true,
@@ -872,7 +877,7 @@ async function handleBalances(request, env) {
         totalExpenses: expenses.results.length,
         totalAmount: Math.round(totalAmount * 100) / 100
     };
-    await setCache(env, cacheKey, response, 10);  // TTL corto: balances cambian al añadir gastos
+    await setCache(env, cacheKey, response, 10);
     return jsonResponse(response);
 }
 
@@ -889,12 +894,10 @@ async function handleDatabase(request, env, path) {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
     }
 
-    // ── Grupos GET — SIEMPRE frescos desde D1, sin KV cache ───────────
     if (path === '/api/db/groups' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403);
-        // CRÍTICO: Purgar cualquier entrada KV obsoleta antes de leer D1
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
         }
@@ -909,11 +912,9 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, groups: groups.results });
     }
 
-    // ── Grupos POST (FIX: currency default EUR) ──────────────────────
     if (path === '/api/db/groups' && method === 'POST') {
         const { name, currency, members } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
-        // SECURITY: Limitar longitud de inputs
         if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) return jsonResponse({ error: 'Nombre de grupo inválido (máx 100 caracteres)' }, 400);
         const ALLOWED_CURRENCIES = ['EUR', 'USD', 'GBP', 'MXN', 'ARS', 'CLP', 'COP', 'PEN', 'BRL'];
         const safeCurrency = ALLOWED_CURRENCIES.includes(currency) ? currency : 'EUR';
@@ -927,7 +928,6 @@ async function handleDatabase(request, env, path) {
             'INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
         ).bind(id, userId, 'admin').run();
 
-        // FIX: Añadir miembros si se envían (acepta IDs o emails)
         if (Array.isArray(members) && members.length > 0) {
             for (const member of members) {
                 let memberId = null;
@@ -956,12 +956,10 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, name, message: 'Grupo creado' }, 201);
     }
 
-    // ── Listar miembros de un grupo (GET) ────────────────────────────
     if (path === '/api/db/group-members' && method === 'GET') {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-        // FIX D1 Read Replication: purgar KV (groups + balances) antes de leer para evitar stale reads
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
             try { await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`); } catch {}
@@ -969,7 +967,6 @@ async function handleDatabase(request, env, path) {
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
-        // Auto-repair: si no hay membresía pero el usuario es created_by, repararla
         if (!membership) {
             const group = await env.SPLITGASTO_DB.prepare(
                 'SELECT id, created_by FROM groups WHERE id = ?'
@@ -993,18 +990,15 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, members: members.results });
     }
 
-    // ── Añadir miembros a grupo (POST) ───────────────────────────────
     if (path === '/api/db/group-members' && method === 'POST') {
         const { groupId, userId: memberUserId, email: memberEmail, role } = body;
         if (!groupId || (!memberUserId && !memberEmail)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400);
-        // FIX D1 Read Replication: purgar KV antes de verificar admin
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
         }
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
-        // Auto-repair: si no hay membresía pero el usuario es created_by, repararla
         if (!membership) {
             const grp = await env.SPLITGASTO_DB.prepare(
                 'SELECT id, created_by FROM groups WHERE id = ?'
@@ -1020,7 +1014,6 @@ async function handleDatabase(request, env, path) {
         }
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
 
-        // SECURITY: Buscar por email case-insensitive — cubre Hotmail, Gmail, Yahoo, etc.
         let actualMemberUserId = memberUserId;
         if (!actualMemberUserId && memberEmail) {
             const normalizedMemberEmail = memberEmail.toLowerCase().trim();
@@ -1048,7 +1041,6 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Miembro añadido' }, 201);
     }
 
-    // ── Gastos GET — SIEMPRE frescos desde D1, sin KV cache ────────────
     if (path === '/api/db/expenses' && method === 'GET') {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
@@ -1057,7 +1049,6 @@ async function handleDatabase(request, env, path) {
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-        // Purgar KV obsoleto
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`); } catch {}
         }
@@ -1076,27 +1067,22 @@ async function handleDatabase(request, env, path) {
         });
     }
 
-    // ── Gastos POST ───────────────────────────────────────────────────
     if (path === '/api/db/expenses' && method === 'POST') {
         const { groupId, amount, currency, category, description, splitType, paidBy } = body;
         if (!groupId || !amount) return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400);
-        // SECURITY: Validar amount numérico y rango razonable
         const parsedAmount = parseFloat(amount);
         if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 999999.99) {
             return jsonResponse({ error: 'Importe inválido (debe ser > 0 y < 1.000.000)' }, 400);
         }
-        // SECURITY: Limitar longitud de descripción y categoría
         if (description && description.length > 500) return jsonResponse({ error: 'Descripción máximo 500 caracteres' }, 400);
         const ALLOWED_CATEGORIES = ['comida','transporte','entretenimiento','alojamiento','compras','salud','servicios','otro'];
         const safeCategory = ALLOWED_CATEGORIES.includes(category) ? category : 'otro';
         const ALLOWED_SPLIT_TYPES = ['equal','exact','percentage','shares'];
         const safeSplitType = ALLOWED_SPLIT_TYPES.includes(splitType) ? splitType : 'equal';
-        // Verificar que el usuario autenticado pertenece al grupo
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-        // El pagador puede ser otro miembro del grupo; verificar que también pertenece
         const actualPaidBy = paidBy || authUser.userId;
         if (actualPaidBy !== authUser.userId) {
             const payerMembership = await env.SPLITGASTO_DB.prepare(
@@ -1118,7 +1104,6 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, message: 'Gasto registrado' }, 201);
     }
 
-    // ── Liquidaciones GET ─────────────────────────────────────────────
     if (path === '/api/db/settlements' && method === 'GET') {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
@@ -1133,7 +1118,6 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, settlements: settlements.results });
     }
 
-    // ── Liquidaciones POST (FIX: currency default EUR) ───────────────
     if (path === '/api/db/settlements' && method === 'POST') {
         const { groupId, fromUserId, toUserId, amount, currency } = body;
         if (!groupId || !fromUserId || !toUserId || !amount) return jsonResponse({ error: 'Campos "groupId", "fromUserId", "toUserId", "amount" requeridos' }, 400);
@@ -1149,7 +1133,6 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201);
     }
 
-    // ── Perfil GET ────────────────────────────────────────────────────
     if (path === '/api/db/profile' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
@@ -1166,12 +1149,10 @@ async function handleDatabase(request, env, path) {
         return jsonResponse(response);
     }
 
-    // ── Perfil POST ───────────────────────────────────────────────────
     if (path === '/api/db/profile' && method === 'POST') {
         const { name, email, avatar } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400);
         const userId = authUser.userId;
-        // SECURITY: Normalizar y validar email en actualización de perfil
         const emailToStore = email ? email.toLowerCase().trim() : `${userId}@splitgasto.app`;
         if (email && !isValidEmail(emailToStore)) return jsonResponse({ error: 'Email inválido' }, 400);
         if (name.length > 100) return jsonResponse({ error: 'Nombre máximo 100 caracteres' }, 400);
@@ -1182,7 +1163,6 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Perfil actualizado' });
     }
 
-    // ── Notificaciones GET ────────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'GET') {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
@@ -1193,11 +1173,9 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, notifications: notifications.results });
     }
 
-    // ── Notificaciones POST ───────────────────────────────────────────
     if (path === '/api/db/notifications' && method === 'POST') {
         const { title, message, type } = body;
         if (!title) return jsonResponse({ error: 'Campo "title" requerido' }, 400);
-        // SECURITY: Limitar longitud de inputs para evitar payload abuse
         if (title.length > 200) return jsonResponse({ error: 'Título máximo 200 caracteres' }, 400);
         if (message && message.length > 1000) return jsonResponse({ error: 'Mensaje máximo 1000 caracteres' }, 400);
         const ALLOWED_NOTIF_TYPES = ['info', 'success', 'warning', 'error'];
@@ -1210,12 +1188,10 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, id, message: 'Notificación creada' }, 201);
     }
 
-    // ── Búsqueda de usuario por email (para invitar miembros) ─────────
     if (path === '/api/db/users' && method === 'GET') {
         const url = new URL(request.url);
         const email = url.searchParams.get('email');
         if (!email) return jsonResponse({ error: 'Parámetro "email" requerido' }, 400);
-        // SECURITY: Búsqueda case-insensitive — LOWER(email) para Hotmail/Gmail/etc.
         const normalizedSearchEmail = email.toLowerCase().trim();
         const user = await env.SPLITGASTO_DB.prepare(
             'SELECT id, name, email, avatar_url FROM users WHERE LOWER(email) = ?'
@@ -1224,32 +1200,27 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, user });
     }
 
-    // ── Eliminar gasto (DELETE) ───────────────────────────────────────
     if (path.startsWith('/api/db/expenses/') && method === 'DELETE') {
         const expenseId = path.replace('/api/db/expenses/', '');
         if (!expenseId) return jsonResponse({ error: 'ID de gasto requerido' }, 400);
 
-        // Verificar que el gasto existe y el usuario tiene acceso
         const expense = await env.SPLITGASTO_DB.prepare(
             'SELECT id, group_id, paid_by FROM expenses WHERE id = ?'
         ).bind(expenseId).first();
 
         if (!expense) return jsonResponse({ error: 'Gasto no encontrado' }, 404);
 
-        // Verificar que el usuario pertenece al grupo
         const membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(expense.group_id, authUser.userId).first();
 
         if (!membership) return jsonResponse({ error: 'No tienes acceso a este gasto' }, 403);
 
-        // Solo el pagador o un admin puede eliminar
         const canDelete = expense.paid_by === authUser.userId || membership.role === 'admin';
         if (!canDelete) return jsonResponse({ error: 'Solo el pagador o un admin puede eliminar este gasto' }, 403);
 
         await env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE id = ?').bind(expenseId).run();
 
-        // Invalidar KV cache
         if (env.SPLITGASTO_CACHE) {
             await env.SPLITGASTO_CACHE.delete(`db:expenses:${expense.group_id}`);
             await env.SPLITGASTO_CACHE.delete(`db:balances:${expense.group_id}`);
@@ -1259,23 +1230,18 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Gasto eliminado' });
     }
 
-    // ── Eliminar grupo (DELETE) ────────────────────────────────────────
     if (path.startsWith('/api/db/groups/') && method === 'DELETE') {
         const groupId = path.replace('/api/db/groups/', '');
         if (!groupId) return jsonResponse({ error: 'ID de grupo requerido' }, 400);
 
-        // FIX D1 Read Replication: purgar KV ANTES de consultar membresía
-        // para forzar lectura fresca desde D1 primario (no réplica stale)
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
         }
 
-        // Solo el admin puede eliminar el grupo
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
 
-        // Auto-reparar: si el grupo existe y fue creado por este usuario, insertar membresía
         if (!membership) {
             const group = await env.SPLITGASTO_DB.prepare(
                 'SELECT id, created_by FROM groups WHERE id = ?'
@@ -1286,7 +1252,6 @@ async function handleDatabase(request, env, path) {
                 ).bind(groupId, authUser.userId, 'admin').run();
                 membership = { role: 'admin' };
             } else if (!group) {
-                // El grupo ni siquiera existe — éxito silencioso (ya fue eliminado)
                 return jsonResponse({ success: true, message: 'Grupo ya eliminado' });
             }
         }
@@ -1294,18 +1259,15 @@ async function handleDatabase(request, env, path) {
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede eliminar el grupo' }, 403);
 
-        // Obtener todos los miembros para invalidar su KV
         const membersForCache = await env.SPLITGASTO_DB.prepare(
             'SELECT user_id FROM group_members WHERE group_id = ?'
         ).bind(groupId).all();
 
-        // Eliminar en cascada: gastos, liquidaciones, miembros, grupo
         await env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE group_id = ?').bind(groupId).run();
         await env.SPLITGASTO_DB.prepare('DELETE FROM settlements WHERE group_id = ?').bind(groupId).run();
         await env.SPLITGASTO_DB.prepare('DELETE FROM group_members WHERE group_id = ?').bind(groupId).run();
         await env.SPLITGASTO_DB.prepare('DELETE FROM groups WHERE id = ?').bind(groupId).run();
 
-        // Invalidar KV de todos los miembros
         if (env.SPLITGASTO_CACHE) {
             await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`);
             await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`);
@@ -1317,14 +1279,12 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Grupo eliminado' });
     }
 
-    // ── Eliminar miembro de grupo (DELETE) ───────────────────────────
     if (path.startsWith('/api/db/group-members/') && method === 'DELETE') {
         const parts = path.replace('/api/db/group-members/', '').split('/');
         const groupId = parts[0];
         const memberUserId = parts[1];
         if (!groupId || !memberUserId) return jsonResponse({ error: 'groupId y userId requeridos en la ruta' }, 400);
 
-        // FIX D1 Read Replication: purgar KV antes de verificar membresía
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
         }
@@ -1333,7 +1293,6 @@ async function handleDatabase(request, env, path) {
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
 
-        // Auto-repair: si no hay membresía pero el usuario es created_by
         if (!membership) {
             const grpCheck = await env.SPLITGASTO_DB.prepare(
                 'SELECT id, created_by FROM groups WHERE id = ?'
@@ -1348,12 +1307,10 @@ async function handleDatabase(request, env, path) {
 
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
 
-        // Un admin puede eliminar a cualquiera; un miembro solo puede eliminarse a sí mismo
         if (membership.role !== 'admin' && memberUserId !== authUser.userId) {
             return jsonResponse({ error: 'Solo el admin puede eliminar otros miembros' }, 403);
         }
 
-        // No eliminar al último admin
         if (memberUserId === authUser.userId && membership.role === 'admin') {
             const adminCount = await env.SPLITGASTO_DB.prepare(
                 "SELECT COUNT(*) as cnt FROM group_members WHERE group_id = ? AND role = 'admin'"
@@ -1376,10 +1333,8 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Miembro eliminado del grupo' });
     }
 
-    // ── Reparar membresías huérfanas (grupos creados sin group_members) ──
     if (path === '/api/db/repair-memberships' && method === 'POST') {
         const userId = authUser.userId;
-        // Encontrar grupos creados por el usuario que no tienen su registro en group_members
         const orphanGroups = await env.SPLITGASTO_DB.prepare(
             `SELECT g.id, g.name FROM groups g
              WHERE g.created_by = ?
@@ -1395,7 +1350,6 @@ async function handleDatabase(request, env, path) {
                     'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
                 ).bind(g.id, userId, 'admin').run();
                 repaired++;
-                // Purgar KV de este grupo
                 if (env.SPLITGASTO_CACHE) {
                     try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
                     try { await env.SPLITGASTO_CACHE.delete(`db:balances:${g.id}`); } catch {}
@@ -1410,10 +1364,8 @@ async function handleDatabase(request, env, path) {
         });
     }
 
-    // ── Purgar toda la KV cache del usuario ──────────────────────────
     if (path === '/api/db/purge-cache' && method === 'POST') {
         const userId = authUser.userId;
-        // Obtener todos los grupos del usuario directamente de D1
         const userGroups = await env.SPLITGASTO_DB.prepare(
             'SELECT g.id FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ?'
         ).bind(userId).all();
@@ -1428,16 +1380,13 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Cache purgada correctamente' });
     }
 
-    // ── Marcar notificaciones como leídas ────────────────────────────
     if (path === '/api/db/notifications/read' && method === 'POST') {
         const userId = authUser.userId;
         try {
             await env.SPLITGASTO_DB.prepare(
                 "UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0"
             ).bind(userId).run();
-        } catch {
-            // La columna 'read' puede no existir en todos los deployments — silenciar
-        }
+        } catch {}
         return jsonResponse({ success: true, message: 'Notificaciones marcadas como leídas' });
     }
 
@@ -1445,7 +1394,7 @@ async function handleDatabase(request, env, path) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Helpers (FIX: CORS mejorado)
+// Helpers
 // ═══════════════════════════════════════════════════════════════════════
 const ALLOWED_ORIGINS = [
     'https://splitgasto.com',
@@ -1457,13 +1406,9 @@ const ALLOWED_ORIGINS = [
 function getOrigin(request) {
     const origin = request.headers.get('Origin') || '';
     if (ALLOWED_ORIGINS.includes(origin)) return origin;
-    // Permitir cualquier workers.dev subdominio del usuario
     if (origin.match(/^https:\/\/[a-z0-9-]+\.reciborapido777\.workers\.dev$/)) return origin;
-    // Permitir previews de Pages (*.pages.dev)
     if (origin.match(/^https:\/\/[a-z0-9-]+\.splitgasto-2026\.pages\.dev$/)) return origin;
-    // Permitir localhost para desarrollo (solo http)
     if (origin.match(/^http:\/\/localhost:\d+$/)) return origin;
-    // SECURITY: No usar '*' como fallback — devolver null para rechazar origen desconocido
     return null;
 }
 
@@ -1473,7 +1418,6 @@ function jsonResponse(data, status = 200, request = null) {
         'Content-Type': 'application/json; charset=utf-8',
         'X-Content-Type-Options': 'nosniff',
     };
-    // SECURITY: Solo añadir CORS header si el origen es permitido (no usar '*' ciego)
     if (origin) {
         headers['Access-Control-Allow-Origin'] = origin;
         headers['Vary'] = 'Origin';
@@ -1482,11 +1426,15 @@ function jsonResponse(data, status = 200, request = null) {
 }
 
 function corsResponse(request) {
+    const origin = getOrigin(request);
+    if (!origin) {
+        return new Response('CORS: Origin not allowed', { status: 403 });
+    }
     return new Response(null, {
         status: 204,
         headers: {
-            'Access-Control-Allow-Origin': getOrigin(request),
-            'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '86400',
         },
@@ -1498,17 +1446,15 @@ function setSecurityHeaders(headers) {
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
-    // SECURITY: Content-Security-Policy para mitigar XSS
     headers.set('Content-Security-Policy',
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: blob: https:; " +
-        "connect-src 'self' https://splitgasto.com https://splitgasto-2026.pages.dev; " +
+        "connect-src 'self' https://splitgasto.com https://*.splitgasto-2026.pages.dev https://*.reciborapido777.workers.dev; " +
         "frame-ancestors 'none';"
     );
-    // SECURITY: Strict-Transport-Security — forzar HTTPS
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     const ct = headers.get('Content-Type') || '';
     if (ct.includes('text/html')) {
