@@ -13,7 +13,8 @@ const SGApi = (function(){
         };
 
         try {
-            const res = await fetch(endpoint, { ...options, headers });
+        const res = await fetch(endpoint, { ...options, headers, cache: 'no-store' });
+
             if(res.status === 401) {
                 SGAuth.logout();
                 return { success: false, error: 'Sesión expirada' };
@@ -24,13 +25,21 @@ const SGApi = (function(){
         }
     }
 
-    // ── Auth ──────────────────────────────────────────────────────────
+        // ── Auth ──────────────────────────────────────────────────────────
     // register() eliminado — usar SGAuth.register() que además guarda la sesión
 
     async function login(email, password) {
         return request('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email: email.toLowerCase().trim(), password })
+        });
+    }
+
+    async function addGroupMemberByEmail(groupId, email, role) {
+
+        return request('/api/db/group-members', {
+            method: 'POST',
+            body: JSON.stringify({ groupId, email: email.toLowerCase().trim(), role: role || 'member' })
         });
     }
 
@@ -54,7 +63,7 @@ const SGApi = (function(){
     }
 
     async function getUserByEmail(email) {
-        return request(`/api/db/users?email=${encodeURIComponent(email)}`);
+        return request(`/api/db/users?email=${encodeURIComponent(email.toLowerCase().trim())}`);
     }
 
     async function deleteGroup(groupId) {
@@ -154,8 +163,10 @@ const SGApi = (function(){
         const res = await fetch('/api/storage/upload', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
+            body: formData,
+            cache: 'no-store'
         });
+
         return res.json();
     }
 
@@ -206,14 +217,6 @@ const SGApi = (function(){
     // ── Health ────────────────────────────────────────────────────────
     async function health() {
         return request('/api/health');
-    }
-
-    // ── Miembros por email ────────────────────────────────────────────
-    async function addGroupMemberByEmail(groupId, email, role) {
-        return request('/api/db/group-members', {
-            method: 'POST',
-            body: JSON.stringify({ groupId, email, role: role || 'member' })
-        });
     }
 
     return {
