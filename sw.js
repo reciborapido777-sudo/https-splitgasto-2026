@@ -91,6 +91,8 @@ self.addEventListener('fetch', event => {
 
     // Only handle same-origin GET requests
     if (url.origin !== location.origin) return;
+    // CRITICAL: Never cache API requests — D1 data must always be fresh
+    if (url.pathname.startsWith('/api/')) return;
     if (request.method !== 'GET') return;
 
     const isHTMLPage = (
