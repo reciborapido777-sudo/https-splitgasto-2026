@@ -1453,13 +1453,14 @@ function setSecurityHeaders(headers) {
     headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
     headers.set('Content-Security-Policy',
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: blob: https:; " +
-        "connect-src 'self' https://splitgasto.com https://*.splitgasto-2026.pages.dev https://*.reciborapido777.workers.dev; " +
+        "connect-src 'self' https://splitgasto.com https://*.splitgasto-2026.pages.dev https://*.reciborapido777.workers.dev https://api.dicebear.com; " +
         "frame-ancestors 'none';"
     );
+
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     const ct = headers.get('Content-Type') || '';
     if (ct.includes('text/html')) {
