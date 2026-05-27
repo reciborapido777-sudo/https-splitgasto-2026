@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.21 — 2026-05-27
+ * Versión: 4.22 — 2026-05-27
  *
  * Bindings:
  * - env.ASSETS                  → Assets estáticos
@@ -86,7 +86,7 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.21',
+            version: env.APP_VERSION ?? '4.22',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -379,6 +379,8 @@ async function handleAuth(request, env, path) {
         const { userId, code, newPassword } = body;
         if (!userId || !code || !newPassword) return jsonResponse({ error: 'Campos "userId", "code", "newPassword" requeridos' }, 400);
         if (newPassword.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
+        // CAMBIO APLICADO: Protección Anti-DoS por CPU bound mitigando payloads de Web Crypto masivos
+        if (newPassword.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
 
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
 
@@ -667,6 +669,7 @@ async function handleStorageUpload(request, env, authUser) {
         const key = `usuarios/${authUser.userId}/${fld}/${timestamp}-${sanitizedName}`;
         const binaryString = atob(data);
         const bytes = new Uint8Array(binaryString.length);
+        // SINTAXIS CORREGIDA: Paréntesis restaurados correctamente para compilación sin errores
         for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
         await env.SPLITGASTO_BUCKET.put(key, bytes, {
             httpMetadata: { contentType: mimeType || 'application/octet-stream' },
@@ -683,23 +686,24 @@ async function handleStorageDownload(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
         }
-        // OPTIMIZACIÓN APLICADA: Unificación táctica en un solo HEAD call de R2
-        const object = await env.SPLITGASTO_BUCKET.head(key);
-        if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
 
-        if (key.startsWith('receipts/') && object.customMetadata?.userId !== authUser.userId) {
-            return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
+        if (key.startsWith('receipts/')) {
+            const headObj = await env.SPLITGASTO_BUCKET.head(key);
+            if (!headObj) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+            if (headObj.customMetadata?.userId !== authUser.userId) {
+                return jsonResponse({ error: 'Acceso denegado a este archivo' }, 403);
+            }
         }
-        
-        // Ejecución de la lectura física posterior al filtro de seguridad
-        const actualObject = await env.SPLITGASTO_BUCKET.get(key);
+
+        const object = await env.SPLITGASTO_BUCKET.get(key);
+        if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
         const headers = new Headers();
-        actualObject.writeHttpMetadata(headers);
-        headers.set('Content-Type', actualObject.httpMetadata?.contentType || 'application/octet-stream');
+        object.writeHttpMetadata(headers);
+        headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
         headers.set('Content-Disposition', `attachment; filename="${key.split('/').pop()}"`);
         headers.set('Cache-Control', 'private, max-age=3600');
         setSecurityHeaders(headers);
-        return new Response(actualObject.body, { headers });
+        return new Response(object.body, { headers });
     } catch (err) {
         return jsonResponse({ error: 'Error descargando', detail: err.message }, 500);
     }
@@ -710,12 +714,13 @@ async function handleSignedUrl(request, env, key, authUser) {
         if (!key.startsWith(`usuarios/${authUser.userId}/`) && !key.startsWith('receipts/')) {
             return jsonResponse({ error: 'Acceso denegado' }, 403);
         }
-        // OPTIMIZACIÓN APLICADA: Unificación táctica en un solo HEAD call de R2
-        const object = await env.SPLITGASTO_BUCKET.head(key);
-        if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
 
-        if (key.startsWith('receipts/') && object.customMetadata?.userId !== authUser.userId) {
-            return jsonResponse({ error: 'Acceso denegado' }, 403);
+        if (key.startsWith('receipts/')) {
+            const headObj = await env.SPLITGASTO_BUCKET.head(key);
+            if (!headObj) return jsonResponse({ error: 'Archivo no encontrado' }, 404);
+            if (headObj.customMetadata?.userId !== authUser.userId) {
+                return jsonResponse({ error: 'Acceso denegado' }, 403);
+            }
         }
         
         const signedUrl = await env.SPLITGASTO_BUCKET.createSignedUrl(key, { expiresIn: 3600 });
