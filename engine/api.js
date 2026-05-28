@@ -153,21 +153,27 @@ const SGApi = (function(){
 
     // ── Storage (R2) ──────────────────────────────────────────────────
     async function uploadFile(file, folder) {
-        const userId = SGAuth.getUserId();
+        const token = SGAuth.getToken();
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('userId', userId);
         formData.append('folder', folder || 'receipts');
 
-        const token = SGAuth.getToken();
-        const res = await fetch('/api/storage/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData,
-            cache: 'no-store'
-        });
+        try {
+            const res = await fetch('/api/storage/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData,
+                cache: 'no-store'
+            });
 
-        return res.json();
+            if (res.status === 401) {
+                SGAuth.logout();
+                return { success: false, error: 'Sesión expirada' };
+            }
+            return await res.json();
+        } catch (err) {
+            return { success: false, error: 'Error de conexión' };
+        }
     }
 
     async function getSignedUrl(key) {
