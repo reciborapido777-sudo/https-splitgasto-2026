@@ -29,17 +29,23 @@ const SGAuth = (function(){
         const token = getToken();
         if(!token) return false;
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.exp > Date.now() / 1000;
+            let payload = token.split('.')[1];
+            // Convertir Base64URL → Base64 estándar
+            payload = payload.replace(/-/g, '+').replace(/_/g, '/');
+            const pad = payload.length % 4;
+            if (pad) payload += '='.repeat(4 - pad);
+            const decoded = JSON.parse(atob(payload));
+            return decoded.exp > Date.now() / 1000;
         } catch { return false; }
     }
-
+  
     function getUserId() {
         const user = getUser();
         return user ? user.id : null;
     }
 
-    async function register(name, email, password) {
+async function register(name, email, password) {
+    try {
         const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -50,9 +56,13 @@ const SGAuth = (function(){
             setSession(data.token, data.user);
         }
         return data;
+    } catch (err) {
+        return { success: false, error: 'Error de conexión' };
     }
+}
 
-    async function login(email, password) {
+async function login(email, password) {
+    try {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -63,7 +73,10 @@ const SGAuth = (function(){
             setSession(data.token, data.user);
         }
         return data;
+    } catch (err) {
+        return { success: false, error: 'Error de conexión' };
     }
+}
 
     return {
         getToken, getUser, setSession, logout,
