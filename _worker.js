@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.22 — 2026-05-27
+ * Versión: 4.24 — 2026-05-28
  *
  * Bindings:
  * - env.ASSETS                  → Assets estáticos
@@ -86,7 +86,7 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.22',
+            version: env.APP_VERSION ?? '4.24',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -141,7 +141,7 @@ function isValidEmail(email) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Password Hashing — PBKDF2 con Web Crypto API
+// Password Hashing & Verification — Anti-Timing Attacks con Web Crypto API
 // ═══════════════════════════════════════════════════════════════════════
 async function hashPassword(password) {
     const enc = new TextEncoder();
@@ -170,19 +170,32 @@ async function verifyPassword(password, storedHash) {
             { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256
         );
         const computedB64 = btoa(String.fromCharCode(...new Uint8Array(bits)));
-        return computedB64 === hashB64;
+        
+        const a = enc.encode(computedB64);
+        const b = enc.encode(hashB64);
+        if (a.length !== b.length) return false;
+        return crypto.subtle.timingSafeEqual(a, b);
     } catch { return false; }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Auth — JWT con Web Crypto API + PBKDF2 passwords
+// Auth — JWT Compliant (Base64URL — RFC 7515)
 // ═══════════════════════════════════════════════════════════════════════
-function b64Encode(data) {
-    return btoa(unescape(encodeURIComponent(data)));
+function b64UrlEncode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function b64Decode(b64) {
-    return decodeURIComponent(escape(atob(b64)));
+function b64UrlDecode(b64) {
+    let padded = b64.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = padded.length % 4;
+    if (pad) padded += '='.repeat(4 - pad); // CORRECCIÓN EXPLICITADA: Bloquea excepciones matemáticas en atob()
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
 }
 
 function getJwtSecret(env) {
@@ -195,14 +208,15 @@ async function signJWT(payload, env) {
     const now = Math.floor(Date.now() / 1000);
     const data = { ...payload, iat: now, exp: now + 86400 * 7 };
     const enc = new TextEncoder();
-    const headerB64 = b64Encode(JSON.stringify(header));
-    const payloadB64 = b64Encode(JSON.stringify(data));
+    const headerB64 = b64UrlEncode(JSON.stringify(header));
+    const payloadB64 = b64UrlEncode(JSON.stringify(data));
     const message = `${headerB64}.${payloadB64}`;
     const key = await crypto.subtle.importKey(
         'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
     );
     const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return `${message}.${sigB64}`;
 }
 
@@ -214,10 +228,13 @@ async function verifyJWT(token, env) {
         const key = await crypto.subtle.importKey(
             'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
         );
-        const sig = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
+        const sigStr = parts[2].replace(/-/g, '+').replace(/_/g, '/');
+        const pad = sigStr.length % 4;
+        const sigPadded = pad ? sigStr + '='.repeat(4 - pad) : sigStr;
+        const sig = Uint8Array.from(atob(sigPadded), c => c.charCodeAt(0));
         const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
         if (!valid) return null;
-        const payload = JSON.parse(b64Decode(parts[1]));
+        const payload = JSON.parse(b64UrlDecode(parts[1]));
         if (payload.exp < Date.now() / 1000) return null;
         return payload;
     } catch { return null; }
@@ -241,11 +258,29 @@ function generateRecoveryCode() {
     return (array[0] % 1000000).toString().padStart(6, '0');
 }
 
+async function hashRecoveryCode(code, env) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(code));
+    return btoa(String.fromCharCode(...new Uint8Array(sig)));
+}
+
+async function verifyRecoveryCode(code, storedHash, env) {
+    const computed = await hashRecoveryCode(code, env);
+    const a = new TextEncoder().encode(computed);
+    const b = new TextEncoder().encode(storedHash);
+    if (a.length !== b.length) return false;
+    return crypto.subtle.timingSafeEqual(a, b);
+}
+
 async function handleAuth(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
     if (!env.JWT_SECRET) return jsonResponse({ error: 'Servicio de autenticación no disponible', detail: 'JWT_SECRET no configurado' }, 503);
+    const method = request.method;
 
-    if (path === '/api/auth/register' && request.method === 'POST') {
+    if (path === '/api/auth/register' && method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
         const { name, email, password } = body;
@@ -273,7 +308,7 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, token, user: { id, name: name.trim(), email: normalizedEmail } }, 201);
     }
 
-    if (path === '/api/auth/login' && request.method === 'POST') {
+    if (path === '/api/auth/login' && method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
         const { email, password } = body;
@@ -293,7 +328,7 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
     }
 
-    if (path === '/api/auth/me' && request.method === 'GET') {
+    if (path === '/api/auth/me' && method === 'GET') {
         const { error, user: authUser } = await requireAuth(request, env);
         if (error) return error;
 
@@ -304,7 +339,7 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, user });
     }
 
-    if (path === '/api/auth/change-password' && request.method === 'POST') {
+    if (path === '/api/auth/change-password' && method === 'POST') {
         const { error, user: authUser } = await requireAuth(request, env);
         if (error) return error;
 
@@ -331,7 +366,7 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, message: 'Contraseña actualizada' });
     }
 
-    if (path === '/api/auth/forgot-password' && request.method === 'POST') {
+    if (path === '/api/auth/forgot-password' && method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
         const { email } = body;
@@ -344,11 +379,12 @@ async function handleAuth(request, env, path) {
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
 
         const code = generateRecoveryCode();
-        const codeHash = await hashPassword(code);
+        const codeHash = await hashRecoveryCode(code, env);
 
+        // CORRECCIÓN: Almacenamiento seguro del email estrictamente normalizado en el par KV
         await env.SPLITGASTO_CACHE.put(
             `recovery:${user.id}`,
-            JSON.stringify({ codeHash, email, createdAt: Date.now() }),
+            JSON.stringify({ codeHash, email: normalizedForgotEmail, createdAt: Date.now() }),
             { expirationTtl: 900 }
         );
 
@@ -357,7 +393,7 @@ async function handleAuth(request, env, path) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    personalizations: [{ to: [{ email }] }],
+                    personalizations: [{ to: [{ email: normalizedForgotEmail }] }], // CORRECCIÓN: Transporte SMTP con sanidad de mayúsculas
                     from: { email: 'noreply@splitgasto.com', name: 'SplitGasto' },
                     subject: 'Código de recuperación — SplitGasto',
                     content: [{
@@ -373,13 +409,12 @@ async function handleAuth(request, env, path) {
         return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' });
     }
 
-    if (path === '/api/auth/reset-password' && request.method === 'POST') {
+    if (path === '/api/auth/reset-password' && method === 'POST') {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400); }
         const { userId, code, newPassword } = body;
         if (!userId || !code || !newPassword) return jsonResponse({ error: 'Campos "userId", "code", "newPassword" requeridos' }, 400);
         if (newPassword.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400);
-        // CAMBIO APLICADO: Protección Anti-DoS por CPU bound mitigando payloads de Web Crypto masivos
         if (newPassword.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400);
 
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503);
@@ -387,8 +422,18 @@ async function handleAuth(request, env, path) {
         const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400);
 
-        const validCode = await verifyPassword(code, stored.codeHash);
+        const targetUser = await env.SPLITGASTO_DB.prepare(
+            'SELECT id FROM users WHERE id = ? AND LOWER(email) = ?'
+        ).bind(userId, stored.email?.toLowerCase()).first();
+        if (!targetUser) return jsonResponse({ error: 'Código inválido para este usuario' }, 400);
+
+        const validCode = await verifyRecoveryCode(code, stored.codeHash, env);
         if (!validCode) return jsonResponse({ error: 'Código incorrecto' }, 400);
+
+        if (stored.createdAt && Date.now() - stored.createdAt > 900000) {
+            await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
+            return jsonResponse({ error: 'Código expirado' }, 400);
+        }
 
         const hashedPassword = await hashPassword(newPassword);
         await env.SPLITGASTO_DB.prepare(
@@ -399,6 +444,14 @@ async function handleAuth(request, env, path) {
 
         return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' });
     }
+
+    // Control estricto de métodos HTTP permitidos en endpoints de autenticación
+    if (path === '/api/auth/register' && method !== 'POST') return jsonResponse({ error: 'Usa POST para registro' }, 405);
+    if (path === '/api/auth/login' && method !== 'POST') return jsonResponse({ error: 'Usa POST para login' }, 405);
+    if (path === '/api/auth/me' && method !== 'GET') return jsonResponse({ error: 'Usa GET para perfil' }, 405);
+    if (path === '/api/auth/change-password' && method !== 'POST') return jsonResponse({ error: 'Usa POST para cambiar contraseña' }, 405);
+    if (path === '/api/auth/forgot-password' && method !== 'POST') return jsonResponse({ error: 'Usa POST para recuperación' }, 405);
+    if (path === '/api/auth/reset-password' && method !== 'POST') return jsonResponse({ error: 'Usa POST para restablecer' }, 405);
 
     return jsonResponse({ error: 'Ruta de auth no encontrada', path }, 404);
 }
@@ -669,7 +722,6 @@ async function handleStorageUpload(request, env, authUser) {
         const key = `usuarios/${authUser.userId}/${fld}/${timestamp}-${sanitizedName}`;
         const binaryString = atob(data);
         const bytes = new Uint8Array(binaryString.length);
-        // SINTAXIS CORREGIDA: Paréntesis restaurados correctamente para compilación sin errores
         for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
         await env.SPLITGASTO_BUCKET.put(key, bytes, {
             httpMetadata: { contentType: mimeType || 'application/octet-stream' },
@@ -723,8 +775,18 @@ async function handleSignedUrl(request, env, key, authUser) {
             }
         }
         
-        const signedUrl = await env.SPLITGASTO_BUCKET.createSignedUrl(key, { expiresIn: 3600 });
-        return jsonResponse({ success: true, url: signedUrl, expiresIn: 3600, key });
+        const downloadPath = `/api/storage/download/${encodeURIComponent(key)}`;
+        const url = new URL(request.url);
+        const downloadUrl = `${url.origin}${downloadPath}`;
+
+        return jsonResponse({
+            success: true,
+            url: downloadUrl,
+            method: 'authenticated-download',
+            note: 'Usa GET con header Authorization: Bearer <token>',
+            expiresIn: 3600,
+            key,
+        });
     } catch (err) {
         return jsonResponse({ error: 'Error generando URL', detail: err.message }, 500);
     }
@@ -767,7 +829,7 @@ async function handleStorageList(request, env, authUser) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Balances — Cálculo de deudas
+// Balances — Cálculo Transaccional Batch de deudas
 // ═══════════════════════════════════════════════════════════════════════
 async function handleBalances(request, env) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503);
@@ -787,66 +849,79 @@ async function handleBalances(request, env) {
     const cached = await getCached(env, cacheKey);
     if (cached) return jsonResponse({ ...cached, cached: true });
 
-    const expenses = await env.SPLITGASTO_DB.prepare(
-        'SELECT * FROM expenses WHERE group_id = ?'
-    ).bind(groupId).all();
+    const [expensesResult, settlementsResult, membersResult] = await env.SPLITGASTO_DB.batch([
+        env.SPLITGASTO_DB.prepare('SELECT * FROM expenses WHERE group_id = ?').bind(groupId),
+        env.SPLITGASTO_DB.prepare('SELECT * FROM settlements WHERE group_id = ?').bind(groupId),
+        env.SPLITGASTO_DB.prepare('SELECT user_id, role FROM group_members WHERE group_id = ?').bind(groupId),
+    ]);
 
-    const settlements = await env.SPLITGASTO_DB.prepare(
-        'SELECT * FROM settlements WHERE group_id = ?'
-    ).bind(groupId).all();
+    const expenses = expensesResult.results;
+    const settlements = settlementsResult.results;
+    const members = membersResult.results;
 
-    const members = await env.SPLITGASTO_DB.prepare(
-        'SELECT user_id, role FROM group_members WHERE group_id = ?'
-    ).bind(groupId).all();
+    const expenseIds = expenses
+        .filter(e => (e.split_type === 'exact' || e.split_type === 'percentage' || e.split_type === 'shares'))
+        .map(e => e.id);
+
+    let splitsByExpense = {};
+    if (expenseIds.length > 0) {
+        const chunks = [];
+        for (let i = 0; i < expenseIds.length; i += 50) {
+            const chunk = expenseIds.slice(i, i + 50);
+            const placeholders = chunk.map(() => '?').join(',');
+            chunks.push(
+                env.SPLITGASTO_DB.prepare(
+                    `SELECT expense_id, user_id, share_amount FROM expense_splits WHERE expense_id IN (${placeholders})`
+                ).bind(...chunk)
+            );
+        }
+        const splitResults = await env.SPLITGASTO_DB.batch(chunks);
+        for (const batch of splitResults) {
+            for (const s of batch.results) {
+                if (!splitsByExpense[s.expense_id]) splitsByExpense[s.expense_id] = [];
+                splitsByExpense[s.expense_id].push(s);
+            }
+        }
+    }
 
     const balances = {};
-    members.results.forEach(m => { balances[m.user_id] = 0; });
+    members.forEach(m => { balances[m.user_id] = 0; });
 
-    for (const e of expenses.results) {
+    for (const e of expenses) {
         const amount = e.amount;
         const paidBy = e.paid_by;
         const splitType = e.split_type || 'equal';
-        const memberCount = members.results.length;
+        const memberCount = members.length;
 
         if (balances[paidBy] !== undefined) balances[paidBy] += amount;
 
         if (splitType === 'equal') {
             const share = amount / memberCount;
-            members.results.forEach(m => {
+            members.forEach(m => {
                 if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
             });
         } else if (splitType === 'exact' || splitType === 'percentage' || splitType === 'shares') {
-            try {
-                const splits = await env.SPLITGASTO_DB.prepare(
-                    'SELECT user_id, share_amount FROM expense_splits WHERE expense_id = ?'
-                ).bind(e.id).all();
-
-                if (splits.results.length > 0) {
-                    splits.results.forEach(s => {
-                        if (balances[s.user_id] !== undefined) {
-                            if (splitType === 'percentage') {
-                                balances[s.user_id] -= (amount * s.share_amount / 100);
-                            } else {
-                                balances[s.user_id] -= s.share_amount;
-                            }
+            const splits = splitsByExpense[e.id];
+            if (splits && splits.length > 0) {
+                splits.forEach(s => {
+                    if (balances[s.user_id] !== undefined) {
+                        if (splitType === 'percentage') {
+                            balances[s.user_id] -= (amount * s.share_amount / 100);
+                        } else {
+                            balances[s.user_id] -= s.share_amount;
                         }
-                    });
-                } else {
-                    const share = amount / memberCount;
-                    members.results.forEach(m => {
-                        if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
-                    });
-                }
-            } catch {
+                    }
+                });
+            } else {
                 const share = amount / memberCount;
-                members.results.forEach(m => {
+                members.forEach(m => {
                     if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                 });
             }
         }
     }
 
-    settlements.results.forEach(s => {
+    settlements.forEach(s => {
         if (balances[s.from_user] !== undefined) balances[s.from_user] += s.amount;
         if (balances[s.to_user] !== undefined) balances[s.to_user] -= s.amount;
     });
@@ -874,15 +949,15 @@ async function handleBalances(request, env) {
         if (creditors[ci].amount < 0.01) ci++;
     }
 
-    const totalAmount = expenses.results.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    const totalAmount = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
     const response = {
         success: true,
         balances,
         debts,
-        totalExpenses: expenses.results.length,
+        totalExpenses: expenses.length,
         totalAmount: Math.round(totalAmount * 100) / 100
     };
-    await setCache(env, cacheKey, response, 10);
+    await setCache(env, cacheKey, response, 60);
     return jsonResponse(response);
 }
 
@@ -903,9 +978,6 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403);
-        if (env.SPLITGASTO_CACHE) {
-            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
-        }
         const groups = await env.SPLITGASTO_DB.prepare(
             `SELECT g.*,
                 (SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id = g.id) AS member_count
@@ -965,10 +1037,6 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const groupId = url.searchParams.get('groupId');
         if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400);
-        if (env.SPLITGASTO_CACHE) {
-            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
-            try { await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`); } catch {}
-        }
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
@@ -1054,21 +1122,24 @@ async function handleDatabase(request, env, path) {
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
-        if (env.SPLITGASTO_CACHE) {
-            try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${groupId}`); } catch {}
-        }
+
         const page = parseInt(url.searchParams.get('page') || '1', 10);
         const perPage = Math.min(parseInt(url.searchParams.get('perPage') || '50', 10), 100);
         const offset = (page - 1) * perPage;
-        const expenses = await env.SPLITGASTO_DB.prepare(
-            'SELECT * FROM expenses WHERE group_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
-        ).bind(groupId, perPage, offset).all();
-        const total = await env.SPLITGASTO_DB.prepare(
-            'SELECT COUNT(*) as count FROM expenses WHERE group_id = ?'
-        ).bind(groupId).first();
+
+        // CAMBIO APLICADO: Consolidación atómica de listado y paginación en un único lote de red
+        const [expensesResult, totalResult] = await env.SPLITGASTO_DB.batch([
+            env.SPLITGASTO_DB.prepare('SELECT * FROM expenses WHERE group_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?').bind(groupId, perPage, offset),
+            env.SPLITGASTO_DB.prepare('SELECT COUNT(*) as count FROM expenses WHERE group_id = ?').bind(groupId),
+        ]);
+
+        const expenses = expensesResult.results;
+        const total = totalResult.results[0]?.count || 0;
+
         return jsonResponse({
-            success: true, expenses: expenses.results,
-            pagination: { page, perPage, total: total.count, totalPages: Math.ceil(total.count / perPage) },
+            success: true,
+            expenses,
+            pagination: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
         });
     }
 
@@ -1268,10 +1339,13 @@ async function handleDatabase(request, env, path) {
             'SELECT user_id FROM group_members WHERE group_id = ?'
         ).bind(groupId).all();
 
-        await env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE group_id = ?').bind(groupId).run();
-        await env.SPLITGASTO_DB.prepare('DELETE FROM settlements WHERE group_id = ?').bind(groupId).run();
-        await env.SPLITGASTO_DB.prepare('DELETE FROM group_members WHERE group_id = ?').bind(groupId).run();
-        await env.SPLITGASTO_DB.prepare('DELETE FROM groups WHERE id = ?').bind(groupId).run();
+        // CAMBIO APLICADO: Embalado transaccional en un solo round-trip atómico a D1
+        await env.SPLITGASTO_DB.batch([
+            env.SPLITGASTO_DB.prepare('DELETE FROM expenses WHERE group_id = ?').bind(groupId),
+            env.SPLITGASTO_DB.prepare('DELETE FROM settlements WHERE group_id = ?').bind(groupId),
+            env.SPLITGASTO_DB.prepare('DELETE FROM group_members WHERE group_id = ?').bind(groupId),
+            env.SPLITGASTO_DB.prepare('DELETE FROM groups WHERE id = ?').bind(groupId),
+        ]);
 
         if (env.SPLITGASTO_CACHE) {
             await env.SPLITGASTO_CACHE.delete(`db:balances:${groupId}`);
