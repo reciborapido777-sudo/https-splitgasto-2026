@@ -1,7 +1,7 @@
 {
   "name": "SplitGasto 2026",
   "short_name": "SplitGasto",
-  "version": "4.22",
+  "version": "4.24",
   "description": "Divide gastos con tu grupo de forma inteligente. Juegos 3D, IA y liquidación instantánea.",
   "start_url": "/index.html",
   "display": "standalone",
