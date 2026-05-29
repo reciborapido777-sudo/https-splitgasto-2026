@@ -285,7 +285,7 @@ async function loadGroupData(groupId) {
       const bal      = parseFloat(balancesRaw[m.id]) || 0;
       const balSign  = bal >= 0 ? '+' : '';
       const balColor = bal > 0.01 ? '#13ecd6' : (bal < -0.01 ? '#ef4444' : '#6b7280');
-      const roleLabel = m.role === 'admin' ? 'Admin' : (isMe ? 'Usted' : 'Socio');
+      const roleLabel = m.role === 'admin' ? 'Administrador' : (isMe ? 'Usted' : 'Socio');
 
       // Mostrar botón eliminar miembro solo si soy admin y no es el propio admin
       const canRemove = isAdmin && !isMe;
