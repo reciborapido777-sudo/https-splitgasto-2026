@@ -246,7 +246,7 @@
                 <p class="text-base font-black money-display" style="color:${amountColor}">${amountStr}</p>
                 ${isMine ? `<button onclick="deleteExpense('${expId}','${exp._groupId}')" class="text-[8px] text-zinc-700 hover:text-red-400 transition-colors font-bold uppercase tracking-wider mt-0.5 flex items-center gap-0.5 ml-auto">
                   <span class="material-icons-round text-xs">delete</span>Borrar
-                </button>` : `<p class="text-[8px] text-zinc-600 uppercase font-black mt-0.5">${(window._activityMemberNames && window._activityMemberNames[exp.paid_by]) ? "Pagó " + window._activityMemberNames[exp.paid_by] : "pagó otro"}</p>`}
+                </button>` : `<p class="text-[8px] text-zinc-600 uppercase font-black mt-0.5">${(window._activityMemberNames && window._activityMemberNames[exp.paid_by]) ? "Pagó " + window._activityMemberNames[exp.paid_by] : "Pagó otro"}</p>`}
               </div>
             </div>`;
           });
