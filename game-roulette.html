@@ -711,8 +711,17 @@ function launchConfetti(color) {
 
 // ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
 async function loadRouletteGroups() {
-  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-    // Si no hay sesión, usar jugadores de ejemplo para que la ruleta funcione
+  const sel = document.getElementById('group-select');
+
+  // Esperar a que SGAuth y SGApi estén disponibles (pueden tardar en cargarse vía SPA)
+  let retries = 0;
+  while ((!window.SGAuth || !window.SGApi) && retries < 20) {
+    await new Promise(r => setTimeout(r, 150));
+    retries++;
+  }
+
+  if (!window.SGAuth || !window.SGApi || !SGAuth.isLoggedIn()) {
+    if (sel) sel.innerHTML = '<option value="">Sin sesión — añade jugadores manualmente</option>';
     players = [
       {name:'Jugador 1', color:'#13ecd6', active:true},
       {name:'Jugador 2', color:'#a855f7', active:true},
@@ -720,16 +729,15 @@ async function loadRouletteGroups() {
     renderPlayers(); drawWheel(0); updatePlayerCount();
     return;
   }
-  // Reparar membresías huérfanas antes de cargar grupos
+
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+
   try {
     const res = await SGApi.getGroups();
-    const sel = document.getElementById('group-select');
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
         `<option value="${g.id}">${g.name}</option>`
       ).join('');
-      // Cargar miembros del primer grupo
       await onGroupChange(res.groups[0].id);
     } else {
       sel.innerHTML = '<option value="">Sin grupos — añade jugadores manualmente</option>';
@@ -738,6 +746,7 @@ async function loadRouletteGroups() {
     }
   } catch(e) {
     console.error('loadRouletteGroups error:', e);
+    if (sel) sel.innerHTML = '<option value="">Error al cargar — añade jugadores manualmente</option>';
     players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
     renderPlayers(); drawWheel(0); updatePlayerCount();
   }
