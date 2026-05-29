@@ -713,12 +713,23 @@ function launchConfetti(color) {
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
 
-  // Esperar a que SGAuth y SGApi estén disponibles (pueden tardar en cargarse vía SPA)
+  console.log('[Roulette] 1. SGAuth existe?', !!window.SGAuth);
+  console.log('[Roulette] 2. SGApi existe?', !!window.SGApi);
+  console.log('[Roulette] 3. localStorage sg_token?', !!localStorage.getItem('sg_token'));
+  console.log('[Roulette] 4. localStorage sg_user?', !!localStorage.getItem('sg_user'));
+
+  if (window.SGAuth) {
+    console.log('[Roulette] 5. isLoggedIn?', SGAuth.isLoggedIn());
+    console.log('[Roulette] 6. getUser?', JSON.stringify(SGAuth.getUser()));
+  }
+
+  // Esperar a que SGAuth y SGApi estén disponibles
   let retries = 0;
   while ((!window.SGAuth || !window.SGApi) && retries < 20) {
     await new Promise(r => setTimeout(r, 150));
     retries++;
   }
+  console.log('[Roulette] 7. Tras retry - SGAuth?', !!window.SGAuth, 'SGApi?', !!window.SGApi, 'retries:', retries);
 
   if (!window.SGAuth || !window.SGApi || !SGAuth.isLoggedIn()) {
     if (sel) sel.innerHTML = '<option value="">Sin sesión — añade jugadores manualmente</option>';
@@ -734,6 +745,7 @@ async function loadRouletteGroups() {
 
   try {
     const res = await SGApi.getGroups();
+    console.log('[Roulette] 8. getGroups response:', JSON.stringify(res));
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
         `<option value="${g.id}">${g.name}</option>`
@@ -745,7 +757,7 @@ async function loadRouletteGroups() {
       renderPlayers(); drawWheel(0); updatePlayerCount();
     }
   } catch(e) {
-    console.error('loadRouletteGroups error:', e);
+    console.error('[Roulette] 9. ERROR:', e);
     if (sel) sel.innerHTML = '<option value="">Error al cargar — añade jugadores manualmente</option>';
     players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
     renderPlayers(); drawWheel(0); updatePlayerCount();
