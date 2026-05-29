@@ -83,6 +83,8 @@
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js" defer></script>
+    <script src="engine/api.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -92,7 +94,7 @@
   <button onclick="SGRouter.back()" class="w-10 h-10 rounded-full flex items-center justify-center" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
   </button>
-  <h1 class="font-bold text-base">Configuración</h1>
+  <h1 class="font-bold text-base" data-i18n="settings.title">Configuración</h1>
   <div class="w-10"></div>
 </header>
 
@@ -100,20 +102,20 @@
 
   <!-- Profile summary -->
   <div class="glass p-5 flex items-center gap-4">
-    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black" style="background:rgba(19,236,214,0.15);color:var(--cyan)">C</div>
+    <div id="profile-avatar" class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black" style="background:rgba(19,236,214,0.15);color:var(--cyan)">?</div>
     <div class="flex-1">
-      <p class="font-black">Commander</p>
-      <p class="text-xs" style="color:var(--cyan)">Socio Fundador · Nivel 12</p>
-      <p class="text-xs opacity-40">commander@splitgasto.com</p>
+      <p id="profile-name" class="font-black">Cargando...</p>
+      <p id="profile-role" class="text-xs" style="color:var(--cyan)">Socio</p>
+      <p id="profile-email" class="text-xs opacity-40">...</p>
     </div>
-    <button onclick="SGRouter.navigate('profile')" class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan);border:1px solid rgba(19,236,214,0.2)">
+    <button onclick="SGRouter.navigate('profile')" class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan);border:1px solid rgba(19,236,214,0.2)" data-i18n="settings.edit">
       Editar
     </button>
   </div>
 
   <!-- ─── SECCIÓN: Inteligencia Artificial ─── -->
   <div>
-    <p class="section-title">Inteligencia Artificial</p>
+    <p class="section-title" data-i18n="settings.ai">Inteligencia Artificial</p>
     <div class="glass overflow-hidden">
 
       <!-- AI status -->
@@ -125,13 +127,13 @@
             </div>
             <div>
               <p class="font-bold text-sm">Motor IA Alpha</p>
-              <p class="text-xs opacity-40">Versión 2.6 · Online</p>
+              <p class="text-xs opacity-40" data-i18n="settings.aiVersion">Versión 2.6 · En línea</p>
             </div>
           </div>
-          <span class="text-xs font-bold px-2 py-1 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Activo</span>
+          <span class="text-xs font-bold px-2 py-1 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan)" data-i18n="badge.active">Activo</span>
         </div>
         <div class="space-y-1">
-          <div class="flex justify-between text-xs"><span class="opacity-40">Confianza media del scanner</span><span style="color:var(--cyan)">94,2%</span></div>
+          <div class="flex justify-between text-xs"><span class="opacity-40" data-i18n="settings.aiConfidence">Confianza media del escáner</span><span style="color:var(--cyan)">94,2%</span></div>
           <div class="ai-bar"><div class="ai-fill" style="width:94%"></div></div>
         </div>
       </div>
@@ -192,7 +194,7 @@
 
   <!-- ─── Notificaciones ─── -->
   <div>
-    <p class="section-title">Notificaciones</p>
+    <p class="section-title" data-i18n="settings.notifications">Notificaciones</p>
     <div class="glass overflow-hidden">
       <div class="toggle-wrap border-b border-white/5" onclick="toggle(this,'notif-push')">
         <div class="flex items-center gap-3">
@@ -235,22 +237,22 @@
 
   <!-- ─── Idioma ─── -->
   <div>
-    <p class="section-title">Idioma y Región</p>
+    <p class="section-title" data-i18n="settings.language">Idioma y Región</p>
     <div class="glass p-4 space-y-4">
       <div class="flex gap-2 flex-wrap">
-        <button class="lang-btn active" onclick="selectLang(this)">🇪🇸 Español</button>
-        <button class="lang-btn" onclick="selectLang(this)">🇬🇧 English</button>
-        <button class="lang-btn" onclick="selectLang(this)">🇫🇷 Français</button>
-        <button class="lang-btn" onclick="selectLang(this)">🇩🇪 Deutsch</button>
-        <button class="lang-btn" onclick="selectLang(this)">🇨🇳 中文</button>
-        <button class="lang-btn" onclick="selectLang(this)">🇯🇵 日本語</button>
+        <button class="lang-btn active" data-lang="es" onclick="selectLang(this)">🇪🇸 Español</button>
+        <button class="lang-btn" data-lang="en" onclick="selectLang(this)">🇬🇧 English</button>
+        <button class="lang-btn" data-lang="fr" onclick="selectLang(this)">🇫🇷 Français</button>
+        <button class="lang-btn" data-lang="de" onclick="selectLang(this)">🇩🇪 Deutsch</button>
+        <button class="lang-btn" data-lang="zh" onclick="selectLang(this)">🇨🇳 中文</button>
+        <button class="lang-btn" data-lang="ja" onclick="selectLang(this)">🇯🇵 日本語</button>
       </div>
       <div class="setting-row" style="padding:8px 0">
         <div class="setting-icon" style="background:rgba(255,255,255,0.07)">
           <span class="material-icons-round text-sm opacity-40">currency_exchange</span>
         </div>
         <div class="flex-1">
-          <p class="text-sm font-bold">Moneda por defecto</p>
+          <p class="text-sm font-bold" data-i18n="settings.currency">Moneda por defecto</p>
           <p class="text-xs opacity-40">Euro (€)</p>
         </div>
         <span class="material-icons-round text-sm opacity-30">chevron_right</span>
@@ -260,7 +262,7 @@
 
   <!-- ─── Privacidad ─── -->
   <div>
-    <p class="section-title">Privacidad y Seguridad</p>
+    <p class="section-title" data-i18n="settings.privacy">Privacidad y Seguridad</p>
     <div class="glass overflow-hidden">
       <div class="setting-row border-b border-white/5" onclick="SGRouter.navigate('security','settings')">
         <div class="setting-icon" style="background:rgba(168,85,247,0.1)">
@@ -277,7 +279,7 @@
           <span class="material-icons-round text-sm opacity-40">description</span>
         </div>
         <div class="flex-1">
-          <p class="text-sm font-bold">Términos y Privacidad</p>
+          <p class="text-sm font-bold" data-i18n="settings.terms">Términos y Privacidad</p>
           <p class="text-xs opacity-40">Documentos legales</p>
         </div>
         <span class="material-icons-round text-sm opacity-30">chevron_right</span>
@@ -299,7 +301,7 @@
 
   <!-- ─── Apariencia ─── -->
   <div>
-    <p class="section-title">Apariencia</p>
+    <p class="section-title" data-i18n="settings.appearance">Apariencia</p>
     <div class="glass overflow-hidden">
       <div class="setting-row border-b border-white/5">
         <div class="setting-icon" style="background:rgba(255,255,255,0.07)">
@@ -307,9 +309,9 @@
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold">Modo Oscuro AMOLED</p>
-          <p class="text-xs opacity-40">Negro puro · Activo siempre</p>
+          <p class="text-xs opacity-40" data-i18n="settings.darkModeAlways">Negro puro · Siempre activo</p>
         </div>
-        <span class="text-xs px-2 py-1 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan)">ON</span>
+        <span class="text-xs px-2 py-1 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan)" data-i18n="badge.active">Activo</span>
       </div>
       <div class="setting-row" onclick="SGRouter.navigate('manual','settings')">
         <div class="setting-icon" style="background:rgba(168,85,247,0.08)">
@@ -327,21 +329,21 @@
   <!-- Version info -->
   <div class="glass p-4 text-center space-y-1">
     <p class="text-xs font-bold" style="color:var(--cyan)">SplitGasto 2026</p>
-    <p class="text-xs opacity-30">Alpha v2.6.0 · Build 2026.03.16</p>
-    <p class="text-xs opacity-20">Motor IA v2.6 · AES-256 · End-to-End</p>
+    <p class="text-xs opacity-30">Alfa v2.6.0 · Compilación 2026.03.16</p>
+    <p class="text-xs opacity-20">Motor IA v2.6 · AES-256 · Extremo a Extremo</p>
   </div>
 
   <!-- Danger zone -->
   <div>
-    <p class="section-title" style="color:rgba(239,68,68,0.5)">Zona de Riesgo</p>
+    <p class="section-title" style="color:rgba(239,68,68,0.5)" data-i18n="settings.dangerZone">Zona de Riesgo</p>
     <div class="space-y-2">
-      <button class="danger-btn flex items-center gap-3" onclick="SGRouter.showToast('Sesión cerrada','info');setTimeout(()=>SGRouter.navigate('landing'),800)">
+      <button class="danger-btn flex items-center gap-3" onclick="doLogout()">
         <span class="material-icons-round text-sm">logout</span>
-        Cerrar Sesión
+        <span data-i18n="settings.logout">Cerrar Sesión</span>
       </button>
       <button class="danger-btn flex items-center gap-3" onclick="confirmDelete()">
         <span class="material-icons-round text-sm">delete_forever</span>
-        Eliminar Cuenta
+        <span data-i18n="settings.deleteAccount">Eliminar Cuenta</span>
       </button>
     </div>
   </div>
@@ -349,24 +351,291 @@
 </main>
 
 <!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+    <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
+        <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <span class="material-icons-round">grid_view</span>
+            <p data-i18n="nav.dashboard">Mando</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <span class="material-icons-round">groups_3</span>
+            <p data-i18n="nav.groups">Grupos</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <span class="material-icons-round">receipt_long</span>
+            <p data-i18n="nav.expenses">Gastos</p>
+        </button>
+        <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <span class="material-icons-round">query_stats</span>
+            <p data-i18n="nav.metrics">Métricas</p>
+        </button>
+        <button class="nav-item active" onclick="SGRouter.navigate('profile')">
+            <span class="material-icons-round">person</span>
+            <p data-i18n="nav.profile">Perfil</p>
+        </button>
+    </div>
+</nav>
+
+</div>
 
 <script>
+/* ─── Sistema i18n ─── */
+const translations = {
+  es: {
+    'settings.title': 'Configuración',
+    'settings.edit': 'Editar',
+    'settings.ai': 'Inteligencia Artificial',
+    'settings.aiVersion': 'Versión 2.6 · En línea',
+    'settings.aiConfidence': 'Confianza media del escáner',
+    'badge.active': 'Activo',
+    'settings.notifications': 'Notificaciones',
+    'settings.language': 'Idioma y Región',
+    'settings.currency': 'Moneda por defecto',
+    'settings.privacy': 'Privacidad y Seguridad',
+    'settings.terms': 'Términos y Privacidad',
+    'settings.appearance': 'Apariencia',
+    'settings.darkModeAlways': 'Negro puro · Siempre activo',
+    'settings.dangerZone': 'Zona de Riesgo',
+    'settings.logout': 'Cerrar Sesión',
+    'settings.deleteAccount': 'Eliminar Cuenta',
+    'nav.dashboard': 'Mando',
+    'nav.groups': 'Grupos',
+    'nav.expenses': 'Gastos',
+    'nav.metrics': 'Métricas',
+    'nav.profile': 'Perfil',
+    'toggle.on': 'Activado',
+    'toggle.off': 'Desactivado',
+    'role.admin': 'Administrador',
+    'role.member': 'Socio',
+    'role.founder': 'Socio · Fundador',
+  },
+  en: {
+    'settings.title': 'Settings',
+    'settings.edit': 'Edit',
+    'settings.ai': 'Artificial Intelligence',
+    'settings.aiVersion': 'Version 2.6 · Online',
+    'settings.aiConfidence': 'Average scanner confidence',
+    'badge.active': 'Active',
+    'settings.notifications': 'Notifications',
+    'settings.language': 'Language & Region',
+    'settings.currency': 'Default currency',
+    'settings.privacy': 'Privacy & Security',
+    'settings.terms': 'Terms & Privacy',
+    'settings.appearance': 'Appearance',
+    'settings.darkModeAlways': 'Pure black · Always on',
+    'settings.dangerZone': 'Danger Zone',
+    'settings.logout': 'Log Out',
+    'settings.deleteAccount': 'Delete Account',
+    'nav.dashboard': 'Dashboard',
+    'nav.groups': 'Groups',
+    'nav.expenses': 'Expenses',
+    'nav.metrics': 'Metrics',
+    'nav.profile': 'Profile',
+    'toggle.on': 'Enabled',
+    'toggle.off': 'Disabled',
+    'role.admin': 'Admin',
+    'role.member': 'Member',
+    'role.founder': 'Co-founder',
+  },
+  fr: {
+    'settings.title': 'Paramètres',
+    'settings.edit': 'Modifier',
+    'settings.ai': 'Intelligence Artificielle',
+    'settings.aiVersion': 'Version 2.6 · En ligne',
+    'settings.aiConfidence': 'Confiance moyenne du scanner',
+    'badge.active': 'Actif',
+    'settings.notifications': 'Notifications',
+    'settings.language': 'Langue et Région',
+    'settings.currency': 'Devise par défaut',
+    'settings.privacy': 'Confidentialité et Sécurité',
+    'settings.terms': 'Conditions et Confidentialité',
+    'settings.appearance': 'Apparence',
+    'settings.darkModeAlways': 'Noir pur · Toujours actif',
+    'settings.dangerZone': 'Zone à Risque',
+    'settings.logout': 'Déconnexion',
+    'settings.deleteAccount': 'Supprimer le Compte',
+    'nav.dashboard': 'Tableau',
+    'nav.groups': 'Groupes',
+    'nav.expenses': 'Dépenses',
+    'nav.metrics': 'Métriques',
+    'nav.profile': 'Profil',
+    'toggle.on': 'Activé',
+    'toggle.off': 'Désactivé',
+    'role.admin': 'Administrateur',
+    'role.member': 'Membre',
+    'role.founder': 'Cofondateur',
+  },
+  de: {
+    'settings.title': 'Einstellungen',
+    'settings.edit': 'Bearbeiten',
+    'settings.ai': 'Künstliche Intelligenz',
+    'settings.aiVersion': 'Version 2.6 · Online',
+    'settings.aiConfidence': 'Durchschnittliche Scanner-Konfidenz',
+    'badge.active': 'Aktiv',
+    'settings.notifications': 'Benachrichtigungen',
+    'settings.language': 'Sprache & Region',
+    'settings.currency': 'Standardwährung',
+    'settings.privacy': 'Datenschutz & Sicherheit',
+    'settings.terms': 'AGB & Datenschutz',
+    'settings.appearance': 'Erscheinungsbild',
+    'settings.darkModeAlways': 'Rein schwarz · Immer aktiv',
+    'settings.dangerZone': 'Gefahrenzone',
+    'settings.logout': 'Abmelden',
+    'settings.deleteAccount': 'Konto löschen',
+    'nav.dashboard': 'Dashboard',
+    'nav.groups': 'Gruppen',
+    'nav.expenses': 'Ausgaben',
+    'nav.metrics': 'Metriken',
+    'nav.profile': 'Profil',
+    'toggle.on': 'Aktiviert',
+    'toggle.off': 'Deaktiviert',
+    'role.admin': 'Administrator',
+    'role.member': 'Mitglied',
+    'role.founder': 'Mitgründer',
+  },
+  zh: {
+    'settings.title': '设置',
+    'settings.edit': '编辑',
+    'settings.ai': '人工智能',
+    'settings.aiVersion': '版本 2.6 · 在线',
+    'badge.active': '活跃',
+    'settings.notifications': '通知',
+    'settings.language': '语言和地区',
+    'settings.currency': '默认货币',
+    'settings.privacy': '隐私与安全',
+    'settings.terms': '条款与隐私',
+    'settings.appearance': '外观',
+    'settings.darkModeAlways': '纯黑 · 始终开启',
+    'settings.dangerZone': '危险区域',
+    'settings.logout': '退出登录',
+    'settings.deleteAccount': '删除账户',
+    'nav.dashboard': '仪表盘',
+    'nav.groups': '群组',
+    'nav.expenses': '支出',
+    'nav.metrics': '指标',
+    'nav.profile': '个人',
+    'toggle.on': '已启用',
+    'toggle.off': '已禁用',
+    'role.admin': '管理员',
+    'role.member': '成员',
+    'role.founder': '联合创始人',
+  },
+  ja: {
+    'settings.title': '設定',
+    'settings.edit': '編集',
+    'settings.ai': '人工知能',
+    'settings.aiVersion': 'バージョン 2.6 · オンライン',
+    'badge.active': 'アクティブ',
+    'settings.notifications': '通知',
+    'settings.language': '言語と地域',
+    'settings.currency': 'デフォルト通貨',
+    'settings.privacy': 'プライバシーとセキュリティ',
+    'settings.terms': '利用規約とプライバシー',
+    'settings.appearance': '外観',
+    'settings.darkModeAlways': 'ピュアブラック · 常時オン',
+    'settings.dangerZone': '危険ゾーン',
+    'settings.logout': 'ログアウト',
+    'settings.deleteAccount': 'アカウント削除',
+    'nav.dashboard': 'ダッシュボード',
+    'nav.groups': 'グループ',
+    'nav.expenses': '支出',
+    'nav.metrics': 'メトリクス',
+    'nav.profile': 'プロフィール',
+    'toggle.on': '有効',
+    'toggle.off': '無効',
+    'role.admin': '管理者',
+    'role.member': 'メンバー',
+    'role.founder': '共同創設者',
+  }
+};
+
+function applyTranslations(lang) {
+  const t = translations[lang] || translations['es'];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key]) el.textContent = t[key];
+  });
+}
+
+/* ─── Cargar perfil real del usuario ─── */
+async function loadUserProfile() {
+  try {
+    const user = SGAuth.getUser();
+    if (!user) {
+      SGRouter.navigate('auth-login');
+      return;
+    }
+
+    const nameEl = document.getElementById('profile-name');
+    const emailEl = document.getElementById('profile-email');
+    const roleEl = document.getElementById('profile-role');
+    const avatarEl = document.getElementById('profile-avatar');
+
+    if (nameEl) nameEl.textContent = user.name || 'Usuario';
+    if (emailEl) emailEl.textContent = user.email || '';
+    if (avatarEl) avatarEl.textContent = (user.name || 'U').charAt(0).toUpperCase();
+
+    // Comprobar si es admin de algún grupo
+    let roleText = translations[localStorage.getItem('sg_lang') || 'es']['role.member'] || 'Socio';
+    try {
+      const groups = await SGApi.getGroups();
+      const isAdmin = groups && groups.some(g => g.created_by === user.id || g.role === 'admin');
+      if (isAdmin) roleText = translations[localStorage.getItem('sg_lang') || 'es']['role.admin'] || 'Administrador';
+    } catch {}
+    if (roleEl) roleEl.textContent = roleText;
+  } catch (e) {
+    console.warn('Error cargando perfil:', e);
+  }
+}
+
+/* ─── Toggle ─── */
 function toggle(row, id) {
   const track = document.getElementById(id);
   track.classList.toggle('on');
-  const label = track.classList.contains('on') ? 'Activado' : 'Desactivado';
+  const lang = localStorage.getItem('sg_lang') || 'es';
+  const t = translations[lang] || translations['es'];
+  const label = track.classList.contains('on') ? t['toggle.on'] : t['toggle.off'];
   SGRouter.showToast(label, 'info');
 }
 
+/* ─── Selector de idioma ─── */
 function selectLang(btn) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  SGRouter.showToast(`Idioma: ${btn.textContent}`, 'success');
+  const lang = btn.dataset.lang || 'es';
+  localStorage.setItem('sg_lang', lang);
+  applyTranslations(lang);
+  // Recargar perfil para que el rol se traduzca
+  loadUserProfile();
+  SGRouter.showToast(`Idioma: ${btn.textContent.trim()}`, 'success');
 }
 
+/* ─── Logout real ─── */
+function doLogout() {
+  SGAuth.logout();
+  SGRouter.showToast('Sesión cerrada', 'info');
+  setTimeout(() => SGRouter.navigate('landing'), 800);
+}
+
+/* ─── Eliminar cuenta ─── */
 function confirmDelete() {
   SGRouter.showToast('Para eliminar la cuenta, contacta soporte', 'warning');
 }
+
+/* ─── Inicialización ─── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Aplicar idioma guardado
+  const savedLang = localStorage.getItem('sg_lang') || 'es';
+  const activeBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
+  if (activeBtn) {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+  }
+  applyTranslations(savedLang);
+
+  // Cargar perfil real del usuario
+  loadUserProfile();
+});
 </script>
 
         <script>
@@ -394,31 +663,7 @@ function confirmDelete() {
     }
     </script>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
-            </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
-            </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
 </div>
 </body>
 </html>
+
