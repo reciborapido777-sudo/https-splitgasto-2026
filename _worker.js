@@ -324,8 +324,16 @@ async function handleAuth(request, env, path) {
         const validPassword = await verifyPassword(password, user.password_hash);
         if (!validPassword) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401);
 
-        const token = await signJWT({ userId: user.id, email: user.email }, env);
-        return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
+        // Normalizar email en la DB si estaba en mayúsculas/mixto (usuarios pre-normalización)
+        if (user.email !== normalizedEmail) {
+            try {
+                await env.SPLITGASTO_DB.prepare('UPDATE users SET email = ? WHERE id = ?').bind(normalizedEmail, user.id).run();
+            } catch {}
+        }
+
+        const token = await signJWT({ userId: user.id, email: normalizedEmail }, env);
+        return jsonResponse({ success: true, token, user: { id: user.id, name: user.name, email: normalizedEmail } });
+
     }
 
     if (path === '/api/auth/me' && method === 'GET') {
