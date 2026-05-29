@@ -418,7 +418,7 @@ function inviteMember(groupId, groupName) {
 
     async function doInvite() {
         const input = document.getElementById('invite-email-input');
-        const email = input?.value?.trim();
+        const email = input?.value?.trim().toLowerCase();
         if (!email) { input?.focus(); return; }
         // Deshabilitar botón para evitar doble envío
         const btn = document.getElementById('invite-submit-btn');
