@@ -193,7 +193,7 @@
           <p class="text-sm font-bold" id="my-name">Cargando… <span class="text-xs opacity-40">(tú)</span></p>
           <p class="text-xs opacity-40">Administrador</p>
         </div>
-        <span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Admin</span>
+        <span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Administrador</span>
       </div>
     </div>
 
@@ -257,7 +257,7 @@ function renderMembers() {
       </div>
       ${m.role!=='Admin'
         ? `<button onclick="removeMember('${m.name}')" class="opacity-30 hover:opacity-70 transition-opacity"><span class="material-icons-round text-sm">remove_circle</span></button>`
-        : '<span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Admin</span>'
+        : '<span class="text-xs px-2 py-1 rounded-full font-bold" style="background:rgba(19,236,214,0.1);color:var(--cyan)">Administrador</span>'
       }
     </div>`).join('');
   document.getElementById('invite-input').value = '';
@@ -275,7 +275,7 @@ async function addMember() {
     // Buscar usuario real por email en el backend
     SGRouter.showToast('Buscando usuario…', 'info');
     try {
-      const res = await SGApi.getUserByEmail(value);
+      const res = await SGApi.getUserByEmail(value.toLowerCase().trim());
       if (res && res.success && res.user) {
         const u = res.user;
         // Evitar duplicados
@@ -288,7 +288,7 @@ async function addMember() {
           userId: u.id,
           initials: (u.name || value)[0].toUpperCase(),
           color: colors[(members.length - 1) % colors.length],
-          role: 'Member'
+          role: 'member'
         });
         renderMembers();
         updatePreview();
@@ -310,7 +310,7 @@ async function addMember() {
       userId: null, // pendiente — no se puede añadir al backend todavía
       initials: value[0].toUpperCase(),
       color: colors[(members.length - 1) % colors.length],
-      role: 'Member',
+      role: 'member',
       pending: true
     });
     renderMembers();
