@@ -711,28 +711,8 @@ function launchConfetti(color) {
 
 // ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
 async function loadRouletteGroups() {
-  const sel = document.getElementById('group-select');
-
-  console.log('[Roulette] 1. SGAuth existe?', !!window.SGAuth);
-  console.log('[Roulette] 2. SGApi existe?', !!window.SGApi);
-  console.log('[Roulette] 3. localStorage sg_token?', !!localStorage.getItem('sg_token'));
-  console.log('[Roulette] 4. localStorage sg_user?', !!localStorage.getItem('sg_user'));
-
-  if (window.SGAuth) {
-    console.log('[Roulette] 5. isLoggedIn?', SGAuth.isLoggedIn());
-    console.log('[Roulette] 6. getUser?', JSON.stringify(SGAuth.getUser()));
-  }
-
-  // Esperar a que SGAuth y SGApi estén disponibles
-  let retries = 0;
-  while ((!window.SGAuth || !window.SGApi) && retries < 20) {
-    await new Promise(r => setTimeout(r, 150));
-    retries++;
-  }
-  console.log('[Roulette] 7. Tras retry - SGAuth?', !!window.SGAuth, 'SGApi?', !!window.SGApi, 'retries:', retries);
-
-  if (!window.SGAuth || !window.SGApi || !SGAuth.isLoggedIn()) {
-    if (sel) sel.innerHTML = '<option value="">Sin sesión — añade jugadores manualmente</option>';
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    // Si no hay sesión, usar jugadores de ejemplo para que la ruleta funcione
     players = [
       {name:'Jugador 1', color:'#13ecd6', active:true},
       {name:'Jugador 2', color:'#a855f7', active:true},
@@ -740,16 +720,16 @@ async function loadRouletteGroups() {
     renderPlayers(); drawWheel(0); updatePlayerCount();
     return;
   }
-
+  // Reparar membresías huérfanas antes de cargar grupos
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
-
   try {
     const res = await SGApi.getGroups();
-    console.log('[Roulette] 8. getGroups response:', JSON.stringify(res));
+    const sel = document.getElementById('group-select');
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
         `<option value="${g.id}">${g.name}</option>`
       ).join('');
+      // Cargar miembros del primer grupo
       await onGroupChange(res.groups[0].id);
     } else {
       sel.innerHTML = '<option value="">Sin grupos — añade jugadores manualmente</option>';
@@ -757,8 +737,7 @@ async function loadRouletteGroups() {
       renderPlayers(); drawWheel(0); updatePlayerCount();
     }
   } catch(e) {
-    console.error('[Roulette] 9. ERROR:', e);
-    if (sel) sel.innerHTML = '<option value="">Error al cargar — añade jugadores manualmente</option>';
+    console.error('loadRouletteGroups error:', e);
     players = [{name:'Jugador 1', color:'#13ecd6', active:true},{name:'Jugador 2', color:'#a855f7', active:true}];
     renderPlayers(); drawWheel(0); updatePlayerCount();
   }
