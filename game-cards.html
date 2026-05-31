@@ -503,8 +503,9 @@ function launchConfetti(color) {
 // ─── FIX: LOAD GROUPS FROM API ───────────────────────────────────────────────
 const CARD_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#22c55e','#3b82f6'];
 
-async function loadCardsGroups() {
+async function loadCardsGroups(_retry = false) {
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    if (!_retry) { setTimeout(() => loadCardsGroups(true), 800); return; }
     players = [
       {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
       {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
@@ -578,7 +579,13 @@ async function onCardsGroupChange(groupId) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-loadCardsGroups();
+// Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
+// antes de intentar cargar los grupos.
+if (document.readyState === 'complete') {
+  setTimeout(loadCardsGroups, 300);
+} else {
+  window.addEventListener('load', () => setTimeout(loadCardsGroups, 300));
+}
 </script>
 
         <script>

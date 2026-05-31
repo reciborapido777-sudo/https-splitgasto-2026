@@ -643,8 +643,11 @@ async function onCoinGroupChange(groupId) {
   } catch(e) { /* silenciar — jugadores por defecto ya están puestos */ }
 }
 
-async function loadCoinGroups() {
-  if (!window.SGAuth || !SGAuth.isLoggedIn()) return; // jugadores por defecto
+async function loadCoinGroups(_retry = false) {
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    if (!_retry) { setTimeout(() => loadCoinGroups(true), 800); return; }
+    return; // jugadores por defecto
+  }
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
   try {
     const res = await SGApi.getGroups();
@@ -664,7 +667,13 @@ async function loadCoinGroups() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 drawCoin(0);  // initial draw: heads facing
-loadCoinGroups();
+// Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
+// antes de intentar cargar los grupos.
+if (document.readyState === 'complete') {
+  setTimeout(loadCoinGroups, 300);
+} else {
+  window.addEventListener('load', () => setTimeout(loadCoinGroups, 300));
+}
 </script>
 
 <script>

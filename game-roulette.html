@@ -710,9 +710,10 @@ function launchConfetti(color) {
 }
 
 // ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
-async function loadRouletteGroups() {
+async function loadRouletteGroups(_retry = false) {
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-    // Si no hay sesión, usar jugadores de ejemplo para que la ruleta funcione
+    // Si no hay sesión aún, reintentar una vez tras 800 ms antes de usar defaults
+    if (!_retry) { setTimeout(() => loadRouletteGroups(true), 800); return; }
     players = [
       {name:'Jugador 1', color:'#13ecd6', active:true},
       {name:'Jugador 2', color:'#a855f7', active:true},
@@ -783,7 +784,14 @@ async function onGroupChange(groupId) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-loadRouletteGroups();
+// Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
+// antes de intentar cargar los grupos, para evitar que isLoggedIn() devuelva
+// false por un canal de mensajes del Service Worker aún no inicializado.
+if (document.readyState === 'complete') {
+  setTimeout(loadRouletteGroups, 300);
+} else {
+  window.addEventListener('load', () => setTimeout(loadRouletteGroups, 300));
+}
 </script>
 
 <script>
