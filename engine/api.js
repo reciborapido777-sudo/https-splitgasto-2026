@@ -45,8 +45,9 @@ const SGApi = (function(){
 
     // ── Grupos ────────────────────────────────────────────────────────
     async function getGroups() {
-        const userId = SGAuth.getUserId();
-        return request(`/api/db/groups?userId=${userId}`);
+        // No enviamos userId en la URL: el backend lo extrae del JWT (authUser.userId).
+        // Esto evita que un getUserId()===null genere ?userId=null → 403.
+        return request('/api/db/groups');
     }
 
     async function createGroup(name, currency, members) {
