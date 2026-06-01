@@ -711,9 +711,11 @@ function launchConfetti(color) {
 
 // ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
 async function loadRouletteGroups(_retry = false) {
+  console.log('[Ruleta] loadRouletteGroups() retry='+_retry+' loggedIn='+(window.SGAuth ? SGAuth.isLoggedIn() : 'SGAuth no existe'));
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
     // Si no hay sesión aún, reintentar una vez tras 800 ms antes de usar defaults
     if (!_retry) { setTimeout(() => loadRouletteGroups(true), 800); return; }
+    console.warn('[Ruleta] Sin sesión, usando jugadores por defecto');
     players = [
       {name:'Jugador 1', color:'#13ecd6', active:true},
       {name:'Jugador 2', color:'#a855f7', active:true},
@@ -724,7 +726,9 @@ async function loadRouletteGroups(_retry = false) {
   // Reparar membresías huérfanas antes de cargar grupos
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
   try {
+    console.log('[Ruleta] Llamando SGApi.getGroups()…');
     const res = await SGApi.getGroups();
+    console.log('[Ruleta] Respuesta getGroups:', JSON.stringify(res));
     const sel = document.getElementById('group-select');
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
