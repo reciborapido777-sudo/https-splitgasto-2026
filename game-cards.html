@@ -138,11 +138,11 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/audio.js"></script>
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js"></script>
-<script src="engine/auth.js"></script>
-<script src="engine/api.js"></script>
+    <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js" defer></script>
+    <script src="engine/api.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -503,9 +503,8 @@ function launchConfetti(color) {
 // ─── FIX: LOAD GROUPS FROM API ───────────────────────────────────────────────
 const CARD_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#22c55e','#3b82f6'];
 
-async function loadCardsGroups(_retry = false) {
+async function loadCardsGroups() {
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-    if (!_retry) { setTimeout(() => loadCardsGroups(true), 800); return; }
     players = [
       {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
       {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
@@ -579,13 +578,16 @@ async function onCardsGroupChange(groupId) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-// Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
-// antes de intentar cargar los grupos.
-if (document.readyState === 'complete') {
-  setTimeout(loadCardsGroups, 300);
-} else {
-  window.addEventListener('load', () => setTimeout(loadCardsGroups, 300));
+// Polling hasta que SGAuth/SGApi estén listos (scripts defer)
+function waitForAuthCards(fn, ms) {
+  const t = Date.now();
+  (function poll() {
+    if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { fn(); }
+    else if (Date.now() - t < (ms||8000)) { setTimeout(poll, 150); }
+    else { fn(); }
+  })();
 }
+document.addEventListener('DOMContentLoaded', () => waitForAuthCards(loadCardsGroups));
 </script>
 
         <script>

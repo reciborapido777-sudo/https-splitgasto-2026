@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.24 — 2026-05-28
+ * Versión: 4.25 — 2026-06-02
  *
  * Bindings:
  * - env.ASSETS                  → Assets estáticos
@@ -86,7 +86,7 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.24',
+            version: env.APP_VERSION ?? '4.25',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,

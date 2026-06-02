@@ -140,11 +140,11 @@
 </style>
 
     <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/auth.js"></script>
-    <script src="engine/api.js"></script>
-    <script src="engine/audio.js"></script>
+    <script src="engine/auth.js" defer></script>
+    <script src="engine/api.js" defer></script>
+    <script src="engine/audio.js" defer></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js"></script>
+    <script src="engine/router.js" defer></script>
 </head>
 <body class="app-shell dark">
 <div class="app-frame">
@@ -726,9 +726,8 @@ function removeLastPlayer() {
         const DARTS_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ef4444','#22c55e','#3b82f6','#D4AF37','#ec4899'];
         const DARTS_EMOJIS = ['🎯','🏆','⚡','🔥','🌟','🎮','👑','💫'];
 
-        async function loadDartsGroups(_retry = false) {
+        async function loadDartsGroups() {
           if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-            if (!_retry) { setTimeout(() => loadDartsGroups(true), 800); return; }
             PLAYERS = [
               { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
               { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
@@ -790,13 +789,16 @@ function removeLastPlayer() {
 
         // ─── Init ─────────────────────────────────────────────────────
         drawBoard();
-        // Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
-        // antes de intentar cargar los grupos.
-        if (document.readyState === 'complete') {
-          setTimeout(loadDartsGroups, 300);
-        } else {
-          window.addEventListener('load', () => setTimeout(loadDartsGroups, 300));
+        // Polling hasta que SGAuth/SGApi estén listos (scripts defer)
+        function waitForAuthDarts(fn, ms) {
+          const t = Date.now();
+          (function poll() {
+            if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { fn(); }
+            else if (Date.now() - t < (ms||8000)) { setTimeout(poll, 150); }
+            else { fn(); }
+          })();
         }
+        document.addEventListener('DOMContentLoaded', () => waitForAuthDarts(loadDartsGroups));
     </script>
 
         <script>
