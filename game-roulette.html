@@ -164,11 +164,11 @@
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<script src="engine/audio.js"></script>
+<script src="engine/audio.js" defer></script>
 <script src="engine/desktop-fix.js" defer></script>
-<script src="engine/router.js"></script>
-<script src="engine/auth.js"></script>
-<script src="engine/api.js"></script>
+<script src="engine/router.js" defer></script>
+<script src="engine/auth.js" defer></script>
+<script src="engine/api.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -710,12 +710,8 @@ function launchConfetti(color) {
 }
 
 // ── FIX: LOAD GROUPS FROM API ────────────────────────────────────────────────
-async function loadRouletteGroups(_retry = false) {
-  console.log('[Ruleta] loadRouletteGroups() retry='+_retry+' loggedIn='+(window.SGAuth ? SGAuth.isLoggedIn() : 'SGAuth no existe'));
+async function loadRouletteGroups() {
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-    // Si no hay sesión aún, reintentar una vez tras 800 ms antes de usar defaults
-    if (!_retry) { setTimeout(() => loadRouletteGroups(true), 800); return; }
-    console.warn('[Ruleta] Sin sesión, usando jugadores por defecto');
     players = [
       {name:'Jugador 1', color:'#13ecd6', active:true},
       {name:'Jugador 2', color:'#a855f7', active:true},
@@ -723,12 +719,9 @@ async function loadRouletteGroups(_retry = false) {
     renderPlayers(); drawWheel(0); updatePlayerCount();
     return;
   }
-  // Reparar membresías huérfanas antes de cargar grupos
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
   try {
-    console.log('[Ruleta] Llamando SGApi.getGroups()…');
     const res = await SGApi.getGroups();
-    console.log('[Ruleta] Respuesta getGroups:', JSON.stringify(res));
     const sel = document.getElementById('group-select');
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
@@ -788,14 +781,24 @@ async function onGroupChange(groupId) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-// Esperar a que la página esté completamente cargada (incluido el SW y SGAuth)
-// antes de intentar cargar los grupos, para evitar que isLoggedIn() devuelva
-// false por un canal de mensajes del Service Worker aún no inicializado.
-if (document.readyState === 'complete') {
-  setTimeout(loadRouletteGroups, 300);
-} else {
-  window.addEventListener('load', () => setTimeout(loadRouletteGroups, 300));
+// Esperar con polling hasta que SGAuth y SGApi estén disponibles y la sesión activa.
+// Esto es necesario porque los scripts engine/*.js se cargan con defer.
+function waitForAuthAndLoad(fn, timeoutMs = 8000) {
+  const start = Date.now();
+  function poll() {
+    if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
+      fn();
+    } else if (Date.now() - start < timeoutMs) {
+      setTimeout(poll, 150);
+    } else {
+      // Timeout: sin sesión, usar jugadores por defecto
+      console.warn('[Ruleta] Sin sesión activa tras ' + timeoutMs + 'ms, usando defaults');
+      fn();
+    }
+  }
+  poll();
 }
+document.addEventListener('DOMContentLoaded', () => waitForAuthAndLoad(loadRouletteGroups));
 </script>
 
 <script>
