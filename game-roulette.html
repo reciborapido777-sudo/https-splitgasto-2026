@@ -167,8 +167,8 @@
 <script src="engine/audio.js" defer></script>
 <script src="engine/desktop-fix.js" defer></script>
 <script src="engine/router.js" defer></script>
-<script src="engine/auth.js" defer></script>
-<script src="engine/api.js" defer></script>
+<script src="engine/auth.js"></script>
+<script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
@@ -781,24 +781,21 @@ async function onGroupChange(groupId) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-// Esperar con polling hasta que SGAuth y SGApi estén disponibles y la sesión activa.
-// Esto es necesario porque los scripts engine/*.js se cargan con defer.
-function waitForAuthAndLoad(fn, timeoutMs = 8000) {
-  const start = Date.now();
-  function poll() {
-    if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
-      fn();
-    } else if (Date.now() - start < timeoutMs) {
-      setTimeout(poll, 150);
-    } else {
-      // Timeout: sin sesión, usar jugadores por defecto
-      console.warn('[Ruleta] Sin sesión activa tras ' + timeoutMs + 'ms, usando defaults');
-      fn();
-    }
+// INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
+// window.load garantiza que el SW ya está registrado (evita controllerchange reload).
+// Polling corto (2s máx) por si isLoggedIn() no está listo aún.
+window.addEventListener('load', function() {
+  if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
+    loadRouletteGroups();
+  } else {
+    var _t = Date.now();
+    (function _p() {
+      if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { loadRouletteGroups(); }
+      else if (Date.now() - _t < 2000) { setTimeout(_p, 100); }
+      else { loadRouletteGroups(); }
+    })();
   }
-  poll();
-}
-document.addEventListener('DOMContentLoaded', () => waitForAuthAndLoad(loadRouletteGroups));
+});
 </script>
 
 <script>
@@ -818,10 +815,7 @@ if ('serviceWorker' in navigator) {
                 });
             })
             .catch(e => console.warn('[SW] Failed:', e));
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) { refreshing = true; window.location.reload(); }
-        });
+        // controllerchange reload disabled on game pages
     });
 }
 </script>
