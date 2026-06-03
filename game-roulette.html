@@ -327,7 +327,6 @@
 </div>
 
 <script>
-console.log('=== SPLITGASTO RULETA v2026-06-03 ===');
 // ── DATA ─────────────────────────────────────────────────────────────────────
 const COLORS = [
   '#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e',
@@ -782,21 +781,14 @@ async function onGroupChange(groupId) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-// INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
-// window.load garantiza que el SW ya está registrado (evita controllerchange reload).
-// Polling corto (2s máx) por si isLoggedIn() no está listo aún.
-window.addEventListener('load', function() {
-  if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
+// Esperar a que auth.js y api.js estén cargados antes de ejecutar
+(function _waitAuth() {
+  if (window.SGAuth && window.SGApi) {
     loadRouletteGroups();
   } else {
-    var _t = Date.now();
-    (function _p() {
-      if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { loadRouletteGroups(); }
-      else if (Date.now() - _t < 2000) { setTimeout(_p, 100); }
-      else { loadRouletteGroups(); }
-    })();
+    setTimeout(_waitAuth, 50);
   }
-});
+})();
 </script>
 
 <script>
