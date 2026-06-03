@@ -781,14 +781,12 @@ async function onGroupChange(groupId) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-// Esperar a que auth.js y api.js estén cargados antes de ejecutar
-(function _waitAuth() {
-  if (window.SGAuth && window.SGApi) {
+// Esperar a que TODOS los scripts externos y el DOM estén 100% listos
+window.addEventListener('load', function() {
+  setTimeout(function() {
     loadRouletteGroups();
-  } else {
-    setTimeout(_waitAuth, 50);
-  }
-})();
+  }, 300);
+});
 </script>
 
 <script>
