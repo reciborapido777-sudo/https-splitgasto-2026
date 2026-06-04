@@ -330,7 +330,8 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
-    const a0 = angle + i * slice;
+    // CORRECCIÓN RADIAL DEFINITIVA: Sincronización exacta con desfase de norte a sur
+    const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
     const dark = i % 2 === 0;
@@ -478,7 +479,7 @@ function spinWheel() {
   const slice     = (Math.PI * 2) / active.length;
   const spins     = 6 + Math.floor(Math.random() * 4); 
 
-  const rawTarget = -Math.PI / 2 - winnerIdx * slice - slice / 2;
+  const rawTarget = -winnerIdx * slice - slice / 2;
   const delta      = ((rawTarget - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
   const totalAngle = spins * Math.PI * 2 + delta;
   const finalAngle = currentAngle + totalAngle;
@@ -514,7 +515,6 @@ function spinWheel() {
   requestAnimationFrame(animate);
 }
 
-// ── RESTAURACIÓN DE DENSIDAD DE LOS ACTIVOS GRÁFICOS Y DE AUDIO ──
 function showResult(winner) {
   spinCount++;
   lastWinner = winner.name;
@@ -530,7 +530,7 @@ function showResult(winner) {
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
   launchConfetti(winner.color);
-  SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
+  if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
 }
 
 function renderHistory() {
@@ -551,9 +551,11 @@ function renderHistory() {
 
 function confirmPayment() {
   if (!lastWinner) return;
-  SGRouter.showToast(`Pago confirmado para ${lastWinner} ✓`, 'success');
-  document.getElementById('result-banner').classList.add('hidden');
-  setTimeout(() => SGRouter.navigate('split', 'game-roulette'), 1200);
+  if (window.SGRouter) {
+    SGRouter.showToast(`Pago confirmado para ${lastWinner} ✓`, 'success');
+    document.getElementById('result-banner').classList.add('hidden');
+    setTimeout(() => SGRouter.navigate('split', 'game-roulette'), 1200);
+  }
 }
 
 function eliminateWinner() {
@@ -563,12 +565,13 @@ function eliminateWinner() {
   renderPlayers();
   drawWheel(currentAngle);
   document.getElementById('result-banner').classList.add('hidden');
-  SGRouter.showToast(`${lastWinner} eliminado de la ruleta`, 'info');
+  if (window.SGRouter) SGRouter.showToast(`${lastWinner} eliminado de la ruleta`, 'info');
 }
 
 function renderPlayers() {
   const container = document.getElementById('players-container');
-  if(!players.length) {
+  if (!container) return;
+  if (!players.length) {
     container.innerHTML = '<p class="text-xs opacity-30">No hay participantes en este grupo.</p>';
     return;
   }
@@ -585,7 +588,7 @@ function togglePlayer(idx) {
   if (isSpinning) return;
   const active = getActivePlayers();
   if (active.length <= 2 && players[idx].active) {
-    SGRouter.showToast('Mínimo 2 jugadores', 'warning');
+    if (window.SGRouter) SGRouter.showToast('Mínimo 2 jugadores', 'warning');
     return;
   }
   players[idx].active = !players[idx].active;
@@ -594,66 +597,81 @@ function togglePlayer(idx) {
 }
 
 function updatePlayerCount() {
+  const countEl = document.getElementById('player-count');
+  if (!countEl) return;
   const n = getActivePlayers().length;
-  document.getElementById('player-count').textContent = `${n} jugador${n !== 1 ? 'es' : ''}`;
+  countEl.textContent = `${n} jugador${n !== 1 ? 'es' : ''}`;
 }
 
-document.getElementById('add-player-btn').addEventListener('click', () => {
-  document.getElementById('add-modal').style.display = 'flex';
-});
-function closeModal() {
-  document.getElementById('add-modal').style.display = 'none';
-  document.getElementById('new-player-input').value  = '';
-}
-function addPlayerFromModal() {
-  const name = document.getElementById('new-player-input').value.trim();
-  if (!name) return;
-  const color = COLORS[players.length % COLORS.length];
-  players.push({name, color, active: true});
-  renderPlayers();
-  drawWheel(currentAngle);
-  closeModal();
-  SGRouter.showToast(`${name} añadido`, 'success');
-}
-document.getElementById('new-player-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addPlayerFromModal();
-});
+// ── CAPTURA RECURSIVA EXHAUSTIVA DE TOKENS DEL CORE ──
+function getStandaloneToken() {
+  try {
+    // Escaneo de firmas conocidas en almacenamiento local
+    const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
+    for (const key of keys) {
+      const val = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (val && val.length > 20) return val; 
+    }
 
-function launchConfetti(color) {
-  for (let i = 0; i < 45; i++) {
-    const p = document.createElement('div');
-    p.className = 'confetti-piece';
-    p.style.cssText = `
-      left:${Math.random() * 100}vw;
-      background:${Math.random() > 0.5 ? color : COLORS[Math.floor(Math.random() * COLORS.length)]};
-      width:${6 + Math.random() * 10}px;
-      height:${6 + Math.random() * 10}px;
-      animation-duration:${1.5 + Math.random() * 2}s;
-      animation-delay:${Math.random() * 0.5}s;
-      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
-    `;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 4000);
+    // Escaneo general por inspección de claves dinámicas de frameworks SPA
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.toLowerCase().includes('auth') || k.toLowerCase().includes('token')) {
+        const val = localStorage.getItem(k);
+        if (val && val.length > 20) return val;
+      }
+    }
+
+    // Fallback semántico si el Router conserva las utilidades core en window
+    if (window.SGAuth && typeof window.SGAuth.getToken === 'function') {
+      return window.SGAuth.getToken();
+    }
+  } catch (err) {
+    console.error("[Ruleta] Error crítico leyendo persistencia física:", err);
   }
+  return null;
 }
 
-// ── NÚCLEO ATÓMICO CON FILTRO DE NO-STORE INTEGRADO CONTRA EL WORKER ──
 async function loadRouletteGroups() {
-  if (!window.SGAuth || !window.SGApi || !SGAuth.isLoggedIn()) {
+  const sel = document.getElementById('group-select');
+  const countEl = document.getElementById('group-member-count');
+  
+  // Guardrail estructural: Si el DOM intermedio de la SPA no ha montado el nodo, posponer la secuencia
+  if (!sel) {
+    requestAnimationFrame(loadRouletteGroups);
+    return;
+  }
+
+  const token = getStandaloneToken();
+
+  if (!token) {
     setDefaultPlayers();
     return;
   }
   
   try {
-    const token = SGAuth.getToken();
+    // Forzar limpieza perimetral en la caché del Edge Worker de Cloudflare
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     }).catch(() => {});
 
-    const res = await SGApi.getGroups();
-    const sel = document.getElementById('group-select');
+    const response = await fetch('/api/db/groups', {
+      method: 'GET',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      setDefaultPlayers();
+      return;
+    }
+
+    const res = await response.json();
     
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g =>
@@ -661,27 +679,32 @@ async function loadRouletteGroups() {
       ).join('');
       await onGroupChange(res.groups[0].id);
     } else {
-      sel.innerHTML = '<option value="">Sin grupos — añade jugadores manualmente</option>';
+      sel.innerHTML = '<option value="">Crea un grupo para sincronizar</option>';
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Excepción atrapada en el Core:', e);
+    console.error('[Ruleta] Error de red:', e);
     setDefaultPlayers();
   }
 }
 
 async function onGroupChange(groupId) {
   if (!groupId) return;
-  const countEl   = document.getElementById('group-member-count');
-  const totalEl   = document.getElementById('group-total');
-  if (countEl) countEl.textContent = 'Cargando miembros…';
+  const token = getStandaloneToken();
+  const countEl = document.getElementById('group-member-count');
+  const totalEl = document.getElementById('group-total');
+  
+  if (countEl) countEl.textContent = 'Sincronizando participantes…';
   if (totalEl) totalEl.textContent = '—';
   
   try {
-    const [membersRes, balRes] = await Promise.all([
-      SGApi.getGroupMembers(groupId).catch(() => null),
-      SGApi.getBalances(groupId).catch(() => null)
+    const [mResp, bResp] = await Promise.all([
+      fetch(`/api/db/group-members?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
+      fetch(`/api/db/balances?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
     ]);
+
+    const membersRes = await mResp.json();
+    const balRes = await bResp.json();
     
     if (membersRes && membersRes.success && membersRes.members && membersRes.members.length > 0) {
       players = membersRes.members.map((m, i) => ({
@@ -695,17 +718,16 @@ async function onGroupChange(groupId) {
     }
     
     if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
-      totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+      if (totalEl) totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     } else {
-      totalEl.textContent = '0,00 €';
+      if (totalEl) totalEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Ruleta] Error crítico mapeando grupo:', e);
+    console.error('[Ruleta] Error mapeando grupo:', e);
     setDefaultPlayers();
   }
   renderPlayers();
   drawWheel(0);
-  updatePlayerCount();
 }
 
 function setDefaultPlayers() {
@@ -715,33 +737,10 @@ function setDefaultPlayers() {
   ];
   renderPlayers();
   drawWheel(0);
-  updatePlayerCount();
 }
 
-// ── INYECTOR ADAPTATIVO: Solución estructural contra desincronizaciones de la SPA ──
-(function initializeSequence() {
-  let attempts = 0;
-  const maxAttempts = 30; // 3 segundos de guardrail total
-
-  function poll() {
-    attempts++;
-    // Verificamos si los módulos core de la SPA ya inyectaron sus instancias en el contexto global
-    if (window.SGAuth && window.SGApi && typeof SGAuth.isLoggedIn === 'function') {
-      loadRouletteGroups();
-    } else if (attempts < maxAttempts) {
-      setTimeout(poll, 100); // Pooling transaccional de alta frecuencia
-    } else {
-      console.warn("[Ruleta] Tiempo de espera de infraestructura agotado. Fallback local activado.");
-      setDefaultPlayers();
-    }
-  }
-
-  if (document.readyState === 'complete') {
-    poll();
-  } else {
-    window.addEventListener('load', poll);
-  }
-})();
+// Inicialización defensiva atómica usando los cuadros de animación del navegador
+requestAnimationFrame(loadRouletteGroups);
 </script>
 
 <script>
