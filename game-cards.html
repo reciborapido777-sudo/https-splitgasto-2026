@@ -95,7 +95,7 @@
     transition:border-color 0.3s;
   }
 
-  /* Deal button */
+  /* RESTAURACIÓN: Botón Repartir Original Verde/Cian Premium */
   #deal-btn {
     background:linear-gradient(135deg, var(--cyan), #0fbfaf);
     color:#0a0a0a;
@@ -110,6 +110,12 @@
   #deal-btn:active:not(:disabled) { transform:scale(0.97); }
   #deal-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
+  /* RESTAURACIÓN: Contenedor de resultado con bordes redondeados y glassmorphism */
+  #result-box {
+    border:1px solid rgba(19,236,214,0.3);
+    box-shadow:0 0 25px rgba(19,236,214,0.15);
+  }
+
   @keyframes deal-card { from{opacity:0;transform:translateY(-30px) rotateX(30deg)} to{opacity:1;transform:translateY(0) rotateX(0)} }
   .deal-anim { animation:deal-card 0.4s ease forwards; }
 
@@ -119,6 +125,22 @@
   /* ── Confetti ── */
   .confetti-piece { position:fixed; width:10px; height:10px; top:-20px; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
   @keyframes confetti-fall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+  /* Player chips */
+  .player-chip {
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:50px;
+    padding:6px 14px;
+    font-size:0.8rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .player-chip:hover { background:rgba(255,255,255,0.1); }
+  .player-chip.active { border-color:var(--cyan); background:rgba(19,236,214,0.12); color:var(--cyan); }
+  .player-chip .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
   .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 12px; cursor:pointer; transition:all .2s; }
   .nav-item span.material-icons-round { font-size:20px; color:#4a4a4a; transition:color .2s; }
@@ -144,6 +166,7 @@
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
+<!-- Header — Flecha de retorno consistente de auditoría -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -159,6 +182,7 @@
 
 <main class="max-w-md mx-auto px-3 pt-6 space-y-6">
 
+  <!-- Group Selector structural clone -->
   <div class="glass p-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.2)">🎮</div>
@@ -173,6 +197,7 @@
     <p class="text-xs opacity-40 mt-2 pl-13" id="group-member-count">— participantes</p>
   </div>
 
+  <!-- Game stats -->
   <div class="grid grid-cols-3 gap-3">
     <div class="glass p-3 text-center">
       <p class="text-lg font-bold font-space" style="color:var(--cyan)" id="round-num">1</p>
@@ -188,6 +213,7 @@
     </div>
   </div>
 
+  <!-- Tapete / Game board -->
   <div id="tapete">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 text-center mb-4">Mesa de Juego</p>
     <div id="cards-grid" class="flex justify-center gap-4 flex-wrap min-h-[180px] items-center">
@@ -195,9 +221,10 @@
     </div>
   </div>
 
-  <div id="result-banner" class="hidden p-5 text-center relative z-10 my-2">
-    <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">🎯 ¡RESULTADO!</p>
-    <p class="text-2xl font-extrabold font-space" id="result-name" style="color:var(--cyan)">—</p>
+  <!-- RESTAURACIÓN: Caja de resultados original con bordes redondeados glass -->
+  <div id="result-box" class="hidden glass p-5 text-center relative z-10 my-2">
+    <div class="text-3xl mb-2" id="result-emoji">🃏</div>
+    <p class="text-xl font-extrabold font-space" id="result-text" style="color:var(--cyan)">—</p>
     <p class="text-sm opacity-60 mt-1" id="result-sub">—</p>
     <div class="flex justify-center gap-3 mt-4">
       <button onclick="confirmAndPay()" class="px-5 py-2 rounded-full font-bold text-sm" style="background:var(--cyan);color:#0a0a0a">
@@ -209,6 +236,7 @@
     </div>
   </div>
 
+  <!-- Players list -->
   <div class="glass p-5 space-y-3">
     <div class="flex justify-between items-center mb-4">
       <h3 class="font-bold text-sm">Participantes</h3>
@@ -217,13 +245,15 @@
     <div id="players-container" class="flex flex-wrap gap-2"></div>
   </div>
 
-  <button id="spin-btn" class="w-full py-5" onclick="dealCards()">
+  <!-- RESTAURACIÓN: Botón "Repartir" original con el ID asignado al pulsador premium verde -->
+  <button id="deal-btn" class="w-full py-5" onclick="dealCards()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">style</span>
       REPARTIR CARTAS
     </span>
   </button>
 
+  <!-- Score table -->
   <div class="glass p-5">
     <h3 class="font-bold text-sm mb-3">Marcador de la Sesión</h3>
     <div id="scoreboard" class="space-y-2">
@@ -233,6 +263,7 @@
 
 </main>
 
+<!-- Add Player Modal -->
 <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
   <div class="glass p-6 mx-4 w-full max-w-sm">
     <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
@@ -345,8 +376,8 @@ function dealCards() {
 
   if (window.SGAudio) SGAudio.resume();
   isDealing = true;
-  document.getElementById('spin-btn').disabled = true;
-  document.getElementById('result-banner').classList.add('hidden');
+  document.getElementById('deal-btn').disabled = true;
+  document.getElementById('result-box').classList.add('hidden');
   
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
@@ -436,14 +467,15 @@ function showWinner() {
   playWinSound();
   const rankName = {'J':'Jota','Q':'Reina','K':'Rey','A':'As'}[winner.card.rank] || winner.card.rank;
   
-  const banner = document.getElementById('result-banner');
-  document.getElementById('result-name').textContent = `${winner.player.name} saca la de arriba`;
-  document.getElementById('result-name').style.color = winner.player.color;
+  const box = document.getElementById('result-box');
+  document.getElementById('result-emoji').textContent = winner.card.suit === '♥' || winner.card.suit === '♦' ? '🃏' : '🂡';
+  document.getElementById('result-text').textContent = `${winner.player.name} saca la de arriba`;
+  document.getElementById('result-text').style.color = winner.player.color;
   document.getElementById('result-sub').textContent = `${rankName} de ${winner.card.suit} (Valor: ${winner.card.value}) — Le toca pagar`;
-  banner.classList.remove('hidden');
+  box.classList.remove('hidden');
 
   isDealing = false;
-  document.getElementById('spin-btn').disabled = false;
+  document.getElementById('deal-btn').disabled = false;
 
   launchConfetti(winner.player.color);
   if(window.SGRouter) SGRouter.showToast(`¡${winner.player.name} saca la carta más alta! 🃏`, 'success');
@@ -453,7 +485,7 @@ function nextRound() {
   roundNum++;
   flippedCards.clear();
   dealtCards = [];
-  document.getElementById('result-banner').classList.add('hidden');
+  document.getElementById('result-box').classList.add('hidden');
   document.getElementById('cards-grid').innerHTML = '<p id="deal-prompt" class="text-sm opacity-30">Pulsa "Repartir" para comenzar</p>';
   updateStats();
 }
@@ -461,7 +493,7 @@ function nextRound() {
 function confirmAndPay() {
   if(window.SGRouter) {
     SGRouter.showToast('Gasto registrado con éxito ✓', 'success');
-    document.getElementById('result-banner').classList.add('hidden');
+    document.getElementById('result-box').classList.add('hidden');
     setTimeout(() => SGRouter.navigate('split'), 1200);
   }
 }
@@ -515,7 +547,7 @@ function launchConfetti(color) {
   }
 }
 
-// ─── CLONACIÓN EXACTA DEL MOTOR DE RED DE LA RULETA ───
+// ─── CANAL DE RED DE ALTA DISPONIBILIDAD CLONADO DE LA RULETA ───
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -670,6 +702,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<!-- Bottom Nav -->
 <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
