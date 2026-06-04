@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Carta Más Alta | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link rel="stylesheet" href="engine/global.css"/>
 <style>
@@ -95,7 +95,7 @@
     transition:border-color 0.3s;
   }
 
-  /* RESTAURACIÓN: Botón Repartir Original Verde/Cian Premium */
+  /* Botón Repartir Original Verde/Cian Premium */
   #deal-btn {
     background:linear-gradient(135deg, var(--cyan), #0fbfaf);
     color:#0a0a0a;
@@ -110,17 +110,18 @@
   #deal-btn:active:not(:disabled) { transform:scale(0.97); }
   #deal-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* RESTAURACIÓN: Contenedor de resultado con bordes redondeados y glassmorphism */
+  /* Caja de resultados original con bordes redondeados glass */
   #result-box {
     border:1px solid rgba(19,236,214,0.3);
     box-shadow:0 0 25px rgba(19,236,214,0.15);
   }
 
-  @keyframes deal-card { from{opacity:0;transform:translateY(-30px) rotateX(30deg)} to{opacity:1;transform:translateY(0) rotateX(0)} }
-  .deal-anim { animation:deal-card 0.4s ease forwards; }
+  /* Animación de reparto: optimizada a 350ms para evitar solapamiento visual */
+  @keyframes deal-card { from{opacity:0;transform:translateY(-40px) scale(0.85)} to{opacity:1;transform:translateY(0) scale(1)} }
+  .deal-anim { animation:deal-card 0.35s cubic-bezier(0.215, 0.610, 0.355, 1) forwards; }
 
-  @keyframes winner-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-  .winner-pulse { animation:winner-pulse 0.6s ease 3; }
+  @keyframes winner-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+  .winner-pulse { animation:winner-pulse 0.5s ease-in-out 2; }
 
   /* ── Confetti ── */
   .confetti-piece { position:fixed; width:10px; height:10px; top:-20px; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
@@ -166,7 +167,6 @@
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header — Flecha de retorno consistente de auditoría -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -182,7 +182,6 @@
 
 <main class="max-w-md mx-auto px-3 pt-6 space-y-6">
 
-  <!-- Group Selector structural clone -->
   <div class="glass p-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.2)">🎮</div>
@@ -197,7 +196,6 @@
     <p class="text-xs opacity-40 mt-2 pl-13" id="group-member-count">— participantes</p>
   </div>
 
-  <!-- Game stats -->
   <div class="grid grid-cols-3 gap-3">
     <div class="glass p-3 text-center">
       <p class="text-lg font-bold font-space" style="color:var(--cyan)" id="round-num">1</p>
@@ -213,7 +211,6 @@
     </div>
   </div>
 
-  <!-- Tapete / Game board -->
   <div id="tapete">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 text-center mb-4">Mesa de Juego</p>
     <div id="cards-grid" class="flex justify-center gap-4 flex-wrap min-h-[180px] items-center">
@@ -221,7 +218,6 @@
     </div>
   </div>
 
-  <!-- RESTAURACIÓN: Caja de resultados original con bordes redondeados glass -->
   <div id="result-box" class="hidden glass p-5 text-center relative z-10 my-2">
     <div class="text-3xl mb-2" id="result-emoji">🃏</div>
     <p class="text-xl font-extrabold font-space" id="result-text" style="color:var(--cyan)">—</p>
@@ -236,7 +232,6 @@
     </div>
   </div>
 
-  <!-- Players list -->
   <div class="glass p-5 space-y-3">
     <div class="flex justify-between items-center mb-4">
       <h3 class="font-bold text-sm">Participantes</h3>
@@ -245,7 +240,6 @@
     <div id="players-container" class="flex flex-wrap gap-2"></div>
   </div>
 
-  <!-- RESTAURACIÓN: Botón "Repartir" original con el ID asignado al pulsador premium verde -->
   <button id="deal-btn" class="w-full py-5" onclick="dealCards()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">style</span>
@@ -253,7 +247,6 @@
     </span>
   </button>
 
-  <!-- Score table -->
   <div class="glass p-5">
     <h3 class="font-bold text-sm mb-3">Marcador de la Sesión</h3>
     <div id="scoreboard" class="space-y-2">
@@ -263,7 +256,6 @@
 
 </main>
 
-<!-- Add Player Modal -->
 <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
   <div class="glass p-6 mx-4 w-full max-w-sm">
     <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
@@ -393,7 +385,7 @@ function dealCards() {
     slot.innerHTML = `
       <div class="player-avatar text-xs" style="background:${p.color}22;color:${p.color};border:2px solid ${p.color}44;">${p.name.slice(0,2).toUpperCase()}</div>
       <div class="card-scene" onclick="flipCardManual(${i})">
-        <div class="card-3d deal-anim" id="card-${i}" style="animation-delay:${i*150}ms">
+        <div class="card-3d deal-anim" id="card-${i}" style="animation-delay:${i*100}ms">
           <div class="card-face card-back">
             <div class="card-back-pattern">
               <span class="material-icons-round" style="color:rgba(19,236,214,0.3);font-size:2rem">payments</span>
@@ -412,12 +404,14 @@ function dealCards() {
     grid.appendChild(slot);
   });
 
+  // CORRECCIÓN DEL PESTAÑEO: Espera estricta de 450ms a que acabe el vuelo antes de voltear en 3D
   setTimeout(() => {
     active.forEach((_, i) => {
       setTimeout(() => flipCard(i), i * 200);
     });
-    setTimeout(() => showWinner(), active.length * 200 + 800);
-  }, 400);
+    // CORRECCIÓN DEL CONFETI: Sincronización milimétrica pospuesta a 1100ms tras completar el giro real
+    setTimeout(() => showWinner(), active.length * 200 + 1100);
+  }, 450);
 
   updateStats();
 }
@@ -477,6 +471,7 @@ function showWinner() {
   isDealing = false;
   document.getElementById('deal-btn').disabled = false;
 
+  // El estallido ahora es síncrono al despliegue del banner de resultados
   launchConfetti(winner.player.color);
   if(window.SGRouter) SGRouter.showToast(`¡${winner.player.name} saca la carta más alta! 🃏`, 'success');
 }
@@ -547,7 +542,7 @@ function launchConfetti(color) {
   }
 }
 
-// ─── CANAL DE RED DE ALTA DISPONIBILIDAD CLONADO DE LA RULETA ───
+// ─── CANAL DE RED DE LA RULETA PRESERVADO AL 100% ───
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -702,7 +697,6 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- Bottom Nav -->
 <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
