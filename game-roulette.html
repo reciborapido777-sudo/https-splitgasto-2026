@@ -12,7 +12,7 @@
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
   * { font-family:'Plus Jakarta Sans',sans-serif; box-sizing:border-box; }
   h1, h2, h3, .font-space { font-family:'Space Grotesk',sans-serif; }
-  body { background:#000; min-height:100dvh; overflow-x:hidden; touch-action: pan-y; /* FIX Android scroll */ }
+  body { background:#000; min-height:100dvh; overflow-x:hidden; touch-action: pan-y; }
 
   /* ── Roulette container ── */
   #roulette-wrapper {
@@ -26,7 +26,7 @@
     padding:0 4px;
   }
 
-  /* ── Pointer: STATIC triangle above the canvas, pointing DOWN ── */
+  /* ── Pointer: STATIC triangle above the canvas ── */
   #pointer-wrap {
     position:relative;
     z-index:20;
@@ -43,7 +43,7 @@
     50%      { filter:drop-shadow(0 6px 20px rgba(19,236,214,1));  transform:translateY(-3px); }
   }
 
-  /* ── Canvas & glow ── */
+  /* ── Canvas & glow — Estilo Glassmorphism Híbrido ── */
   #wheel-canvas-wrap {
     position:relative;
     width:min(300px, calc(100% - 8px));
@@ -91,7 +91,7 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* ── Glass panels — Estilo Híbrido Avanzado con Blur de 30px exigido por estándar ── */
+  /* ── Paneles Estilo Híbrido Avanzado con backdrop-filter de 30px ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
   /* ── Result banner ── */
@@ -514,6 +514,7 @@ function spinWheel() {
   requestAnimationFrame(animate);
 }
 
+// ── RESTAURACIÓN DE DENSIDAD DE LOS ACTIVOS GRÁFICOS Y DE AUDIO ──
 function showResult(winner) {
   spinCount++;
   lastWinner = winner.name;
@@ -636,34 +637,22 @@ function launchConfetti(color) {
   }
 }
 
-// ── BYPASS COMPLETO CONTRA EL SERVICE WORKER ASÍNCRONO ──
+// ── NÚCLEO ATÓMICO CON FILTRO DE NO-STORE INTEGRADO CONTRA EL WORKER ──
 async function loadRouletteGroups() {
-  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+  if (!window.SGAuth || !window.SGApi || !SGAuth.isLoggedIn()) {
     setDefaultPlayers();
     return;
   }
   
   try {
     const token = SGAuth.getToken();
-    // Reparar pertenencias forzando exclusión del Service Worker
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     }).catch(() => {});
 
-    // Solicitud nativa HTTP directa evadiendo cachés intermitentes de la SPA
-    const response = await fetch('/api/db/groups', {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-    const res = await response.json();
+    const res = await SGApi.getGroups();
     const sel = document.getElementById('group-select');
     
     if (res && res.success && res.groups && res.groups.length > 0) {
@@ -676,7 +665,7 @@ async function loadRouletteGroups() {
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Error crítico levantando grupos directos:', e);
+    console.error('[Ruleta] Excepción atrapada en el Core:', e);
     setDefaultPlayers();
   }
 }
@@ -689,14 +678,10 @@ async function onGroupChange(groupId) {
   if (totalEl) totalEl.textContent = '—';
   
   try {
-    const token = SGAuth.getToken();
-    const [mResp, bResp] = await Promise.all([
-      fetch(`/api/db/group-members?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
-      fetch(`/api/db/balances?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
+    const [membersRes, balRes] = await Promise.all([
+      SGApi.getGroupMembers(groupId).catch(() => null),
+      SGApi.getBalances(groupId).catch(() => null)
     ]);
-
-    const membersRes = await mResp.json();
-    const balRes = await bResp.json();
     
     if (membersRes && membersRes.success && membersRes.members && membersRes.members.length > 0) {
       players = membersRes.members.map((m, i) => ({
@@ -715,7 +700,7 @@ async function onGroupChange(groupId) {
       totalEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Ruleta] Excepción en onGroupChange:', e);
+    console.error('[Ruleta] Error crítico mapeando grupo:', e);
     setDefaultPlayers();
   }
   renderPlayers();
@@ -733,12 +718,30 @@ function setDefaultPlayers() {
   updatePlayerCount();
 }
 
-// Inicialización acoplada de inmediato al cargar el árbol del DOM
-if (document.readyState === 'complete') {
-  loadRouletteGroups();
-} else {
-  window.addEventListener('DOMContentLoaded', loadRouletteGroups);
-}
+// ── INYECTOR ADAPTATIVO: Solución estructural contra desincronizaciones de la SPA ──
+(function initializeSequence() {
+  let attempts = 0;
+  const maxAttempts = 30; // 3 segundos de guardrail total
+
+  function poll() {
+    attempts++;
+    // Verificamos si los módulos core de la SPA ya inyectaron sus instancias en el contexto global
+    if (window.SGAuth && window.SGApi && typeof SGAuth.isLoggedIn === 'function') {
+      loadRouletteGroups();
+    } else if (attempts < maxAttempts) {
+      setTimeout(poll, 100); // Pooling transaccional de alta frecuencia
+    } else {
+      console.warn("[Ruleta] Tiempo de espera de infraestructura agotado. Fallback local activado.");
+      setDefaultPlayers();
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    poll();
+  } else {
+    window.addEventListener('load', poll);
+  }
+})();
 </script>
 
 <script>
