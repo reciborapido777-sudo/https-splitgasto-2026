@@ -330,7 +330,6 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
-    // CORRECCIÓN RADIAL DEFINITIVA: Alineación ortogonal matemática del lienzo
     const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
@@ -509,7 +508,7 @@ function spinWheel() {
       canvas.classList.remove('spinning');
       document.getElementById('spin-btn').disabled = false;
       playWinSound();
-      showResult(active[winnerIdx]); // Inyección atómica del resultado
+      showResult(active[winnerIdx]); 
     }
   }
   requestAnimationFrame(animate);
@@ -530,7 +529,7 @@ function showResult(winner) {
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
   
-  // RESTAURACIÓN ABSOLUTA DEL CONFETI PARTICIPANTE
+  // Confetis restaurados al 100%
   launchConfetti(winner.color);
   
   if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
@@ -627,7 +626,6 @@ document.getElementById('new-player-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') addPlayerFromModal();
 });
 
-// INTEGRIDAD DE ACTIVOS ANIMADOS: Regeneración simétrica de partículas de confeti
 function launchConfetti(color) {
   for (let i = 0; i < 45; i++) {
     const p = document.createElement('div');
@@ -646,7 +644,6 @@ function launchConfetti(color) {
   }
 }
 
-// ── CAPTURA DIRECTA CORE EXCLUSIVA (Blindaje definitivo contra promesas muertas) ──
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -663,10 +660,13 @@ function getStandaloneToken() {
   return null;
 }
 
+// SOLUCIÓN AL DESBORDAMIENTO: Inicialización segura mediante un único temporizador controlado
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
+  
+  // Si el Router aún no ha inyectado el nodo en el árbol, esperar 50ms de forma pasiva (no recursiva)
   if (!sel) {
-    requestAnimationFrame(loadRouletteGroups);
+    setTimeout(loadRouletteGroups, 50);
     return;
   }
 
@@ -765,7 +765,8 @@ function setDefaultPlayers() {
   drawWheel(0);
 }
 
-requestAnimationFrame(loadRouletteGroups);
+// Lanzar secuencia limpia diferida una única vez
+setTimeout(loadRouletteGroups, 100);
 </script>
 
 <script>
