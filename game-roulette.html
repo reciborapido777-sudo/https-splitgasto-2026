@@ -26,7 +26,7 @@
     padding:0 4px;
   }
 
-  /* ── Pointer: STATIC triangle above the canvas ── */
+  /* ── Pointer ── */
   #pointer-wrap {
     position:relative;
     z-index:20;
@@ -43,7 +43,7 @@
     50%      { filter:drop-shadow(0 6px 20px rgba(19,236,214,1));  transform:translateY(-3px); }
   }
 
-  /* ── Canvas & glow — Estilo Glassmorphism Híbrido ── */
+  /* ── Canvas & glow ── */
   #wheel-canvas-wrap {
     position:relative;
     width:min(300px, calc(100% - 8px));
@@ -91,7 +91,6 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* ── Paneles Estilo Híbrido Avanzado ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
   /* ── Result banner ── */
@@ -155,14 +154,15 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <script src="engine/audio.js" defer></script>
 <script src="engine/desktop-fix.js" defer></script>
+<!-- CORRECCIÓN DE ORDEN: Sincronización homogénea de la carga diferida para evitar mermas en runtime -->
 <script src="engine/router.js" defer></script>
-<script src="engine/auth.js"></script>
-<script src="engine/api.js"></script>
+<script src="engine/auth.js" defer></script>
+<script src="engine/api.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header — Flecha de retorno auditada fija -->
+<!-- Header -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -197,8 +197,6 @@
   <!-- Roulette Wheel -->
   <div class="flex flex-col items-center py-4">
     <div id="roulette-wrapper">
-
-      <!-- Pointer -->
       <div id="pointer-wrap">
         <svg id="pointer" width="32" height="36" viewBox="0 0 32 36">
           <defs>
@@ -219,7 +217,6 @@
         </svg>
       </div>
 
-      <!-- Wheel canvas -->
       <div id="wheel-canvas-wrap">
         <canvas id="wheel" width="300" height="300"></canvas>
         <div id="wheel-shadow"></div>
@@ -328,7 +325,6 @@ canvas.height = SIZE;
 
 function getActivePlayers() { return players.filter(p => p.active); }
 
-// ── RESTAURACIÓN LÍNEAS DE RENDERIZADO AVANZADO (Lienzo 2D de Alta Densidad) ──
 function drawWheel(angle) {
   const active = getActivePlayers();
   if (!active.length) return;
@@ -454,7 +450,6 @@ function drawWheel(angle) {
   ctx.fill();
 }
 
-// ── RESTAURACIÓN FÍSICAS DE VELOCIDAD ANGULAR ──
 let lastTickAngle = 0;
 let lastTickTime  = 0;
 
@@ -651,17 +646,42 @@ function launchConfetti(color) {
   }
 }
 
-// ── CONTROL DE BYPASS DE RED CONTRA EL SERVICE WORKER ──
+// ── CONTROL DE INICIALIZACIÓN DE RED ADAPTATIVA CONTRA REPETICIONES FANTASMA ──
+let loadAttempts = 0;
+
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
+  const countEl = document.getElementById('group-member-count');
   
-  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+  // SOLUCIÓN AL BUCLE FANTASMA: Si SGAuth tarda en inyectarse por el Service Worker, reintentamos la secuencia
+  if (!window.SGAuth || typeof SGAuth.isLoggedIn !== 'function') {
+    loadAttempts++;
+    if (loadAttempts < 10) {
+      console.warn(`[Ruleta] Motor Auth ausente o en diferido (Intento ${loadAttempts}). Reintentando en 150ms...`);
+      setTimeout(loadRouletteGroups, 150);
+      return;
+    }
+    console.error("[Ruleta] Error crítico: El módulo 'SGAuth' no se inicializó correctamente.");
+    if (countEl) countEl.innerHTML = "<span class='text-red-400'>Error de infraestructura Auth</span>";
+    setDefaultPlayers();
+    return;
+  }
+
+  if (!SGAuth.isLoggedIn()) {
+    if (countEl) countEl.textContent = "Modo demostración — Inicie sesión para sincronizar grupos";
     setDefaultPlayers();
     return;
   }
   
   try {
     const token = SGAuth.getToken();
+    if (!token) {
+      console.warn("[Ruleta] El token de sesión devolvió un valor nulo.");
+      setTimeout(loadRouletteGroups, 200);
+      return;
+    }
+
+    // Bypass del Service Worker para evitar persistencia estática errónea
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
@@ -670,9 +690,16 @@ async function loadRouletteGroups() {
 
     const response = await fetch('/api/db/groups', {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
       cache: 'no-store'
     });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP Error Status: ${response.status}`);
+    }
     
     const res = await response.json();
     
@@ -682,12 +709,13 @@ async function loadRouletteGroups() {
       ).join('');
       await onGroupChange(res.groups[0].id);
     } else {
-      sel.innerHTML = '<option value="">Sin grupos — añade jugadores manualmente</option>';
+      sel.innerHTML = '<option value="">Sin grupos activos en el perfil</option>';
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Error crítico cargando grupos:', e);
-    sel.innerHTML = '<option value="">Error de conexión — añade manualmente</option>';
+    console.error('[Ruleta] Captura de excepción en carga de grupos:', e);
+    sel.innerHTML = '<option value="">Error de sincronización con el servidor</option>';
+    if (countEl) countEl.innerHTML = `<span class='text-red-400'>Error de Red local</span>`;
     setDefaultPlayers();
   }
 }
@@ -696,7 +724,7 @@ async function onGroupChange(groupId) {
   if (!groupId) return;
   const countEl   = document.getElementById('group-member-count');
   const totalEl   = document.getElementById('group-total');
-  if (countEl) countEl.textContent = 'Cargando miembros…';
+  if (countEl) countEl.textContent = 'Sincronizando participantes…';
   if (totalEl) totalEl.textContent = '—';
   
   try {
@@ -719,18 +747,18 @@ async function onGroupChange(groupId) {
       if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
     } else {
       setDefaultPlayers();
-      if (countEl) countEl.textContent = 'Participantes por defecto';
+      if (countEl) countEl.textContent = 'Participantes cargados por defecto';
     }
     
     if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
-      if (totalEl) totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+      totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     } else {
-      if (totalEl) totalEl.textContent = '0,00 €';
+      totalEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Ruleta] Error cargando miembros del grupo:', e);
+    console.error('[Ruleta] Excepción en onGroupChange:', e);
     setDefaultPlayers();
-    if (countEl) countEl.textContent = 'Error de sincronización';
+    if (countEl) countEl.textContent = 'Error de comunicación';
     if (totalEl) totalEl.textContent = '0,00 €';
   }
   
@@ -749,11 +777,11 @@ function setDefaultPlayers() {
   updatePlayerCount();
 }
 
-// ── CONTROL DE INICIALIZACIÓN ──
+// Inicialización basada en la carga completa de recursos asíncronos diferidos
 if (document.readyState === 'complete') {
   loadRouletteGroups();
 } else {
-  window.addEventListener('DOMContentLoaded', loadRouletteGroups);
+  window.addEventListener('load', loadRouletteGroups);
 }
 </script>
 
