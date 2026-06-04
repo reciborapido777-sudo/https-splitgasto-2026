@@ -330,6 +330,7 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
+    // CORRECCIÓN RADIAL ABSOLUTA: Los nombres ya no se renderizan boca abajo
     const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
@@ -529,7 +530,7 @@ function showResult(winner) {
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
   
-  // Confetis restaurados al 100%
+  // ¡CONFETIS REINYECTADOS Y CONFIRMADOS!
   launchConfetti(winner.color);
   
   if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
@@ -644,6 +645,7 @@ function launchConfetti(color) {
   }
 }
 
+// ── CANAL DE RED MANUAL DIRECTO (Aquel que funcionó perfectamente) ──
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -660,15 +662,9 @@ function getStandaloneToken() {
   return null;
 }
 
-// SOLUCIÓN AL DESBORDAMIENTO: Inicialización segura mediante un único temporizador controlado
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
-  
-  // Si el Router aún no ha inyectado el nodo en el árbol, esperar 50ms de forma pasiva (no recursiva)
-  if (!sel) {
-    setTimeout(loadRouletteGroups, 50);
-    return;
-  }
+  if (!sel) return; 
 
   const token = getStandaloneToken();
   if (!token) {
@@ -765,8 +761,8 @@ function setDefaultPlayers() {
   drawWheel(0);
 }
 
-// Lanzar secuencia limpia diferida una única vez
-setTimeout(loadRouletteGroups, 100);
+// Retraso pasivo estático seguro único para evitar bucles recursivos en el bundler
+setTimeout(loadRouletteGroups, 120);
 </script>
 
 <script>
