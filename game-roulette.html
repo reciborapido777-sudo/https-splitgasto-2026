@@ -43,7 +43,7 @@
     50%      { filter:drop-shadow(0 6px 20px rgba(19,236,214,1));  transform:translateY(-3px); }
   }
 
-  /* ── Canvas & glow ── */
+  /* ── Canvas & glow — Estilo Glassmorphism Híbrido ── */
   #wheel-canvas-wrap {
     position:relative;
     width:min(300px, calc(100% - 8px));
@@ -154,15 +154,12 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <script src="engine/audio.js" defer></script>
 <script src="engine/desktop-fix.js" defer></script>
-<!-- CORRECCIÓN DE ORDEN: Sincronización homogénea de la carga diferida para evitar mermas en runtime -->
 <script src="engine/router.js" defer></script>
-<script src="engine/auth.js" defer></script>
-<script src="engine/api.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header -->
+<!-- Header — Con flecha de retorno consistente -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -646,29 +643,60 @@ function launchConfetti(color) {
   }
 }
 
-// ── CONTROL DE INICIALIZACIÓN DE RED ADAPTATIVA CONTRA REPETICIONES FANTASMA ──
+// ── BLINDAJE E INYECTOR TRANSACCIONAL DE INFRAESTRUCTURA AUTH/API ──
+async function forceInjectInfrastructure() {
+  return new Promise((resolve) => {
+    let loadedScripts = 0;
+    
+    function checkReady() {
+      if (window.SGAuth && window.SGApi) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    }
+
+    if (!window.SGAuth) {
+      const sAuth = document.createElement('script');
+      sAuth.src = 'engine/auth.js';
+      sAuth.onload = () => { loadedScripts++; if(loadedScripts >= 2) checkReady(); };
+      document.head.appendChild(sAuth);
+    } else { loadedScripts++; }
+
+    if (!window.SGApi) {
+      const sApi = document.createElement('script');
+      sApi.src = 'engine/api.js';
+      sApi.onload = () => { loadedScripts++; if(loadedScripts >= 2) checkReady(); };
+      document.head.appendChild(sApi);
+    } else { loadedScripts++; }
+
+    if (loadedScripts >= 2) checkReady();
+  });
+}
+
 let loadAttempts = 0;
 
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
   const countEl = document.getElementById('group-member-count');
-  
-  // SOLUCIÓN AL BUCLE FANTASMA: Si SGAuth tarda en inyectarse por el Service Worker, reintentamos la secuencia
-  if (!window.SGAuth || typeof SGAuth.isLoggedIn !== 'function') {
-    loadAttempts++;
-    if (loadAttempts < 10) {
-      console.warn(`[Ruleta] Motor Auth ausente o en diferido (Intento ${loadAttempts}). Reintentando en 150ms...`);
-      setTimeout(loadRouletteGroups, 150);
+
+  // Forzar inyección si el router de la SPA destruyó los módulos en la navegación
+  if (!window.SGAuth || !window.SGApi) {
+    const injected = await forceInjectInfrastructure();
+    if (!injected) {
+      loadAttempts++;
+      if (loadAttempts < 12) {
+        setTimeout(loadRouletteGroups, 100);
+        return;
+      }
+      if (countEl) countEl.innerHTML = "<span class='text-orange-400'>Reconectando núcleo core...</span>";
+      setDefaultPlayers();
       return;
     }
-    console.error("[Ruleta] Error crítico: El módulo 'SGAuth' no se inicializó correctamente.");
-    if (countEl) countEl.innerHTML = "<span class='text-red-400'>Error de infraestructura Auth</span>";
-    setDefaultPlayers();
-    return;
   }
 
   if (!SGAuth.isLoggedIn()) {
-    if (countEl) countEl.textContent = "Modo demostración — Inicie sesión para sincronizar grupos";
+    if (countEl) countEl.textContent = "Modo demostración — Inicie sesión para sincronizar";
     setDefaultPlayers();
     return;
   }
@@ -676,12 +704,11 @@ async function loadRouletteGroups() {
   try {
     const token = SGAuth.getToken();
     if (!token) {
-      console.warn("[Ruleta] El token de sesión devolvió un valor nulo.");
-      setTimeout(loadRouletteGroups, 200);
+      setTimeout(loadRouletteGroups, 150);
       return;
     }
 
-    // Bypass del Service Worker para evitar persistencia estática errónea
+    // Bypass estricto al worker Cloudflare contra el caché estático del SW
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
@@ -697,10 +724,7 @@ async function loadRouletteGroups() {
       cache: 'no-store'
     });
     
-    if (!response.ok) {
-      throw new Error(`HTTP Error Status: ${response.status}`);
-    }
-    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const res = await response.json();
     
     if (res && res.success && res.groups && res.groups.length > 0) {
@@ -713,9 +737,9 @@ async function loadRouletteGroups() {
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Captura de excepción en carga de grupos:', e);
-    sel.innerHTML = '<option value="">Error de sincronización con el servidor</option>';
-    if (countEl) countEl.innerHTML = `<span class='text-red-400'>Error de Red local</span>`;
+    console.error('[Ruleta] Fallo de sincronización:', e);
+    sel.innerHTML = '<option value="">Error de conexión activa</option>';
+    if (countEl) countEl.innerHTML = `<span class='text-cyan-400'>Modo manual listo</span>`;
     setDefaultPlayers();
   }
 }
@@ -747,7 +771,7 @@ async function onGroupChange(groupId) {
       if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
     } else {
       setDefaultPlayers();
-      if (countEl) countEl.textContent = 'Participantes cargados por defecto';
+      if (countEl) countEl.textContent = 'Participantes por defecto';
     }
     
     if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
@@ -756,9 +780,9 @@ async function onGroupChange(groupId) {
       totalEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Ruleta] Excepción en onGroupChange:', e);
+    console.error('[Ruleta] Excepción en sub-fetch:', e);
     setDefaultPlayers();
-    if (countEl) countEl.textContent = 'Error de comunicación';
+    if (countEl) countEl.textContent = 'Modo local autónomo';
     if (totalEl) totalEl.textContent = '0,00 €';
   }
   
@@ -777,12 +801,8 @@ function setDefaultPlayers() {
   updatePlayerCount();
 }
 
-// Inicialización basada en la carga completa de recursos asíncronos diferidos
-if (document.readyState === 'complete') {
-  loadRouletteGroups();
-} else {
-  window.addEventListener('load', loadRouletteGroups);
-}
+// Inicialización instantánea sin bloqueos de DOM
+loadRouletteGroups();
 </script>
 
 <script>
