@@ -5,26 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Carta Más Alta | SplitGasto 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
 <link rel="stylesheet" href="engine/global.css"/>
 <style>
   :root { --cyan:#13ecd6; --purple:#a855f7; --orange:#FF9D42; }
-  * { font-family:'Plus Jakarta Sans',sans-serif; box-sizing:border-box; }
-  h1, h2, h3, .font-space { font-family:'Space Grotesk',sans-serif; }
-  body { background:#000; min-height:100dvh; overflow-x:hidden; touch-action: pan-y; }
+  * { font-family:'Manrope',sans-serif; box-sizing:border-box; }
+  body { background:#0a0a0a; min-height:100dvh; overflow-x:hidden; touch-action: pan-y; /* FIX Android scroll */ }
 
-  /* ── Paneles Estilo Híbrido Avanzado con backdrop-filter de 30px ── */
-  .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
+  .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:24px; }
 
-  /* ─── 3D Card ─── */
+  /* 3D Card */
+  /* touch-action:pan-y lets vertical swipes scroll the page instead of
+     being consumed by the click/touch handler on the card element */
   .card-scene { perspective:800px; cursor:pointer; touch-action: pan-y; }
+  .card-3d { touch-action: pan-y; }
   .card-3d {
     position:relative;
     width:110px; height:160px;
     transform-style:preserve-3d;
     transition:transform 0.7s cubic-bezier(0.175,0.885,0.32,1.275);
-    touch-action: pan-y;
   }
   .card-3d.flipped { transform:rotateY(180deg); }
   .card-face {
@@ -85,7 +85,9 @@
   }
 
   /* Player slot */
-  .player-slot { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .player-slot {
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
   .player-avatar {
     width:40px; height:40px;
     border-radius:50%;
@@ -95,122 +97,103 @@
     transition:border-color 0.3s;
   }
 
-  /* Botón Repartir Original Verde/Cian Premium */
+  /* Deal button */
   #deal-btn {
     background:linear-gradient(135deg, var(--cyan), #0fbfaf);
     color:#0a0a0a;
     border-radius:50px;
     font-weight:800;
     font-size:1.1rem;
-    letter-spacing:0.05em;
-    transition:all 0.2s;
     box-shadow:0 8px 32px rgba(19,236,214,0.4);
+    transition:all 0.2s;
   }
   #deal-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(19,236,214,0.6); }
-  #deal-btn:active:not(:disabled) { transform:scale(0.97); }
   #deal-btn:disabled { opacity:0.5; cursor:not-allowed; }
 
-  /* Caja de resultados original con bordes redondeados glass */
-  #result-box {
-    border:1px solid rgba(19,236,214,0.3);
-    box-shadow:0 0 25px rgba(19,236,214,0.15);
-  }
+  .bottom-nav { background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); }
 
-  /* Animación de reparto: optimizada a 350ms para evitar solapamiento visual */
-  @keyframes deal-card { from{opacity:0;transform:translateY(-40px) scale(0.85)} to{opacity:1;transform:translateY(0) scale(1)} }
-  .deal-anim { animation:deal-card 0.35s cubic-bezier(0.215, 0.610, 0.355, 1) forwards; }
+  @keyframes deal-card { from{opacity:0;transform:translateY(-30px) rotateX(30deg)} to{opacity:1;transform:translateY(0) rotateX(0)} }
+  .deal-anim { animation:deal-card 0.4s ease forwards; }
 
-  @keyframes winner-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
-  .winner-pulse { animation:winner-pulse 0.5s ease-in-out 2; }
+  @keyframes winner-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  .winner-pulse { animation:winner-pulse 0.6s ease 3; }
 
-  /* ── Confetti ── */
-  .confetti-piece { position:fixed; width:10px; height:10px; top:-20px; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
-  @keyframes confetti-fall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+  .confetti-piece { position:fixed; border-radius:2px; animation:confetti-fall linear forwards; z-index:100; pointer-events:none; }
+  @keyframes confetti-fall { from{transform:translateY(-20px) rotate(0deg);opacity:1} to{transform:translateY(110vh) rotate(720deg);opacity:0} }
 
-  /* Player chips */
-  .player-chip {
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:50px;
-    padding:6px 14px;
-    font-size:0.8rem;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.2s;
-    display:flex; align-items:center; gap:8px;
-  }
-  .player-chip:hover { background:rgba(255,255,255,0.1); }
-  .player-chip.active { border-color:var(--cyan); background:rgba(19,236,214,0.12); color:var(--cyan); }
-  .player-chip .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-
-  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 12px; cursor:pointer; transition:all .2s; }
-  .nav-item span.material-icons-round { font-size:20px; color:#4a4a4a; transition:color .2s; }
-  .nav-item p { font-size:8px; font-weight:900; text-transform:uppercase; letter-spacing:.15em; color:#4a4a4a; transition:color .2s; }
-  .nav-item.active span.material-icons-round, .nav-item.active p { color:#13ecd6; }
-  .nav-item:hover span.material-icons-round, .nav-item:hover p { color:#fff; }
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#13ecd6">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SplitGasto">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<script src="engine/audio.js" defer></script>
-<script src="engine/desktop-fix.js" defer></script>
-<script src="engine/router.js" defer></script>
-<script src="engine/auth.js"></script>
-<script src="engine/api.js"></script>
+    <meta name="theme-color" content="#13ecd6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
+    <script src="engine/audio.js" defer></script>
+    <script src="engine/desktop-fix.js" defer></script>
+    <script src="engine/router.js" defer></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
+<!-- Header -->
+<header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
   </button>
   <div class="text-center">
-    <h1 class="font-bold text-base tracking-tight">La Carta Más Alta</h1>
+    <h1 class="font-bold text-base">La Carta Más Alta</h1>
     <p class="text-xs opacity-50">Baraja del Destino</p>
   </div>
-  <button id="add-player-btn" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(19,236,214,0.15);border:1px solid rgba(19,236,214,0.3)">
-    <span class="material-icons-round text-sm" style="color:var(--cyan)">person_add</span>
+  <button id="settings-btn" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
+    <span class="material-icons-round text-sm opacity-60">tune</span>
   </button>
 </header>
 
-<main class="max-w-md mx-auto px-3 pt-6 space-y-6">
+<main class="max-w-md mx-auto px-4 pt-6 space-y-5">
 
+  <!-- Group selector — FIX: dinámico -->
   <div class="glass p-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.2)">🎮</div>
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-lg flex-shrink-0" style="background:rgba(168,85,247,0.2)">🃏</div>
       <div class="flex-1 min-w-0">
         <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Grupo</p>
-        <select id="group-select" class="w-full bg-transparent text-white font-bold text-sm outline-none cursor-pointer"
-          style="border:none;background:transparent" onchange="onGroupChange(this.value)">
+        <select id="group-select-cards" class="w-full text-white font-bold text-sm outline-none cursor-pointer"
+          style="border:none;background:transparent" onchange="onCardsGroupChange(this.value)">
           <option value="">Cargando grupos…</option>
         </select>
       </div>
     </div>
-    <p class="text-xs opacity-40 mt-2 pl-13" id="group-member-count">— participantes</p>
   </div>
 
+  <!-- Game stats -->
   <div class="grid grid-cols-3 gap-3">
     <div class="glass p-3 text-center">
-      <p class="text-lg font-bold font-space" style="color:var(--cyan)" id="round-num">1</p>
+      <p class="text-lg font-bold" style="color:var(--cyan)" id="round-num">1</p>
       <p class="text-xs opacity-40">Ronda</p>
     </div>
     <div class="glass p-3 text-center">
-      <p class="text-lg font-bold text-white font-space" id="deck-remaining">52</p>
+      <p class="text-lg font-bold text-white" id="deck-remaining">52</p>
       <p class="text-xs opacity-40">Cartas</p>
     </div>
     <div class="glass p-3 text-center">
-      <p class="text-lg font-bold font-space" style="color:var(--orange)" id="group-total">—</p>
+      <p class="text-lg font-bold" style="color:var(--orange)" id="pot">—</p>
       <p class="text-xs opacity-40">En juego</p>
     </div>
   </div>
 
+  <!-- Tapete / Game board -->
   <div id="tapete">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 text-center mb-4">Mesa de Juego</p>
     <div id="cards-grid" class="flex justify-center gap-4 flex-wrap min-h-[180px] items-center">
@@ -218,9 +201,10 @@
     </div>
   </div>
 
-  <div id="result-box" class="hidden glass p-5 text-center relative z-10 my-2">
+  <!-- Result -->
+  <div id="result-box" class="hidden glass p-5 text-center" style="border-color:rgba(19,236,214,0.3)">
     <div class="text-3xl mb-2" id="result-emoji">🃏</div>
-    <p class="text-xl font-extrabold font-space" id="result-text" style="color:var(--cyan)">—</p>
+    <p class="text-xl font-extrabold" id="result-text" style="color:var(--cyan)">—</p>
     <p class="text-sm opacity-60 mt-1" id="result-sub">—</p>
     <div class="flex justify-center gap-3 mt-4">
       <button onclick="confirmAndPay()" class="px-5 py-2 rounded-full font-bold text-sm" style="background:var(--cyan);color:#0a0a0a">
@@ -232,14 +216,18 @@
     </div>
   </div>
 
-  <div class="glass p-5 space-y-3">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-sm">Participantes</h3>
-      <span class="text-xs opacity-40 font-space" id="player-count">0 jugadores</span>
+  <!-- Players -->
+  <div class="glass p-5">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-sm">Jugadores</h3>
+      <button onclick="addPlayer()" class="text-xs font-bold" style="color:var(--cyan)">+ Añadir</button>
     </div>
-    <div id="players-container" class="flex flex-wrap gap-2"></div>
+    <div id="players-row" class="flex gap-3 flex-wrap">
+      <!-- rendered by JS -->
+    </div>
   </div>
 
+  <!-- Deal button -->
   <button id="deal-btn" class="w-full py-5" onclick="dealCards()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">style</span>
@@ -247,50 +235,35 @@
     </span>
   </button>
 
+  <!-- Score table -->
   <div class="glass p-5">
-    <h3 class="font-bold text-sm mb-3">Marcador de la Sesión</h3>
+    <h3 class="font-bold text-sm mb-3">Marcador</h3>
     <div id="scoreboard" class="space-y-2">
-      <p class="text-xs opacity-30 text-center py-2">Sin partidas registradas</p>
+      <!-- rendered by JS -->
     </div>
   </div>
 
 </main>
 
-<div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
-  <div class="glass p-6 mx-4 w-full max-w-sm">
-    <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
-    <input id="new-player-input" type="text" placeholder="Nombre del jugador"
-      class="w-full px-4 py-3 rounded-xl font-medium text-white"
-      style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1)"/>
-    <div class="flex gap-3 mt-4">
-      <button onclick="closeModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:rgba(255,255,255,0.07)">Cancelar</button>
-      <button onclick="addPlayerFromModal()" class="flex-1 py-3 rounded-xl font-bold" style="background:var(--cyan);color:#0a0a0a">Añadir</button>
-    </div>
-  </div>
-</div>
-
-</div>
+<!-- Bottom Nav -->
 
 <script>
+// ─── DECK ─────────────────────────────────────────────────────────────────────
 const SUITS = ['♠','♥','♦','♣'];
 const SUIT_COLORS = {'♠':'#e2e8f0','♥':'#ef4444','♦':'#ef4444','♣':'#e2e8f0'};
 const SUIT_BG = {'♠':'#1e293b','♥':'#1e0a0a','♦':'#1e0a0a','♣':'#1e293b'};
 const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const RANK_VALUES = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
-const COLORS = [
-  '#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e',
-  '#f59e0b','#ef4444','#8b5cf6','#06b6d4'
-];
 
+// ─── AUDIO ENGINE (delegated to engine/audio.js) ──────────────────────────────
+function playCardFlip() { if(window.SGAudio) SGAudio.cardFlip(); }
+function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
+let deck = [];
+// FIX: players cargados desde el grupo seleccionado
 let players = [];
 let roundNum = 1;
 let dealtCards = [];
 let isDealing = false;
-let flippedCards = new Set();
-let history = [];
-
-function playCardFlip() { if(window.SGAudio) SGAudio.cardFlip(); }
-function playWinSound() { if(window.SGAudio) SGAudio.victory(); }
 
 function buildDeck() {
   deck = [];
@@ -299,47 +272,38 @@ function buildDeck() {
       deck.push({rank, suit, value:RANK_VALUES[rank]});
     }
   }
+  // Shuffle
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
 }
 
+// ─── RENDER ───────────────────────────────────────────────────────────────────
 function renderPlayers() {
-  const container = document.getElementById('players-container');
-  if (!container) return;
-  if (!players.length) {
-    container.innerHTML = '<p class="text-xs opacity-30">No hay participantes en este grupo.</p>';
-    return;
-  }
-  container.innerHTML = players.map((p, i) => `
-    <div class="player-chip ${p.active ? 'active' : ''}" onclick="togglePlayer(${i})">
-      <div class="dot" style="background:${p.color}"></div>
-      <span>${p.name}</span>
-      <span class="text-xs font-bold font-space ml-1" style="color:${p.color}">${p.wins || 0}W</span>
-      ${!p.active ? '<span style="opacity:0.4;font-size:10px">OFF</span>' : ''}
+  const row = document.getElementById('players-row');
+  row.innerHTML = players.map((p, i) => `
+    <div class="flex items-center gap-2 px-3 py-2 rounded-full cursor-pointer ${p.active?'':'opacity-40'}"
+         style="background:rgba(255,255,255,0.05);border:1px solid ${p.active?p.color+'44':'rgba(255,255,255,0.1)'}"
+         onclick="togglePlayerCard(${i})">
+      <div class="player-avatar w-7 h-7 text-xs" style="background:${p.color}22;color:${p.color};border-color:${p.color}44;border-width:2px;border-style:solid;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;">${p.initials}</div>
+      <span class="text-xs font-semibold">${p.name}</span>
+      <span class="text-xs font-bold" style="color:${p.color}">${p.wins}W</span>
     </div>`).join('');
-  updatePlayerCount();
 }
 
 function renderScoreboard() {
   const sb = document.getElementById('scoreboard');
-  if(!sb) return;
-  const activeWins = players.filter(p => p.wins > 0);
-  if(!activeWins.length) {
-    sb.innerHTML = '<p class="text-xs opacity-30 text-center py-2">Sin partidas registradas</p>';
-    return;
-  }
-  const sorted = [...players].sort((a,b) => (b.wins || 0) - (a.wins || 0));
+  const sorted = [...players].sort((a,b) => b.wins - a.wins);
   sb.innerHTML = sorted.map((p, i) => `
     <div class="flex items-center justify-between py-2 ${i>0?'border-t border-white/5':''}">
       <div class="flex items-center gap-3">
-        <span class="text-xs opacity-40 w-4 font-space">${i+1}</span>
+        <span class="text-xs opacity-40 w-4">${i+1}</span>
         <div class="w-2 h-2 rounded-full" style="background:${p.color}"></div>
         <span class="text-sm font-semibold">${p.name}</span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm font-bold font-space" style="color:${p.color}">${p.wins || 0}</span>
+        <span class="text-sm font-bold" style="color:${p.color}">${p.wins}</span>
         <span class="text-xs opacity-40">victorias</span>
       </div>
     </div>`).join('');
@@ -350,31 +314,30 @@ function updateStats() {
   document.getElementById('deck-remaining').textContent = deck.length;
 }
 
-function updatePlayerCount() {
-  const countEl = document.getElementById('player-count');
-  if (!countEl) return;
-  const n = players.filter(p => p.active).length;
-  countEl.textContent = `${n} jugador${n !== 1 ? 'es' : ''}`;
-}
+// ─── DEAL ─────────────────────────────────────────────────────────────────────
+// FIX: flippedCards must be cleared at the START of each deal, not just in nextRound.
+// This prevents the "last card flickers back" bug caused by stale Set entries from
+// the previous round being re-toggled during the auto-flip sequence.
+let flippedCards = new Set();
 
 function dealCards() {
   const active = players.filter(p => p.active);
-  if (active.length < 2) { 
-    if(window.SGRouter) SGRouter.showToast('Mínimo 2 jugadores', 'warning'); 
-    return; 
-  }
+  if (active.length < 2) { SGRouter.showToast('Mínimo 2 jugadores', 'warning'); return; }
   if (isDealing) return;
   if (deck.length < active.length) { buildDeck(); }
 
-  if (window.SGAudio) SGAudio.resume();
   isDealing = true;
+  // FIX: reset flippedCards at start of every deal so auto-flip always goes back→front
+  flippedCards.clear();
+
   document.getElementById('deal-btn').disabled = true;
   document.getElementById('result-box').classList.add('hidden');
-  
+  const dp = document.getElementById('deal-prompt');
+  if (dp) dp.remove();
+
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
   dealtCards = [];
-  flippedCards.clear();
 
   active.forEach((p, i) => {
     const card = deck.pop();
@@ -382,10 +345,11 @@ function dealCards() {
 
     const slot = document.createElement('div');
     slot.className = 'player-slot';
+
     slot.innerHTML = `
-      <div class="player-avatar text-xs" style="background:${p.color}22;color:${p.color};border:2px solid ${p.color}44;">${p.name.slice(0,2).toUpperCase()}</div>
-      <div class="card-scene" onclick="flipCardManual(${i})">
-        <div class="card-3d deal-anim" id="card-${i}" style="animation-delay:${i*100}ms">
+      <div class="player-avatar text-xs" style="width:36px;height:36px;background:${p.color}22;color:${p.color};border:2px solid ${p.color}44;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8rem;">${p.initials}</div>
+      <div class="card-scene" id="scene-${i}" onclick="flipCard(${i})">
+        <div class="card-3d deal-anim" id="card-${i}" style="animation-delay:${i*150}ms">
           <div class="card-face card-back">
             <div class="card-back-pattern">
               <span class="material-icons-round" style="color:rgba(19,236,214,0.3);font-size:2rem">payments</span>
@@ -404,323 +368,317 @@ function dealCards() {
     grid.appendChild(slot);
   });
 
-  // CORRECCIÓN DEL PESTAÑEO: Espera estricta de 450ms a que acabe el vuelo antes de voltear en 3D
-  setTimeout(() => {
-    active.forEach((_, i) => {
-      setTimeout(() => flipCard(i), i * 200);
-    });
-    // CORRECCIÓN DEL CONFETI: Sincronización milimétrica pospuesta a 1100ms tras completar el giro real
-    setTimeout(() => showWinner(), active.length * 200 + 1100);
-  }, 450);
+  // FIX: staggered flip — each card waits 350ms base + 250ms per position.
+  // showWinner fires AFTER the last card's CSS transition (0.7s cubic) fully completes.
+  // Timeline: deal-anim(400ms base) + flip-stagger + 0.7s transition + 200ms buffer.
+  const FLIP_BASE    = 450;   // ms before first flip starts (deal-anim settles)
+  const FLIP_STEP    = 280;   // ms between flips
+  const TRANSITION   = 720;   // card-3d transition duration from CSS (0.7s cubic)
+  const WINNER_DELAY = FLIP_BASE + (active.length - 1) * FLIP_STEP + TRANSITION + 250;
+
+  active.forEach((_, i) => {
+    setTimeout(() => flipCard(i), FLIP_BASE + i * FLIP_STEP);
+  });
+  // showWinner only after ALL cards are fully face-up
+  setTimeout(() => showWinner(), WINNER_DELAY);
 
   updateStats();
 }
 
 function flipCard(idx) {
   const card = document.getElementById(`card-${idx}`);
-  if (!card || flippedCards.has(idx)) return;
-  playCardFlip();
-  card.classList.add('flipped');
-  flippedCards.add(idx);
-}
-
-function flipCardManual(idx) {
-  if(isDealing) return;
-  const card = document.getElementById(`card-${idx}`);
   if (!card) return;
+  if (window.SGAudio) SGAudio.resume();
   playCardFlip();
-  card.classList.toggle('flipped');
+  // FIX: always ADD 'flipped' during auto-deal sequence (flippedCards cleared at deal start).
+  // Manual taps toggle as before.
+  if (flippedCards.has(idx)) {
+    card.classList.remove('flipped');
+    flippedCards.delete(idx);
+  } else {
+    card.classList.add('flipped');
+    flippedCards.add(idx);
+  }
 }
 
 function showWinner() {
   if (dealtCards.length === 0) return;
+
+  // FIX: determine winner from dealtCards (value comparison)
   let maxVal = -1;
-  let winner = null;
-  dealtCards.forEach(dc => {
+  let winnerIdx = 0;
+  dealtCards.forEach((dc, i) => {
     if (dc.card.value > maxVal) {
       maxVal = dc.card.value;
-      winner = dc;
+      winnerIdx = i;
     }
   });
+  const winner = dealtCards[winnerIdx];
 
+  // Highlight cards — winner gets glow + pulse, losers dim
   dealtCards.forEach((dc, i) => {
     const card = document.getElementById(`card-${i}`);
     if (!card) return;
-    if (dc === winner) {
+    card.classList.remove('winner', 'loser', 'winner-pulse'); // clean first
+    if (i === winnerIdx) {
       card.classList.add('winner', 'winner-pulse');
     } else {
       card.classList.add('loser');
     }
   });
 
-  const p = players.find(pl => pl.name === winner.player.name);
-  if (p) p.wins = (p.wins || 0) + 1;
+  // FIX: increment wins on the winner's DIRECT object reference (no find() needed —
+  // dealtCards[i].player IS the same reference as players[j] because Array.filter
+  // does not copy objects). Using direct reference avoids name-collision bugs.
+  winner.player.wins++;
   renderPlayers();
   renderScoreboard();
 
+  // Sound + Show result
   playWinSound();
   const rankName = {'J':'Jota','Q':'Reina','K':'Rey','A':'As'}[winner.card.rank] || winner.card.rank;
-  
-  const box = document.getElementById('result-box');
   document.getElementById('result-emoji').textContent = winner.card.suit === '♥' || winner.card.suit === '♦' ? '🃏' : '🂡';
-  document.getElementById('result-text').textContent = `${winner.player.name} saca la de arriba`;
+  document.getElementById('result-text').textContent = `${winner.player.name} tiene la carta más alta`;
   document.getElementById('result-text').style.color = winner.player.color;
-  document.getElementById('result-sub').textContent = `${rankName} de ${winner.card.suit} (Valor: ${winner.card.value}) — Le toca pagar`;
-  box.classList.remove('hidden');
+  document.getElementById('result-sub').textContent = `${rankName} de ${winner.card.suit} (valor: ${winner.card.value}) — Paga la cuenta`;
+  document.getElementById('result-box').classList.remove('hidden');
 
   isDealing = false;
   document.getElementById('deal-btn').disabled = false;
+  document.getElementById('deal-btn').querySelector('span').innerHTML = '<span class="material-icons-round mr-2">style</span>NUEVA RONDA';
 
-  // El estallido ahora es síncrono al despliegue del banner de resultados
-  launchConfetti(winner.player.color);
-  if(window.SGRouter) SGRouter.showToast(`¡${winner.player.name} saca la carta más alta! 🃏`, 'success');
+  // FIX: confetti fires AFTER result box appears (not simultaneously)
+  setTimeout(() => launchConfetti(winner.player.color), 80);
+  SGRouter.showToast(`¡${winner.player.name} tiene la carta más alta! 🃏`, 'success');
 }
 
 function nextRound() {
   roundNum++;
-  flippedCards.clear();
+  flippedCards.clear(); // already cleared at deal-start, but good to keep here too
   dealtCards = [];
   document.getElementById('result-box').classList.add('hidden');
   document.getElementById('cards-grid').innerHTML = '<p id="deal-prompt" class="text-sm opacity-30">Pulsa "Repartir" para comenzar</p>';
+  document.getElementById('deal-btn').innerHTML = '<span class="flex items-center justify-center gap-2"><span class="material-icons-round">style</span>REPARTIR CARTAS</span>';
   updateStats();
 }
 
 function confirmAndPay() {
-  if(window.SGRouter) {
-    SGRouter.showToast('Gasto registrado con éxito ✓', 'success');
-    document.getElementById('result-box').classList.add('hidden');
-    setTimeout(() => SGRouter.navigate('split'), 1200);
-  }
+  SGRouter.showToast('Gasto registrado ✓', 'success');
+  document.getElementById('result-box').classList.add('hidden');
+  setTimeout(() => SGRouter.navigate('split', 'game-cards'), 1200);
 }
 
-function togglePlayer(idx) {
-  if (isDealing) return;
+function togglePlayerCard(idx) {
   const active = players.filter(p => p.active);
   if (active.length <= 2 && players[idx].active) {
-    if(window.SGRouter) SGRouter.showToast('Mínimo 2 jugadores', 'warning'); 
-    return;
+    SGRouter.showToast('Mínimo 2 jugadores', 'warning'); return;
   }
   players[idx].active = !players[idx].active;
   renderPlayers();
 }
 
-document.getElementById('add-player-btn').addEventListener('click', () => {
-  document.getElementById('add-modal').style.display = 'flex';
-});
-function closeModal() {
-  document.getElementById('add-modal').style.display = 'none';
-  document.getElementById('new-player-input').value = '';
+function addPlayer() {
+  const mid = 'add-player-modal';
+  const existing = document.getElementById(mid); if (existing) existing.remove();
+  const m = document.createElement('div');
+  m.id = mid;
+  m.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)';
+  m.innerHTML = `<div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;max-width:320px;width:90%;text-align:center">
+    <span class="material-icons-round" style="font-size:32px;color:#13ecd6;margin-bottom:10px;display:block">person_add</span>
+    <h3 style="font-size:15px;font-weight:800;margin-bottom:14px">Añadir jugador</h3>
+    <input id="new-player-name" type="text" placeholder="Nombre del jugador" autocomplete="off"
+      style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:white;padding:12px 14px;width:100%;font-size:0.9rem;font-weight:600;outline:none;margin-bottom:14px;box-sizing:border-box"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('${mid}').remove()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+      <button id="add-player-btn" style="flex:1;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,#13ecd6,#0fbfaf);color:#000;font-weight:800;font-size:13px;cursor:pointer">Añadir</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('new-player-name')?.focus(), 60);
+  function doAdd() {
+    const input = document.getElementById('new-player-name');
+    const name = input?.value?.trim();
+    if (!name) { input?.focus(); return; }
+    m.remove();
+    const colors = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#3b82f6','#22c55e'];
+    players.push({name, color: colors[players.length % colors.length], initials: name[0].toUpperCase(), wins:0, active:true});
+    renderPlayers();
+    SGRouter.showToast(`${name} añadido`, 'success');
+  }
+  document.getElementById('add-player-btn').addEventListener('click', doAdd);
+  document.getElementById('new-player-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+  m.addEventListener('click', (e) => { if (e.target === m) m.remove(); });
 }
-function addPlayerFromModal() {
-  const name = document.getElementById('new-player-input').value.trim();
-  if (!name) return;
-  const color = COLORS[players.length % COLORS.length];
-  players.push({ name, color, wins: 0, active: true });
-  renderPlayers();
-  closeModal();
-  if(window.SGRouter) SGRouter.showToast(`${name} añadido a la mesa`, 'success');
-}
-document.getElementById('new-player-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addPlayerFromModal();
-});
 
 function launchConfetti(color) {
-  for (let i = 0; i < 45; i++) {
+  const colors = [color, '#13ecd6', '#a855f7', '#FF9D42', '#ec4899'];
+  for (let i = 0; i < 35; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
-    p.style.cssText = `
-      left:${Math.random() * 100}vw;
-      background:${Math.random() > 0.5 ? color : COLORS[Math.floor(Math.random() * COLORS.length)]};
-      width:${6 + Math.random() * 10}px;
-      height:${6 + Math.random() * 10}px;
-      animation-duration:${1.5 + Math.random() * 2}s;
-      animation-delay:${Math.random() * 0.5}s;
-      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
-    `;
+    p.style.cssText = `left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.5}s;border-radius:${Math.random()>0.5?'50%':'2px'}`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 4000);
   }
 }
 
-// ─── CANAL DE RED DE LA RULETA PRESERVADO AL 100% ───
-function getStandaloneToken() {
-  try {
-    const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
-    for (const key of keys) {
-      const val = localStorage.getItem(key) || sessionStorage.getItem(key);
-      if (val && val.length > 20) return val; 
-    }
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k.toLowerCase().includes('auth') || k.toLowerCase().includes('token')) {
-        const val = localStorage.getItem(k);
-        if (val && val.length > 20) return val;
-      }
-    }
-    if (window.SGAuth && typeof window.SGAuth.getToken === 'function') {
-      return window.SGAuth.getToken();
-    }
-  } catch (err) {
-    console.error("[Cards] Error crítico leyendo persistencia física:", err);
-  }
-  return null;
+// ─── FETCH PERIMETRAL (bypass SGApi opaco — fetch directo con token nativo) ────
+// Usar fetch() directo con el token de SGAuth.getToken() evita que las promesas
+// de SGApi queden congeladas cuando el SW intercepta la SPA en tránsito.
+const CARD_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ec4899','#22c55e','#3b82f6'];
+
+function _cardsAuthHdr() {
+  const t = (window.SGAuth && SGAuth.getToken) ? SGAuth.getToken() : null;
+  return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }
+           : { 'Content-Type': 'application/json' };
+}
+async function _cardsFetch(url) {
+  const r = await fetch(url, { headers: _cardsAuthHdr(), cache: 'no-store' });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
 }
 
-async function loadRouletteGroups() {
-  const sel = document.getElementById('group-select');
-  if (!sel) {
-    requestAnimationFrame(loadRouletteGroups);
+async function loadCardsGroups() {
+  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+    buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
     return;
   }
-
-  const token = getStandaloneToken();
-  if (!token) {
-    setDefaultPlayers();
-    return;
-  }
-  
+  // Reparar membresías huérfanas (fire-and-forget)
+  fetch('/api/db/repair-memberships', { method:'POST', headers:_cardsAuthHdr() }).catch(()=>{});
   try {
-    await fetch('/api/db/repair-memberships', { 
-      method: 'POST', 
-      headers: { 'Authorization': `Bearer ${token}` },
-      cache: 'no-store'
-    }).catch(() => {});
-
-    const response = await fetch('/api/db/groups', {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      setDefaultPlayers();
-      return;
-    }
-
-    const res = await response.json();
-    
+    const res = await _cardsFetch('/api/db/groups');
+    const sel = document.getElementById('group-select-cards');
     if (res && res.success && res.groups && res.groups.length > 0) {
-      sel.innerHTML = res.groups.map(g =>
-        `<option value="${g.id}">${g.name}</option>`
-      ).join('');
-      await onGroupChange(res.groups[0].id);
+      sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+      await onCardsGroupChange(res.groups[0].id);
     } else {
-      sel.innerHTML = '<option value="">Crea un grupo para sincronizar</option>';
-      setDefaultPlayers();
+      sel.innerHTML = '<option value="">Sin grupos</option>';
+      players = [
+        {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+        {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+      ];
+      buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
     }
   } catch(e) {
-    console.error('[Cards] Error de red:', e);
-    setDefaultPlayers();
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+    buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
   }
 }
 
-async function onGroupChange(groupId) {
+async function onCardsGroupChange(groupId) {
   if (!groupId) return;
-  const token = getStandaloneToken();
-  const countEl = document.getElementById('group-member-count');
-  const totalEl = document.getElementById('group-total');
-  
-  if (countEl) countEl.textContent = 'Sincronizando participantes…';
-  if (totalEl) totalEl.textContent = '—';
-  
+  const potEl = document.getElementById('pot');
+  if (potEl) potEl.textContent = '—';
   try {
-    const [mResp, bResp] = await Promise.all([
-      fetch(`/api/db/group-members?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
-      fetch(`/api/db/balances?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
+    // FIX: fetch perimetral — Promise.all con fetch directo (no SGApi.getGroupMembers)
+    const [membersRes, balRes] = await Promise.all([
+      _cardsFetch(`/api/db/group-members?groupId=${groupId}`).catch(() => null),
+      _cardsFetch(`/api/db/balances?groupId=${groupId}`).catch(() => null)
     ]);
-
-    const membersRes = await mResp.json();
-    const balRes = await bResp.json();
-    
     if (membersRes && membersRes.success && membersRes.members && membersRes.members.length > 0) {
+      // FIX: preserve wins across group-change within the same session by mapping
+      // existing wins before rebuilding (so scoreboard resets only on new game)
+      const prevWins = {};
+      players.forEach(p => { prevWins[p.name] = p.wins || 0; });
       players = membersRes.members.map((m, i) => ({
         name: m.name || `Jugador ${i+1}`,
-        color: COLORS[i % COLORS.length],
-        wins: 0,
+        color: CARD_COLORS[i % CARD_COLORS.length],
+        initials: (m.name || 'J').slice(0,2).toUpperCase(),
+        wins: prevWins[m.name] || 0,
         active: true
       }));
-      if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
     } else {
-      setDefaultPlayers();
+      players = [
+        {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+        {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+      ];
     }
-    
     if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
-      if (totalEl) totalEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+      if (potEl) potEl.textContent = balRes.totalAmount.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
     } else {
-      if (totalEl) totalEl.textContent = '0,00 €';
+      if (potEl) potEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Cards] Error mapeando grupo:', e);
-    setDefaultPlayers();
+    players = [
+      {name:'Jugador 1', color:'#13ecd6', initials:'J1', wins:0, active:true},
+      {name:'Jugador 2', color:'#a855f7', initials:'J2', wins:0, active:true},
+    ];
+    if (potEl) potEl.textContent = '0,00 €';
   }
-  buildDeck();
-  renderPlayers();
-  renderScoreboard();
-  updateStats();
+  buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
 }
 
-function setDefaultPlayers() {
-  players = [
-    {name:'Jugador 1', color:'#13ecd6', wins: 0, active:true},
-    {name:'Jugador 2', color:'#a855f7', wins: 0, active:true},
-  ];
-  buildDeck();
-  renderPlayers();
-  renderScoreboard();
-  updateStats();
-}
-
-requestAnimationFrame(loadRouletteGroups);
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+// INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
+// window.load garantiza que el SW ya está registrado (evita controllerchange reload).
+// Polling corto (2s máx) por si isLoggedIn() no está listo aún.
+window.addEventListener('load', function() {
+  if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
+    loadCardsGroups();
+  } else {
+    var _t = Date.now();
+    (function _p() {
+      if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { loadCardsGroups(); }
+      else if (Date.now() - _t < 2000) { setTimeout(_p, 100); }
+      else { loadCardsGroups(); }
+    })();
+  }
+});
 </script>
 
-<script>
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-            .then(reg => {
-                reg.update().catch(() => {});
-                reg.addEventListener('updatefound', () => {
-                    const sw = reg.installing;
-                    if (!sw) return;
-                    sw.addEventListener('statechange', () => {
-                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                            sw.postMessage({ type: 'SKIP_WAITING' });
-                        }
+        <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
                     });
-                });
-            })
-            .catch(e => console.warn('[SW] Failed:', e));
-    });
-}
-</script>
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            // controllerchange reload disabled on game pages
+        });
+    }
+    </script>
 
-<nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-    <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-        <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
-            <span class="material-icons-round">grid_view</span>
-            <p>Mando</p>
-        </button>
-        <button class="nav-item" onclick="SGRouter.navigate('groups')">
-            <span class="material-icons-round">groups_3</span>
-            <p>Grupos</p>
-        </button>
-        <button class="nav-item active" onclick="SGRouter.navigate('games')">
-            <span class="material-icons-round">casino</span>
-            <p>Juegos</p>
-        </button>
-        <button class="nav-item" onclick="SGRouter.navigate('vault')">
-            <span class="material-icons-round">auto_stories</span>
-            <p>Bóveda</p>
-        </button>
-        <button class="nav-item" onclick="SGRouter.navigate('profile')">
-            <span class="material-icons-round">person</span>
-            <p>Perfil</p>
-        </button>
-    </div>
-</nav>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
+            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+                <span class="material-icons-round">grid_view</span>
+                <p>Mando</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+                <span class="material-icons-round">groups_3</span>
+                <p>Grupos</p>
+            </button>
+            <button class="nav-item active" onclick="SGRouter.navigate('games')">
+                <span class="material-icons-round">casino</span>
+                <p>Juegos</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('vault')">
+                <span class="material-icons-round">auto_stories</span>
+                <p>Bóveda</p>
+            </button>
+            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+                <span class="material-icons-round">person</span>
+                <p>Perfil</p>
+            </button>
+        </div>
+    </nav>
 </div>
 </body>
 </html>

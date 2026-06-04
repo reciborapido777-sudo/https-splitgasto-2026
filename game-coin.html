@@ -619,7 +619,18 @@ function launchConfetti(color) {
   }
 }
 
-// ── FIX: LOAD GROUPS FROM API ─────────────────────────────────────────────────
+// ── FETCH PERIMETRAL (bypass SGApi opaco — fetch directo con token nativo) ────
+function _coinAuthHdr() {
+  const t = (window.SGAuth && SGAuth.getToken) ? SGAuth.getToken() : null;
+  return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }
+           : { 'Content-Type': 'application/json' };
+}
+async function _coinFetch(url) {
+  const r = await fetch(url, { headers: _coinAuthHdr(), cache: 'no-store' });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
 // Actualiza los nombres de los jugadores (inputs visibles) y el estado interno
 function setCoinPlayers(p1name, p2name) {
   players[0].name = p1name || 'Jugador 1';
@@ -633,7 +644,7 @@ function setCoinPlayers(p1name, p2name) {
 async function onCoinGroupChange(groupId) {
   if (!groupId) return;
   try {
-    const res = await SGApi.getGroupMembers(groupId);
+    const res = await _coinFetch(`/api/db/group-members?groupId=${groupId}`);
     if (res && res.success && res.members && res.members.length >= 2) {
       setCoinPlayers(res.members[0].name, res.members[1].name);
       SGRouter.showToast('Jugadores cargados del grupo ✓', 'success');
@@ -647,13 +658,13 @@ async function loadCoinGroups() {
   if (!window.SGAuth || !SGAuth.isLoggedIn()) {
     return; // jugadores por defecto
   }
-  try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+  // Reparar membresías huérfanas (fire-and-forget)
+  fetch('/api/db/repair-memberships', { method: 'POST', headers: _coinAuthHdr() }).catch(()=>{});
   try {
-    const res = await SGApi.getGroups();
+    const res = await _coinFetch('/api/db/groups');
     const sel = document.getElementById('group-select-coin');
     if (res && res.success && res.groups && res.groups.length > 0) {
       sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-      // Cargar miembros del primer grupo
       await onCoinGroupChange(res.groups[0].id);
     } else {
       sel.innerHTML = '<option value="">Sin grupos — jugadores manuales</option>';
