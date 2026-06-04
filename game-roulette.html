@@ -91,7 +91,7 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* ── Paneles Estilo Híbrido Avanzado con backdrop-filter de 30px ── */
+  /* ── Paneles Híbridos backdrop-filter: blur(30px) ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
   /* ── Result banner ── */
@@ -240,7 +240,7 @@
     </div>
   </div>
 
-  <div id="result-banner" class="hidden p-5 text-center">
+  <div id="result-banner" class="hidden p-5 text-center relative z-10 my-2">
     <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">🎯 ¡RESULTADO!</p>
     <p class="text-2xl font-extrabold font-space" id="result-name" style="color:var(--cyan)">—</p>
     <p class="text-sm opacity-60 mt-1" id="result-sub">paga la cuenta de esta noche</p>
@@ -330,7 +330,7 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
-    // CORRECCIÓN RADIAL DEFINITIVA: Sincronización exacta con desfase de norte a sur
+    // CORRECCIÓN RADIAL DEFINITIVA: Alineación ortogonal matemática del lienzo
     const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
@@ -463,7 +463,7 @@ function maybePlayTick(angle, numSegments) {
 function spinWheel() {
   const active = getActivePlayers();
   if (active.length < 2) {
-    SGRouter.showToast('Añade al menos 2 jugadores', 'warning');
+    if (window.SGRouter) SGRouter.showToast('Añade al menos 2 jugadores', 'warning');
     return;
   }
   if (isSpinning) return;
@@ -509,7 +509,7 @@ function spinWheel() {
       canvas.classList.remove('spinning');
       document.getElementById('spin-btn').disabled = false;
       playWinSound();
-      showResult(active[winnerIdx]);
+      showResult(active[winnerIdx]); // Inyección atómica del resultado
     }
   }
   requestAnimationFrame(animate);
@@ -529,7 +529,10 @@ function showResult(winner) {
   const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
+  
+  // RESTAURACIÓN ABSOLUTA DEL CONFETI PARTICIPANTE
   launchConfetti(winner.color);
+  
   if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
 }
 
@@ -603,54 +606,77 @@ function updatePlayerCount() {
   countEl.textContent = `${n} jugador${n !== 1 ? 'es' : ''}`;
 }
 
-// ── CAPTURA RECURSIVA EXHAUSTIVA DE TOKENS DEL CORE ──
+document.getElementById('add-player-btn').addEventListener('click', () => {
+  document.getElementById('add-modal').style.display = 'flex';
+});
+function closeModal() {
+  document.getElementById('add-modal').style.display = 'none';
+  document.getElementById('new-player-input').value  = '';
+}
+function addPlayerFromModal() {
+  const name = document.getElementById('new-player-input').value.trim();
+  if (!name) return;
+  const color = COLORS[players.length % COLORS.length];
+  players.push({name, color, active: true});
+  renderPlayers();
+  drawWheel(currentAngle);
+  closeModal();
+  if (window.SGRouter) SGRouter.showToast(`${name} añadido`, 'success');
+}
+document.getElementById('new-player-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addPlayerFromModal();
+});
+
+// INTEGRIDAD DE ACTIVOS ANIMADOS: Regeneración simétrica de partículas de confeti
+function launchConfetti(color) {
+  for (let i = 0; i < 45; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left:${Math.random() * 100}vw;
+      background:${Math.random() > 0.5 ? color : COLORS[Math.floor(Math.random() * COLORS.length)]};
+      width:${6 + Math.random() * 10}px;
+      height:${6 + Math.random() * 10}px;
+      animation-duration:${1.5 + Math.random() * 2}s;
+      animation-delay:${Math.random() * 0.5}s;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 4000);
+  }
+}
+
+// ── CAPTURA DIRECTA CORE EXCLUSIVA (Blindaje definitivo contra promesas muertas) ──
 function getStandaloneToken() {
   try {
-    // Escaneo de firmas conocidas en almacenamiento local
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
     for (const key of keys) {
       const val = localStorage.getItem(key) || sessionStorage.getItem(key);
       if (val && val.length > 20) return val; 
     }
-
-    // Escaneo general por inspección de claves dinámicas de frameworks SPA
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k.toLowerCase().includes('auth') || k.toLowerCase().includes('token')) {
-        const val = localStorage.getItem(k);
-        if (val && val.length > 20) return val;
-      }
-    }
-
-    // Fallback semántico si el Router conserva las utilidades core en window
     if (window.SGAuth && typeof window.SGAuth.getToken === 'function') {
       return window.SGAuth.getToken();
     }
   } catch (err) {
-    console.error("[Ruleta] Error crítico leyendo persistencia física:", err);
+    console.error("[Ruleta] Error leyendo persistencia:", err);
   }
   return null;
 }
 
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
-  const countEl = document.getElementById('group-member-count');
-  
-  // Guardrail estructural: Si el DOM intermedio de la SPA no ha montado el nodo, posponer la secuencia
   if (!sel) {
     requestAnimationFrame(loadRouletteGroups);
     return;
   }
 
   const token = getStandaloneToken();
-
   if (!token) {
     setDefaultPlayers();
     return;
   }
   
   try {
-    // Forzar limpieza perimetral en la caché del Edge Worker de Cloudflare
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
@@ -683,7 +709,7 @@ async function loadRouletteGroups() {
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Error de red:', e);
+    console.error('[Ruleta] Excepción de red:', e);
     setDefaultPlayers();
   }
 }
@@ -739,7 +765,6 @@ function setDefaultPlayers() {
   drawWheel(0);
 }
 
-// Inicialización defensiva atómica usando los cuadros de animación del navegador
 requestAnimationFrame(loadRouletteGroups);
 </script>
 
