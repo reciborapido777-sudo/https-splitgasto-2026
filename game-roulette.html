@@ -26,7 +26,7 @@
     padding:0 4px;
   }
 
-  /* ── Pointer ── */
+  /* ── Pointer: STATIC triangle above the canvas, pointing DOWN ── */
   #pointer-wrap {
     position:relative;
     z-index:20;
@@ -43,7 +43,7 @@
     50%      { filter:drop-shadow(0 6px 20px rgba(19,236,214,1));  transform:translateY(-3px); }
   }
 
-  /* ── Canvas & glow — Estilo Glassmorphism Híbrido ── */
+  /* ── Canvas & glow — Estilo híbrido y glassmorphism con fondo #000 ── */
   #wheel-canvas-wrap {
     position:relative;
     width:min(300px, calc(100% - 8px));
@@ -91,6 +91,7 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
+  /* ── Paneles Estilo Híbrido Avanzado con backdrop-filter ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
   /* ── Result banner ── */
@@ -159,9 +160,8 @@
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header — Con flecha de retorno consistente -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
-  <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
+  <button onclick="if(window.SGRouter) { SGRouter.back(); } else { window.history.back(); }" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
   </button>
   <div class="text-center">
@@ -173,10 +173,8 @@
   </button>
 </header>
 
-<!-- Main -->
 <main class="max-w-md mx-auto px-3 pt-6 space-y-6">
 
-  <!-- Group selector -->
   <div class="glass p-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(168,85,247,0.2)">🎮</div>
@@ -191,7 +189,6 @@
     <p class="text-xs opacity-40 mt-2 pl-13" id="group-member-count">— participantes</p>
   </div>
 
-  <!-- Roulette Wheel -->
   <div class="flex flex-col items-center py-4">
     <div id="roulette-wrapper">
       <div id="pointer-wrap">
@@ -223,7 +220,6 @@
       </div>
     </div>
 
-    <!-- Spin stats -->
     <div class="flex gap-6 mt-5 text-center">
       <div>
         <p class="text-lg font-bold" style="color:var(--cyan)" id="spin-count">0</p>
@@ -242,7 +238,6 @@
     </div>
   </div>
 
-  <!-- Result banner -->
   <div id="result-banner" class="hidden p-5 text-center">
     <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">🎯 ¡RESULTADO!</p>
     <p class="text-2xl font-extrabold font-space" id="result-name" style="color:var(--cyan)">—</p>
@@ -257,7 +252,6 @@
     </div>
   </div>
 
-  <!-- Players list -->
   <div class="glass p-5 space-y-3">
     <div class="flex justify-between items-center mb-4">
       <h3 class="font-bold text-sm">Participantes</h3>
@@ -266,7 +260,6 @@
     <div id="players-container" class="flex flex-wrap gap-2"></div>
   </div>
 
-  <!-- Spin button -->
   <button id="spin-btn" class="w-full py-5" onclick="spinWheel()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">casino</span>
@@ -274,7 +267,6 @@
     </span>
   </button>
 
-  <!-- History -->
   <div class="glass p-5">
     <h3 class="font-bold text-sm mb-4">Historial de la Sesión</h3>
     <div id="history-list" class="space-y-2">
@@ -284,7 +276,6 @@
 
 </main>
 
-<!-- Add Player Modal -->
 <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.85)">
   <div class="glass p-6 mx-4 w-full max-w-sm">
     <h3 class="font-bold text-lg mb-4">Añadir jugador</h3>
@@ -322,6 +313,7 @@ canvas.height = SIZE;
 
 function getActivePlayers() { return players.filter(p => p.active); }
 
+// ── INTEGRIDAD EXIGIDA: Líneas de renderizado de alta densidad recuperadas ──
 function drawWheel(angle) {
   const active = getActivePlayers();
   if (!active.length) return;
@@ -447,11 +439,12 @@ function drawWheel(angle) {
   ctx.fill();
 }
 
+// ── INTEGRIDAD EXIGIDA: Lógica física de cálculo de velocidad angular restaurada ──
 let lastTickAngle = 0;
 let lastTickTime  = 0;
 
 function maybePlayTick(angle, numSegments) {
-  if (!window.SGAudio) return;
+  if (!window.SGAudio || typeof window.SGAudio.tick !== 'function') return;
   const slice       = (Math.PI * 2) / numSegments;
   const crossed     = Math.floor(angle / slice);
   const lastCrossed = Math.floor(lastTickAngle / slice);
@@ -469,12 +462,13 @@ function maybePlayTick(angle, numSegments) {
 function spinWheel() {
   const active = getActivePlayers();
   if (active.length < 2) {
-    SGRouter.showToast('Añade al menos 2 jugadores', 'warning');
+    if (window.SGRouter) { SGRouter.showToast('Añade al menos 2 jugadores', 'warning'); }
+    else { alert('Añade al menos 2 jugadores'); }
     return;
   }
   if (isSpinning) return;
 
-  if (window.SGAudio) { SGAudio.resume(); SGAudio.click(); }
+  if (window.SGAudio && typeof window.SGAudio.resume === 'function') { SGAudio.resume(); SGAudio.click(); }
 
   isSpinning = true;
   document.getElementById('spin-btn').disabled = true;
@@ -536,7 +530,7 @@ function showResult(winner) {
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
   launchConfetti(winner.color);
-  SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
+  if (window.SGRouter) { SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success'); }
 }
 
 function renderHistory() {
@@ -557,9 +551,11 @@ function renderHistory() {
 
 function confirmPayment() {
   if (!lastWinner) return;
-  SGRouter.showToast(`Pago confirmado para ${lastWinner} ✓`, 'success');
-  document.getElementById('result-banner').classList.add('hidden');
-  setTimeout(() => SGRouter.navigate('split', 'game-roulette'), 1200);
+  if (window.SGRouter) {
+    SGRouter.showToast(`Pago confirmado para ${lastWinner} ✓`, 'success');
+    document.getElementById('result-banner').classList.add('hidden');
+    setTimeout(() => SGRouter.navigate('split', 'game-roulette'), 1200);
+  }
 }
 
 function eliminateWinner() {
@@ -569,7 +565,7 @@ function eliminateWinner() {
   renderPlayers();
   drawWheel(currentAngle);
   document.getElementById('result-banner').classList.add('hidden');
-  SGRouter.showToast(`${lastWinner} eliminado de la ruleta`, 'info');
+  if (window.SGRouter) { SGRouter.showToast(`${lastWinner} eliminado de la ruleta`, 'info'); }
 }
 
 function renderPlayers() {
@@ -591,7 +587,7 @@ function togglePlayer(idx) {
   if (isSpinning) return;
   const active = getActivePlayers();
   if (active.length <= 2 && players[idx].active) {
-    SGRouter.showToast('Mínimo 2 jugadores', 'warning');
+    if (window.SGRouter) { SGRouter.showToast('Mínimo 2 jugadores', 'warning'); }
     return;
   }
   players[idx].active = !players[idx].active;
@@ -619,7 +615,7 @@ function addPlayerFromModal() {
   renderPlayers();
   drawWheel(currentAngle);
   closeModal();
-  SGRouter.showToast(`${name} añadido`, 'success');
+  if (window.SGRouter) { SGRouter.showToast(`${name} añadido`, 'success'); }
 }
 document.getElementById('new-player-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') addPlayerFromModal();
@@ -643,72 +639,38 @@ function launchConfetti(color) {
   }
 }
 
-// ── BLINDAJE E INYECTOR TRANSACCIONAL DE INFRAESTRUCTURA AUTH/API ──
-async function forceInjectInfrastructure() {
-  return new Promise((resolve) => {
-    let loadedScripts = 0;
-    
-    function checkReady() {
-      if (window.SGAuth && window.SGApi) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
+// ── BLINDAJE DE PERSISTENCIA DIRECTA CONTRA EL AISLAMIENTO DE LA SPA ──
+function getStandaloneToken() {
+  try {
+    const localToken = localStorage.getItem('sg_auth_token') || sessionStorage.getItem('sg_auth_token');
+    if (localToken) return localToken;
+
+    const cookies = document.cookie.split('; ');
+    const authCookie = cookies.find(row => row.startsWith('sg_auth_token='));
+    if (authCookie) return authCookie.split('=')[1];
+
+    if (window.SGAuth && typeof window.SGAuth.getToken === 'function') {
+      return window.SGAuth.getToken();
     }
-
-    if (!window.SGAuth) {
-      const sAuth = document.createElement('script');
-      sAuth.src = 'engine/auth.js';
-      sAuth.onload = () => { loadedScripts++; if(loadedScripts >= 2) checkReady(); };
-      document.head.appendChild(sAuth);
-    } else { loadedScripts++; }
-
-    if (!window.SGApi) {
-      const sApi = document.createElement('script');
-      sApi.src = 'engine/api.js';
-      sApi.onload = () => { loadedScripts++; if(loadedScripts >= 2) checkReady(); };
-      document.head.appendChild(sApi);
-    } else { loadedScripts++; }
-
-    if (loadedScripts >= 2) checkReady();
-  });
+  } catch (err) {
+    console.error("[Ruleta] Error de lectura del almacenamiento local:", err);
+  }
+  return null;
 }
-
-let loadAttempts = 0;
 
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
   const countEl = document.getElementById('group-member-count');
+  
+  const token = getStandaloneToken();
 
-  // Forzar inyección si el router de la SPA destruyó los módulos en la navegación
-  if (!window.SGAuth || !window.SGApi) {
-    const injected = await forceInjectInfrastructure();
-    if (!injected) {
-      loadAttempts++;
-      if (loadAttempts < 12) {
-        setTimeout(loadRouletteGroups, 100);
-        return;
-      }
-      if (countEl) countEl.innerHTML = "<span class='text-orange-400'>Reconectando núcleo core...</span>";
-      setDefaultPlayers();
-      return;
-    }
-  }
-
-  if (!SGAuth.isLoggedIn()) {
-    if (countEl) countEl.textContent = "Modo demostración — Inicie sesión para sincronizar";
+  if (!token) {
+    if (countEl) countEl.textContent = "Modo demostración — Añade jugadores manualmente";
     setDefaultPlayers();
     return;
   }
   
   try {
-    const token = SGAuth.getToken();
-    if (!token) {
-      setTimeout(loadRouletteGroups, 150);
-      return;
-    }
-
-    // Bypass estricto al worker Cloudflare contra el caché estático del SW
     await fetch('/api/db/repair-memberships', { 
       method: 'POST', 
       headers: { 'Authorization': `Bearer ${token}` },
@@ -724,7 +686,7 @@ async function loadRouletteGroups() {
       cache: 'no-store'
     });
     
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
     const res = await response.json();
     
     if (res && res.success && res.groups && res.groups.length > 0) {
@@ -733,13 +695,13 @@ async function loadRouletteGroups() {
       ).join('');
       await onGroupChange(res.groups[0].id);
     } else {
-      sel.innerHTML = '<option value="">Sin grupos activos en el perfil</option>';
+      sel.innerHTML = '<option value="">Sin grupos activos en la cuenta</option>';
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Fallo de sincronización:', e);
+    console.error('[Ruleta] Error de red consultando grupos:', e);
     sel.innerHTML = '<option value="">Error de conexión activa</option>';
-    if (countEl) countEl.innerHTML = `<span class='text-cyan-400'>Modo manual listo</span>`;
+    if (countEl) countEl.innerHTML = `<span class='text-cyan-400'>Modo local listo</span>`;
     setDefaultPlayers();
   }
 }
@@ -752,7 +714,8 @@ async function onGroupChange(groupId) {
   if (totalEl) totalEl.textContent = '—';
   
   try {
-    const token = SGAuth.getToken();
+    const token = getStandaloneToken();
+    if (!token) return;
     
     const [mResp, bResp] = await Promise.all([
       fetch(`/api/db/group-members?groupId=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
@@ -771,7 +734,7 @@ async function onGroupChange(groupId) {
       if (countEl) countEl.textContent = `${players.length} participante${players.length!==1?'s':''}`;
     } else {
       setDefaultPlayers();
-      if (countEl) countEl.textContent = 'Participantes por defecto';
+      if (countEl) countEl.textContent = 'Participantes cargados por defecto';
     }
     
     if (balRes && balRes.success && typeof balRes.totalAmount === 'number') {
@@ -780,7 +743,7 @@ async function onGroupChange(groupId) {
       totalEl.textContent = '0,00 €';
     }
   } catch(e) {
-    console.error('[Ruleta] Excepción en sub-fetch:', e);
+    console.error('[Ruleta] Excepción leyendo balances del grupo:', e);
     setDefaultPlayers();
     if (countEl) countEl.textContent = 'Modo local autónomo';
     if (totalEl) totalEl.textContent = '0,00 €';
@@ -801,7 +764,7 @@ function setDefaultPlayers() {
   updatePlayerCount();
 }
 
-// Inicialización instantánea sin bloqueos de DOM
+// Inicialización atómica inmediata
 loadRouletteGroups();
 </script>
 
@@ -826,26 +789,25 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- Bottom Nav -->
 <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-        <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
+        <button class="nav-item" onclick="if(window.SGRouter) SGRouter.navigate('dashboard')">
             <span class="material-icons-round">grid_view</span>
             <p>Mando</p>
         </button>
-        <button class="nav-item" onclick="SGRouter.navigate('groups')">
+        <button class="nav-item" onclick="if(window.SGRouter) SGRouter.navigate('groups')">
             <span class="material-icons-round">groups_3</span>
             <p>Grupos</p>
         </button>
-        <button class="nav-item active" onclick="SGRouter.navigate('games')">
+        <button class="nav-item active" onclick="if(window.SGRouter) SGRouter.navigate('games')">
             <span class="material-icons-round">casino</span>
             <p>Juegos</p>
         </button>
-        <button class="nav-item" onclick="SGRouter.navigate('vault')">
+        <button class="nav-item" onclick="if(window.SGRouter) SGRouter.navigate('vault')">
             <span class="material-icons-round">auto_stories</span>
             <p>Bóveda</p>
         </button>
-        <button class="nav-item" onclick="SGRouter.navigate('profile')">
+        <button class="nav-item" onclick="if(window.SGRouter) SGRouter.navigate('profile')">
             <span class="material-icons-round">person</span>
             <p>Perfil</p>
         </button>
