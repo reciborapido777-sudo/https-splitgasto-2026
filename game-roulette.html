@@ -91,10 +91,10 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* ── Paneles Híbridos con fondo #000 y blur de 30px ── */
+  /* ── Paneles Estilo Híbrido Avanzado con backdrop-filter de 30px ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
-  /* ── Result banner — Ajuste de márgenes para evitar colisiones visuales ── */
+  /* ── Result banner ── */
   #result-banner {
     background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(168,85,247,0.08));
     border:1px solid rgba(19,236,214,0.4);
@@ -315,7 +315,6 @@ canvas.height = SIZE;
 
 function getActivePlayers() { return players.filter(p => p.active); }
 
-// DENSIDAD GRÁFICA ABSOLUTA DE SECTORES Y TEXTO RECTIFICADO (ORTOGONAL)
 function drawWheel(angle) {
   const active = getActivePlayers();
   if (!active.length) return;
@@ -331,7 +330,6 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
-    // Offset matemático para alinear el norte con el puntero estático sin reflejos de espejo
     const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
@@ -494,6 +492,10 @@ function spinWheel() {
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
 
+  document.getElementById('add-player-btn').addEventListener('click', () => {
+    document.getElementById('add-modal').style.display = 'flex';
+  });
+
   function animate(now) {
     const elapsed = now - t0;
     const t = Math.min(elapsed / duration, 1);
@@ -510,7 +512,7 @@ function spinWheel() {
       canvas.classList.remove('spinning');
       document.getElementById('spin-btn').disabled = false;
       playWinSound();
-      showResult(active[winnerIdx]); 
+      showResult(active[winnerIdx]);
     }
   }
   requestAnimationFrame(animate);
@@ -530,10 +532,7 @@ function showResult(winner) {
   const time = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
-  
-  // ACTIVACIÓN DEL EFECTO CONFETI RESTAURADO EN CALIENTE
   launchConfetti(winner.color);
-  
   if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
 }
 
@@ -562,7 +561,6 @@ function confirmPayment() {
   }
 }
 
-// RESTAURACIÓN DE LA FUNCIÓN DE ELIMINACIÓN ASÍNCRONA
 function eliminateWinner() {
   if (!lastWinner) return;
   const p = players.find(pl => pl.name === lastWinner);
@@ -647,7 +645,7 @@ function launchConfetti(color) {
   }
 }
 
-// ── CANAL DE CONEXIÓN NATIVO AUTÓNOMO (RESTAURADO AL 100%) ──
+// ── CAPTURA RECURSIVA EXHAUSTIVA DE TOKENS DEL CORE ──
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -655,20 +653,35 @@ function getStandaloneToken() {
       const val = localStorage.getItem(key) || sessionStorage.getItem(key);
       if (val && val.length > 20) return val; 
     }
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.toLowerCase().includes('auth') || k.toLowerCase().includes('token')) {
+        const val = localStorage.getItem(k);
+        if (val && val.length > 20) return val;
+      }
+    }
+
     if (window.SGAuth && typeof window.SGAuth.getToken === 'function') {
       return window.SGAuth.getToken();
     }
   } catch (err) {
-    console.error("[Ruleta] Error de persistencia física:", err);
+    console.error("[Ruleta] Error crítico leyendo persistencia física:", err);
   }
   return null;
 }
 
 async function loadRouletteGroups() {
   const sel = document.getElementById('group-select');
-  if (!sel) return; 
+  const countEl = document.getElementById('group-member-count');
+  
+  if (!sel) {
+    requestAnimationFrame(loadRouletteGroups);
+    return;
+  }
 
   const token = getStandaloneToken();
+
   if (!token) {
     setDefaultPlayers();
     return;
@@ -707,7 +720,7 @@ async function loadRouletteGroups() {
       setDefaultPlayers();
     }
   } catch(e) {
-    console.error('[Ruleta] Excepción de red:', e);
+    console.error('[Ruleta] Error de red:', e);
     setDefaultPlayers();
   }
 }
@@ -763,8 +776,7 @@ function setDefaultPlayers() {
   drawWheel(0);
 }
 
-// INYECCIÓN LIMPIA DIRECTA (Bypass de retrasos)
-setTimeout(loadRouletteGroups, 80);
+requestAnimationFrame(loadRouletteGroups);
 </script>
 
 <script>
