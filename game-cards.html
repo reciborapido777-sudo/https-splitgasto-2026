@@ -141,7 +141,7 @@
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header — Flecha de retorno consistente auditada -->
+<!-- Header — Con flecha de retorno consistente exigida -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -382,7 +382,6 @@ function dealCards() {
     grid.appendChild(slot);
   });
 
-  // Secuencia de volteo automatizada premium
   setTimeout(() => {
     active.forEach((_, i) => {
       setTimeout(() => flipCard(i), i * 200);
@@ -478,6 +477,7 @@ function togglePlayerCard(idx) {
   renderPlayers();
 }
 
+// Inyección y control de eventos globales del DOM
 document.getElementById('add-player-btn').addEventListener('click', () => {
   document.getElementById('add-modal').style.display = 'flex';
 });
@@ -524,7 +524,7 @@ function launchConfetti(color) {
   }
 }
 
-// ─── FIJACIÓN EXCLUSIVA DE CANAL DE RED DEL CORE ───
+// ─── CANAL DE RED ATÓMICO NATIVO DEL CORE DEL SISTEMA ───
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -540,7 +540,12 @@ function getStandaloneToken() {
 
 async function loadCardsGroups() {
   const sel = document.getElementById('group-select-cards');
-  if (!sel) return;
+  
+  // Guardrail estructural idéntico al de la ruleta que solventa la inyección asíncrona de la SPA
+  if (!sel) {
+    requestAnimationFrame(loadCardsGroups);
+    return;
+  }
 
   const token = getStandaloneToken();
   if (!token) {
@@ -619,7 +624,8 @@ function setDefaultPlayers() {
   buildDeck(); renderPlayers(); renderScoreboard(); updateStats();
 }
 
-setTimeout(loadCardsGroups, 80);
+// Lanzamiento síncronizado seguro nativo
+requestAnimationFrame(loadCardsGroups);
 </script>
 
 <script>
