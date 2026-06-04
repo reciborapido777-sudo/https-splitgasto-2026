@@ -376,6 +376,7 @@ function dealCards() {
   dealtCards = [];
   flippedCards.clear();
 
+  // FIX: Inyección síncrona del layout antes de disparar animaciones
   active.forEach((p, i) => {
     const card = deck.pop();
     dealtCards.push({player: p, card});
@@ -385,7 +386,7 @@ function dealCards() {
     slot.innerHTML = `
       <div class="player-avatar text-xs" style="background:${p.color}22;color:${p.color};border:2px solid ${p.color}44;">${p.name.slice(0,2).toUpperCase()}</div>
       <div class="card-scene" onclick="flipCardManual(${i})">
-        <div class="card-3d deal-anim" id="card-${i}" style="animation-delay:${i*100}ms">
+        <div class="card-3d" id="card-${i}">
           <div class="card-face card-back">
             <div class="card-back-pattern">
               <span class="material-icons-round" style="color:rgba(19,236,214,0.3);font-size:2rem">payments</span>
@@ -404,14 +405,19 @@ function dealCards() {
     grid.appendChild(slot);
   });
 
-  // CORRECCIÓN DEL PESTAÑEO: Espera estricta de 450ms a que acabe el vuelo antes de voltear en 3D
-  setTimeout(() => {
+  // FIX: Disparo diferido de la animación para eliminar el pestañeo
+  requestAnimationFrame(() => {
     active.forEach((_, i) => {
-      setTimeout(() => flipCard(i), i * 200);
+      const card = document.getElementById(`card-${i}`);
+      card.classList.add('deal-anim');
+      card.style.animationDelay = `${i * 100}ms`;
     });
-    // CORRECCIÓN DEL CONFETI: Sincronización milimétrica pospuesta a 1100ms tras completar el giro real
-    setTimeout(() => showWinner(), active.length * 200 + 1100);
-  }, 450);
+    
+    setTimeout(() => {
+      active.forEach((_, i) => flipCard(i));
+      setTimeout(() => showWinner(), 1100);
+    }, 450);
+  });
 
   updateStats();
 }
