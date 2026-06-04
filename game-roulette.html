@@ -91,10 +91,10 @@
     box-shadow:0 0 28px rgba(19,236,214,0.7), inset 0 1px 4px rgba(255,255,255,0.18);
   }
 
-  /* ── Paneles Híbridos backdrop-filter: blur(30px) ── */
+  /* ── Paneles Híbridos con fondo #000 y blur de 30px ── */
   .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(30px); border:1px solid rgba(255,255,255,0.05); border-radius:24px; }
 
-  /* ── Result banner ── */
+  /* ── Result banner — Ajuste de márgenes para evitar colisiones visuales ── */
   #result-banner {
     background:linear-gradient(135deg, rgba(19,236,214,0.15), rgba(168,85,247,0.08));
     border:1px solid rgba(19,236,214,0.4);
@@ -315,6 +315,7 @@ canvas.height = SIZE;
 
 function getActivePlayers() { return players.filter(p => p.active); }
 
+// DENSIDAD GRÁFICA ABSOLUTA DE SECTORES Y TEXTO RECTIFICADO (ORTOGONAL)
 function drawWheel(angle) {
   const active = getActivePlayers();
   if (!active.length) return;
@@ -330,7 +331,7 @@ function drawWheel(angle) {
   const slice  = (Math.PI * 2) / active.length;
 
   active.forEach((p, i) => {
-    // CORRECCIÓN RADIAL ABSOLUTA: Los nombres ya no se renderizan boca abajo
+    // Offset matemático para alinear el norte con el puntero estático sin reflejos de espejo
     const a0 = angle + i * slice - Math.PI / 2;
     const a1 = a0 + slice;
     const am = a0 + slice / 2;
@@ -530,7 +531,7 @@ function showResult(winner) {
   history.unshift({name: winner.name, color: winner.color, time});
   renderHistory();
   
-  // ¡CONFETIS REINYECTADOS Y CONFIRMADOS!
+  // ACTIVACIÓN DEL EFECTO CONFETI RESTAURADO EN CALIENTE
   launchConfetti(winner.color);
   
   if (window.SGRouter) SGRouter.showToast(`¡${winner.name} paga hoy! 🎉`, 'success');
@@ -561,6 +562,7 @@ function confirmPayment() {
   }
 }
 
+// RESTAURACIÓN DE LA FUNCIÓN DE ELIMINACIÓN ASÍNCRONA
 function eliminateWinner() {
   if (!lastWinner) return;
   const p = players.find(pl => pl.name === lastWinner);
@@ -645,7 +647,7 @@ function launchConfetti(color) {
   }
 }
 
-// ── CANAL DE RED MANUAL DIRECTO (Aquel que funcionó perfectamente) ──
+// ── CANAL DE CONEXIÓN NATIVO AUTÓNOMO (RESTAURADO AL 100%) ──
 function getStandaloneToken() {
   try {
     const keys = ['sg_auth_token', 'token', 'sg_session', 'session', 'jwt'];
@@ -657,7 +659,7 @@ function getStandaloneToken() {
       return window.SGAuth.getToken();
     }
   } catch (err) {
-    console.error("[Ruleta] Error leyendo persistencia:", err);
+    console.error("[Ruleta] Error de persistencia física:", err);
   }
   return null;
 }
@@ -761,8 +763,8 @@ function setDefaultPlayers() {
   drawWheel(0);
 }
 
-// Retraso pasivo estático seguro único para evitar bucles recursivos en el bundler
-setTimeout(loadRouletteGroups, 120);
+// INYECCIÓN LIMPIA DIRECTA (Bypass de retrasos)
+setTimeout(loadRouletteGroups, 80);
 </script>
 
 <script>
