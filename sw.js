@@ -1,7 +1,7 @@
 /**
  * SplitGasto 2026 - Service Worker
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
- * Versión cache: 4.26
+ * Versión cache:v4.26
  */
 
 const CACHE_NAME = 'splitgasto-v4.26-2026';
