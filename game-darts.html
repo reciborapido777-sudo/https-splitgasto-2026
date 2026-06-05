@@ -51,7 +51,6 @@
         #dartCanvas { cursor: crosshair; touch-action: none; display: block; margin: 0 auto; }
         
         /* El contenedor del canvas NO bloquea el scroll */
-        .dart-board { touch-action: pan-y; }
         
         .dart-board {
             position: relative;
@@ -353,6 +352,7 @@ function removeLastPlayer() {
         const MAX_ROUNDS = 5;
         let gameOver = false;
         let log = [];
+        let isTransitioning = false;
 
         // Dartboard zones [ring, multiplier, basePoints]
         const ZONES = [
@@ -544,59 +544,58 @@ function removeLastPlayer() {
 
         // ─── Throw Dart ───────────────────────────────────────────────
         function throwDart(x, y) {
-            if (gameOver) return;
-            if (window.SGAudio) SGAudio.resume();
+                                if (gameOver || isTransitioning) return;
+                                if (window.SGAudio) SGAudio.resume();
 
-            const result = getScore(x, y);
-            const player = PLAYERS[currentPlayer];
+                                const result = getScore(x, y);
+                                const player = PLAYERS[currentPlayer];
 
-            player.score += result.pts;
-            player.darts.push({ x, y });
+                                player.score += result.pts;
+                                player.darts.push({ x, y });
+                                playDartHit(result.pts);
+                                showHitRing(x, y, result.pts > 0 ? player.color : '#ef4444');
+                                showScorePopup(x, y, result.pts > 0 ? `+${result.pts}` : 'MISS', player.color);
 
-            // Sound feedback
-            playDartHit(result.pts);
+                                dartsThisRound++;
+                                addLog(`${player.emoji} ${player.name}: ${result.label} → ${player.score}pts`);
 
-            // Show hit ring
-            showHitRing(x, y, result.pts > 0 ? player.color : '#ef4444');
+                                if (result.pts >= 50) SGRouter.showToast('🎯 ¡BULLSEYE! +50pts', 'premium');
+                                else if (result.mult === 3) SGRouter.showToast(`🔥 ¡TRIPLE! +${result.pts}pts`, 'info');
+                                else if (result.mult === 2) SGRouter.showToast(`✌️ ¡DOBLE! +${result.pts}pts`, 'success');
 
-            // Show score popup
-            showScorePopup(x, y, result.pts > 0 ? `+${result.pts}` : 'MISS', player.color);
+                                drawBoard();
+                                renderPlayers();
 
-            dartsThisRound++;
+                                if (dartsThisRound >= DARTS_PER_ROUND) {
+                                        isTransitioning = true; // ← BLOQUEA toques durante cambio
+        
+                                        setTimeout(() => {
+                                                  dartsThisRound = 0;
+                                                  PLAYERS[currentPlayer].darts = [];
+                                                  currentPlayer = (currentPlayer + 1) % PLAYERS.length;
 
-            // Log
-            addLog(`${player.emoji} ${player.name}: ${result.label} → ${player.score}pts`);
+                                                  if (currentPlayer === 0) {
+                                                          currentRound++;
+                                                          if (currentRound > MAX_ROUNDS) {
+                                                                  endGame();
+                                                                  isTransitioning = false;
+                                                                   return;
+                                                          }
+                                                  }
+            
+                                                // Feedback visual fuerte
+                                               SGRouter.showToast(`Turno de ${PLAYERS[currentPlayer].name}`, 'info');
+            
+                                               updateDartsLeft();
+                                               renderPlayers();
+                                               drawBoard();
+                                               isTransitioning = false; // ← DESBLOQUEA
+                                        }, 600); // Aumentado de 400ms a 600ms
+                           }
 
-            if (result.pts >= 50) SGRouter.showToast('🎯 ¡BULLSEYE! +50pts', 'premium');
-            else if (result.mult === 3) SGRouter.showToast(`🔥 ¡TRIPLE! +${result.pts}pts`, 'info');
-            else if (result.mult === 2) SGRouter.showToast(`✌️ ¡DOBLE! +${result.pts}pts`, 'success');
-
-            drawBoard();
-            renderPlayers();
-
-            if (dartsThisRound >= DARTS_PER_ROUND) {
-                // Next player
-                setTimeout(() => {
-                    dartsThisRound = 0;
-                    // Clear darts for display (keep last round's)
-                    PLAYERS[currentPlayer].darts = [];
-                    currentPlayer = (currentPlayer + 1) % PLAYERS.length;
-
-                    if (currentPlayer === 0) {
-                        currentRound++;
-                        if (currentRound > MAX_ROUNDS) {
-                            endGame();
-                            return;
-                        }
+                          updateDartsLeft();
                     }
-                    updateDartsLeft();
-                    renderPlayers();
-                    drawBoard();
-                }, 400);
-            }
 
-            updateDartsLeft();
-        }
 
         function showHitRing(x, y, color) {
             const container = document.getElementById('hitRings');
@@ -673,6 +672,7 @@ function removeLastPlayer() {
             currentRound = 1;
             dartsThisRound = 0;
             gameOver = false;
+            isTransitioning = false; // ← AÑADIR
             log = [];
             document.getElementById('winnerModal').classList.add('hidden');
             clearLog();
@@ -699,28 +699,23 @@ function removeLastPlayer() {
             };
         }
 
-        canvas.addEventListener('click', (e) => {
-            const pos = getCanvasPos(e);
-            if (!gameOver) {
-                canvas.classList.add('throwing');
-                setTimeout(() => canvas.classList.remove('throwing'), 300);
-                throwDart(pos.x, pos.y);
-            }
-        });
-
-        // touchend with passive:true — preventDefault not needed on touchend
-        // (scroll is determined by touchstart/touchmove, not touchend)
-        canvas.addEventListener('touchend', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const t = e.changedTouches[0];
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const pos = {
-                x: (t.clientX - rect.left) * scaleX,
-                y: (t.clientY - rect.top) * scaleY
-            };
-            if (!gameOver) throwDart(pos.x, pos.y);
-        }, { passive: true });
+         // FIX: pointerdown unifica mouse + touch + stylus sin delay ni doble disparo
+                      canvas.addEventListener('pointerdown', (e) => {
+                                 if (gameOver|| isTransitioning) return;
+                                 e.preventDefault(); // Evita scroll y el click sintético de 300ms
+            
+                                 const rect = canvas.getBoundingClientRect();
+                                 const scaleX = canvas.width / rect.width;
+                                 const scaleY = canvas.height / rect.height;
+                                 const pos = {
+                                           x: (e.clientX - rect.left) * scaleX,
+                                           y: (e.clientY - rect.top) * scaleY
+                                 };
+            
+                                 canvas.classList.add('throwing');
+                                setTimeout(() => canvas.classList.remove('throwing'), 300);
+                                throwDart(pos.x, pos.y);
+                        });
 
         // ─── FETCH PERIMETRAL (bypass SGApi opaco — fetch directo con token nativo) ───
         const DARTS_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ef4444','#22c55e','#3b82f6','#D4AF37','#ec4899'];
