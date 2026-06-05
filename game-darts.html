@@ -726,97 +726,107 @@ function removeLastPlayer() {
         const DARTS_COLORS = ['#13ecd6','#a855f7','#FF9D42','#ef4444','#22c55e','#3b82f6','#D4AF37','#ec4899'];
         const DARTS_EMOJIS = ['🎯','🏆','⚡','🔥','🌟','🎮','👑','💫'];
 
-        function _dartsAuthHdr() {
-          const t = (window.SGAuth && SGAuth.getToken) ? SGAuth.getToken() : null;
-          return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }
-                   : { 'Content-Type': 'application/json' };
-        }
-        async function _dartsFetch(url) {
-          const r = await fetch(url, { headers: _dartsAuthHdr(), cache: 'no-store' });
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json();
-        }
+        function getRawToken() {
+                          try {
+                               if (window.SGAuth && SGAuth.getToken) {
+                                   const t = SGAuth.getToken();
+                                   if (t) return t;
+                               }
+                               return localStorage.getItem('sg_token');
+                            } catch (e) { return null; }
+                      }
 
-        async function loadDartsGroups() {
-          if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-            PLAYERS = [
-              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-            ];
-            drawBoard(); renderPlayers(); updateDartsLeft();
-            return;
-          }
-          // Reparar membresías huérfanas (fire-and-forget)
-          fetch('/api/db/repair-memberships', { method: 'POST', headers: _dartsAuthHdr() }).catch(()=>{});
-          try {
-            const res = await _dartsFetch('/api/db/groups');
-            const sel = document.getElementById('group-select-darts');
-            if (res && res.success && res.groups && res.groups.length > 0) {
-              sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-              await onDartsGroupChange(res.groups[0].id);
-            } else {
-              sel.innerHTML = '<option value="">Sin grupos</option>';
-              PLAYERS = [
-                { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-                { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-              ];
-              drawBoard(); renderPlayers(); updateDartsLeft();
-            }
-          } catch(e) {
-            PLAYERS = [
-              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-            ];
-            drawBoard(); renderPlayers(); updateDartsLeft();
-          }
-        }
+         async function loadDartsGroups() {
+                            const sel = document.getElementById('group-select-darts');
+                            if (!sel) { requestAnimationFrame(loadDartsGroups); return; }
 
-        async function onDartsGroupChange(groupId) {
-          if (!groupId) return;
-          try {
-            const res = await _dartsFetch(`/api/db/group-members?groupId=${groupId}`);
-            if (res && res.success && res.members && res.members.length > 0) {
-              PLAYERS = res.members.map((m, i) => ({
-                name: m.name || `Jugador ${i+1}`,
-                emoji: DARTS_EMOJIS[i % DARTS_EMOJIS.length],
-                color: DARTS_COLORS[i % DARTS_COLORS.length],
-                score: 0, darts: []
-              }));
-            } else {
-              PLAYERS = [
-                { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-                { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-              ];
-            }
-          } catch(e) {
-            PLAYERS = [
-              { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
-              { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
-            ];
-          }
-          currentPlayer = 0; currentRound = 1; gameOver = false;
-          drawBoard(); renderPlayers(); updateDartsLeft();
-        }
+                            const token = getRawToken();
+                            if (!token) {
+                               sel.innerHTML = '<option value="">Inicia sesión para ver grupos</option>';
+                               PLAYERS = [
+                                    { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                                    { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+                               ];
+                               drawBoard(); renderPlayers(); updateDartsLeft();
+                               return;
+                         }
+
+                         fetch('/api/db/repair-memberships', {
+                              method: 'POST',
+                              headers: { 'Authorization': `Bearer ${token}` }
+                          }).catch(()=>{});
+
+                         try {
+                              const res = await fetch('/api/db/groups', {
+                                   headers: { 'Authorization': `Bearer ${token}` },
+                                   cache: 'no-store'
+                                }).then(r => r.json());
+
+                                if (res?.success && res.groups?.length > 0) {
+                                   sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+                                   await onDartsGroupChange(res.groups[0].id);
+                                } else {
+                                  sel.innerHTML = '<option value="">Sin grupos — crea uno primero</option>';
+                                  PLAYERS = [
+                                        { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                                        { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+                                 ];
+                                 drawBoard(); renderPlayers(); updateDartsLeft();
+                             }
+                         } catch(e) {
+                            console.error('[Dardos] Error cargando grupos:', e);
+                            sel.innerHTML = '<option value="">Error de conexión</option>';
+                            PLAYERS = [
+                                 { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                                 { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+                            ];
+                            drawBoard(); renderPlayers(); updateDartsLeft();
+                        }
+                    }
+
+       async function onDartsGroupChange(groupId) {
+                        if (!groupId) return;
+                        const token = getRawToken();
+
+                        try {
+                             const res = await fetch(`/api/db/group-members?groupId=${groupId}`, {
+                                  headers: { 'Authorization': `Bearer ${token}` },
+                                  cache: 'no-store'
+                               }).then(r => r.json());
+
+                               if (res?.success && res.members?.length > 0) {
+                                  PLAYERS = res.members.map((m, i) => ({
+                                       name: m.name || `Jugador ${i+1}`,
+                                       emoji: DARTS_EMOJIS[i % DARTS_EMOJIS.length],
+                                       color: DARTS_COLORS[i % DARTS_COLORS.length],
+                                       score: 0, darts: []
+                                   }));
+                               } else {
+                                  PLAYERS = [
+                                       { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                                       { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+                                  ];
+                             }
+                         } catch(e) {
+                            console.error('[Dardos] Error cargando miembros:', e);
+                            PLAYERS = [
+                                 { name: 'Jugador 1', emoji: '🎯', color: '#13ecd6', score: 0, darts: [] },
+                                 { name: 'Jugador 2', emoji: '🏆', color: '#a855f7', score: 0, darts: [] },
+                           ];
+                       }
+
+                       currentPlayer = 0; currentRound = 1; dartsThisRound = 0; gameOver = false; log = [];
+                       document.getElementById('winnerModal').classList.add('hidden');
+                       drawBoard(); renderPlayers(); updateDartsLeft();
+                   }
 
         // ─── Init ─────────────────────────────────────────────────────
         drawBoard();
         // INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
 // window.load garantiza que el SW ya está registrado (evita controllerchange reload).
 // Polling corto (2s máx) por si isLoggedIn() no está listo aún.
-window.addEventListener('load', function() {
-  if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
-    loadDartsGroups();
-  } else {
-    var _t = Date.now();
-    (function _p() {
-      if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { loadDartsGroups(); }
-      else if (Date.now() - _t < 2000) { setTimeout(_p, 100); }
-      else { loadDartsGroups(); }
-    })();
-  }
-});
-    </script>
-
+   requestAnimationFrame(loadDartsGroups);
+           </script>
         <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
