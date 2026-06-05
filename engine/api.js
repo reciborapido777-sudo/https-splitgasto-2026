@@ -4,8 +4,19 @@
  */
 const SGApi = (function(){
 
+        function getRawToken() {
+        try {
+            if (window.SGAuth && SGAuth.getToken) {
+                const t = SGAuth.getToken();
+                if (t) return t;
+            }
+        } catch (e) {}
+        try { return localStorage.getItem('sg_token'); } catch (e) { return null; }
+    }
+
     async function request(endpoint, options = {}) {
-        const token = SGAuth.getToken();
+        const token = getRawToken();
+        // ... resto igual
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -13,10 +24,10 @@ const SGApi = (function(){
         };
 
         try {
-        const res = await fetch(endpoint, { ...options, headers, cache: 'no-store' });
+            const res = await fetch(endpoint, { ...options, headers, cache: 'no-store' });
 
             if(res.status === 401) {
-                SGAuth.logout();
+                try { if (window.SGAuth && SGAuth.logout) SGAuth.logout(); } catch (e) {}
                 return { success: false, error: 'Sesión expirada' };
             }
             return await res.json();
@@ -150,11 +161,10 @@ const SGApi = (function(){
         });
     }
 
-
-
+    
     // ── Storage (R2) ──────────────────────────────────────────────────
     async function uploadFile(file, folder) {
-        const token = SGAuth.getToken();
+        const token = getRawToken();
         const formData = new FormData();
         formData.append('file', file);
         formData.append('folder', folder || 'receipts');
@@ -162,13 +172,13 @@ const SGApi = (function(){
         try {
             const res = await fetch('/api/storage/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
+                headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
                 body: formData,
                 cache: 'no-store'
             });
 
             if (res.status === 401) {
-                SGAuth.logout();
+                try { if (window.SGAuth && SGAuth.logout) SGAuth.logout(); } catch (e) {}
                 return { success: false, error: 'Sesión expirada' };
             }
             return await res.json();
@@ -180,7 +190,7 @@ const SGApi = (function(){
     async function getSignedUrl(key) {
         return request(`/api/storage/signed-url/${encodeURIComponent(key)}`);
     }
-
+    
     async function listFiles(folder) {
         const userId = SGAuth.getUserId();
         return request(`/api/storage/list?userId=${userId}&folder=${folder || ''}`);
