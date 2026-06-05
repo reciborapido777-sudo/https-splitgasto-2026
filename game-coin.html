@@ -620,13 +620,23 @@ function launchConfetti(color) {
 }
 
 // ── FETCH PERIMETRAL (bypass SGApi opaco — fetch directo con token nativo) ────
-function _coinAuthHdr() {
-  const t = (window.SGAuth && SGAuth.getToken) ? SGAuth.getToken() : null;
-  return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' }
-           : { 'Content-Type': 'application/json' };
+function getRawToken() {
+  try {
+    if (window.SGAuth && SGAuth.getToken) {
+      const t = SGAuth.getToken();
+      if (t) return t;
+    }
+    return localStorage.getItem('sg_token');
+  } catch (e) { return null; }
 }
-async function _coinFetch(url) {
-  const r = await fetch(url, { headers: _coinAuthHdr(), cache: 'no-store' });
+function coinAuthHeaders() {
+  const t = getRawToken();
+  const h = { 'Content-Type': 'application/json' };
+  if (t) h['Authorization'] = `Bearer ${t}`;
+  return h;
+}
+async function coinFetch(url) {
+  const r = await fetch(url, { headers: coinAuthHeaders(), cache: 'no-store' });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
@@ -644,54 +654,58 @@ function setCoinPlayers(p1name, p2name) {
 async function onCoinGroupChange(groupId) {
   if (!groupId) return;
   try {
-    const res = await _coinFetch(`/api/db/group-members?groupId=${groupId}`);
-    if (res && res.success && res.members && res.members.length >= 2) {
+    const res = await coinFetch(`/api/db/group-members?groupId=${groupId}`);
+    if (res?.success && res.members?.length >= 2) {
       setCoinPlayers(res.members[0].name, res.members[1].name);
       SGRouter.showToast('Jugadores cargados del grupo ✓', 'success');
-    } else if (res && res.success && res.members && res.members.length === 1) {
+    } else if (res?.success && res.members?.length === 1) {
       setCoinPlayers(res.members[0].name, 'Jugador 2');
+    } else {
+      setCoinPlayers('Jugador 1', 'Jugador 2');
     }
-  } catch(e) { /* silenciar — jugadores por defecto ya están puestos */ }
+  } catch(e) {
+    console.error('[Moneda] Error cargando miembros:', e);
+    setCoinPlayers('Jugador 1', 'Jugador 2');
+  }
 }
 
 async function loadCoinGroups() {
-  if (!window.SGAuth || !SGAuth.isLoggedIn()) {
-    return; // jugadores por defecto
+  const sel = document.getElementById('group-select-coin');
+  if (!sel) { requestAnimationFrame(loadCoinGroups); return; }
+
+  const token = getRawToken();
+
+  // Reparar membresías si hay token (fire-and-forget)
+  if (token) {
+    fetch('/api/db/repair-memberships', { method: 'POST', headers: coinAuthHeaders() }).catch(()=>{});
   }
-  // Reparar membresías huérfanas (fire-and-forget)
-  fetch('/api/db/repair-memberships', { method: 'POST', headers: _coinAuthHdr() }).catch(()=>{});
+
+  if (!token) {
+    sel.innerHTML = '<option value="">Inicia sesión para ver grupos</option>';
+    setCoinPlayers('Jugador 1', 'Jugador 2');
+    return;
+  }
+
   try {
-    const res = await _coinFetch('/api/db/groups');
-    const sel = document.getElementById('group-select-coin');
-    if (res && res.success && res.groups && res.groups.length > 0) {
+    const res = await coinFetch('/api/db/groups');
+    if (res?.success && res.groups?.length > 0) {
       sel.innerHTML = res.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
       await onCoinGroupChange(res.groups[0].id);
     } else {
       sel.innerHTML = '<option value="">Sin grupos — jugadores manuales</option>';
+      setCoinPlayers('Jugador 1', 'Jugador 2');
     }
   } catch(e) {
-    const sel = document.getElementById('group-select-coin');
-    if (sel) sel.innerHTML = '<option value="">Sin grupos — jugadores manuales</option>';
+    console.error('[Moneda] Error cargando grupos:', e);
+    sel.innerHTML = '<option value="">Error de conexión</option>';
+    setCoinPlayers('Jugador 1', 'Jugador 2');
   }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-drawCoin(0);  // initial draw: heads facing
-// INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
-// window.load garantiza que el SW ya está registrado (evita controllerchange reload).
-// Polling corto (2s máx) por si isLoggedIn() no está listo aún.
-window.addEventListener('load', function() {
-  if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) {
-    loadCoinGroups();
-  } else {
-    var _t = Date.now();
-    (function _p() {
-      if (window.SGAuth && window.SGApi && SGAuth.isLoggedIn()) { loadCoinGroups(); }
-      else if (Date.now() - _t < 2000) { setTimeout(_p, 100); }
-      else { loadCoinGroups(); }
-    })();
-  }
-});
+drawCoin(0);
+requestAnimationFrame(loadCoinGroups);
+
 </script>
 
 <script>
