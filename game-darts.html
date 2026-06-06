@@ -817,10 +817,7 @@ function removeLastPlayer() {
 
         // ─── Init ─────────────────────────────────────────────────────
         drawBoard();
-        // INIT: auth.js y api.js son síncronos → SGAuth/SGApi disponibles al ejecutar este script.
-// window.load garantiza que el SW ya está registrado (evita controllerchange reload).
-// Polling corto (2s máx) por si isLoggedIn() no está listo aún.
-   requestAnimationFrame(loadDartsGroups);
+requestAnimationFrame(loadDartsGroups);
            </script>
         <script>
     if ('serviceWorker' in navigator) {
