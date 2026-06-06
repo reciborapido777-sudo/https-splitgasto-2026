@@ -1080,10 +1080,12 @@ async function handleDatabase(request, env, path) {
         let membership = await env.SPLITGASTO_DB.prepare(
             'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?'
         ).bind(groupId, authUser.userId).first();
+
+        const grp = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, created_by FROM groups WHERE id = ?'
+        ).bind(groupId).first();
+
         if (!membership) {
-            const grp = await env.SPLITGASTO_DB.prepare(
-                'SELECT id, created_by FROM groups WHERE id = ?'
-            ).bind(groupId).first();
             if (grp && grp.created_by === authUser.userId) {
                 await env.SPLITGASTO_DB.prepare(
                     'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
@@ -1092,8 +1094,16 @@ async function handleDatabase(request, env, path) {
             } else {
                 return jsonResponse({ error: 'No perteneces a este grupo' }, 403);
             }
+        } else if (membership.role !== 'admin' && grp && grp.created_by === authUser.userId) {
+            // Si es creador pero no tiene rol admin, promoverlo automáticamente
+            await env.SPLITGASTO_DB.prepare(
+                'UPDATE group_members SET role = ? WHERE group_id = ? AND user_id = ?'
+            ).bind('admin', groupId, authUser.userId).run();
+            membership = { role: 'admin' };
         }
+
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403);
+
 
         let actualMemberUserId = memberUserId;
         if (!actualMemberUserId && memberEmail) {
