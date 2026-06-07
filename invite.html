@@ -128,10 +128,36 @@
         </p>
     </div>
 
-        <script>
-        const inviteCode = 'SPLIT-4520';
-        const inviteLink = `https://splitgasto.com/join/${inviteCode}`;
-        const inviteMsg = `¡Únete a SplitGasto y divide gastos sin dramas! Usa mi código ${inviteCode} y los dos conseguimos 1 mes Premium gratis 🎉 → ${inviteLink}`;
+    <script>
+        // Leer parámetros de URL (viene desde groups.html)
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteEmail = urlParams.get('email') || '';
+        const inviteGroupId = urlParams.get('groupId') || '';
+
+        // Generar código único basado en groupId + email (no necesita DB)
+        const inviteCode = inviteGroupId 
+            ? 'SG-' + btoa(inviteGroupId + ':' + inviteEmail).replace(/[^a-zA-Z0-9]/g, '').substring(0, 12).toUpperCase()
+            : 'SPLIT-4520';
+
+        // Link de registro que une automáticamente al grupo
+        const inviteLink = inviteGroupId && inviteEmail
+            ? `https://splitgasto.com/auth-register.html?inviteGroup=${encodeURIComponent(inviteGroupId)}&inviteEmail=${encodeURIComponent(inviteEmail)}&code=${inviteCode}`
+            : `https://splitgasto.com/join/${inviteCode}`;
+
+        const inviteMsg = inviteEmail
+            ? `¡Hola! Te invito a unirte a mi grupo en SplitGasto. Regístrate aquí y entrarás automáticamente: ${inviteLink}`
+            : `¡Únete a SplitGasto y divide gastos sin dramas! Usa mi código ${inviteCode} → ${inviteLink}`;
+
+        // Actualizar UI con datos reales
+        document.addEventListener('DOMContentLoaded', () => {
+            if (inviteEmail) {
+                const subtitle = document.querySelector('.glass-panel p.text-zinc-500');
+                if (subtitle) subtitle.innerHTML = `Invitación para: <strong class="text-white">${inviteEmail}</strong><br>Se unirá automáticamente al grupo al registrarse.`;
+            }
+            // Actualizar link visible
+            const linkBtn = document.querySelector('.share-btn:last-child .text-zinc-500');
+            if (linkBtn && inviteGroupId) linkBtn.textContent = inviteLink.replace('https://', '');
+        });
 
         function copyCode() {
             navigator.clipboard.writeText(inviteCode).then(() => {
