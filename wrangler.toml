@@ -44,25 +44,30 @@ binding = "SPLITGASTO_DB"
 database_name = "splitgasto-db"
 database_id = "ac0401b5-1e3a-4c02-8c36-01025169eb1a"
 
-
-# ── AI Gateway ─────────────────────────────────────────────────────────
+# ── Variables de entorno ───────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
-APP_VERSION = "4.26"
+APP_VERSION = "4.28"
 APP_ENV     = "production"
+AI_GATEWAY  = ""        # ← Opcional: añade tu gateway ID cuando lo configures
 
-# ── Observabilidad ─────────────────────────────────────────────────────
+# ── Observabilidad (reducido para producción) ──────────────────────────
 [observability]
 enabled = true
-head_sampling_rate = 1
+head_sampling_rate = 0.1          # ← Antes: 1.0 | Ahora: 10% para reducir ruido/costos
 
 [observability.logs]
 enabled = true
-head_sampling_rate = 1
+head_sampling_rate = 0.1
 persist = true
 invocation_logs = true
 
 [observability.traces]
 enabled = true
 persist = true
-head_sampling_rate = 1
+head_sampling_rate = 0.1
+
+# ── Dominio custom (descomenta si compras/configuras splitgasto.com) ──
+# [[routes]]
+# pattern = "splitgasto.com/*"
+# custom_domain = true
