@@ -44,13 +44,20 @@ const SGAuth = (function(){
         return user ? user.id : null;
     }
 
-async function register(name, email, password) {
+async function register(name, email, password, inviteGroup = null) {
     try {
         const normalizedEmail = email.toLowerCase().trim();
+        
+        // Construcción dinámica del payload manteniendo inmutabilidad
+        const payload = { name, email: normalizedEmail, password };
+        if (inviteGroup) {
+            payload.inviteGroup = inviteGroup;
+        }
+
         const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email: normalizedEmail, password })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
         if(data.success) {
