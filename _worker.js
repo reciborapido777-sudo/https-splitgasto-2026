@@ -1210,9 +1210,10 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, members: members.results }, 200, request);
     }
 
-    if (path === '/api/db/group-members' && method === 'POST') {
-        const { groupId, userId: memberUserId, email: memberEmail, role } = body;
-        if (!groupId || (!memberUserId && !memberEmail)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400, request);
+        if (path === '/api/db/group-members' && method === 'POST') {
+        const { groupId, userId: memberUserId, email, memberEmail, role } = body;
+        const emailInput = memberEmail || email || '';
+        if (!groupId || (!memberUserId && !emailInput)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400, request);
         if (env.SPLITGASTO_CACHE) {
             try { await env.SPLITGASTO_CACHE.delete(`db:groups:${authUser.userId}`); } catch {}
         }
@@ -1253,13 +1254,23 @@ async function handleDatabase(request, env, path) {
         if (membership.role !== 'admin') return jsonResponse({ error: 'Solo el admin puede añadir miembros' }, 403, request);
 
         let actualMemberUserId = memberUserId;
-        if (!actualMemberUserId && memberEmail) {
-            const normalizedMemberEmail = memberEmail.toLowerCase().trim();
+        if (!actualMemberUserId && emailInput) {
+            const normalizedMemberEmail = String(emailInput).toLowerCase().trim();
             if (!isValidEmail(normalizedMemberEmail)) return jsonResponse({ error: 'Email inválido' }, 400, request);
             const user = await env.SPLITGASTO_DB.prepare(
                 'SELECT id FROM users WHERE LOWER(email) = ?'
             ).bind(normalizedMemberEmail).first();
-            if (!user) return jsonResponse({ error: 'Usuario no encontrado con ese email' }, 404, request);
+            
+            // CORREGIDO: Respuesta controlada para que el frontend active el flujo de invitaciones
+            if (!user) {
+                return jsonResponse({ 
+                    success: false, 
+                    exists: false, 
+                    email: normalizedMemberEmail,
+                    message: 'Usuario no registrado. Envía una invitación para unirse al grupo.' 
+                }, 200, request);
+            }
+            
             actualMemberUserId = user.id;
         } else if (actualMemberUserId) {
             const userExists = await env.SPLITGASTO_DB.prepare(
