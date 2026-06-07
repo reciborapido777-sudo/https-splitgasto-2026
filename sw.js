@@ -1,10 +1,10 @@
 /**
  * SplitGasto 2026 - Service Worker
  * ESTRATEGIA: Network-first para HTML, Cache-first para assets estáticos
- * Versión cache:v4.26
+ * Versión cache:v4.28
  */
 
-const CACHE_NAME = 'splitgasto-v4.26-2026';
+const CACHE_NAME = 'splitgasto-v4.28-2026';
 const STATIC_ASSETS = [
     // Engine
     'engine/router.js',
@@ -50,7 +50,7 @@ const STATIC_ASSETS = [
 ];
 // ── Install: pre-cache static assets ───────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Installing v4.26…');
+    console.log('[SW] Installing v4.28…');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(STATIC_ASSETS).catch(err => {
@@ -62,7 +62,7 @@ self.addEventListener('install', event => {
 
 // ── Activate: delete ALL old caches, claim clients ──────────────────────────
 self.addEventListener('activate', event => {
-    console.log('[SW] Activating v4.26…');
+    console.log('[SW] Activating v4.28…');
     event.waitUntil(
         caches.keys()
             .then(keys => Promise.all(
