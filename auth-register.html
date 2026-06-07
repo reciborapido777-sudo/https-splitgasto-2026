@@ -61,7 +61,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
@@ -117,12 +116,15 @@
         if (!email) { SGRouter.showToast('Introduce tu email', 'warning'); return; }
         if (!pwd || pwd.length < 6) { SGRouter.showToast('La clave debe tener al menos 6 caracteres', 'warning'); return; }
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteGroup = urlParams.get('inviteGroup');
+
         const btn = document.getElementById('reg-btn');
         if (btn) btn.disabled = true;
         SGRouter.showToast('Creando cuenta...', 'info');
 
         try {
-            const result = await SGAuth.register(name, email, pwd);
+            const result = await SGAuth.register(name, email, pwd, inviteGroup);
             if (result && result.success) {
                 SGRouter.showToast('Cuenta creada ✓ Bienvenido', 'success');
                 setTimeout(() => SGRouter.navigate('dashboard', 'register'), 900);
