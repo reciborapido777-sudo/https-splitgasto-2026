@@ -310,6 +310,25 @@ async function handleAuth(request, env, path) {
             throw dbErr;
         }
 
+        // CORREGIDO: Auto-unir al grupo si viene de invitación
+        const inviteGroupId = body.inviteGroup;
+        if (inviteGroupId && env.SPLITGASTO_DB) {
+            try {
+                // Verificar que el grupo existe
+                const groupExists = await env.SPLITGASTO_DB.prepare(
+                    'SELECT id FROM groups WHERE id = ?'
+                ).bind(inviteGroupId).first();
+                
+                if (groupExists) {
+                    await env.SPLITGASTO_DB.prepare(
+                        'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+                    ).bind(inviteGroupId, id, 'member').run();
+                }
+            } catch (inviteErr) {
+                console.error('Error auto-joining invited group:', inviteErr.message);
+            }
+        }
+
         const token = await signJWT({ userId: id, email: normalizedEmail }, env);
         return jsonResponse({ success: true, token, user: { id, name: name.trim(), email: normalizedEmail } }, 201, request);
     }
@@ -1261,7 +1280,6 @@ async function handleDatabase(request, env, path) {
                 'SELECT id FROM users WHERE LOWER(email) = ?'
             ).bind(normalizedMemberEmail).first();
             
-            // CORREGIDO: Respuesta controlada para que el frontend active el flujo de invitaciones
             if (!user) {
                 return jsonResponse({ 
                     success: false, 
@@ -1526,7 +1544,7 @@ async function handleDatabase(request, env, path) {
         
         // CORREGIDO: Blindaje de seguridad contra suplanto en liquidaciones (2 de seguridad)
         if (fromUserId !== authUser.userId && membership.role !== 'admin') {
-            return jsonResponse({ error: 'Solo puedes registrar tus propias liquidaciones' }, 403, request);
+            return jsonResponse({ error: 'Solo puedes register tus propias liquidaciones' }, 403, request);
         }
         
         const usersInGroup = await env.SPLITGASTO_DB.prepare(
