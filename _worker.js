@@ -1210,7 +1210,7 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, members: members.results }, 200, request);
     }
 
-        if (path === '/api/db/group-members' && method === 'POST') {
+    if (path === '/api/db/group-members' && method === 'POST') {
         const { groupId, userId: memberUserId, email, memberEmail, role } = body;
         const emailInput = memberEmail || email || '';
         if (!groupId || (!memberUserId && !emailInput)) return jsonResponse({ error: 'Campos "groupId" y "userId" o "email" requeridos' }, 400, request);
