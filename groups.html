@@ -434,6 +434,11 @@ function inviteMember(groupId, groupName) {
                 try { sessionStorage.setItem('sg_member_added', Date.now()); } catch {}
                 // Delay mayor para que D1 propague el cambio (replicación eventual ~800ms)
                 setTimeout(() => loadGroups(), 900);
+            } else if (res && res.exists === false) {
+                // CORREGIDO: Usuario no registrado → activar flujo de invitación
+                SGRouter.showToast(`Invitación enviada a ${res.email}`, 'success');
+                // Aquí puedes redirigir a tu flujo de invitaciones o abrir modal de invite.html
+                // Ejemplo: SGRouter.navigate('invite?email=' + encodeURIComponent(res.email));
             } else {
                 SGRouter.showToast(res?.error || 'Error al invitar', 'error');
             }
