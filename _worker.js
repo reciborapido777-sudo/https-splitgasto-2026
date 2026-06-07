@@ -588,6 +588,7 @@ async function handleAI(request, env, path) {
             'Responde siempre en español, clara y concisamente.';
 
         try {
+            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
                 messages: [
                     { role: 'system', content: systemPrompt },
@@ -595,8 +596,7 @@ async function handleAI(request, env, path) {
                 ],
                 max_tokens: body.max_tokens ?? 512,
                 temperature: body.temperature ?? 0.7,
-                ...gatewayOpts,
-            });
+            }, gatewayOpts);
             const response = { success: true, response: result.response, model: '@cf/meta/llama-3.1-8b-instruct' };
             await setCache(env, cacheKey, response, 600);
             return jsonResponse(response, 200, request);
@@ -614,6 +614,7 @@ async function handleAI(request, env, path) {
         if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
 
         try {
+            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.2-1b-instruct', {
                 messages: [
                     {
@@ -627,8 +628,7 @@ async function handleAI(request, env, path) {
                 ],
                 max_tokens: 32,
                 temperature: 0.1,
-                ...gatewayOpts,
-            });
+            }, gatewayOpts);
             let category = 'otro';
             try {
                 const parsed = JSON.parse(result.response);
@@ -649,6 +649,7 @@ async function handleAI(request, env, path) {
         const { image } = body;
         if (!image) return jsonResponse({ error: 'Campo "image" (base64) requerido' }, 400, request);
         try {
+            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
@@ -658,8 +659,8 @@ async function handleAI(request, env, path) {
                     { role: 'user', content: 'Extrae los datos de este ticket.' },
                 ],
                 image: `data:image/jpeg;base64,${image}`,
-                max_tokens: 512, temperature: 0.1, ...gatewayOpts,
-            });
+                max_tokens: 512, temperature: 0.1,
+            }, gatewayOpts);
             let ticketData = {};
             try {
                 const jsonMatch = result.response.match(/\{[\s\S]*\}/);
@@ -690,6 +691,7 @@ async function handleAI(request, env, path) {
         if (!data) return jsonResponse({ error: 'Campo "data" requerido' }, 400, request);
         const prompt = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
         try {
+            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un analista financiero. Analiza gastos compartidos y genera ' +
@@ -697,8 +699,8 @@ async function handleAI(request, env, path) {
                         'y 2 recomendaciones para ahorrar.' },
                     { role: 'user', content: `Analiza estos gastos:\n${prompt}` },
                 ],
-                max_tokens: 400, temperature: 0.5, ...gatewayOpts,
-            });
+                max_tokens: 400, temperature: 0.5,
+            }, gatewayOpts);
             return jsonResponse({ success: true, summary: result.response, model: '@cf/meta/llama-3.1-8b-instruct' }, 200, request);
         } catch (err) {
             return jsonResponse({ error: 'Error generando resumen', detail: err.message }, 500, request);
@@ -732,6 +734,7 @@ async function handleAI(request, env, path) {
             }
             const base64 = btoa(binary);
 
+            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
@@ -741,8 +744,8 @@ async function handleAI(request, env, path) {
                     { role: 'user', content: 'Extrae los datos de este ticket.' },
                 ],
                 image: `data:${image.type};base64,${base64}`,
-                max_tokens: 512, temperature: 0.1, ...gatewayOpts,
-            });
+                max_tokens: 512, temperature: 0.1,
+            }, gatewayOpts);
 
             let ticketData = {};
             try {
@@ -917,7 +920,6 @@ async function handleStorageDelete(request, env, key, authUser) {
         await env.SPLITGASTO_BUCKET.delete(key);
         return jsonResponse({ success: true, message: 'Archivo eliminado', key }, 200, request);
     } catch (err) {
-        // CORREGIDO: Localización idiomática del mensaje de error (1 de idioma)
         return jsonResponse({ error: 'Error eliminando archivo', detail: err.message }, 500, request);
     }
 }
