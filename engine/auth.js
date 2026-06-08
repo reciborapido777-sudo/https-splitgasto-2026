@@ -30,7 +30,6 @@ const SGAuth = (function(){
         if(!token) return false;
         try {
             let payload = token.split('.')[1];
-            // Convertir Base64URL → Base64 estándar
             payload = payload.replace(/-/g, '+').replace(/_/g, '/');
             const pad = payload.length % 4;
             if (pad) payload += '='.repeat(4 - pad);
@@ -44,51 +43,95 @@ const SGAuth = (function(){
         return user ? user.id : null;
     }
 
-async function register(name, email, password, inviteGroup = null) {
-    try {
-        const normalizedEmail = email.toLowerCase().trim();
-        
-        // Construcción dinámica del payload manteniendo inmutabilidad
-        const payload = { name, email: normalizedEmail, password };
-        if (inviteGroup) {
-            payload.inviteGroup = inviteGroup;
+    // ═════════════════════════════════════════════════════════════════
+    // Registro — SIN auto-join inseguro
+    // ═════════════════════════════════════════════════════════════════
+    async function register(name, email, password) {
+        try {
+            const normalizedEmail = email.toLowerCase().trim();
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email: normalizedEmail, password })
+            });
+            const data = await res.json();
+            if(data.success) {
+                setSession(data.token, data.user);
+            }
+            return data;
+        } catch (err) {
+            return { success: false, error: 'Error de conexión' };
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // Login
+    // ═════════════════════════════════════════════════════════════════
+    async function login(email, password) {
+        try {
+            const normalizedEmail = email.toLowerCase().trim();
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: normalizedEmail, password })
+            });
+            const data = await res.json();
+            if(data.success) {
+                setSession(data.token, data.user);
+            }
+            return data;
+        } catch (err) {
+            return { success: false, error: 'Error de conexión' };
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // NUEVO: Unirse a grupo (requiere estar autenticado)
+    // ═════════════════════════════════════════════════════════════════
+    async function joinGroup(groupId) {
+        if (!groupId) return { success: false, error: 'groupId requerido' };
+        const token = getToken();
+        if (!token) return { success: false, error: 'No autenticado' };
+
+        try {
+            const res = await fetch('/api/db/join-group', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ groupId })
+            });
+            return await res.json();
+        } catch (err) {
+            return { success: false, error: 'Error de conexión' };
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    // NUEVO: Registro + unión a grupo en secuencia segura
+    // ═════════════════════════════════════════════════════════════════
+    async function registerAndJoin(name, email, password, groupId) {
+        const reg = await register(name, email, password);
+        if (!reg.success) return reg;
+
+        if (groupId) {
+            const join = await joinGroup(groupId);
+            if (!join.success) {
+                // No fallamos el registro completo, pero advertimos
+                return { ...reg, joinWarning: join.error || 'No se pudo unir al grupo' };
+            }
+            return { ...reg, joinedGroup: groupId };
         }
 
-        const res = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if(data.success) {
-            setSession(data.token, data.user);
-        }
-        return data;
-    } catch (err) {
-        return { success: false, error: 'Error de conexión' };
+        return reg;
     }
-}
-
-async function login(email, password) {
-    try {
-        const normalizedEmail = email.toLowerCase().trim();
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: normalizedEmail, password })
-        });
-        const data = await res.json();
-        if(data.success) {
-            setSession(data.token, data.user);
-        }
-        return data;
-    } catch (err) {
-        return { success: false, error: 'Error de conexión' };
-    }
-}
 
     return {
         getToken, getUser, setSession, logout,
-        isLoggedIn, getUserId, register, login
+        isLoggedIn, getUserId,
+        register, login,
+        joinGroup,           // NUEVO
+        registerAndJoin      // NUEVO
     };
 })();
