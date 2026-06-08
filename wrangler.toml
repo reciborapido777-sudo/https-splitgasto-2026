@@ -47,7 +47,7 @@ database_id = "ac0401b5-1e3a-4c02-8c36-01025169eb1a"
 # ── Variables de entorno ───────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
-APP_VERSION = "4.28"
+APP_VERSION = "4.30"
 APP_ENV     = "production"
 AI_GATEWAY  = "splitgasto-ai"
 
