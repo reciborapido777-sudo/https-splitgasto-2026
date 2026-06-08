@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 - Master Navigation Router
- * Versión: 4.3 — Transición sin filter:blur (fix Android Edge/Chrome stacking context)
+ * Versión: 4.30 — Transición sin filter:blur (fix Android Edge/Chrome stacking context)
  * filter:blur en body crea un stacking context que en algunos engines Android
  * (Edge, Chrome WebView) consume los eventos táctiles durante la transición,
  * haciendo que los botones parezcan no funcionar. Reemplazado por opacity-only.
@@ -210,4 +210,4 @@ Object.freeze(SGRouter.routes);
 Object.freeze(SGRouter);
 
 // ─── Diagnóstico de carga ─────────────────────────────────────────────────
-console.log('[SG Router] v4.3 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
+console.log('[SG Router] v4.30 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
