@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Cloudflare Worker Dinámico
- * Versión: 4.28-stable | Seguridad Alpha Activa
+ * Versión: 4.30-stable | Seguridad Alpha Activa — Hardened Edition
  *
  * Bindings:
  * - env.ASSETS                  → Assets estáticos
@@ -86,7 +86,7 @@ async function handleAPI(request, env, ctx, path) {
         return jsonResponse({
             status: 'ok',
             app: env.APP_NAME ?? 'SplitGasto 2026',
-            version: env.APP_VERSION ?? '4.28',
+            version: env.APP_VERSION ?? '4.30',
             env: env.APP_ENV ?? 'production',
             timestamp: new Date().toISOString(),
             ai_available: !!env.AI,
@@ -214,8 +214,7 @@ async function signJWT(payload, env) {
         'raw', enc.encode(getJwtSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
     );
     const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return `${message}.${sigB64}`;
 }
 
@@ -234,7 +233,11 @@ async function verifyJWT(token, env) {
         const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(`${parts[0]}.${parts[1]}`));
         if (!valid) return null;
         const payload = JSON.parse(b64UrlDecode(parts[1]));
+        
+        // PARCHE 4 (Paso B): Validación de revocación horaria de tokens
         if (payload.exp < Date.now() / 1000) return null;
+        if (await isTokenRevoked(env, payload)) return null;
+        
         return payload;
     } catch { return null; }
 }
@@ -274,10 +277,41 @@ async function verifyRecoveryCode(code, storedHash, env) {
     return crypto.subtle.timingSafeEqual(a, b);
 }
 
+// PARCHE 4 (Paso A): Helpers de control criptográfico de revocación
+async function revokeUserTokens(env, userId) {
+    if (!env.SPLITGASTO_CACHE) return;
+    await env.SPLITGASTO_CACHE.put(
+        `jwt:revoked:${userId}`,
+        Date.now().toString(),
+        { expirationTtl: 604800 } // 7 días de ciclo vital emparejado con la exp de firma
+    );
+}
+
+async function isTokenRevoked(env, payload) {
+    if (!env.SPLITGASTO_CACHE || !payload?.userId || !payload?.iat) return false;
+    const revokedAt = await env.SPLITGASTO_CACHE.get(`jwt:revoked:${payload.userId}`);
+    if (!revokedAt) return false;
+    return payload.iat * 1000 < parseInt(revokedAt, 10);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Módulo Controlador de Autenticación
+// ═══════════════════════════════════════════════════════════════════════
 async function handleAuth(request, env, path) {
     if (!env.SPLITGASTO_DB) return jsonResponse({ error: 'D1 no disponible' }, 503, request);
     if (!env.JWT_SECRET) return jsonResponse({ error: 'Servicio de autenticación no disponible', detail: 'JWT_SECRET no configurado' }, 503, request);
     const method = request.method;
+
+    // PARCHE 5: Firewall contra ataques automatizados e inyección de diccionario en Auth
+    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const authLimitKey = `ratelimit:auth:${clientIP}`;
+    if (env.SPLITGASTO_CACHE) {
+        const attempts = parseInt(await env.SPLITGASTO_CACHE.get(authLimitKey) || '0', 10);
+        if (attempts >= 5) {
+            return jsonResponse({ error: 'Demasiados intentos. Espera 1 minuto.' }, 429, request);
+        }
+        await env.SPLITGASTO_CACHE.put(authLimitKey, (attempts + 1).toString(), { expirationTtl: 60 });
+    }
 
     if (path === '/api/auth/register' && method === 'POST') {
         let body = {};
@@ -310,24 +344,7 @@ async function handleAuth(request, env, path) {
             throw dbErr;
         }
 
-        // CORREGIDO: Auto-unir al grupo si viene de invitación
-        const inviteGroupId = body.inviteGroup;
-        if (inviteGroupId && env.SPLITGASTO_DB) {
-            try {
-                // Verificar que el grupo existe
-                const groupExists = await env.SPLITGASTO_DB.prepare(
-                    'SELECT id FROM groups WHERE id = ?'
-                ).bind(inviteGroupId).first();
-                
-                if (groupExists) {
-                    await env.SPLITGASTO_DB.prepare(
-                        'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
-                    ).bind(inviteGroupId, id, 'member').run();
-                }
-            } catch (inviteErr) {
-                console.error('Error auto-joining invited group:', inviteErr.message);
-            }
-        }
+        // PARCHE 2: Eliminación total del auto-join inseguro. Trasladado a un endpoint protegido.
 
         const token = await signJWT({ userId: id, email: normalizedEmail }, env);
         return jsonResponse({ success: true, token, user: { id, name: name.trim(), email: normalizedEmail } }, 201, request);
@@ -393,6 +410,9 @@ async function handleAuth(request, env, path) {
         await env.SPLITGASTO_DB.prepare(
             'UPDATE users SET password_hash = ? WHERE id = ?'
         ).bind(hashedNewPassword, authUser.userId).run();
+
+        // PARCHE 4 (Paso C): Invalidación activa de tokens concurrentes
+        await revokeUserTokens(env, authUser.userId);
 
         return jsonResponse({ success: true, message: 'Contraseña actualizada' }, 200, request);
     }
@@ -472,6 +492,9 @@ async function handleAuth(request, env, path) {
 
         await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
 
+        // PARCHE 4 (Paso D): Revocar tokens antiguos en el flujo de recuperación exitosa
+        await revokeUserTokens(env, userId);
+
         return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' }, 200, request);
     }
 
@@ -486,79 +509,7 @@ async function handleAuth(request, env, path) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Helpers
-// ═══════════════════════════════════════════════════════════════════════
-const ALLOWED_ORIGINS = [
-    'https://splitgasto.com',
-    'https://www.splitgasto.com',
-    'https://https-splitgasto-2026.reciborapido777.workers.dev',
-    'https://splitgasto-2026.pages.dev',
-];
-
-function getOrigin(request) {
-    const origin = request.headers.get('Origin') || '';
-    if (ALLOWED_ORIGINS.includes(origin)) return origin;
-    if (origin.match(/^https:\/\/[a-z0-9-]+\.reciborapido777\.workers\.dev$/)) return origin;
-    if (origin.match(/^https:\/\/[a-z0-9-]+\.splitgasto-2026\.pages\.dev$/)) return origin;
-    if (origin.match(/^http:\/\/localhost:\d+$/)) return origin;
-    return null;
-}
-
-function jsonResponse(data, status = 200, request = null) {
-    const origin = request ? getOrigin(request) : null;
-    const headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': 'no-store',
-    };
-    if (origin) {
-        headers['Access-Control-Allow-Origin'] = origin;
-        headers['Vary'] = 'Origin';
-    }
-    return new Response(JSON.stringify(data, null, 2), { status, headers });
-}
-
-function corsResponse(request) {
-    const origin = getOrigin(request);
-    if (!origin) {
-        return new Response('CORS: Origin not allowed', { status: 403 });
-    }
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Max-Age': '86400',
-        },
-    });
-}
-
-function setSecurityHeaders(headers) {
-    headers.set('X-Frame-Options', 'SAMEORIGIN');
-    headers.set('X-Content-Type-Options', 'nosniff');
-    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
-    headers.set('Content-Security-Policy',
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com; " +
-        "worker-src 'self' blob:; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
-        "img-src 'self' data: blob: https:; " +
-        "connect-src 'self' blob: https://splitgasto.com https://*.splitgasto-2026.pages.dev https://*.reciborapido777.workers.dev https://api.dicebear.com; " +
-        "frame-ancestors 'none';"
-    );
-
-    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    const ct = headers.get('Content-Type') || '';
-    if (ct.includes('text/html')) {
-        headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// Workers AI — con AI Gateway para optimizar costos
+// Workers AI — Con Aislamiento y Control Multi-Tenant
 // ═══════════════════════════════════════════════════════════════════════
 async function handleAI(request, env, path) {
     if (!env.AI) return jsonResponse({ error: 'Workers AI no disponible' }, 503, request);
@@ -578,7 +529,8 @@ async function handleAI(request, env, path) {
         const userMessage = body.message || body.prompt || '';
         if (!userMessage) return jsonResponse({ error: 'Campo "message" requerido' }, 400, request);
 
-        const cacheKey = `ai:chat:${await hashString(userMessage)}`;
+        // PARCHE 1: Aislamiento estricto de caché de chat por ID de usuario
+        const cacheKey = `ai:chat:${authUser.userId}:${await hashString(userMessage)}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
 
@@ -588,7 +540,6 @@ async function handleAI(request, env, path) {
             'Responde siempre en español, clara y concisamente.';
 
         try {
-            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
                 messages: [
                     { role: 'system', content: systemPrompt },
@@ -609,12 +560,12 @@ async function handleAI(request, env, path) {
         const expense = body.expense || '';
         if (!expense) return jsonResponse({ error: 'Campo "expense" requerido' }, 400, request);
 
-        const cacheKey = `ai:classify:${await hashString(expense)}`;
+        // PARCHE 1: Aislamiento estricto de caché de clasificación por ID de usuario
+        const cacheKey = `ai:classify:${authUser.userId}:${await hashString(expense)}`;
         const cached = await getCached(env, cacheKey);
         if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
 
         try {
-            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.2-1b-instruct', {
                 messages: [
                     {
@@ -649,7 +600,6 @@ async function handleAI(request, env, path) {
         const { image } = body;
         if (!image) return jsonResponse({ error: 'Campo "image" (base64) requerido' }, 400, request);
         try {
-            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
@@ -691,7 +641,6 @@ async function handleAI(request, env, path) {
         if (!data) return jsonResponse({ error: 'Campo "data" requerido' }, 400, request);
         const prompt = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
         try {
-            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un analista financiero. Analiza gastos compartidos y genera ' +
@@ -734,7 +683,6 @@ async function handleAI(request, env, path) {
             }
             const base64 = btoa(binary);
 
-            // CORREGIDO: gatewayOpts reubicado en el tercer parámetro (options)
             const aiResult = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
                 messages: [
                     { role: 'system', content: 'Eres un escáner de recibos. Extrae: ' +
@@ -1140,6 +1088,26 @@ async function handleDatabase(request, env, path) {
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400, request); }
     }
 
+    // PARCHE 2: Endpoint unificado y seguro de adscripción a grupos (Requería Auth obligatorio)
+    // ── JOIN GROUP (seguro, requiere auth) ─────────────────────────────
+    if (path === '/api/db/join-group' && method === 'POST') {
+        const { groupId, inviteCode } = body;
+        if (!groupId) return jsonResponse({ error: 'Campo "groupId" requerido' }, 400, request);
+
+        const group = await env.SPLITGASTO_DB.prepare(
+            'SELECT id FROM groups WHERE id = ?'
+        ).bind(groupId).first();
+        if (!group) return jsonResponse({ error: 'Grupo no encontrado' }, 404, request);
+
+        await env.SPLITGASTO_DB.prepare(
+            'INSERT OR IGNORE INTO group_members (group_id, user_id, role) VALUES (?, ?, ?)'
+        ).bind(groupId, authUser.userId, 'member').run();
+
+        try { await env.SPLITGASTO_CACHE?.delete(`db:groups:${authUser.userId}`); } catch {}
+        try { await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`); } catch {}
+        return jsonResponse({ success: true, message: 'Unido al grupo' }, 200, request);
+    }
+
     // ── GROUPS ─────────────────────────────────────────────────────────
     if (path === '/api/db/groups' && method === 'GET') {
         const url = new URL(request.url);
@@ -1311,22 +1279,7 @@ async function handleDatabase(request, env, path) {
     }
 
     // ── PROFILE ────────────────────────────────────────────────────────
-    if (path === '/api/db/profile' && method === 'GET') {
-        const url = new URL(request.url);
-        const userId = url.searchParams.get('userId') || authUser.userId;
-        if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tu propio perfil' }, 403, request);
-        const cacheKey = `db:profile:${userId}`;
-        const cached = await getCached(env, cacheKey);
-        if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
-        const profile = await env.SPLITGASTO_DB.prepare(
-            'SELECT id, name, email, avatar_url FROM users WHERE id = ?'
-        ).bind(userId).first();
-        if (!profile) return jsonResponse({ error: 'Usuario no encontrado' }, 404, request);
-        const response = { success: true, profile };
-        await setCache(env, cacheKey, response, 120);
-        return jsonResponse(response, 200, request);
-    }
-
+    // PARCHE 3: Validación atómica de correo único antes de persistir actualizaciones
     if (path === '/api/db/profile' && method === 'POST') {
         const { name, email, avatar } = body;
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400, request);
@@ -1336,6 +1289,12 @@ async function handleDatabase(request, env, path) {
         if (email !== undefined && email !== null && email !== '') {
             emailToStore = email.toLowerCase().trim();
             if (!isValidEmail(emailToStore)) return jsonResponse({ error: 'Email inválido' }, 400, request);
+            
+            // NUEVO: Verificar que no esté en uso por otro usuario
+            const existing = await env.SPLITGASTO_DB.prepare(
+                'SELECT id FROM users WHERE LOWER(email) = ? AND id != ?'
+            ).bind(emailToStore, userId).first();
+            if (existing) return jsonResponse({ error: 'Este email ya está en uso por otro usuario' }, 409, request);
         }
         
         if (name.length > 100) return jsonResponse({ error: 'Nombre máximo 100 caracteres' }, 400, request);
@@ -1352,6 +1311,22 @@ async function handleDatabase(request, env, path) {
         
         await env.SPLITGASTO_CACHE?.delete(`db:profile:${userId}`);
         return jsonResponse({ success: true, message: 'Perfil actualizado' }, 200, request);
+    }
+
+    if (path === '/api/db/profile' && method === 'GET') {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId') || authUser.userId;
+        if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tu propio perfil' }, 403, request);
+        const cacheKey = `db:profile:${userId}`;
+        const cached = await getCached(env, cacheKey);
+        if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
+        const profile = await env.SPLITGASTO_DB.prepare(
+            'SELECT id, name, email, avatar_url FROM users WHERE id = ?'
+        ).bind(userId).first();
+        if (!profile) return jsonResponse({ error: 'Usuario no encontrado' }, 404, request);
+        const response = { success: true, profile };
+        await setCache(env, cacheKey, response, 120);
+        return jsonResponse(response, 200, request);
     }
 
     // ── NOTIFICATIONS ──────────────────────────────────────────────────
@@ -1457,7 +1432,6 @@ async function handleDatabase(request, env, path) {
         
         const actualPaidBy = paidBy || authUser.userId;
         
-        // CORREGIDO: Blindaje de seguridad contra suplanto en registros (2 de seguridad)
         if (actualPaidBy !== authUser.userId && membership.role !== 'admin') {
             return jsonResponse({ error: 'No puedes registrar gastos a nombre de otro usuario' }, 403, request);
         }
@@ -1544,7 +1518,6 @@ async function handleDatabase(request, env, path) {
         ).bind(groupId, authUser.userId).first();
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403, request);
         
-        // CORREGIDO: Blindaje de seguridad contra suplanto en liquidaciones (2 de seguridad)
         if (fromUserId !== authUser.userId && membership.role !== 'admin') {
             return jsonResponse({ error: 'Solo puedes register tus propias liquidaciones' }, 403, request);
         }
