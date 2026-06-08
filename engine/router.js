@@ -210,4 +210,4 @@ Object.freeze(SGRouter.routes);
 Object.freeze(SGRouter);
 
 // ─── Diagnóstico de carga ─────────────────────────────────────────────────
-console.log('[SG Router] v4.30 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
+console.log('[SG Router] v4.31 cargado ✓ —', Object.keys(SGRouter.routes).length, 'rutas');
