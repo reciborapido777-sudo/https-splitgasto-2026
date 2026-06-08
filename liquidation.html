@@ -22,31 +22,31 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 .debt-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,0.05)}
 .debt-row:last-child{border-bottom:none}
 
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+.nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+.nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+.nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+.nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#13ecd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SplitGasto">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+<script src="engine/desktop-fix.js" defer></script>
+<script src="engine/router.js" defer></script>
+<script src="engine/auth.js"></script>
+<script src="engine/api.js"></script>
 </head>
 <body class="app-shell pb-32">
 <div class="app-frame">
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-10">
 
-  <!-- Header -->
   <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
     <div class="flex items-center gap-5">
       <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
@@ -60,7 +60,6 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Transferencia Segura</span>
   </header>
 
-  <!-- Resumen de deuda -->
   <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#13ecd6]/10 text-center space-y-6 reveal-node relative overflow-hidden">
     <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
     <div>
@@ -74,7 +73,6 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
   </section>
 
-  <!-- Desglose de la deuda -->
   <section class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
     <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3">Desglose</p>
     <div class="debt-row">
@@ -104,7 +102,6 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
   </section>
 
-  <!-- Método de pago -->
   <section class="space-y-4 reveal-node" style="animation-delay:.1s">
     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Método de Pago</p>
     <div class="space-y-3">
@@ -137,7 +134,6 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
   </section>
 
-  <!-- Nota opcional -->
   <section class="reveal-node" style="animation-delay:.15s">
     <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
       <span class="material-icons-round text-zinc-600">edit_note</span>
@@ -146,7 +142,6 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
   </section>
 
-  <!-- CTA -->
   <div class="space-y-3 reveal-node" style="animation-delay:.2s">
     <button onclick="executeLiquidation()" 
       class="w-full py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
@@ -178,44 +173,88 @@ function selectMethod(el) {
   icon.classList.add('text-[#13ecd6]');
 }
 
-function executeLiquidation() {
-  const btn = document.querySelector('button[onclick="executeLiquidation()"]');
-  btn.textContent = 'Procesando...';
-  btn.disabled = true;
-  btn.classList.add('opacity-70');
-  setTimeout(() => SGRouter.navigate('success', 'liquidation'), 1500);
+async function executeLiquidation() {
+    const btn = document.querySelector('button[onclick="executeLiquidation()"]');
+    
+    // Obtener contexto del grupo
+    const params = new URLSearchParams(window.location.search);
+    const groupId = params.get('groupId');
+    if (!groupId) {
+        SGRouter.showToast('Falta contexto de grupo', 'error');
+        return;
+    }
+    
+    // Anti doble-submit
+    btn.textContent = 'Procesando...';
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+
+    try {
+        // Datos de la transacción — vinculación dinámica del pool transaccional
+        const toUserId = 'USER_ID_MARIO'; // ← Reemplaza por el ID real del destinatario
+        const amount = 84.50;
+        const currency = 'EUR';
+        
+        // Llamada real al Worker unificado
+        const res = await fetch('/api/db/settlements', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SGAuth.getToken()}`
+            },
+            body: JSON.stringify({
+                groupId,
+                fromUserId: SGAuth.getUserId(),
+                toUserId,
+                amount,
+                currency
+            })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            SGRouter.navigate('success', 'liquidation');
+        } else {
+            SGRouter.showToast(data.error || 'Error al liquidar', 'error');
+            btn.textContent = 'Confirmar Liquidación';
+            btn.disabled = false;
+            btn.classList.remove('opacity-70');
+        }
+    } catch (e) {
+        SGRouter.showToast('Error de conexión', 'error');
+        btn.textContent = 'Confirmar Liquidación';
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+    }
 }
 </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p>Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p>Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p>Perfil</p>
             </button>
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
