@@ -1720,4 +1720,30 @@ async function handleDatabase(request, env, path) {
     }
 
     if (path === '/api/db/purge-cache' && method === 'POST') {
-     
+        const userId = authUser.userId;
+        const userGroups = await env.SPLITGASTO_DB.prepare(
+            'SELECT g.id FROM groups g JOIN group_members gm ON g.id = gm.group_id WHERE gm.user_id = ?'
+        ).bind(userId).all();
+        if (env.SPLITGASTO_CACHE) {
+            try { await env.SPLITGASTO_CACHE.delete(`db:groups:${userId}`); } catch {}
+            try { await env.SPLITGASTO_CACHE.delete(`db:profile:${userId}`); } catch {}
+            for (const g of (userGroups.results || [])) {
+                try { await env.SPLITGASTO_CACHE.delete(`db:balances:${g.id}`); } catch {}
+                try { await env.SPLITGASTO_CACHE.delete(`db:expenses:${g.id}`); } catch {}
+            }
+        }
+        return jsonResponse({ success: true, message: 'Cache purgada correctamente' }, 200, request);
+    }
+
+    if (path === '/api/db/notifications/read' && method === 'POST') {
+        const userId = authUser.userId;
+        try {
+            await env.SPLITGASTO_DB.prepare(
+                "UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0"
+            ).bind(userId).run();
+        } catch {}
+        return jsonResponse({ success: true, message: 'Notificaciones marcadas como leídas' }, 200, request);
+    }
+
+    return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404, request);
+}
