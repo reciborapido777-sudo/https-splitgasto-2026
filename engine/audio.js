@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 — Shared Audio Engine
- * engine/audio.js  v1.0
+ * engine/audio.js  v4.31
  *
  * Web Audio API sound effects — no external files, pure synthesis.
  * All functions are added to the global `SGAudio` object.
