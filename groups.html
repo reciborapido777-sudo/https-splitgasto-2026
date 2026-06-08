@@ -436,7 +436,7 @@ function inviteMember(groupId, groupName) {
                 setTimeout(() => loadGroups(), 900);
             } else if (res && res.exists === false) {
                 // CORREGIDO: Usuario no registrado → redirigir a invite con parámetros
-                SGRouter.navigate('invite?email=' + encodeURIComponent(res.email) + '&groupId=' + encodeURIComponent(groupId));
+                window.location.href = 'invite.html?email=' + encodeURIComponent(res.email) + '&groupId=' + encodeURIComponent(groupId);
             } else {
                 SGRouter.showToast(res?.error || 'Error al invitar', 'error');
             }
