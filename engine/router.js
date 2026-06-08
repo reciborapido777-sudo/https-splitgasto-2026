@@ -206,6 +206,7 @@ window.addEventListener('pageshow', (event) => {
 // ─── Congelar objeto (seguridad: nadie puede modificar las rutas) ──────────
 // NOTE: Object.freeze only prevents writes. All reads (navigate, back, etc.)
 // work perfectly. This is intentional and safe.
+Object.freeze(SGRouter.routes);
 Object.freeze(SGRouter);
 
 // ─── Diagnóstico de carga ─────────────────────────────────────────────────
