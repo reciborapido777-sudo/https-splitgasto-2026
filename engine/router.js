@@ -1,6 +1,6 @@
 /**
  * SplitGasto 2026 - Master Navigation Router
- * Versión: 4.30 — Transición sin filter:blur (fix Android Edge/Chrome stacking context)
+ * Versión: 4.31 — Transición sin filter:blur (fix Android Edge/Chrome stacking context)
  * filter:blur en body crea un stacking context que en algunos engines Android
  * (Edge, Chrome WebView) consume los eventos táctiles durante la transición,
  * haciendo que los botones parezcan no funcionar. Reemplazado por opacity-only.
@@ -58,7 +58,7 @@ const SGRouter = {
     /**
      * Navega a una página por su ID de ruta
      * Usa rutas relativas compatibles con cualquier despliegue
-     * v4.2: añade console.log para diagnóstico en Opera/Edge/Safari
+     * v4.31: añade console.log para diagnóstico en Opera/Edge/Safari
      */
     navigate(routeId, origin = null) {
         // ── Diagnóstico: visible en DevTools de cualquier navegador ──────
@@ -102,7 +102,7 @@ const SGRouter = {
     },
 
     /**
-     * Retorno Táctico v4.2
+     * Retorno Táctico v4.31
      * Prioridad: ?from= param → historial del navegador → dashboard
      */
     back() {
@@ -143,7 +143,7 @@ const SGRouter = {
     },
 
     /**
-     * Toast de Notificación (v4.2)
+     * Toast de Notificación (v4.31)
      */
     showToast(message, type = 'success') {
         const colors = {
