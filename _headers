@@ -1,5 +1,5 @@
 # SplitGasto 2026 - Cloudflare Pages Headers
-# Engineering Revision v4.3 — Zero-cache HTML, correct asset TTLs, camera=(self) for scanner
+# Engineering Revision v4.31 — Zero-cache HTML, correct asset TTLs, camera=(self) for scanner
 
 # ── Security headers for ALL paths ──────────────────────────────────────────
 /*
