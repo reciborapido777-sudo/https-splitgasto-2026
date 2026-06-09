@@ -4,7 +4,7 @@
  */
 const SGApi = (function(){
 
-        function getRawToken() {
+    function getRawToken() {
         try {
             if (window.SGAuth && SGAuth.getToken) {
                 const t = SGAuth.getToken();
@@ -14,9 +14,13 @@ const SGApi = (function(){
         try { return localStorage.getItem('sg_token'); } catch (e) { return null; }
     }
 
+    /* ─── Función Auxiliar de Moneda por Defecto ─── */
+    function getDefaultCurrency() {
+        return localStorage.getItem('sg_currency') || 'EUR';
+    }
+
     async function request(endpoint, options = {}) {
         const token = getRawToken();
-        // ... resto igual
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -36,7 +40,7 @@ const SGApi = (function(){
         }
     }
 
-        // ── Auth ──────────────────────────────────────────────────────────
+    // ── Auth ──────────────────────────────────────────────────────────
     // register() eliminado — usar SGAuth.register() que además guarda la sesión
 
     async function login(email, password) {
@@ -47,7 +51,6 @@ const SGApi = (function(){
     }
 
     async function addGroupMemberByEmail(groupId, email, role) {
-
         return request('/api/db/group-members', {
             method: 'POST',
             body: JSON.stringify({ groupId, email: email.toLowerCase().trim(), role: role || 'member' })
@@ -56,19 +59,15 @@ const SGApi = (function(){
 
     // ── Grupos ────────────────────────────────────────────────────────
     async function getGroups() {
-        // No enviamos userId en la URL: el backend lo extrae del JWT (authUser.userId).
-        // Esto evita que un getUserId()===null genere ?userId=null → 403.
         return request('/api/db/groups');
     }
 
     async function createGroup(name, currency, members) {
-        const userId = SGAuth.getUserId();
         return request('/api/db/groups', {
             method: 'POST',
             body: JSON.stringify({
                 name,
-                currency: currency || 'EUR',
-                userId,
+                currency: currency || getDefaultCurrency(),  // ← Modificación Alpha Inyectada
                 members: Array.isArray(members) ? members : []
             })
         });
@@ -104,11 +103,17 @@ const SGApi = (function(){
 
     async function addExpense(groupId, amount, currency, category, description, splitType, payerId) {
         const userId = SGAuth.getUserId();
-        // payerId es el UUID del pagador real; si no se pasa, usa el usuario actual
-        const paidBy = payerId || userId;
         return request('/api/db/expenses', {
             method: 'POST',
-            body: JSON.stringify({ groupId, userId, paidBy, amount, currency, category, description, splitType })
+            body: JSON.stringify({ 
+                groupId, 
+                amount, 
+                currency: currency || getDefaultCurrency(),  // ← Modificación Alpha Inyectada
+                category, 
+                description, 
+                splitType,
+                paidBy: payerId || userId
+            })
         });
     }
 
@@ -127,11 +132,17 @@ const SGApi = (function(){
     }
 
     async function createSettlement(groupId, fromUserId, toUserId, amount, currency) {
-        return request('/api/db/settlements', {
-            method: 'POST',
-            body: JSON.stringify({ groupId, fromUserId, toUserId, amount, currency })
-        });
-    }
+    return request('/api/db/settlements', {
+        method: 'POST',
+        body: JSON.stringify({ 
+            groupId, 
+            fromUserId, 
+            toUserId, 
+            amount, 
+            currency: currency || getDefaultCurrency()  // ← añadir
+        })
+    });
+}
 
     // ── Perfil ────────────────────────────────────────────────────────
     async function getProfile() {
@@ -161,7 +172,6 @@ const SGApi = (function(){
         });
     }
 
-    
     // ── Storage (R2) ──────────────────────────────────────────────────
     async function uploadFile(file, folder) {
         const token = getRawToken();
@@ -249,5 +259,4 @@ const SGApi = (function(){
         health
     };
 
-
-    })();
+})();
