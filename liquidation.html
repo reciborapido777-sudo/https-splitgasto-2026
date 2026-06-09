@@ -33,16 +33,16 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SplitGasto">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link type="image/png" sizes="32x32" rel="icon" href="favicon-32.png">
+<link type="image/png" sizes="16x16" rel="icon" href="favicon-16.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link sizes="180x180" rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <script src="engine/desktop-fix.js" defer></script>
 <script src="engine/router.js" defer></script>
 <script src="engine/auth.js"></script>
 <script src="engine/api.js"></script>
-    <script src="engine/i18n.js" defer></script>
+<script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell pb-32">
 <div class="app-frame">
@@ -65,8 +65,8 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
     <div>
       <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
-      <div class="amount-display">84,50€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span class="text-white">Mario García</span></p>
+      <div id="liquidation-amount-display" class="amount-display">84,50€</div>
+      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Mario García</span></p>
     </div>
     <div class="flex justify-center gap-3">
       <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Sushi Kyoto Pro</span>
@@ -99,7 +99,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
     <div class="flex justify-between items-center pt-4 border-t border-white/10">
       <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total</p>
-      <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">84,50€</p>
+      <p id="liquidation-total-breakdown" class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">84,50€</p>
     </div>
   </section>
 
@@ -177,11 +177,13 @@ function selectMethod(el) {
 async function executeLiquidation() {
     const btn = document.querySelector('button[onclick="executeLiquidation()"]');
     
-    // Obtener contexto del grupo
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
-    if (!groupId) {
-        SGRouter.showToast('Falta contexto de grupo', 'error');
+    const toUserId = params.get('to'); 
+    const amount = parseFloat(params.get('amount')) || 0;
+    
+    if (!groupId || !toUserId || amount <= 0) {
+        SGRouter.showToast('Parámetros de liquidación inválidos', 'error');
         return;
     }
     
@@ -191,10 +193,7 @@ async function executeLiquidation() {
     btn.classList.add('opacity-70');
 
     try {
-        // Datos de la transacción — vinculación dinámica del pool transaccional
-        const toUserId = 'USER_ID_MARIO'; // ← Reemplaza por el ID real del destinatario
-        const amount = 84.50;
-        const currency = 'EUR';
+        const currency = localStorage.getItem('sg_currency') || 'EUR';
         
         // Llamada real al Worker unificado
         const res = await fetch('/api/db/settlements', {
@@ -228,6 +227,28 @@ async function executeLiquidation() {
         btn.classList.remove('opacity-70');
     }
 }
+
+/* Intercepción de ciclo de vida para evitar accesos directos sin contexto de grupo */
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const groupId = params.get('groupId');
+    const amount = params.get('amount');
+
+    if (!groupId) {
+        SGRouter.showToast('Selecciona un grupo primero', 'error');
+        setTimeout(() => SGRouter.navigate('groups'), 1000);
+        return;
+    }
+
+    // Reflejar dinámicamente el monto en la interfaz si está presente en la URL
+    if (amount) {
+        const parsedAmount = parseFloat(amount).toFixed(2).replace('.', ',') + '€';
+        const displayContainer = document.getElementById('liquidation-amount-display');
+        const breakdownContainer = document.getElementById('liquidation-total-breakdown');
+        if (displayContainer) displayContainer.textContent = parsedAmount;
+        if (breakdownContainer) breakdownContainer.textContent = parsedAmount;
+    }
+});
 </script>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
