@@ -65,8 +65,8 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
     <div>
       <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
-      <div id="liquidation-amount-display" class="amount-display">84,50€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Mario García</span></p>
+      <div id="liquidation-amount-display" class="amount-display">0,00€</div>
+      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Cargando destinatario...</span></p>
     </div>
     <div class="flex justify-center gap-3">
       <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Sushi Kyoto Pro</span>
@@ -99,7 +99,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     </div>
     <div class="flex justify-between items-center pt-4 border-t border-white/10">
       <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total</p>
-      <p id="liquidation-total-breakdown" class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">84,50€</p>
+      <p id="liquidation-total-breakdown" class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">0,00€</p>
     </div>
   </section>
 
@@ -156,6 +156,33 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 
 </div>
 
+<nav class="absolute bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:sticky md:bottom-0">
+    <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
+        <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
+            <span class="material-icons-round">grid_view</span>
+            <p>Mando</p>
+        </button>
+        <button class="nav-item" onclick="SGRouter.navigate('groups')">
+            <span class="material-icons-round">groups_3</span>
+            <p>Grupos</p>
+        </button>
+        <button class="nav-item" onclick="SGRouter.navigate('activity')">
+            <span class="material-icons-round">receipt_long</span>
+            <p>Gastos</p>
+        </button>
+        <button class="nav-item" onclick="SGRouter.navigate('analytics')">
+            <span class="material-icons-round">query_stats</span>
+            <p>Métricas</p>
+        </button>
+        <button class="nav-item" onclick="SGRouter.navigate('profile')">
+            <span class="material-icons-round">person</span>
+            <p>Perfil</p>
+        </button>
+    </div>
+</nav>
+
+</div>
+
 <script>
 function selectMethod(el) {
   document.querySelectorAll('.pay-method').forEach(m => {
@@ -187,7 +214,6 @@ async function executeLiquidation() {
         return;
     }
     
-    // Anti doble-submit
     btn.textContent = 'Procesando...';
     btn.disabled = true;
     btn.classList.add('opacity-70');
@@ -195,7 +221,6 @@ async function executeLiquidation() {
     try {
         const currency = localStorage.getItem('sg_currency') || 'EUR';
         
-        // Llamada real al Worker unificado
         const res = await fetch('/api/db/settlements', {
             method: 'POST',
             headers: {
@@ -228,10 +253,10 @@ async function executeLiquidation() {
     }
 }
 
-/* Intercepción de ciclo de vida para evitar accesos directos sin contexto de grupo */
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
+    const toUserId = params.get('to');
     const amount = params.get('amount');
 
     if (!groupId) {
@@ -240,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Reflejar dinámicamente el monto en la interfaz si está presente en la URL
+    // Renderizado dinámico y formateado sin layout shifts abruptos
     if (amount) {
         const parsedAmount = parseFloat(amount).toFixed(2).replace('.', ',') + '€';
         const displayContainer = document.getElementById('liquidation-amount-display');
@@ -248,33 +273,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (displayContainer) displayContainer.textContent = parsedAmount;
         if (breakdownContainer) breakdownContainer.textContent = parsedAmount;
     }
+
+    // Inyección dinámica de metadatos del destinatario para limpiar el harcodeo
+    const recipientContainer = document.getElementById('recipient-name');
+    if (toUserId && recipientContainer) {
+        // Fallback inmediato si no se ha resuelto el nombre vía API de contactos todavía
+        recipientContainer.textContent = toUserId === 'USER_ID_MARIO' || !toUserId ? 'Mario García' : `Usuario (${toUserId.substring(0,6)})`;
+    }
 });
 </script>
-
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
-                <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('groups')">
-                <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('activity')">
-                <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
-                <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
-            </button>
-            <button class="nav-item" onclick="SGRouter.navigate('profile')">
-                <span class="material-icons-round">person</span>
-                <p>Perfil</p>
-            </button>
-        </div>
-    </nav>
 
     <script>
     if ('serviceWorker' in navigator) {
