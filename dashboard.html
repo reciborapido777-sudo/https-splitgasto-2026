@@ -21,7 +21,7 @@
 
     <style>
         .experience-card{position:relative;height:280px;border-radius:3rem;overflow:hidden;border:1px solid rgba(255,255,255,.05);background:#0a0a0a;transform:translateZ(0)}
-        .premium-badge{background:linear-gradient(135deg,#D4AF37,#F9E076);color:#000;font-size:8px;font-weight:900;padding:2px 6px;border-radius999px;letter-spacing:.15em;text-transform:uppercase}
+        .premium-badge{background:linear-gradient(135deg,#D4AF37,#F9E076);color:#000;font-size:8px;font-weight:900;padding:2px 6px;border-radius:999px;letter-spacing:.15em;text-transform:uppercase}
         .action-card:hover{background:rgba(255,255,255,.05) !important}
         .action-card:active{transform:scale(.95)}
     </style>
@@ -84,7 +84,7 @@
                 </div>
 
                 <div class="flex gap-3 border-t border-white/5 pt-4">
-                    <button id="dash-liquidation-trigger" onclick="SGRouter.navigate('liquidation','dashboard')" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 hover:bg-[#FF9D42]/20 transition-all active:scale-95 text-[#FF9D42] text-[10px] font-black uppercase tracking-wider">
+                    <button id="dash-liquidation-trigger" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 hover:bg-[#FF9D42]/20 transition-all active:scale-95 text-[#FF9D42] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">swap_horiz</span>
                         Liquidar
                     </button>
@@ -138,7 +138,7 @@
             </div>
         </section>
 
-        <section id="active-group-card" class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s" onclick="SGRouter.navigate('split','dashboard')">
+        <section id="active-group-card" class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s">
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.3'/%3E%3Cstop offset='1' stop-color='%23059669' stop-opacity='.2'/%3E%3C/linearGradient%3E%3CradialGradient id='b' cx='70%25' cy='25%25' r='55%25'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='transparent'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='800' height='400' fill='%23010f0d'/%3E%3Crect width='800' height='400' fill='url(%23b)'/%3E%3Crect x='50' y='50' width='210' height='130' rx='16' fill='url(%23a)'/%3E%3Crect x='280' y='50' width='210' height='130' rx='16' fill='url(%23a)' opacity='.7'/%3E%3Crect x='510' y='50' width='240' height='130' rx='16' fill='url(%23a)' opacity='.55'/%3E%3Crect x='50' y='200' width='700' height='160' rx='16' fill='url(%23a)' opacity='.4'/%3E%3Ccircle cx='680' cy='280' r='55' fill='%2313ecd6' opacity='.08'/%3E%3C/svg%3E"
                  class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700" alt="Grupo activo">
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-8 space-y-3">
@@ -202,6 +202,18 @@ const DASH_CAT_COLORS = {
   home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280'
 };
 
+/* ─── PASARELA DE NAVEGACIÓN PURA (BLINDAJE ANTI-COMA / ANTI-LANDING) ─── */
+function navigateToLiquidation(groupId, toUserId, amount) {
+    if (!groupId || !toUserId) {
+        SGRouter.showToast('Falta contexto táctico del grupo', 'warning');
+        SGRouter.navigate('groups');
+        return;
+    }
+    // Ejecución aislada libre de strings conflictivos en el DOM
+    const targetUrl = `liquidation?groupId=${groupId}&to=${toUserId}&amount=${parseFloat(amount)}`;
+    SGRouter.navigate(targetUrl, 'dashboard');
+}
+
 function dashReset(msg) {
   const netEl   = document.getElementById('net-worth-value');
   const settEl  = document.getElementById('settlements-value');
@@ -257,7 +269,6 @@ async function loadDashboardData() {
     let totalOwed = 0;
     let totalReceive = 0;
     
-    // Variables tácticas para capturar el mayor descubierto dinámico
     let maxDebtAmount = 0;
     let targetGroupId = groups[0].id;
     let targetDebtorId = 'USER_ID_MARIO'; 
@@ -269,13 +280,11 @@ async function loadDashboardData() {
         if (myBal < 0) {
           totalOwed += myBal;
           
-          // Buscar a quién se le debe dentro de los balances de este grupo específico
           const absBal = Math.abs(myBal);
           if (absBal > maxDebtAmount) {
               maxDebtAmount = absBal;
               targetGroupId = g.id;
               
-              // Localizar el usuario con balance positivo máximo en este grupo (el acreedor)
               let maxCreditorId = null;
               let maxCreditorBal = 0;
               Object.entries(balRes.balances || {}).forEach(([memberId, val]) => {
@@ -304,12 +313,12 @@ async function loadDashboardData() {
       (totalReceive > 0 ? '+' : '') +
       totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
-    // Vincular dinámicamente el disparador de liquidaciones con el Query String auditado
+    // Vinculación segura de eventos mediante puntero de función limpia
     const liqBtn = document.getElementById('dash-liquidation-trigger');
     if (liqBtn) {
         const finalAmount = Math.abs(maxDebtAmount || totalOwed);
         liqBtn.onclick = () => { 
-            SGRouter.navigate(`liquidation?groupId=${targetGroupId}&to=${targetDebtorId}&amount=${finalAmount}`); 
+            navigateToLiquidation(targetGroupId, targetDebtorId, finalAmount); 
         };
     }
 
@@ -336,20 +345,19 @@ async function loadDashboardData() {
 
     const avatarRow = document.getElementById('active-group-avatars');
     if (avatarRow) {
-      if (memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null)) {
-        if (memRes0?.success && memRes0.members && memRes0.members.length > 0) {
-          const shown = memRes0.members.slice(0, 3);
-          const extra = memRes0.members.length - 3;
-          avatarRow.innerHTML = shown.map(m => {
-            const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
-            return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name || ''}">` ;
-          }).join('') + (extra > 0
-            ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
-            : '');
-        } else {
-          const seed = encodeURIComponent(activeGroup.name.slice(0,2).toUpperCase());
-          avatarRow.innerHTML = `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">`;
-        }
+      const memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null);
+      if (memRes0 && memRes0.success && memRes0.members && memRes0.members.length > 0) {
+        const shown = memRes0.members.slice(0, 3);
+        const extra = memRes0.members.length - 3;
+        avatarRow.innerHTML = shown.map(m => {
+          const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
+          return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name || ''}">` ;
+        }).join('') + (extra > 0
+          ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
+          : '');
+      } else {
+        const seed = encodeURIComponent(activeGroup.name.slice(0,2).toUpperCase());
+        avatarRow.innerHTML = `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">`;
       }
     }
 
@@ -379,12 +387,12 @@ async function loadDashboardData() {
           const amt   = parseFloat(exp.amount) || 0;
           const sign  = amt >= 0 ? '+' : '';
           
-          // Extracción dinámica del contexto del gasto para navegar con precisión a liquidación
           const currentGroup = groups.find(g => g.name === exp._groupName) || groups[0];
           const calculatedPayer = exp.paidBy || exp.userId || 'USER_ID_MARIO';
 
+          // Invoca de manera segura a la pasarela con tipos primitivos limpios
           return `
-            <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer" onclick="SGRouter.navigate('liquidation?groupId=${currentGroup.id}&to=${calculatedPayer}&amount=${amt}')">
+            <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer" onclick="navigateToLiquidation('${currentGroup.id}', '${calculatedPayer}', ${amt})">
               <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}15">
                 <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
               </div>
@@ -392,7 +400,7 @@ async function loadDashboardData() {
                 <p class="text-[11px] font-bold truncate">${exp.description || exp.category || 'Gasto'}</p>
                 <p class="text-[9px] text-zinc-500 font-medium">${exp._groupName}</p>
               </div>
-              <p class="text-sm font-black money-display" style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
+              <p class="text-sm font-black money-display" style="style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
             </div>`;
         }).join('');
       }
