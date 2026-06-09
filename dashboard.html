@@ -29,6 +29,7 @@
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
+
     <script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell pb-28">
@@ -84,11 +85,11 @@
                 </div>
 
                 <div class="flex gap-3 border-t border-white/5 pt-4">
-                    <button id="dash-liquidation-trigger" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 hover:bg-[#FF9D42]/20 transition-all active:scale-95 text-[#FF9D42] text-[10px] font-black uppercase tracking-wider">
+                    <button onclick="SGRouter.navigate('liquidation','dashboard')" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 hover:bg-[#FF9D42]/20 transition-all active:scale-95 text-[#FF9D42] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">swap_horiz</span>
                         Liquidar
                     </button>
-                    <button onclick="window.location.href = 'split.html?from=dashboard'" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 hover:bg-[#13ecd6]/20 transition-all active:scale-95 text-[#13ecd6] text-[10px] font-black uppercase tracking-wider">
+                    <button onclick="SGRouter.navigate('split','dashboard')" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 hover:bg-[#13ecd6]/20 transition-all active:scale-95 text-[#13ecd6] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">call_split</span>
                         Repartir
                     </button>
@@ -118,7 +119,7 @@
                 <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Juegos</span>
                 <span class="absolute top-2 right-2 premium-badge">PRO</span>
             </button>
-            <button onclick="window.location.href = 'add-expense.html?from=dashboard'" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
+            <button onclick="SGRouter.navigate('add-expense','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
                 <span class="material-icons-round text-[#13ecd6] text-3xl group-hover:scale-110 transition-transform">add_circle</span>
                 <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Gasto</span>
             </button>
@@ -138,7 +139,7 @@
             </div>
         </section>
 
-        <section id="active-group-card" class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s">
+        <section id="active-group-card" class="experience-card group cursor-pointer reveal-node active:scale-[.98] transition-all" style="animation-delay:.2s" onclick="SGRouter.navigate('split','dashboard')">
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.3'/%3E%3Cstop offset='1' stop-color='%23059669' stop-opacity='.2'/%3E%3C/linearGradient%3E%3CradialGradient id='b' cx='70%25' cy='25%25' r='55%25'%3E%3Cstop offset='0' stop-color='%2313ecd6' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='transparent'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='800' height='400' fill='%23010f0d'/%3E%3Crect width='800' height='400' fill='url(%23b)'/%3E%3Crect x='50' y='50' width='210' height='130' rx='16' fill='url(%23a)'/%3E%3Crect x='280' y='50' width='210' height='130' rx='16' fill='url(%23a)' opacity='.7'/%3E%3Crect x='510' y='50' width='240' height='130' rx='16' fill='url(%23a)' opacity='.55'/%3E%3Crect x='50' y='200' width='700' height='160' rx='16' fill='url(%23a)' opacity='.4'/%3E%3Ccircle cx='680' cy='280' r='55' fill='%2313ecd6' opacity='.08'/%3E%3C/svg%3E"
                  class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-all duration-700" alt="Grupo activo">
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-8 space-y-3">
@@ -153,7 +154,6 @@
                 </div>
             </div>
         </section>
-
         <section class="space-y-3 reveal-node" style="animation-delay:.25s">
             <div class="flex justify-between items-center">
                 <p class="text-[9px] font-black uppercase tracking-[.4em] text-zinc-600">Actividad Reciente</p>
@@ -163,6 +163,7 @@
                 <p class="text-xs text-zinc-600 text-center py-4">Cargando actividad…</p>
             </div>
         </section>
+
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
@@ -190,8 +191,7 @@
         </div>
     </nav>
 
-</div>
-
+    </div>
 <script>
 const DASH_CAT_ICONS = {
   food:'restaurant', transport:'directions_car', leisure:'movie',
@@ -202,38 +202,20 @@ const DASH_CAT_COLORS = {
   home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280'
 };
 
-/* ─── PASARELA NATIVA DE NAVEGACIÓN (BLINDAJE ANTI-LANDING) ─── */
-function navigateToLiquidation(groupId, toUserId, amount) {
-    if (amount <= 0) {
-        SGRouter.showToast('No tienes deudas pendientes para liquidar', 'success');
-        return;
-    }
-    if (!groupId || !toUserId) {
-        SGRouter.showToast('Falta contexto táctico del grupo', 'warning');
-        return;
-    }
-    // Uso del enrutamiento nativo del navegador, igual que hace split.html
-    window.location.href = `liquidation.html?groupId=${groupId}&to=${toUserId}&amount=${parseFloat(amount).toFixed(2)}`;
-}
-
 function dashReset(msg) {
+  // Reset all dashboard values to safe defaults — called on error or no-groups
   const netEl   = document.getElementById('net-worth-value');
   const settEl  = document.getElementById('settlements-value');
   const recEl   = document.getElementById('to-receive-value');
   const nameEl  = document.getElementById('active-group-name');
   const subEl   = document.getElementById('active-group-sub');
   const actEl   = document.getElementById('activity-list');
-  if (netEl)  netEl.textContent   = '0,00€';
+  if (netEl)  netEl.textContent  = '0,00€';
   if (settEl) settEl.textContent = '0,00€';
-  if (recEl)  recEl.textContent   = '0,00€';
+  if (recEl)  recEl.textContent  = '0,00€';
   if (nameEl) nameEl.textContent = msg || 'Sin grupos';
-  if (subEl)  subEl.textContent   = 'Crea tu primer grupo';
+  if (subEl)  subEl.textContent  = 'Crea tu primer grupo';
   if (actEl)  actEl.innerHTML    = '<p class="text-xs text-zinc-600 text-center py-4">Sin actividad. Crea un grupo y añade gastos.</p>';
-  
-  const liqBtn = document.getElementById('dash-liquidation-trigger');
-  if (liqBtn) {
-      liqBtn.onclick = () => { SGRouter.showToast('No perteneces a ningún grupo', 'warning'); };
-  }
 }
 
 async function loadDashboardData() {
@@ -244,6 +226,7 @@ async function loadDashboardData() {
     const profile = await SGApi.getProfile().catch(() => null);
     if (profile?.success && profile.profile) {
       const p = profile.profile;
+      // Actualizar nombre en el header (usando el ID específico)
       const headerDiv = document.getElementById('dash-user-name') || document.querySelector('header .flex-1 h1');
       if (headerDiv) headerDiv.textContent = p.name || 'Usuario';
       const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
@@ -264,48 +247,25 @@ async function loadDashboardData() {
 
     const uid = SGAuth.getUserId();
 
-    // 3. Balances de TODOS los grupos en paralelo
+    // 3. Balances de TODOS los grupos en paralelo (sin getGroupMembers — puede fallar)
     const balancePromises = groups.map(g => SGApi.getBalances(g.id).catch(() => null));
     const allBalResults   = await Promise.all(balancePromises);
 
     let totalOwed = 0;
     let totalReceive = 0;
-    
-    let maxDebtAmount = 0;
-    let targetGroupId = groups[0].id;
-    let targetDebtorId = 'USER_ID_MARIO'; 
-
     groups.forEach((g, i) => {
       const balRes = allBalResults[i];
+      // FIX: aceptar tanto balances vacío {} como null — no crashear
       if (balRes && balRes.success) {
         const myBal = parseFloat((balRes.balances || {})[uid]) || 0;
-        if (myBal < 0) {
-          totalOwed += myBal;
-          
-          const absBal = Math.abs(myBal);
-          if (absBal > maxDebtAmount) {
-              maxDebtAmount = absBal;
-              targetGroupId = g.id;
-              
-              let maxCreditorId = null;
-              let maxCreditorBal = 0;
-              Object.entries(balRes.balances || {}).forEach(([memberId, val]) => {
-                  if (memberId !== uid && val > maxCreditorBal) {
-                      maxCreditorBal = val;
-                      maxCreditorId = memberId;
-                  }
-              });
-              if (maxCreditorId) targetDebtorId = maxCreditorId;
-          }
-        } else if (myBal > 0) {
-          totalReceive += myBal;
-        }
+        if (myBal > 0) totalReceive += myBal;
+        else if (myBal < 0) totalOwed += myBal;
       }
     });
 
     const netWorth = totalReceive + totalOwed;
 
-    // Actualizar resumen financiero
+    // Actualizar resumen financiero — usando IDs, no clases
     document.getElementById('net-worth-value').textContent =
       (netWorth >= 0 ? '+' : '') +
       netWorth.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
@@ -315,41 +275,35 @@ async function loadDashboardData() {
       (totalReceive > 0 ? '+' : '') +
       totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
-    // Inyección de función táctica en botón
-    const liqBtn = document.getElementById('dash-liquidation-trigger');
-    if (liqBtn) {
-        const finalAmount = Math.abs(maxDebtAmount || totalOwed);
-        liqBtn.onclick = () => { 
-            navigateToLiquidation(targetGroupId, targetDebtorId, finalAmount); 
-        };
-    }
-
     // 4. Tarjeta "Grupo Activo" — primer grupo de la lista
     const activeGroup = groups[0];
     document.getElementById('active-group-name').textContent = activeGroup.name;
 
+    // Enlazar la tarjeta al split con el groupId correcto
     const card = document.getElementById('active-group-card');
     if (card) {
       card.onclick = () => { window.location.href = 'split.html?groupId=' + activeGroup.id + '&from=dashboard'; };
     }
-    
-    // Corregimos dinámicamente también el botón de "Gasto" inferior por si acaso
+    // Enlazar el botón "Gasto" con el groupId del grupo activo
     const gastoBtn = document.querySelector('[onclick*="add-expense"]');
     if (gastoBtn) {
       gastoBtn.onclick = () => { window.location.href = 'add-expense.html?groupId=' + activeGroup.id + '&from=dashboard'; };
     }
 
+    // Contar socios desde los balances (fallback si getGroupMembers falla)
     const balRes0 = allBalResults[0];
     const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
+    // totalAmount: suma en euros de todos los gastos del grupo (viene del backend en balRes0.totalAmount)
     const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
 
     document.getElementById('active-group-sub').innerHTML =
       `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
 
+    // Avatares: intentar getGroupMembers, si falla usar iniciales del nombre del grupo
+    const memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null);
     const avatarRow = document.getElementById('active-group-avatars');
     if (avatarRow) {
-      const memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null);
-      if (memRes0 && memRes0.success && memRes0.members && memRes0.members.length > 0) {
+      if (memRes0?.success && memRes0.members && memRes0.members.length > 0) {
         const shown = memRes0.members.slice(0, 3);
         const extra = memRes0.members.length - 3;
         avatarRow.innerHTML = shown.map(m => {
@@ -359,6 +313,7 @@ async function loadDashboardData() {
           ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
           : '');
       } else {
+        // Fallback: avatar del grupo
         const seed = encodeURIComponent(activeGroup.name.slice(0,2).toUpperCase());
         avatarRow.innerHTML = `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">`;
       }
@@ -389,13 +344,8 @@ async function loadDashboardData() {
           const color = DASH_CAT_COLORS[exp.category] || '#6b7280';
           const amt   = parseFloat(exp.amount) || 0;
           const sign  = amt >= 0 ? '+' : '';
-          
-          const currentGroup = groups.find(g => g.name === exp._groupName) || groups[0];
-          const calculatedPayer = exp.paidBy || exp.userId || 'USER_ID_MARIO';
-
-          // Invoca de manera segura a la pasarela nativa
           return `
-            <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer" onclick="navigateToLiquidation('${currentGroup.id}', '${calculatedPayer}', ${amt})">
+            <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/3 transition-all cursor-pointer" onclick="SGRouter.navigate('activity','dashboard')">
               <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}15">
                 <span class="material-icons-round text-base" style="color:${color}">${icon}</span>
               </div>
@@ -417,33 +367,34 @@ async function loadDashboardData() {
 
 loadDashboardData();
 
+// FIX bfcache: recargar datos reales cuando el navegador restaura desde caché
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) loadDashboardData();
 });
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-            .then(reg => {
-                reg.update().catch(() => {});
-                reg.addEventListener('updatefound', () => {
-                    const sw = reg.installing;
-                    if (!sw) return;
-                    sw.addEventListener('statechange', () => {
-                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                            sw.postMessage({ type: 'SKIP_WAITING' });
-                        }
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
                     });
-                });
-            })
-            .catch(e => console.warn('[SW] Failed:', e));
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) { refreshing = true; window.location.reload(); }
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
         });
-    });
-}
-</script>
+    }
+    </script>
 
 </body>
 </html>
