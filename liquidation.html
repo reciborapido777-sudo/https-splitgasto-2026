@@ -210,7 +210,7 @@ async function executeLiquidation() {
     const amount = parseFloat(params.get('amount')) || 0;
     
     if (!groupId || !toUserId || amount <= 0) {
-        SGRouter.showToast('Parámetros de liquidación inválidos', 'error');
+        SGRouter.showToast('Datos militares de transacción incompletos', 'error');
         return;
     }
     
@@ -246,39 +246,45 @@ async function executeLiquidation() {
             btn.classList.remove('opacity-70');
         }
     } catch (e) {
-        SGRouter.showToast('Error de conexión', 'error');
+        SGRouter.showToast('Error de enlace satelital', 'error');
         btn.textContent = 'Confirmar Liquidación';
         btn.disabled = false;
         btn.classList.remove('opacity-70');
     }
 }
 
+// Inicialización Táctica Blindada
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to');
     const amount = params.get('amount');
 
-    if (!groupId) {
-        SGRouter.showToast('Selecciona un grupo primero', 'error');
-        setTimeout(() => SGRouter.navigate('groups'), 1000);
-        return;
-    }
-
-    // Renderizado dinámico y formateado sin layout shifts abruptos
-    if (amount) {
-        const parsedAmount = parseFloat(amount).toFixed(2).replace('.', ',') + '€';
-        const displayContainer = document.getElementById('liquidation-amount-display');
-        const breakdownContainer = document.getElementById('liquidation-total-breakdown');
-        if (displayContainer) displayContainer.textContent = parsedAmount;
-        if (breakdownContainer) breakdownContainer.textContent = parsedAmount;
-    }
-
-    // Inyección dinámica de metadatos del destinatario para limpiar el harcodeo
+    const displayContainer = document.getElementById('liquidation-amount-display');
+    const breakdownContainer = document.getElementById('liquidation-total-breakdown');
     const recipientContainer = document.getElementById('recipient-name');
-    if (toUserId && recipientContainer) {
-        // Fallback inmediato si no se ha resuelto el nombre vía API de contactos todavía
-        recipientContainer.textContent = toUserId === 'USER_ID_MARIO' || !toUserId ? 'Mario García' : `Usuario (${toUserId.substring(0,6)})`;
+
+    // Si faltan parámetros esenciales, no parpadeamos: mostramos el error de configuración en la interfaz
+    if (!groupId || !toUserId || !amount) {
+        console.warn("[SG Mando] Parámetros URL ausentes o corruptos detectados.");
+        if (displayContainer) displayContainer.textContent = "ERR";
+        if (recipientContainer) recipientContainer.textContent = "URL sin contexto dinámico";
+        SGRouter.showToast('Error de enlace: Faltan metadatos en el Dashboard', 'error');
+        return; 
+    }
+
+    // Si los parámetros existen, aplicamos la inyección limpia
+    const parsedAmount = parseFloat(amount).toFixed(2).replace('.', ',') + '€';
+    if (displayContainer) displayContainer.textContent = parsedAmount;
+    if (breakdownContainer) breakdownContainer.textContent = parsedAmount;
+
+    if (recipientContainer) {
+        // Mapeo estético provisional si es el ID estático o formateo del UUID real
+        if (toUserId === 'USER_ID_MARIO') {
+            recipientContainer.textContent = 'Mario García';
+        } else {
+            recipientContainer.textContent = `Socio (${toUserId.substring(0, 8).toUpperCase()})`;
+        }
     }
 });
 </script>
