@@ -66,41 +66,15 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <div>
       <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
       <div id="liquidation-amount-display" class="amount-display">0,00€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Cargando destinatario...</span></p>
+      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Cargando...</span></p>
     </div>
-    <div class="flex justify-center gap-3">
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Sushi Kyoto Pro</span>
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Compra Semanal</span>
+    <div id="badges-container" class="flex justify-center gap-3">
+      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800 animate-pulse">Analizando...</span>
     </div>
   </section>
 
-  <section class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
-    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3">Desglose</p>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-[#a855f7] text-sm">restaurant</span>
-        <p class="text-xs font-black uppercase">Sushi Kyoto Pro</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">42,30€</p>
-    </div>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-[#13ecd6] text-sm">shopping_cart</span>
-        <p class="text-xs font-black uppercase">Compra Semanal</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">30,20€</p>
-    </div>
-    <div class="debt-row">
-      <div class="flex items-center gap-3">
-        <span class="material-icons-round text-zinc-600 text-sm">local_taxi</span>
-        <p class="text-xs font-black uppercase">Uber Vuelta</p>
-      </div>
-      <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">12,00€</p>
-    </div>
-    <div class="flex justify-between items-center pt-4 border-t border-white/10">
-      <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total</p>
-      <p id="liquidation-total-breakdown" class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">0,00€</p>
-    </div>
+  <section id="breakdown-container" class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
+    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center animate-pulse">Sincronizando datos...</p>
   </section>
 
   <section class="space-y-4 reveal-node" style="animation-delay:.1s">
@@ -138,7 +112,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <section class="reveal-node" style="animation-delay:.15s">
     <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
       <span class="material-icons-round text-zinc-600">edit_note</span>
-      <input type="text" placeholder="Añadir nota opcional..." 
+      <input type="text" id="liquidation-note" placeholder="Añadir nota opcional..." 
         class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700 uppercase tracking-wider">
     </div>
   </section>
@@ -210,7 +184,7 @@ async function executeLiquidation() {
     const amount = parseFloat(params.get('amount')) || 0;
     
     if (!groupId || !toUserId || amount <= 0) {
-        SGRouter.showToast('Datos militares de transacción incompletos', 'error');
+        SGRouter.showToast('Parámetros de liquidación inválidos', 'error');
         return;
     }
     
@@ -246,45 +220,81 @@ async function executeLiquidation() {
             btn.classList.remove('opacity-70');
         }
     } catch (e) {
-        SGRouter.showToast('Error de enlace satelital', 'error');
+        SGRouter.showToast('Error de conexión', 'error');
         btn.textContent = 'Confirmar Liquidación';
         btn.disabled = false;
         btn.classList.remove('opacity-70');
     }
 }
 
-// Inicialización Táctica Blindada
-document.addEventListener('DOMContentLoaded', () => {
+// Inicialización Táctica Dinámica - Carga de Datos Reales
+document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to');
     const amount = params.get('amount');
 
-    const displayContainer = document.getElementById('liquidation-amount-display');
-    const breakdownContainer = document.getElementById('liquidation-total-breakdown');
-    const recipientContainer = document.getElementById('recipient-name');
-
-    // Si faltan parámetros esenciales, no parpadeamos: mostramos el error de configuración en la interfaz
     if (!groupId || !toUserId || !amount) {
-        console.warn("[SG Mando] Parámetros URL ausentes o corruptos detectados.");
-        if (displayContainer) displayContainer.textContent = "ERR";
-        if (recipientContainer) recipientContainer.textContent = "URL sin contexto dinámico";
-        SGRouter.showToast('Error de enlace: Faltan metadatos en el Dashboard', 'error');
-        return; 
+        SGRouter.showToast('Selecciona un grupo o movimiento primero', 'error');
+        setTimeout(() => SGRouter.navigate('groups'), 1000);
+        return;
     }
 
-    // Si los parámetros existen, aplicamos la inyección limpia
     const parsedAmount = parseFloat(amount).toFixed(2).replace('.', ',') + '€';
-    if (displayContainer) displayContainer.textContent = parsedAmount;
-    if (breakdownContainer) breakdownContainer.textContent = parsedAmount;
+    document.getElementById('liquidation-amount-display').textContent = parsedAmount;
 
-    if (recipientContainer) {
-        // Mapeo estético provisional si es el ID estático o formateo del UUID real
-        if (toUserId === 'USER_ID_MARIO') {
-            recipientContainer.textContent = 'Mario García';
-        } else {
-            recipientContainer.textContent = `Socio (${toUserId.substring(0, 8).toUpperCase()})`;
+    try {
+        // 1. Obtener datos reales del Grupo
+        let groupName = "Bóveda Alpha";
+        const groupsRes = await SGApi.getGroups().catch(() => null);
+        if (groupsRes && groupsRes.success && groupsRes.groups) {
+            const foundGroup = groupsRes.groups.find(g => g.id === groupId);
+            if (foundGroup) groupName = foundGroup.name;
         }
+
+        // 2. Obtener nombre real del Destinatario
+        let recipientName = `Socio (${toUserId.substring(0,6)})`;
+        const membersRes = await SGApi.getGroupMembers(groupId).catch(() => null);
+        if (membersRes && membersRes.success && membersRes.members) {
+            // Manejamos ids relacionales o uuids directos
+            const member = membersRes.members.find(m => m.userId === toUserId || m.id === toUserId);
+            if (member && member.name) {
+                recipientName = member.name;
+            } else if (toUserId === 'USER_ID_MARIO') {
+                recipientName = 'Mario García'; // Fallback de test
+            }
+        }
+        
+        document.getElementById('recipient-name').textContent = recipientName;
+
+        // 3. Inyectar etiquetas y desglose dinámico consolidado
+        const badgesHtml = `
+            <span class="px-3 py-1.5 bg-zinc-900 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20">${groupName}</span>
+            <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Liquidación de Balance</span>
+        `;
+        document.getElementById('badges-container').innerHTML = badgesHtml;
+
+        const breakdownHtml = `
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3">Desglose Consolidado</p>
+            <div class="debt-row">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-round text-[#a855f7] text-sm">account_balance_wallet</span>
+                <div class="flex-1">
+                    <p class="text-xs font-black uppercase">Balance Pendiente</p>
+                    <p class="text-[8px] text-zinc-500 uppercase tracking-widest">${groupName}</p>
+                </div>
+              </div>
+              <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">${parsedAmount}</p>
+            </div>
+            <div class="flex justify-between items-center pt-4 border-t border-white/10 mt-2">
+              <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total a Transferir</p>
+              <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">${parsedAmount}</p>
+            </div>
+        `;
+        document.getElementById('breakdown-container').innerHTML = breakdownHtml;
+
+    } catch(err) {
+        console.warn("[SG Liquidation] Error renderizando datos reales:", err);
     }
 });
 </script>
