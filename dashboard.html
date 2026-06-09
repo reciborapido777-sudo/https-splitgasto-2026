@@ -88,7 +88,7 @@
                         <span class="material-icons-round text-sm">swap_horiz</span>
                         Liquidar
                     </button>
-                    <button onclick="SGRouter.navigate('split','dashboard')" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 hover:bg-[#13ecd6]/20 transition-all active:scale-95 text-[#13ecd6] text-[10px] font-black uppercase tracking-wider">
+                    <button onclick="window.location.href = 'split.html?from=dashboard'" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 hover:bg-[#13ecd6]/20 transition-all active:scale-95 text-[#13ecd6] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">call_split</span>
                         Repartir
                     </button>
@@ -118,7 +118,7 @@
                 <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Juegos</span>
                 <span class="absolute top-2 right-2 premium-badge">PRO</span>
             </button>
-            <button onclick="SGRouter.navigate('add-expense','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
+            <button onclick="window.location.href = 'add-expense.html?from=dashboard'" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
                 <span class="material-icons-round text-[#13ecd6] text-3xl group-hover:scale-110 transition-transform">add_circle</span>
                 <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Gasto</span>
             </button>
@@ -202,16 +202,18 @@ const DASH_CAT_COLORS = {
   home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280'
 };
 
-/* ─── PASARELA DE NAVEGACIÓN PURA (BLINDAJE ANTI-COMA / ANTI-LANDING) ─── */
+/* ─── PASARELA NATIVA DE NAVEGACIÓN (BLINDAJE ANTI-LANDING) ─── */
 function navigateToLiquidation(groupId, toUserId, amount) {
-    if (!groupId || !toUserId) {
-        SGRouter.showToast('Falta contexto táctico del grupo', 'warning');
-        SGRouter.navigate('groups');
+    if (amount <= 0) {
+        SGRouter.showToast('No tienes deudas pendientes para liquidar', 'success');
         return;
     }
-    // Ejecución aislada libre de strings conflictivos en el DOM
-    const targetUrl = `liquidation?groupId=${groupId}&to=${toUserId}&amount=${parseFloat(amount)}`;
-    SGRouter.navigate(targetUrl, 'dashboard');
+    if (!groupId || !toUserId) {
+        SGRouter.showToast('Falta contexto táctico del grupo', 'warning');
+        return;
+    }
+    // Uso del enrutamiento nativo del navegador, igual que hace split.html
+    window.location.href = `liquidation.html?groupId=${groupId}&to=${toUserId}&amount=${parseFloat(amount).toFixed(2)}`;
 }
 
 function dashReset(msg) {
@@ -230,7 +232,7 @@ function dashReset(msg) {
   
   const liqBtn = document.getElementById('dash-liquidation-trigger');
   if (liqBtn) {
-      liqBtn.onclick = () => { SGRouter.navigate('groups'); };
+      liqBtn.onclick = () => { SGRouter.showToast('No perteneces a ningún grupo', 'warning'); };
   }
 }
 
@@ -313,7 +315,7 @@ async function loadDashboardData() {
       (totalReceive > 0 ? '+' : '') +
       totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
-    // Vinculación segura de eventos mediante puntero de función limpia
+    // Inyección de función táctica en botón
     const liqBtn = document.getElementById('dash-liquidation-trigger');
     if (liqBtn) {
         const finalAmount = Math.abs(maxDebtAmount || totalOwed);
@@ -331,6 +333,7 @@ async function loadDashboardData() {
       card.onclick = () => { window.location.href = 'split.html?groupId=' + activeGroup.id + '&from=dashboard'; };
     }
     
+    // Corregimos dinámicamente también el botón de "Gasto" inferior por si acaso
     const gastoBtn = document.querySelector('[onclick*="add-expense"]');
     if (gastoBtn) {
       gastoBtn.onclick = () => { window.location.href = 'add-expense.html?groupId=' + activeGroup.id + '&from=dashboard'; };
@@ -390,7 +393,7 @@ async function loadDashboardData() {
           const currentGroup = groups.find(g => g.name === exp._groupName) || groups[0];
           const calculatedPayer = exp.paidBy || exp.userId || 'USER_ID_MARIO';
 
-          // Invoca de manera segura a la pasarela con tipos primitivos limpios
+          // Invoca de manera segura a la pasarela nativa
           return `
             <div class="glass-panel flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer" onclick="navigateToLiquidation('${currentGroup.id}', '${calculatedPayer}', ${amt})">
               <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}15">
@@ -400,7 +403,7 @@ async function loadDashboardData() {
                 <p class="text-[11px] font-bold truncate">${exp.description || exp.category || 'Gasto'}</p>
                 <p class="text-[9px] text-zinc-500 font-medium">${exp._groupName}</p>
               </div>
-              <p class="text-sm font-black money-display" style="style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
+              <p class="text-sm font-black money-display" style="color:${color}">${sign}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
             </div>`;
         }).join('');
       }
