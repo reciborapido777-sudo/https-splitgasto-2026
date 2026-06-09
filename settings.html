@@ -64,32 +64,31 @@
 
   .bottom-nav { background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.06); }
 
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
-        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
-        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
-        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
-        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+  .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+  .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+  .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+  .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SplitGasto">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#13ecd6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SplitGasto">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
-    <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
-    <script src="engine/auth.js" defer></script>
-    <script src="engine/api.js" defer></script>
+<script src="engine/desktop-fix.js" defer></script>
+<script src="engine/router.js" defer></script>
+<script src="engine/auth.js" defer></script>
+<script src="engine/api.js" defer></script>
+<script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="w-10 h-10 rounded-full flex items-center justify-center" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round" style="color:var(--cyan)">arrow_back_ios_new</span>
@@ -100,7 +99,6 @@
 
 <main class="max-w-md mx-auto px-4 pt-6 space-y-6">
 
-  <!-- Profile summary -->
   <div class="glass p-5 flex items-center gap-4">
     <div id="profile-avatar" class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black" style="background:rgba(19,236,214,0.15);color:var(--cyan)">?</div>
     <div class="flex-1">
@@ -113,12 +111,10 @@
     </button>
   </div>
 
-  <!-- ─── SECCIÓN: Inteligencia Artificial ─── -->
   <div>
     <p class="section-title" data-i18n="settings.ai">Inteligencia Artificial</p>
     <div class="glass overflow-hidden">
 
-      <!-- AI status -->
       <div class="p-4 border-b border-white/5">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-3">
@@ -192,7 +188,6 @@
     </div>
   </div>
 
-  <!-- ─── Notificaciones ─── -->
   <div>
     <p class="section-title" data-i18n="settings.notifications">Notificaciones</p>
     <div class="glass overflow-hidden">
@@ -235,7 +230,6 @@
     </div>
   </div>
 
-  <!-- ─── Idioma ─── -->
   <div>
     <p class="section-title" data-i18n="settings.language">Idioma y Región</p>
     <div class="glass p-4 space-y-4">
@@ -247,20 +241,19 @@
         <button class="lang-btn" data-lang="zh" onclick="selectLang(this)">🇨🇳 中文</button>
         <button class="lang-btn" data-lang="ja" onclick="selectLang(this)">🇯🇵 日本語</button>
       </div>
-      <div class="setting-row" style="padding:8px 0">
+      <div class="setting-row" style="padding:8px 0" onclick="showCurrencySelector()">
         <div class="setting-icon" style="background:rgba(255,255,255,0.07)">
           <span class="material-icons-round text-sm opacity-40">currency_exchange</span>
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold" data-i18n="settings.currency">Moneda por defecto</p>
-          <p class="text-xs opacity-40">Euro (€)</p>
+          <p class="text-xs opacity-40" id="currency-label">Euro (€)</p>
         </div>
         <span class="material-icons-round text-sm opacity-30">chevron_right</span>
       </div>
     </div>
   </div>
 
-  <!-- ─── Privacidad ─── -->
   <div>
     <p class="section-title" data-i18n="settings.privacy">Privacidad y Seguridad</p>
     <div class="glass overflow-hidden">
@@ -299,7 +292,6 @@
     </div>
   </div>
 
-  <!-- ─── Apariencia ─── -->
   <div>
     <p class="section-title" data-i18n="settings.appearance">Apariencia</p>
     <div class="glass overflow-hidden">
@@ -326,14 +318,12 @@
     </div>
   </div>
 
-  <!-- Version info -->
   <div class="glass p-4 text-center space-y-1">
     <p class="text-xs font-bold" style="color:var(--cyan)">SplitGasto 2026</p>
     <p class="text-xs opacity-30" data-i18n="settings.version">Alfa v2.6.0 · Compilación 2026.06.02</p>
     <p class="text-xs opacity-20" data-i18n="settings.versionSub">Motor IA v2.6 · AES-256 · Extremo a Extremo</p>
   </div>
 
-  <!-- Danger zone -->
   <div>
     <p class="section-title" style="color:rgba(239,68,68,0.5)" data-i18n="settings.dangerZone">Zona de Riesgo</p>
     <div class="space-y-2">
@@ -350,7 +340,6 @@
 
 </main>
 
-<!-- Bottom Nav -->
 <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
@@ -379,328 +368,6 @@
 </div>
 
 <script>
-/* ─── Sistema i18n ─── */
-const translations = {
-  es: {
-    'settings.title': 'Configuración',
-    'settings.edit': 'Editar',
-    'settings.ai': 'Inteligencia Artificial',
-    'settings.aiVersion': 'Versión 2.6 · En línea',
-    'settings.aiConfidence': 'Confianza media del escáner',
-    'badge.active': 'Activo',
-    'settings.notifications': 'Notificaciones',
-    'settings.language': 'Idioma y Región',
-    'settings.currency': 'Moneda por defecto',
-    'settings.privacy': 'Privacidad y Seguridad',
-    'settings.terms': 'Términos y Privacidad',
-    'settings.appearance': 'Apariencia',
-    'settings.darkModeAlways': 'Negro puro · Siempre activo',
-    'settings.dangerZone': 'Zona de Riesgo',
-    'settings.logout': 'Cerrar Sesión',
-    'settings.deleteAccount': 'Eliminar Cuenta',
-    'nav.dashboard': 'Mando',
-    'nav.groups': 'Grupos',
-    'nav.expenses': 'Gastos',
-    'nav.metrics': 'Métricas',
-    'nav.profile': 'Perfil',
-    'toggle.on': 'Activado',
-    'toggle.off': 'Desactivado',
-    'role.admin': 'Administrador',
-    'role.member': 'Socio',
-    'role.founder': 'Socio · Fundador',
-    'settings.aiEngine': 'Motor IA Alpha',
-    'settings.aiOcr': 'OCR Inteligente',
-    'settings.aiOcrSub': 'Extracción automática de tickets',
-    'settings.aiSuggest': 'Sugerencias de Reparto',
-    'settings.aiSuggestSub': 'IA recomienda el split óptimo',
-    'settings.aiTranslate': 'Traducción en Tiempo Real',
-    'settings.aiTranslateSub': 'Tickets en otro idioma',
-    'settings.aiLearn': 'Aprendizaje Personalizado',
-    'settings.aiLearnSub': 'La IA aprende tus hábitos',
-    'settings.notifPush': 'Notificaciones Push',
-    'settings.notifPushSub': 'Pagos, deudas y actividad',
-    'settings.notifPay': 'Recordatorios de Pago',
-    'settings.notifPaySub': 'Avisos antes del vencimiento',
-    'settings.notifGame': 'Alertas de Juego',
-    'settings.notifGameSub': 'Resultados y torneos',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': 'Biometría, 2FA, AES-256',
-    'settings.analytics': 'Analytics Anónimas',
-    'settings.analyticsSub': 'Ayuda a mejorar la app',
-    'settings.darkMode': 'Modo Oscuro AMOLED',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': 'Guía completa del sistema',
-    'settings.version': 'Alfa v2.6.0 · Compilación 2026.06.02',
-    'settings.versionSub': 'Motor IA v2.6 · AES-256 · Extremo a Extremo',
-  },
-  en: {
-    'settings.title': 'Settings',
-    'settings.edit': 'Edit',
-    'settings.ai': 'Artificial Intelligence',
-    'settings.aiVersion': 'Version 2.6 · Online',
-    'settings.aiConfidence': 'Average scanner confidence',
-    'badge.active': 'Active',
-    'settings.notifications': 'Notifications',
-    'settings.language': 'Language & Region',
-    'settings.currency': 'Default currency',
-    'settings.privacy': 'Privacy & Security',
-    'settings.terms': 'Terms & Privacy',
-    'settings.appearance': 'Appearance',
-    'settings.darkModeAlways': 'Pure black · Always on',
-    'settings.dangerZone': 'Danger Zone',
-    'settings.logout': 'Log Out',
-    'settings.deleteAccount': 'Delete Account',
-    'nav.dashboard': 'Dashboard',
-    'nav.groups': 'Groups',
-    'nav.expenses': 'Expenses',
-    'nav.metrics': 'Metrics',
-    'nav.profile': 'Profile',
-    'toggle.on': 'Enabled',
-    'toggle.off': 'Disabled',
-    'role.admin': 'Admin',
-    'role.member': 'Member',
-    'role.founder': 'Co-founder',
-    'settings.aiEngine': 'AI Engine Alpha',
-    'settings.aiOcr': 'Smart OCR',
-    'settings.aiOcrSub': 'Automatic receipt extraction',
-    'settings.aiSuggest': 'Split Suggestions',
-    'settings.aiSuggestSub': 'AI recommends optimal split',
-    'settings.aiTranslate': 'Real-Time Translation',
-    'settings.aiTranslateSub': 'Receipts in other languages',
-    'settings.aiLearn': 'Personalised Learning',
-    'settings.aiLearnSub': 'AI learns your habits',
-    'settings.notifPush': 'Push Notifications',
-    'settings.notifPushSub': 'Payments, debts and activity',
-    'settings.notifPay': 'Payment Reminders',
-    'settings.notifPaySub': 'Alerts before due date',
-    'settings.notifGame': 'Game Alerts',
-    'settings.notifGameSub': 'Results and tournaments',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': 'Biometrics, 2FA, AES-256',
-    'settings.analytics': 'Anonymous Analytics',
-    'settings.analyticsSub': 'Help improve the app',
-    'settings.darkMode': 'AMOLED Dark Mode',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': 'Complete system guide',
-    'settings.version': 'Alpha v2.6.0 · Build 2026.06.02',
-    'settings.versionSub': 'AI Engine v2.6 · AES-256 · End-to-End',
-  },
-  fr: {
-    'settings.title': 'Paramètres',
-    'settings.edit': 'Modifier',
-    'settings.ai': 'Intelligence Artificielle',
-    'settings.aiVersion': 'Version 2.6 · En ligne',
-    'settings.aiConfidence': 'Confiance moyenne du scanner',
-    'badge.active': 'Actif',
-    'settings.notifications': 'Notifications',
-    'settings.language': 'Langue et Région',
-    'settings.currency': 'Devise par défaut',
-    'settings.privacy': 'Confidentialité et Sécurité',
-    'settings.terms': 'Conditions et Confidentialité',
-    'settings.appearance': 'Apparence',
-    'settings.darkModeAlways': 'Noir pur · Toujours actif',
-    'settings.dangerZone': 'Zone à Risque',
-    'settings.logout': 'Déconnexion',
-    'settings.deleteAccount': 'Supprimer le Compte',
-    'nav.dashboard': 'Tableau',
-    'nav.groups': 'Groupes',
-    'nav.expenses': 'Dépenses',
-    'nav.metrics': 'Métriques',
-    'nav.profile': 'Profil',
-    'toggle.on': 'Activé',
-    'toggle.off': 'Désactivé',
-    'role.admin': 'Administrateur',
-    'role.member': 'Membre',
-    'role.founder': 'Cofondateur',
-    'settings.aiEngine': 'Moteur IA Alpha',
-    'settings.aiOcr': 'OCR Intelligent',
-    'settings.aiOcrSub': 'Extraction automatique des tickets',
-    'settings.aiSuggest': 'Suggestions de Partage',
-    'settings.aiSuggestSub': "L'IA recommande le split optimal",
-    'settings.aiTranslate': 'Traduction en Temps Réel',
-    'settings.aiTranslateSub': 'Tickets dans une autre langue',
-    'settings.aiLearn': 'Apprentissage Personnalisé',
-    'settings.aiLearnSub': "L'IA apprend vos habitudes",
-    'settings.notifPush': 'Notifications Push',
-    'settings.notifPushSub': 'Paiements, dettes et activité',
-    'settings.notifPay': 'Rappels de Paiement',
-    'settings.notifPaySub': "Alertes avant l'échéance",
-    'settings.notifGame': 'Alertes de Jeu',
-    'settings.notifGameSub': 'Résultats et tournois',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': 'Biométrie, 2FA, AES-256',
-    'settings.analytics': 'Analyses Anonymes',
-    'settings.analyticsSub': "Aide à l'amélioration de l'app",
-    'settings.darkMode': 'Mode Sombre AMOLED',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': 'Guide complet du système',
-    'settings.version': 'Alpha v2.6.0 · Build 2026.06.02',
-    'settings.versionSub': 'Moteur IA v2.6 · AES-256 · Bout en Bout',
-  },
-  de: {
-    'settings.title': 'Einstellungen',
-    'settings.edit': 'Bearbeiten',
-    'settings.ai': 'Künstliche Intelligenz',
-    'settings.aiVersion': 'Version 2.6 · Online',
-    'settings.aiConfidence': 'Durchschnittliche Scanner-Konfidenz',
-    'badge.active': 'Aktiv',
-    'settings.notifications': 'Benachrichtigungen',
-    'settings.language': 'Sprache & Region',
-    'settings.currency': 'Standardwährung',
-    'settings.privacy': 'Datenschutz & Sicherheit',
-    'settings.terms': 'AGB & Datenschutz',
-    'settings.appearance': 'Erscheinungsbild',
-    'settings.darkModeAlways': 'Rein schwarz · Immer aktiv',
-    'settings.dangerZone': 'Gefahrenzone',
-    'settings.logout': 'Abmelden',
-    'settings.deleteAccount': 'Konto löschen',
-    'nav.dashboard': 'Dashboard',
-    'nav.groups': 'Gruppen',
-    'nav.expenses': 'Ausgaben',
-    'nav.metrics': 'Metriken',
-    'nav.profile': 'Profil',
-    'toggle.on': 'Aktiviert',
-    'toggle.off': 'Deaktiviert',
-    'role.admin': 'Administrator',
-    'role.member': 'Mitglied',
-    'role.founder': 'Mitgründer',
-    'settings.aiEngine': 'KI-Motor Alpha',
-    'settings.aiOcr': 'Intelligentes OCR',
-    'settings.aiOcrSub': 'Automatische Belegextraktion',
-    'settings.aiSuggest': 'Teilungsvorschläge',
-    'settings.aiSuggestSub': 'KI empfiehlt optimale Aufteilung',
-    'settings.aiTranslate': 'Echtzeit-Übersetzung',
-    'settings.aiTranslateSub': 'Belege in anderen Sprachen',
-    'settings.aiLearn': 'Personalisiertes Lernen',
-    'settings.aiLearnSub': 'KI lernt Ihre Gewohnheiten',
-    'settings.notifPush': 'Push-Benachrichtigungen',
-    'settings.notifPushSub': 'Zahlungen, Schulden und Aktivität',
-    'settings.notifPay': 'Zahlungserinnerungen',
-    'settings.notifPaySub': 'Hinweise vor Fälligkeit',
-    'settings.notifGame': 'Spielbenachrichtigungen',
-    'settings.notifGameSub': 'Ergebnisse und Turniere',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': 'Biometrie, 2FA, AES-256',
-    'settings.analytics': 'Anonyme Analysen',
-    'settings.analyticsSub': 'Hilft, die App zu verbessern',
-    'settings.darkMode': 'AMOLED-Dunkelmodus',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': 'Vollständige Systemanleitung',
-    'settings.version': 'Alpha v2.6.0 · Build 2026.06.02',
-    'settings.versionSub': 'KI-Motor v2.6 · AES-256 · Ende-zu-Ende',
-  },
-  zh: {
-    'settings.title': '设置',
-    'settings.edit': '编辑',
-    'settings.ai': '人工智能',
-    'settings.aiVersion': '版本 2.6 · 在线',
-    'badge.active': '活跃',
-    'settings.notifications': '通知',
-    'settings.language': '语言和地区',
-    'settings.currency': '默认货币',
-    'settings.privacy': '隐私与安全',
-    'settings.terms': '条款与隐私',
-    'settings.appearance': '外观',
-    'settings.darkModeAlways': '纯黑 · 始终开启',
-    'settings.dangerZone': '危险区域',
-    'settings.logout': '退出登录',
-    'settings.deleteAccount': '删除账户',
-    'nav.dashboard': '仪表盘',
-    'nav.groups': '群组',
-    'nav.expenses': '支出',
-    'nav.metrics': '指标',
-    'nav.profile': '个人',
-    'toggle.on': '已启用',
-    'toggle.off': '已禁用',
-    'role.admin': '管理员',
-    'role.member': '成员',
-    'role.founder': '联合创始人',
-    'settings.aiEngine': 'AI引擎 Alpha',
-    'settings.aiOcr': '智能OCR',
-    'settings.aiOcrSub': '自动提取票据',
-    'settings.aiSuggest': '分摊建议',
-    'settings.aiSuggestSub': 'AI推荐最优分摊',
-    'settings.aiTranslate': '实时翻译',
-    'settings.aiTranslateSub': '其他语言的票据',
-    'settings.aiLearn': '个性化学习',
-    'settings.aiLearnSub': 'AI学习您的习惯',
-    'settings.notifPush': '推送通知',
-    'settings.notifPushSub': '付款、债务和活动',
-    'settings.notifPay': '付款提醒',
-    'settings.notifPaySub': '到期前提醒',
-    'settings.notifGame': '游戏提醒',
-    'settings.notifGameSub': '结果和比赛',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': '生物识别、2FA、AES-256',
-    'settings.analytics': '匿名分析',
-    'settings.analyticsSub': '帮助改进应用',
-    'settings.darkMode': 'AMOLED深色模式',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': '完整系统指南',
-    'settings.version': 'Alpha v2.6.0 · 版本 2026.06.02',
-    'settings.versionSub': 'AI引擎 v2.6 · AES-256 · 端到端',
-  },
-  ja: {
-    'settings.title': '設定',
-    'settings.edit': '編集',
-    'settings.ai': '人工知能',
-    'settings.aiVersion': 'バージョン 2.6 · オンライン',
-    'badge.active': 'アクティブ',
-    'settings.notifications': '通知',
-    'settings.language': '言語と地域',
-    'settings.currency': 'デフォルト通貨',
-    'settings.privacy': 'プライバシーとセキュリティ',
-    'settings.terms': '利用規約とプライバシー',
-    'settings.appearance': '外観',
-    'settings.darkModeAlways': 'ピュアブラック · 常時オン',
-    'settings.dangerZone': '危険ゾーン',
-    'settings.logout': 'ログアウト',
-    'settings.deleteAccount': 'アカウント削除',
-    'nav.dashboard': 'ダッシュボード',
-    'nav.groups': 'グループ',
-    'nav.expenses': '支出',
-    'nav.metrics': 'メトリクス',
-    'nav.profile': 'プロフィール',
-    'toggle.on': '有効',
-    'toggle.off': '無効',
-    'role.admin': '管理者',
-    'role.member': 'メンバー',
-    'role.founder': '共同創設者',
-    'settings.aiEngine': 'AIエンジン Alpha',
-    'settings.aiOcr': 'スマートOCR',
-    'settings.aiOcrSub': '自動レシート抽出',
-    'settings.aiSuggest': '分割提案',
-    'settings.aiSuggestSub': 'AIが最適な分割を推奨',
-    'settings.aiTranslate': 'リアルタイム翻訳',
-    'settings.aiTranslateSub': '他言語のレシート',
-    'settings.aiLearn': 'パーソナライズ学習',
-    'settings.aiLearnSub': 'AIがあなたの習慣を学習',
-    'settings.notifPush': 'プッシュ通知',
-    'settings.notifPushSub': '支払い、負債、アクティビティ',
-    'settings.notifPay': '支払いリマインダー',
-    'settings.notifPaySub': '期日前のアラート',
-    'settings.notifGame': 'ゲームアラート',
-    'settings.notifGameSub': '結果とトーナメント',
-    'settings.security': 'Seguridad Alpha',
-    'settings.securitySub': '生体認証、2FA、AES-256',
-    'settings.analytics': '匿名分析',
-    'settings.analyticsSub': 'アプリ改善に貢献',
-    'settings.darkMode': 'AMOLED ダークモード',
-    'settings.manual': 'Manual Alpha',
-    'settings.manualSub': '完全なシステムガイド',
-    'settings.version': 'Alpha v2.6.0 · ビルド 2026.06.02',
-    'settings.versionSub': 'AIエンジン v2.6 · AES-256 · エンドツーエンド',
-  }
-};
-
-function applyTranslations(lang) {
-  const t = translations[lang] || translations['es'];
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (t[key]) el.textContent = t[key];
-  });
-}
-
 /* ─── Cargar perfil real del usuario ─── */
 async function loadUserProfile() {
   try {
@@ -719,13 +386,15 @@ async function loadUserProfile() {
     if (emailEl) emailEl.textContent = user.email || '';
     if (avatarEl) avatarEl.textContent = (user.name || 'U').charAt(0).toUpperCase();
 
-    // Comprobar si es admin de algún grupo
-    let roleText = translations[localStorage.getItem('sg_lang') || 'es']['role.member'] || 'Socio';
+    const lang = getSavedLanguage();
+    const t = translations[lang] || translations['es'];
+    let roleText = t['role.member'] || 'Socio';
+
     try {
       const resp = await SGApi.getGroups();
       const groupList = (resp && resp.success && resp.groups) ? resp.groups : [];
       const isAdmin = groupList.some(g => g.created_by === user.id || g.role === 'admin');
-      if (isAdmin) roleText = translations[localStorage.getItem('sg_lang') || 'es']['role.admin'] || 'Administrador';
+      if (isAdmin) roleText = t['role.admin'] || 'Administrador';
     } catch {}
     if (roleEl) roleEl.textContent = roleText;
   } catch (e) {
@@ -737,22 +406,77 @@ async function loadUserProfile() {
 function toggle(row, id) {
   const track = document.getElementById(id);
   track.classList.toggle('on');
-  const lang = localStorage.getItem('sg_lang') || 'es';
+  
+  const lang = getSavedLanguage();
   const t = translations[lang] || translations['es'];
-  const label = track.classList.contains('on') ? t['toggle.on'] : t['toggle.off'];
+  const label = track.classList.contains('on') 
+    ? (t['toggle.on'] || 'Activado') 
+    : (t['toggle.off'] || 'Desactivado');
+  
   SGRouter.showToast(label, 'info');
 }
 
-/* ─── Selector de idioma ─── */
+/* ─── Selector de idioma Alpha (delegado a i18n.js) ─── */
 function selectLang(btn) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const lang = btn.dataset.lang || 'es';
   localStorage.setItem('sg_lang', lang);
-  applyTranslations(lang);
-  // Recargar perfil para que el rol se traduzca
+  
+  applyTranslations(lang); // ← usa la función global de engine/i18n.js
+  
   loadUserProfile();
   SGRouter.showToast(`Idioma: ${btn.textContent.trim()}`, 'success');
+}
+
+/* ─── Selector Dinámico de Moneda ─── */
+function showCurrencySelector() {
+  const currencies = [
+    { code: 'EUR', label: 'Euro (€)' },
+    { code: 'USD', label: 'Dólar ($)' },
+    { code: 'GBP', label: 'Libra (£)' },
+    { code: 'MXN', label: 'Peso Mexicano ($)' },
+    { code: 'ARS', label: 'Peso Argentino ($)' },
+    { code: 'CLP', label: 'Peso Chileno ($)' },
+    { code: 'COP', label: 'Peso Colombiano ($)' },
+    { code: 'PEN', label: 'Sol Peruano (S/)' },
+    { code: 'BRL', label: 'Real Brasileño (R$)' },
+  ];
+  
+  const saved = localStorage.getItem('sg_currency') || 'EUR';
+  const mid = 'currency-modal';
+  const existing = document.getElementById(mid); 
+  if (existing) existing.remove();
+  
+  const m = document.createElement('div');
+  m.id = mid;
+  m.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)';
+  
+  const btns = currencies.map((c, i) =>
+    `<button data-idx="${i}" style="width:100%;text-align:left;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:${c.code === saved ? 'rgba(19,236,214,0.1)' : 'rgba(255,255,255,0.04)'};color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:6px;display:flex;justify-content:space-between">
+      <span>${c.label}</span>
+      ${c.code === saved ? '<span style="color:var(--cyan)">✓</span>' : ''}
+    </button>`
+  ).join('');
+  
+  m.innerHTML = `<div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;max-width:340px;width:90%">
+    <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;text-align:center">Selecciona moneda</h3>
+    <div id="currency-sel-list">${btns}</div>
+    <button onclick="document.getElementById('${mid}').remove()" style="width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">Cancelar</button>
+  </div>`;
+  
+  document.body.appendChild(m);
+  
+  document.getElementById('currency-sel-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-idx]');
+    if (btn) {
+      const sel = currencies[parseInt(btn.dataset.idx)];
+      localStorage.setItem('sg_currency', sel.code);
+      document.getElementById('currency-label').textContent = sel.label;
+      m.remove();
+      SGRouter.showToast(`Moneda: ${sel.label}`, 'success');
+    }
+  });
 }
 
 /* ─── Logout real ─── */
@@ -769,46 +493,49 @@ function confirmDelete() {
 
 /* ─── Inicialización ─── */
 document.addEventListener('DOMContentLoaded', () => {
-  // Aplicar idioma guardado
+  // Inicialización y renderizado de moneda
+  const savedCurrency = localStorage.getItem('sg_currency') || 'EUR';
+  const currencyMap = { 'EUR':'Euro (€)', 'USD':'Dólar ($)', 'GBP':'Libra (£)', 'MXN':'Peso Mexicano ($)', 'ARS':'Peso Argentino ($)', 'CLP':'Peso Chileno ($)', 'COP':'Peso Colombiano ($)', 'PEN':'Sol Peruano (S/)', 'BRL':'Real Brasileño (R$)' };
+  document.getElementById('currency-label').textContent = currencyMap[savedCurrency] || 'Euro (€)';
+
+  // Sincronizar estado visual de los botones de idioma
   const savedLang = localStorage.getItem('sg_lang') || 'es';
   const activeBtn = document.querySelector(`.lang-btn[data-lang="${savedLang}"]`);
   if (activeBtn) {
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
     activeBtn.classList.add('active');
   }
-  applyTranslations(savedLang);
 
   // Cargar perfil real del usuario
   loadUserProfile();
 });
 </script>
 
-        <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+                reg.update().catch(() => {});
+                reg.addEventListener('updatefound', () => {
+                    const sw = reg.installing;
+                    if (!sw) return;
+                    sw.addEventListener('statechange', () => {
+                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                            sw.postMessage({ type: 'SKIP_WAITING' });
+                        }
                     });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
+                });
+            })
+            .catch(e => console.warn('[SW] Failed:', e));
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) { refreshing = true; window.location.reload(); }
         });
-    }
-    </script>
+    });
+}
+</script>
 
 </div>
 </body>
 </html>
-
