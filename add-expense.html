@@ -138,7 +138,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
@@ -148,7 +147,6 @@
 <body class="app-shell text-white pb-32">
 <div class="app-frame">
 
-<!-- Header -->
 <header class="flex justify-between items-center px-5 py-4 sticky top-0 z-50" style="background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)">
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round text-white/60">close</span>
@@ -159,7 +157,6 @@
 
 <main class="max-w-md mx-auto px-4 pt-4 space-y-5 w-full">
 
-  <!-- Scanner shortcut -->
   <div class="scanner-cta p-4 flex items-center gap-4" onclick="SGRouter.navigate('scanner','add-expense')">
     <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(19,236,214,0.15)">
       <span class="material-icons-round" style="color:var(--cyan)">document_scanner</span>
@@ -171,7 +168,6 @@
     <span class="material-icons-round ml-auto opacity-30">chevron_right</span>
   </div>
 
-  <!-- Amount -->
   <div class="glass p-6 text-center">
     <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">Importe</p>
     <div class="flex items-center justify-center gap-3">
@@ -181,7 +177,6 @@
     <p class="text-xs opacity-30 mt-2" id="per-person-hint">— € por persona</p>
   </div>
 
-  <!-- Description -->
   <div class="space-y-2">
     <label class="text-xs font-bold uppercase tracking-widest opacity-40">Descripción</label>
     <div class="relative">
@@ -190,21 +185,19 @@
     </div>
   </div>
 
-  <!-- Categories -->
   <div class="space-y-2">
     <label class="text-xs font-bold uppercase tracking-widest opacity-40">Categoría</label>
     <div class="cats-scroll">
-      <button class="cat-btn active" data-cat="food" onclick="selectCat(this)">🍣<span>Comida</span></button>
-      <button class="cat-btn" data-cat="transport" onclick="selectCat(this)">🚗<span>Transporte</span></button>
-      <button class="cat-btn" data-cat="leisure" onclick="selectCat(this)">🎬<span>Ocio</span></button>
-      <button class="cat-btn" data-cat="home" onclick="selectCat(this)">🏠<span>Hogar</span></button>
-      <button class="cat-btn" data-cat="travel" onclick="selectCat(this)">✈️<span>Viajes</span></button>
-      <button class="cat-btn" data-cat="health" onclick="selectCat(this)">💊<span>Salud</span></button>
-      <button class="cat-btn" data-cat="other" onclick="selectCat(this)">📦<span>Otro</span></button>
+      <button class="cat-btn active" data-cat="comida" onclick="selectCat(this)">🍣<span>Comida</span></button>
+      <button class="cat-btn" data-cat="transporte" onclick="selectCat(this)">🚗<span>Transporte</span></button>
+      <button class="cat-btn" data-cat="entretenimiento" onclick="selectCat(this)">🎬<span>Ocio</span></button>
+      <button class="cat-btn" data-cat="alojamiento" onclick="selectCat(this)">🏠<span>Hogar</span></button>
+      <button class="cat-btn" data-cat="compras" onclick="selectCat(this)">🛍️<span>Compras</span></button>
+      <button class="cat-btn" data-cat="salud" onclick="selectCat(this)">💊<span>Salud</span></button>
+      <button class="cat-btn" data-cat="otro" onclick="selectCat(this)">📦<span>Otro</span></button>
     </div>
   </div>
 
-  <!-- Date + Group -->
   <div class="grid grid-cols-2 gap-3">
     <div class="space-y-2">
       <label class="text-xs font-bold uppercase tracking-widest opacity-40">Fecha</label>
@@ -218,18 +211,15 @@
 </div>
   </div>
 
-  <!-- Paid by -->
   <div class="glass p-5 space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="font-bold text-sm">Pagado por</h3>
       <button class="text-xs font-bold" style="color:var(--cyan)">+ Múltiples</button>
     </div>
     <div class="flex gap-4 overflow-x-auto pb-1" id="payers-row" style="scrollbar-width:none">
-      <!-- rendered by JS -->
-    </div>
+      </div>
   </div>
 
-  <!-- Split method -->
   <div class="glass p-5 space-y-4">
     <h3 class="font-bold text-sm">Método de reparto</h3>
     <div class="flex p-1 rounded-xl" style="background:rgba(255,255,255,0.04)">
@@ -239,19 +229,15 @@
       <div class="split-option" onclick="selectSplit(this,'shares')">Partes</div>
     </div>
 
-    <!-- Participants with amounts -->
     <div id="split-details" class="space-y-3 mt-2">
-      <!-- rendered by JS -->
-    </div>
+      </div>
   </div>
 
-  <!-- Notes -->
   <div class="space-y-2">
     <label class="text-xs font-bold uppercase tracking-widest opacity-40">Nota (opcional)</label>
     <textarea id="notes-input" class="sg-input resize-none" rows="2" placeholder="Añade una nota…"></textarea>
   </div>
 
-  <!-- Save -->
   <button id="save-btn-bottom" class="w-full py-5 rounded-full font-black text-lg" style="background:linear-gradient(135deg,var(--cyan),#0fbfaf);color:#0a0a0a;box-shadow:0 8px 32px rgba(19,236,214,0.35)" onclick="saveExpense()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">check_circle</span>
@@ -264,7 +250,7 @@
 <script>
 let groups = [];
 let selectedPayer = 0;
-let selectedCat = 'food';
+let selectedCat = 'comida';
 let splitMethod = 'equal';
 let members = [];
 
@@ -434,10 +420,25 @@ async function saveExpense() {
     const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
 
     if (result && result.success) {
-      SGRouter.showToast('Gasto guardado ✓', 'success');
-      // Marcar para que activity.html sepa que debe recargar datos frescos
-      try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
-      setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+        // GUARDAR TICKET FORENSE
+        const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
+        sessionStorage.setItem('sg_success_ticket', JSON.stringify({
+            type: 'expense',
+            txid: result.id || crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            groupId: groupId,
+            groupName: groupName,
+            amount: amount,
+            currency: 'EUR',
+            description: desc,
+            splitMethod: splitMethod,
+            participants: members.length + ' socios',
+            balanceAfter: null
+        }));
+        
+        SGRouter.showToast('Gasto guardado ✓', 'success');
+        try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
+        setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
     } else {
       const errMsg = result?.error || 'Error al guardar el gasto';
       console.error('saveExpense backend error:', errMsg);
@@ -449,9 +450,25 @@ async function saveExpense() {
           await new Promise(r => setTimeout(r, 500));
           const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
           if (retry && retry.success) {
+            // GUARDAR TICKET FORENSE (REINTENTO)
+            const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
+            sessionStorage.setItem('sg_success_ticket', JSON.stringify({
+                type: 'expense',
+                txid: retry.id || crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                groupId: groupId,
+                groupName: groupName,
+                amount: amount,
+                currency: 'EUR',
+                description: desc,
+                splitMethod: splitMethod,
+                participants: members.length + ' socios',
+                balanceAfter: null
+            }));
+            
             SGRouter.showToast('Gasto guardado ✓', 'success');
             try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
-            setTimeout(() => SGRouter.navigate('activity', 'add-expense'), 800);
+            setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
             return;
           }
         } catch {}
@@ -490,8 +507,6 @@ init();
 
 </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
