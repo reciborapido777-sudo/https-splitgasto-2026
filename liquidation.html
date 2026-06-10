@@ -130,7 +130,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 
 </div>
 
-<nav class="absolute bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:sticky md:bottom-0">
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:sticky md:bottom-0">
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
             <span class="material-icons-round">grid_view</span>
@@ -212,6 +212,21 @@ async function executeLiquidation() {
         const data = await res.json();
         
         if (data.success) {
+            const recipientName = document.getElementById('recipient-name').textContent || 'Usuario';
+            sessionStorage.setItem('sg_success_ticket', JSON.stringify({
+                type: 'settlement',
+                txid: data.id || crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                groupId: groupId,
+                groupName: document.querySelector('#badges-container span')?.textContent || 'Grupo',
+                amount: amount,
+                currency: currency,
+                fromUser: SGAuth.getUserId(),
+                toUser: toUserId,
+                toUserName: recipientName,
+                balanceAfter: 0.00,
+                description: document.getElementById('liquidation-note')?.value || 'Liquidación de deuda'
+            }));
             SGRouter.navigate('success', 'liquidation');
         } else {
             SGRouter.showToast(data.error || 'Error al liquidar', 'error');
@@ -227,7 +242,6 @@ async function executeLiquidation() {
     }
 }
 
-// Inicialización Táctica Dinámica - Carga de Datos Reales
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
@@ -244,30 +258,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('liquidation-amount-display').textContent = parsedAmount;
 
     try {
-        // 1. Obtener datos reales del Grupo
         let groupName = "Bóveda Alpha";
         const groupsRes = await SGApi.getGroups().catch(() => null);
-        if (groupsRes && groupsRes.success && groupsRes.groups) {
+        if (groupsRes?.success && groupsRes.groups) {
             const foundGroup = groupsRes.groups.find(g => g.id === groupId);
             if (foundGroup) groupName = foundGroup.name;
         }
 
-        // 2. Obtener nombre real del Destinatario
         let recipientName = `Socio (${toUserId.substring(0,6)})`;
         const membersRes = await SGApi.getGroupMembers(groupId).catch(() => null);
-        if (membersRes && membersRes.success && membersRes.members) {
-            // Manejamos ids relacionales o uuids directos
+        if (membersRes?.success && membersRes.members) {
             const member = membersRes.members.find(m => m.userId === toUserId || m.id === toUserId);
-            if (member && member.name) {
-                recipientName = member.name;
-            } else if (toUserId === 'USER_ID_MARIO') {
-                recipientName = 'Mario García'; // Fallback de test
-            }
+            if (member?.name) recipientName = member.name;
         }
         
         document.getElementById('recipient-name').textContent = recipientName;
 
-        // 3. Inyectar etiquetas y desglose dinámico consolidado
         const badgesHtml = `
             <span class="px-3 py-1.5 bg-zinc-900 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20">${groupName}</span>
             <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Liquidación de Balance</span>
@@ -275,7 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('badges-container').innerHTML = badgesHtml;
 
         const breakdownHtml = `
-            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3">Desglose Consolidado</p>
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center">Desglose Consolidado</p>
             <div class="debt-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons-round text-[#a855f7] text-sm">account_balance_wallet</span>
@@ -298,31 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 </script>
-
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
-    </script>
 </div>
 </body>
 </html>
