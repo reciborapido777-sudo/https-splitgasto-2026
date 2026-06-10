@@ -267,6 +267,12 @@ async function loadDashboardData() {
                     targetUid = mid;
                 }
             });
+          }
+        } else if (myBal > 0) {
+          totalReceive += myBal;
+        }
+      }
+    });
 
     document.getElementById('net-worth-value').textContent = (totalReceive + totalOwed).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
     document.getElementById('settlements-value').textContent = totalOwed.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
@@ -282,9 +288,45 @@ async function loadDashboardData() {
         }
     }
 
+    // GRUPO ACTIVO
     const activeGroup = groups[0];
     document.getElementById('active-group-name').textContent = activeGroup.name;
 
+    const card = document.getElementById('active-group-card');
+    if (card) {
+      card.onclick = () => { window.location.href = 'split.html?groupId=' + activeGroup.id + '&from=dashboard'; };
+    }
+    const gastoBtn = document.querySelector('[onclick*="add-expense"]');
+    if (gastoBtn) {
+      gastoBtn.onclick = () => { window.location.href = 'add-expense.html?groupId=' + activeGroup.id + '&from=dashboard'; };
+    }
+
+    const balRes0 = allBalResults[0];
+    const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
+    const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
+
+    document.getElementById('active-group-sub').innerHTML =
+      `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+
+    const avatarRow = document.getElementById('active-group-avatars');
+    if (avatarRow) {
+      const memRes0 = await SGApi.getGroupMembers(activeGroup.id).catch(() => null);
+      if (memRes0?.success && memRes0.members && memRes0.members.length > 0) {
+        const shown = memRes0.members.slice(0, 3);
+        const extra = memRes0.members.length - 3;
+        avatarRow.innerHTML = shown.map(m => {
+          const seed = encodeURIComponent((m.name || 'U').slice(0,2).toUpperCase());
+          return `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="${m.name || ''}">`;
+        }).join('') + (extra > 0
+          ? `<div class="size-7 rounded-full bg-white/10 border border-black/50 flex items-center justify-center"><span class="text-[8px] font-black text-white">+${extra}</span></div>`
+          : '');
+      } else {
+        const seed = encodeURIComponent(activeGroup.name.slice(0,2).toUpperCase());
+        avatarRow.innerHTML = `<img src="https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a1a2e&fontSize=40" class="size-7 rounded-full border border-black/50" alt="">`;
+      }
+    }
+
+    // ACTIVIDAD RECIENTE
     const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
     const allExpResults = await Promise.all(expPromises);
     let allExpenses = [];
@@ -315,6 +357,30 @@ async function loadDashboardData() {
 
 loadDashboardData();
 window.addEventListener('pageshow', (e) => { if (e.persisted) loadDashboardData(); });
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+            .then(reg => {
+                reg.update().catch(() => {});
+                reg.addEventListener('updatefound', () => {
+                    const sw = reg.installing;
+                    if (!sw) return;
+                    sw.addEventListener('statechange', () => {
+                        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                            sw.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+            })
+            .catch(e => console.warn('[SW] Failed:', e));
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) { refreshing = true; window.location.reload(); }
+        });
+    });
+}
 </script>
 </body>
 </html>
+
