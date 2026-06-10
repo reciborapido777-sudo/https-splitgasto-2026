@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operación Exitosa | SplitGasto 2026</title>
+    <title>Ticket de Transacción | SplitGasto 2026</title>
     
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
         
-       body {  
-           background: #000; color: #fff; 
-           font-family: 'Inter', sans-serif; 
-           min-height: 100vh; margin: 0; 
-           overflow-x: hidden !important;
-           box-sizing: border-box;
-           overscroll-behavior: contain; touch-action: manipulation; }
+        body {  
+            background: #000; color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 100vh; margin: 0; 
+            overflow-x: hidden !important;
+            box-sizing: border-box;
+            overscroll-behavior: contain; touch-action: manipulation; 
+        }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
@@ -28,24 +29,41 @@
             transform: translateZ(0);
         }
 
+        .ticket-container {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ticket-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #13ecd6, #10b981, #13ecd6);
+            opacity: 0.6;
+        }
+
         .success-glow {
             position: relative;
-            width: 120px; height: 120px;
-            background: rgba(19, 236, 214, 0.1);
+            width: 100px; height: 100px;
+            background: rgba(19, 236, 214, 0.08);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(19, 236, 214, 0.3);
-            box-shadow: 0 0 50px rgba(19, 236, 214, 0.1);
+            border: 1px solid rgba(19, 236, 214, 0.25);
+            box-shadow: 0 0 40px rgba(19, 236, 214, 0.08);
             animation: pulseSuccess 3s infinite ease-in-out;
-            transform: translateZ(0); /* Aceleración GPU */
+            transform: translateZ(0);
         }
 
         @keyframes pulseSuccess {
-            0% { transform: scale(1); box-shadow: 0 0 30px rgba(19, 236, 214, 0.1); }
-            50% { transform: scale(1.06); box-shadow: 0 0 60px rgba(19, 236, 214, 0.3); }
-            100% { transform: scale(1); box-shadow: 0 0 30px rgba(19, 236, 214, 0.1); }
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(19, 236, 214, 0.05); }
+            50% { transform: scale(1.06); box-shadow: 0 0 50px rgba(19, 236, 214, 0.2); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(19, 236, 214, 0.05); }
         }
 
         .text-gradient-cyan { 
@@ -53,10 +71,56 @@
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent;
             display: inline-block;
-            padding-right: 0.55em !important; /* Blindaje Alpha v1.62 */
         }
 
-        .reveal-node { animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .audit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            gap: 16px;
+        }
+        .audit-row:last-child { border-bottom: none; }
+        
+        .audit-label {
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #52525b;
+            white-space: nowrap;
+            padding-top: 2px;
+        }
+        
+        .audit-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e4e4e7;
+            text-align: right;
+            word-break: break-word;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .audit-value.txid {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            color: #71717a;
+        }
+        
+        .audit-value.balance-zero {
+            color: #13ecd6;
+            font-weight: 900;
+        }
+        
+        .audit-value.timestamp {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #a1a1aa;
+        }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .btn-premium-cyan:hover {
@@ -70,8 +134,21 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
+        
+        .badge-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+    </style>
+    
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -81,96 +158,240 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
-    <script src="engine/i18n.js" defer></script>
 </head>
-<body class="app-shell p-6 text-center space-y-12">
+<body class="app-shell p-6 text-center">
 <div class="app-frame">
 
-    <div class="reveal-node flex flex-col items-center space-y-8">
-        <div class="success-glow">
-            <span class="material-icons-round text-[#13ecd6] text-6xl">done_all</span>
-        </div>
-        <div class="space-y-3">
-            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.6em] ml-2">Operación Validada</p>
-            <h1 class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-white leading-none">
-                Éxito Total
-            </h1>
-        </div>
-    </div>
+    <div class="max-w-md mx-auto space-y-8">
 
-    <section class="w-full max-w-md glass-panel p-10 rounded-[3.5rem] border-[#13ecd6]/10 space-y-10 reveal-node" style="animation-delay: 0.2s">
-        <div class="flex justify-between items-center border-b border-white/5 pb-8">
-            <div class="text-left">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Activo Procesado</p>
-                <p class="text-xl font-bold font-['Space_Grotesk'] uppercase tracking-tight" id="success-group">—</p>
+        <!-- Header Visual -->
+        <div class="reveal-node flex flex-col items-center space-y-5 pt-4">
+            <div class="success-glow">
+                <span class="material-icons-round text-[#13ecd6] text-5xl">receipt_long</span>
             </div>
-            <div class="text-right">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic mb-1">Valor Final</p>
-                <p class="text-3xl font-black font-['Space_Grotesk'] text-gradient-cyan leading-none" id="success-amount">—</p>
+            <div class="space-y-2">
+                <div class="flex items-center justify-center gap-2">
+                    <span class="badge-type bg-[#13ecd6]/10 text-[#13ecd6] border border-[#13ecd6]/20">
+                        <span class="material-icons-round text-[10px]">verified</span>
+                        Ticket Auditado
+                    </span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-white leading-none">
+                    Transacción<br><span class="text-gradient-cyan">Confirmada</span>
+                </h1>
             </div>
         </div>
 
-        <div class="space-y-5">
-            <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                <span>Auditoría IA</span>
-                <span class="text-[#13ecd6] flex items-center gap-2">
-                    <span class="size-1.5 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    Completada
+        <!-- TICKET DE TRANSACCIÓN -->
+        <section class="ticket-container p-6 sm:p-8 space-y-1 reveal-node text-left" style="animation-delay: 0.15s">
+            
+            <!-- Tipo de operación -->
+            <div class="audit-row">
+                <span class="audit-label">Operación</span>
+                <span class="audit-value" id="ticket-type">—</span>
+            </div>
+            
+            <!-- TXID -->
+            <div class="audit-row">
+                <span class="audit-label">ID Transacción</span>
+                <span class="audit-value txid" id="ticket-txid">—</span>
+            </div>
+            
+            <!-- Timestamp exacto -->
+            <div class="audit-row">
+                <span class="audit-label">Timestamp UTC</span>
+                <span class="audit-value timestamp" id="ticket-timestamp">—</span>
+            </div>
+            
+            <!-- Grupo -->
+            <div class="audit-row">
+                <span class="audit-label">Nodo / Grupo</span>
+                <span class="audit-value" id="ticket-group">—</span>
+            </div>
+            
+            <!-- Descripción -->
+            <div class="audit-row" id="row-description" style="display:none">
+                <span class="audit-label">Concepto</span>
+                <span class="audit-value" id="ticket-description">—</span>
+            </div>
+            
+            <!-- Monto -->
+            <div class="audit-row">
+                <span class="audit-label">Importe</span>
+                <span class="audit-value text-gradient-cyan" id="ticket-amount">—</span>
+            </div>
+            
+            <!-- Método / Split -->
+            <div class="audit-row" id="row-split" style="display:none">
+                <span class="audit-label">Método de Split</span>
+                <span class="audit-value" id="ticket-split">—</span>
+            </div>
+            
+            <!-- Participantes / Deudor-Acreedor -->
+            <div class="audit-row" id="row-participants" style="display:none">
+                <span class="audit-label" id="label-participants">Participantes</span>
+                <span class="audit-value" id="ticket-participants">—</span>
+            </div>
+            
+            <!-- BALANCE RESULTANTE (clave para liquidaciones) -->
+            <div class="audit-row" id="row-balance" style="display:none">
+                <span class="audit-label">Balance Resultante</span>
+                <span class="audit-value balance-zero" id="ticket-balance">—</span>
+            </div>
+            
+            <!-- Estado del sistema -->
+            <div class="audit-row" style="border-bottom:none; padding-top:16px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.06)">
+                <span class="audit-label">Estado del Sistema</span>
+                <span class="audit-value" style="color:#13ecd6; font-size:11px">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#13ecd6] mr-1.5 animate-pulse"></span>
+                    Confirmado en D1
                 </span>
             </div>
-            <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                <span>Distribución</span>
-                <span id="success-split" class="text-white">—</span>
-            </div>
-        </div>
-    </section>
+        </section>
 
-        <footer class="w-full max-w-xs space-y-4 reveal-node" style="animation-delay: 0.4s">
-        <button onclick="SGRouter.navigate('dashboard', 'success')" class="w-full py-7 bg-white text-black rounded-[2.2rem] font-black text-xs uppercase tracking-[0.5em] btn-premium-cyan transition-all shadow-2xl active:scale-95">
-            Volver al Dashboard
-        </button>
-        <button onclick="SGRouter.navigate('activity', 'success')" class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-            Ver en Historial
-        </button>
-    </footer>
+        <!-- Botones -->
+        <footer class="w-full max-w-xs mx-auto space-y-3 reveal-node pb-24" style="animation-delay: 0.3s">
+            <button onclick="SGRouter.navigate('dashboard', 'success')" class="w-full py-5 bg-white text-black rounded-[2rem] font-black text-xs uppercase tracking-[0.5em] btn-premium-cyan transition-all shadow-2xl active:scale-95">
+                Volver al Dashboard
+            </button>
+            <button onclick="SGRouter.navigate('activity', 'success')" class="w-full py-4 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
+                Ver en Historial
+            </button>
+        </footer>
+    </div>
 
     <script>
     (function() {
-        // Leer datos del último gasto desde sessionStorage (puesto por add-expense o receipt-view)
-        var lastExpense = null;
-        try { lastExpense = JSON.parse(sessionStorage.getItem('sg_last_expense') || 'null'); } catch(e) {}
-
-        if (lastExpense) {
-            var groupEl = document.getElementById('success-group');
-            var amountEl = document.getElementById('success-amount');
-            var splitEl = document.getElementById('success-split');
-
-            if (groupEl) groupEl.textContent = lastExpense.groupName || lastExpense.groupId || 'Grupo';
-            if (amountEl) amountEl.textContent = (lastExpense.amount || 0).toFixed(2) + '€';
-
-            var splitLabels = { equal: 'Simétrica Alpha', percentage: 'Porcentual', exact: 'Exacta', shares: 'Por partes' };
-            if (splitEl) splitEl.textContent = splitLabels[lastExpense.splitMethod] || lastExpense.splitMethod || 'Simétrica Alpha';
-
-            // Limpiar para que no se muestre de nuevo al recargar
+        // Lee el ticket completo desde sessionStorage
+        var ticket = null;
+        try { ticket = JSON.parse(sessionStorage.getItem('sg_success_ticket') || 'null'); } catch(e) {}
+        
+        // Fallback: leer formato antiguo si existe
+        var legacy = null;
+        try { legacy = JSON.parse(sessionStorage.getItem('sg_last_expense') || 'null'); } catch(e) {}
+        
+        function setText(id, text) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = text || '—';
+        }
+        
+        function showRow(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'flex';
+        }
+        
+        // Formatear moneda
+        function fmtMoney(amount, currency) {
+            var c = currency || 'EUR';
+            var symbols = { EUR: '€', USD: '$', GBP: '£', MXN: 'MX$', ARS: 'AR$', CLP: 'CLP', COP: 'COP', PEN: 'S/', BRL: 'R$' };
+            var sym = symbols[c] || '€';
+            var n = parseFloat(amount) || 0;
+            return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + sym;
+        }
+        
+        // Formatear fecha ISO a legible
+        function fmtTimestamp(iso) {
+            if (!iso) return '—';
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return iso;
+            return d.toLocaleString('es-ES', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            }) + ' UTC';
+        }
+        
+        if (ticket) {
+            // ===== NUEVO FORMATO: TICKET COMPLETO =====
+            
+            // Tipo de operación
+            var typeLabels = { 
+                expense: 'Registro de Gasto', 
+                settlement: 'Liquidación de Deuda', 
+                invite: 'Invitación Enviada',
+                generic: 'Operación Confirmada' 
+            };
+            setText('ticket-type', typeLabels[ticket.type] || ticket.type || 'Operación');
+            
+            // TXID
+            setText('ticket-txid', ticket.txid || ticket.id || 'N/A');
+            
+            // Timestamp
+            setText('ticket-timestamp', fmtTimestamp(ticket.timestamp) || fmtTimestamp(new Date().toISOString()));
+            
+            // Grupo
+            setText('ticket-group', ticket.groupName || ticket.groupId || '—');
+            
+            // Descripción (opcional)
+            if (ticket.description) {
+                setText('ticket-description', ticket.description);
+                showRow('row-description');
+            }
+            
+            // Monto
+            setText('ticket-amount', fmtMoney(ticket.amount, ticket.currency));
+            
+            // Split method (solo gastos)
+            if (ticket.type === 'expense' && ticket.splitMethod) {
+                var splitLabels = { equal: 'Simétrica Alpha', percentage: 'Porcentual', exact: 'Exacta', shares: 'Por Partes' };
+                setText('ticket-split', splitLabels[ticket.splitMethod] || ticket.splitMethod);
+                showRow('row-split');
+            }
+            
+            // Participantes / Deudor-Acreedor
+            if (ticket.type === 'settlement' && ticket.fromUser && ticket.toUser) {
+                setText('label-participants', 'Liquidación');
+                setText('ticket-participants', (ticket.fromUserName || ticket.fromUser) + ' → ' + (ticket.toUserName || ticket.toUser));
+                showRow('row-participants');
+            } else if (ticket.participants) {
+                setText('label-participants', 'Participantes');
+                setText('ticket-participants', ticket.participants);
+                showRow('row-participants');
+            }
+            
+            // Balance resultante (crucial para liquidaciones)
+            if (ticket.balanceAfter !== undefined && ticket.balanceAfter !== null) {
+                var b = parseFloat(ticket.balanceAfter) || 0;
+                setText('ticket-balance', fmtMoney(b, ticket.currency));
+                if (b === 0) {
+                    document.getElementById('ticket-balance').classList.add('balance-zero');
+                }
+                showRow('row-balance');
+            }
+            
+            // Limpiar ticket para que no se muestre al recargar
+            sessionStorage.removeItem('sg_success_ticket');
+            
+        } else if (legacy) {
+            // ===== COMPATIBILIDAD: FORMATO ANTIGUO =====
+            setText('ticket-type', 'Registro de Gasto');
+            setText('ticket-txid', legacy.id || 'N/A');
+            setText('ticket-timestamp', fmtTimestamp(new Date().toISOString()));
+            setText('ticket-group', legacy.groupName || legacy.groupId || '—');
+            setText('ticket-amount', fmtMoney(legacy.amount));
+            
+            if (legacy.splitMethod) {
+                var splitLabels = { equal: 'Simétrica Alpha', percentage: 'Porcentual', exact: 'Exacta', shares: 'Por Partes' };
+                setText('ticket-split', splitLabels[legacy.splitMethod] || legacy.splitMethod);
+                showRow('row-split');
+            }
+            
             sessionStorage.removeItem('sg_last_expense');
         } else {
-            // Sin datos, mostrar genérico
-            var groupEl = document.getElementById('success-group');
-            var amountEl = document.getElementById('success-amount');
-            var splitEl = document.getElementById('success-split');
-            if (groupEl) groupEl.textContent = 'Operación registrada';
-            if (amountEl) amountEl.textContent = '✓';
-            if (splitEl) splitEl.textContent = 'Completada';
+            // Sin datos: mostrar genérico
+            setText('ticket-type', 'Operación Confirmada');
+            setText('ticket-txid', '—');
+            setText('ticket-timestamp', fmtTimestamp(new Date().toISOString()));
+            setText('ticket-group', 'SplitGasto 2026');
+            setText('ticket-amount', '✓');
         }
     })();
     </script>
     
     <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
@@ -196,8 +417,7 @@
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
