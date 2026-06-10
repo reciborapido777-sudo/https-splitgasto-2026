@@ -107,8 +107,16 @@
     </div>
 
  <script>
-    const CAT_ICONS = { food:'restaurant', transport:'directions_car', leisure:'movie', home:'home', travel:'flight', health:'medical_services', other:'receipt', bolt:'bolt' };
-    const CAT_COLORS = { food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42', home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280' };
+    const CAT_ICONS = {
+  comida:'restaurant', transporte:'directions_car', entretenimiento:'movie',
+  alojamiento:'home', compras:'shopping_bag', salud:'medical_services',
+  servicios:'bolt', otro:'receipt'
+};
+const CAT_COLORS = {
+  comida:'#13ecd6', transporte:'#a855f7', entretenimiento:'#FF9D42',
+  alojamiento:'#ec4899', compras:'#3b82f6', salud:'#22c55e',
+  servicios:'#f59e0b', otro:'#6b7280'
+};
 
     // Global cache for delete confirmation
     let _allExpensesCache = [];
