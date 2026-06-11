@@ -200,7 +200,15 @@ const CAT_COLORS = {
         const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
         const byDate = {};
         allExpenses.forEach(exp => {
-          const d = (exp.created_at || today).split('T')[0];
+          let raw = exp.created_at || exp.date || today;
+          let d;
+          if (typeof raw === 'number') {
+            d = new Date(raw).toISOString().split('T')[0];
+          } else if (typeof raw === 'string') {
+            d = raw.includes('T') ? raw.split('T')[0] : raw;
+          } else {
+            d = today;
+          }
           if (!byDate[d]) byDate[d] = [];
           byDate[d].push(exp);
         });
@@ -341,7 +349,9 @@ const CAT_COLORS = {
     }
 
     function formatDate(dateStr) {
+      if (!dateStr || dateStr === 'Invalid Date') return '—';
       const d = new Date(dateStr + 'T12:00:00');
+      if (isNaN(d.getTime())) return '—';
       const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
