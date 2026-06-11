@@ -1,4 +1,4 @@
-name: Inject i18n.js into all HTML
+name: Inject i18n keys into HTML
 
 on:
   workflow_dispatch:
@@ -11,23 +11,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Insert engine/i18n.js before </head>
-        run: |
-          TARGET='    <script src="engine/i18n.js" defer></script>'
-          for file in $(find . -name "*.html" -not -path "./node_modules/*" -not -path "./.git/*"); do
-            if grep -q 'engine/i18n.js' "$file"; then
-              echo "⏭️  Skip (ya tiene i18n): $file"
-            elif grep -q '</head>' "$file"; then
-              sed -i "s|</head>|$TARGET\n</head>|" "$file"
-              echo "✅ Modificado: $file"
-            else
-              echo "⚠️  Skip (sin </head>): $file"
-            fi
-          done
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: npm install cheerio glob
+
+      - name: Inject data-i18n attributes
+        run: node scripts/inject-i18n.js
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || (git commit -m "feat(i18n): cargar engine/i18n.js en todos los HTML" && git push)
+          git diff --cached --quiet || (git commit -m "feat(i18n): auto-inject data-i18n keys" && git push)
