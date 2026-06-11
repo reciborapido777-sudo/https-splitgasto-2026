@@ -17,21 +17,16 @@
             border: 1px solid rgba(255,255,255,0.1);
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         .game-btn { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .game-btn:active { transform: scale(0.95); }
-        
         .active-glow {
             border-color: #a855f7 !important;
             box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
             background: rgba(168, 85, 247, 0.08) !important;
         }
-
         .participant-row {
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
+            cursor: pointer; position: relative; z-index: 1;
         }
         .participant-row:hover {
             background: rgba(255, 255, 255, 0.05);
@@ -91,19 +86,19 @@
 
         <section class="space-y-6 reveal" style="animation-delay: 0.1s">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div onclick="updateControl(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:rotate-180 transition-transform duration-700">autorenew</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Ruleta Alpha</span>
                 </div>
-                <div onclick="updateControl(this, 'Carta Alta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'Carta Alta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:-translate-y-1 transition-transform">style</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Carta Alta</span>
                 </div>
-                <div onclick="updateControl(this, 'Dardos')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'Dardos')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-125 transition-transform">ads_click</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Dardos</span>
                 </div>
-                <div onclick="updateControl(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:animate-bounce">monetization_on</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Moneda</span>
                 </div>
@@ -119,8 +114,8 @@
                         <h4 id="active-game-label" class="text-xl font-black font-['Space_Grotesk'] uppercase italic">Seleccione Juego</h4>
                     </div>
                 </div>
-                <button onclick="executeSplit()" class="w-full md:w-auto px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-xl">
-                    Ejecutar Reparto
+                <button id="execute-game-btn" onclick="executeSplit()" class="w-full md:w-auto px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-xl">
+                    Seleccione juego
                 </button>
             </div>
         </section>
@@ -164,6 +159,7 @@
 <script>
 let _splitGroups = [];
 let _currentGroupId = null;
+let _userProfile = null;
 
 async function initSplit() {
   if (!SGAuth || !SGAuth.isLoggedIn()) {
@@ -172,9 +168,11 @@ async function initSplit() {
     return;
   }
 
-  // Leer el perfil del usuario para el header
-  SGApi.getProfile().then(profile => {
+  // Leer perfil real para header Y validación de premium
+  try {
+    const profile = await SGApi.getProfile();
     if (profile?.success && profile.profile) {
+      _userProfile = profile.profile;
       const p = profile.profile;
       const headerName = document.querySelector('header h1');
       if (headerName) headerName.textContent = p.name || 'Perfil Alpha';
@@ -184,9 +182,9 @@ async function initSplit() {
         headerAvatar.src = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40`;
       }
     }
-  }).catch(() => {});
+  } catch {}
 
-  // Cargar lista de grupos
+  // Cargar grupos
   const groupsResult = await SGApi.getGroups().catch(() => null);
   _splitGroups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
 
@@ -206,12 +204,10 @@ async function initSplit() {
     return;
   }
 
-  // Poblar selector
   if (sel) {
     sel.innerHTML = _splitGroups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   }
 
-  // Determinar grupo inicial: URL param > primer grupo
   const params = new URLSearchParams(window.location.search);
   let groupId = params.get('groupId');
   if (!groupId || !_splitGroups.find(g => String(g.id) === String(groupId))) {
@@ -225,8 +221,7 @@ async function initSplit() {
 async function onSplitGroupChange(groupId) {
   if (!groupId) return;
   _currentGroupId = groupId;
-  // Actualizar la URL sin recargar la página
-  const newUrl = window.location.pathname + '?groupId=' + groupId + '&from=split';
+  const newUrl = window.location.pathname + '?groupId=' + encodeURIComponent(groupId) + '&from=split';
   window.history.replaceState({}, '', newUrl);
   await loadGroupData(groupId);
 }
@@ -250,15 +245,12 @@ async function loadGroupData(groupId) {
       SGApi.getBalances(group.id).catch(() => null)
     ]);
 
-    // Total gastos del grupo
     const expenses = (expResult?.success && expResult.expenses) ? expResult.expenses : [];
     const total = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
     if (totalEl) totalEl.textContent = total.toLocaleString('es-ES', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '€';
 
-    // Balances
     const balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
 
-    // Miembros con nombres reales
     const members = (memResult?.success && memResult.members && memResult.members.length > 0)
       ? memResult.members
       : Object.keys(balancesRaw).map(id => ({ id, name: null, role: 'member' }));
@@ -274,7 +266,6 @@ async function loadGroupData(groupId) {
     const perPerson = members.length > 0 ? total / members.length : total;
     const colors = ['#FF9D42', '#a855f7', '#13ecd6', '#ec4899', '#22c55e', '#3b82f6'];
 
-    // Comprobar si soy admin
     const myMember = members.find(m => String(m.id) === String(myUid));
     const isAdmin = myMember?.role === 'admin';
 
@@ -288,8 +279,13 @@ async function loadGroupData(groupId) {
       const balColor = bal > 0.01 ? '#13ecd6' : (bal < -0.01 ? '#ef4444' : '#6b7280');
       const roleLabel = m.role === 'admin' ? 'Administrador' : (isMe ? 'Usted' : 'Socio');
 
-      // Mostrar botón eliminar miembro solo si soy admin y no es el propio admin
       const canRemove = isAdmin && !isMe;
+      const canLiquidate = !isMe && bal < -0.01;
+
+      // Escapar comillas simples para evitar romper el onclick inline
+      const safeGroupId = String(group.id).replace(/'/g, "\\'");
+      const safeMemberId = String(m.id).replace(/'/g, "\\'");
+      const safeAmount = Math.abs(bal).toFixed(2);
 
       return `
         <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
@@ -303,6 +299,7 @@ async function loadGroupData(groupId) {
           </div>
           <div class="flex items-center gap-3">
             <div class="text-right">
+              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-0.5">Cuota estimada</p>
               <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">
                 ${perPerson.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
               </p>
@@ -310,8 +307,14 @@ async function loadGroupData(groupId) {
                 ${balSign}${bal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
               </p>
             </div>
+            ${canLiquidate ? `
+            <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
+              class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
+              style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
+              Liquidar
+            </button>` : ''}
             ${canRemove ? `
-            <button onclick="removeMemberFromGroup('${group.id}','${m.id}','${name}')"
+            <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
               class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20"
               title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
               <span class="material-icons-round text-red-400 text-sm">person_remove</span>
@@ -354,11 +357,10 @@ function removeMemberFromGroup(groupId, memberId, memberName) {
       const res = await SGApi.removeGroupMember(groupId, memberId);
       if (res && res.success) {
         SGRouter.showToast(`${memberName} eliminado del grupo`, 'success');
-        // FIX D1 Read Replication: purgar cache ANTES de recargar para evitar stale read
+
         try {
           await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } });
         } catch {}
-        // Delay para asegurar propagación D1 antes de leer lista actualizada
         await new Promise(r => setTimeout(r, 600));
         await loadGroupData(groupId);
       } else {
@@ -381,8 +383,6 @@ window.addEventListener('pageshow', (e) => {
       const flag = sessionStorage.getItem('sg_member_added');
       if (flag) {
         sessionStorage.removeItem('sg_member_added');
-        // FIX D1 Read Replication: purgar cache + delay mayor para propagación D1
-        // Primer intento a los 800ms, segundo intento a los 2500ms (replicación eventual)
         const token = (typeof SGAuth !== 'undefined') ? SGAuth.getToken() : null;
         if (token) {
           fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }).catch(() => {});
@@ -399,21 +399,39 @@ window.addEventListener('pageshow', (e) => {
 <script>
     let selectedGame = null;
 
-    function updateControl(element, game) {
+    function _checkPremiumAccess() {
+        // Valida contra el perfil real cargado desde la API, no contra sessionStorage
+        if (!_userProfile) return false;
+        return !!(_userProfile.isPremium === true || _userProfile.plan === 'premium');
+    }
+
+    function selectGame(element, game) {
+        if (!_checkPremiumAccess()) {
+            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
+                SGRouter.requirePremium('Juegos');
+            } else {
+                SGRouter.showToast('Función Premium requerida', 'error');
+            }
+            return;
+        }
+
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
         selectedGame = game;
         element.classList.add('active-glow');
         
         const label = document.getElementById('active-game-label');
         const icon = document.getElementById('game-icon');
+        const btn = document.getElementById('execute-game-btn');
         
-        label.innerText = game.toUpperCase() + ' ACTIVA';
+        label.innerText = game.toUpperCase() + ' — ¿Quién paga?';
         label.style.color = '#a855f7';
         
         const icons = {
             'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on'
         };
         icon.innerText = icons[game] || 'psychology';
+        
+        if (btn) btn.innerText = 'Lanzar ' + game;
         
         SGRouter.showToast(`${game} lista para ejecución`, 'info');
     }
@@ -430,9 +448,25 @@ window.addEventListener('pageshow', (e) => {
             SGRouter.showToast('Seleccione un protocolo de azar', 'error');
             return;
         }
+        if (!_checkPremiumAccess()) {
+            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
+                SGRouter.requirePremium('Juegos');
+            } else {
+                SGRouter.showToast('Suscríbete a Premium para jugar', 'error');
+            }
+            return;
+        }
         const route = gameRoutes[selectedGame];
         SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
         setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+    }
+
+    // Navegación coherente con liquidation.html: URL con query params escapados
+    function goToLiquidation(groupId, toId, amount) {
+        const url = 'liquidation.html?groupId=' + encodeURIComponent(groupId) 
+                  + '&to=' + encodeURIComponent(toId) 
+                  + '&amount=' + encodeURIComponent(amount);
+        window.location.href = url;
     }
 </script>
 
@@ -447,7 +481,7 @@ window.addEventListener('pageshow', (e) => {
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
