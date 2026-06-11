@@ -162,10 +162,9 @@
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
 </head>
-<body class="app-shell p-6 text-center">
+<body class="app-shell pb-32">  <!-- quitar p-6 y text-center -->
 <div class="app-frame">
-
-    <div class="max-w-md mx-auto space-y-8">
+    <div class="max-w-md mx-auto px-4 sm:px-6 py-8 space-y-8">  <!-- añadir px-4 sm:px-6 y py-8 -->
 
         <!-- Header Visual -->
         <div class="reveal-node flex flex-col items-center space-y-5 pt-4">
@@ -402,7 +401,7 @@
                 <span class="material-icons-round">groups_3</span>
                 <p>Grupos</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p>Gastos</p>
             </button>
