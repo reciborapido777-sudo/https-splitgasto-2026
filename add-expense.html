@@ -420,29 +420,13 @@ async function saveExpense() {
     const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
 
     if (result && result.success) {
-        // GUARDAR TICKET FORENSE
-        const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
-        sessionStorage.setItem('sg_success_ticket', JSON.stringify({
-            type: 'expense',
-            txid: result.id || crypto.randomUUID(),
-            timestamp: new Date().toISOString(),
-            groupId: groupId,
-            groupName: groupName,
-            amount: amount,
-            currency: 'EUR',
-            description: desc,
-            splitMethod: splitMethod,
-            participants: members.length + ' socios',
-            balanceAfter: null
-        }));
-        
-        SGRouter.showToast('Gasto guardado ✓', 'success');
-        try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
-        setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
+      storeExpenseTicket(result, groupId, amount, desc);
+      SGRouter.showToast('Gasto guardado ✓', 'success');
+      try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
+      setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
     } else {
       const errMsg = result?.error || 'Error al guardar el gasto';
       console.error('saveExpense backend error:', errMsg);
-      // Si el error es de membresía, intentar reparar y reintentar
       if (errMsg.includes('perteneces') || errMsg.includes('403')) {
         SGRouter.showToast('Reparando membresía… reintentando', 'warning');
         try {
@@ -450,22 +434,7 @@ async function saveExpense() {
           await new Promise(r => setTimeout(r, 500));
           const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
           if (retry && retry.success) {
-            // GUARDAR TICKET FORENSE (REINTENTO)
-            const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
-            sessionStorage.setItem('sg_success_ticket', JSON.stringify({
-                type: 'expense',
-                txid: retry.id || crypto.randomUUID(),
-                timestamp: new Date().toISOString(),
-                groupId: groupId,
-                groupName: groupName,
-                amount: amount,
-                currency: 'EUR',
-                description: desc,
-                splitMethod: splitMethod,
-                participants: members.length + ' socios',
-                balanceAfter: null
-            }));
-            
+            storeExpenseTicket(retry, groupId, amount, desc);
             SGRouter.showToast('Gasto guardado ✓', 'success');
             try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
             setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
@@ -482,6 +451,22 @@ async function saveExpense() {
     if (saveBtnTop) saveBtnTop.disabled = false;
     if (saveBtnBot) saveBtnBot.disabled = false;
   }
+}
+function storeExpenseTicket(apiResult, groupId, amount, desc) {
+    const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
+    sessionStorage.setItem('sg_success_ticket', JSON.stringify({
+        type: 'expense',
+        txid: apiResult.id || crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        groupId: groupId,
+        groupName: groupName,
+        amount: amount,
+        currency: 'EUR',
+        description: desc,
+        splitMethod: splitMethod,
+        participants: members.length + ' socios',
+        balanceAfter: null
+    }));
 }
 
 // ── Initialize ──
