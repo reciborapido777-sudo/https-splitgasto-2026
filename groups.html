@@ -201,6 +201,9 @@ const GROUP_BGS = [
 const GROUP_ACCENTS = ['#FF9D42', '#13ecd6', '#a855f7', '#22c55e', '#f59e0b', '#3b82f6'];
 const CAT_ICONS = { food:'restaurant', transport:'directions_car', leisure:'movie', home:'home', travel:'flight', health:'medical_services', other:'receipt' };
 const CAT_COLORS = { food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42', home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280' };
+function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 async function loadGroups() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
@@ -286,7 +289,7 @@ async function loadGroups() {
             </div>
           </div>
           <div class="space-y-0.5">
-            <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${g.name}</h3>
+            <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${esc(g.name)}</h3>
             <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} soci${mc!==1?'os':'o'} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
           </div>
         </div>`;
@@ -320,7 +323,7 @@ async function loadGroups() {
                 <span class="material-icons-round text-sm" style="color:${color}">${icon}</span>
               </div>
               <div>
-                <p class="text-xs font-black uppercase">${exp.description || exp.category || 'Gasto'}</p>
+                <p class="text-xs font-black uppercase">${esc(exp.description || exp.category || 'Gasto')}</p>
                 <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
               </div>
             </div>
