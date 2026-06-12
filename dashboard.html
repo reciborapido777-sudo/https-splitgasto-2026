@@ -304,13 +304,12 @@ async function loadDashboardData() {
     const balRes0 = allBalResults[0];
     const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
     const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
-    const memberLabel = mc0 === 1 ? t('group.member', null, 'Socio') : t('group.members', null, 'Socios');
 
     const memberLabel = mc0 === 1 
-      ? t('group.member', null, 'Socio') 
-      : t('group.members', null, 'Socios');
+  ? t('group.member', null, 'Socio') 
+  : t('group.members', null, 'Socios');
     document.getElementById('active-group-sub').innerHTML =
-      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> ${t('group.inPlay', null, 'en juego')}`;
 
     const avatarRow = document.getElementById('active-group-avatars');
     if (avatarRow) {
@@ -344,7 +343,7 @@ async function loadDashboardData() {
     allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
     const recent = allExpenses.slice(0, 3);
     const actEl = document.getElementById('activity-list');
-    
+
     if (actEl) {
       if (recent.length === 0) {
         actEl.innerHTML = `<p class="text-xs text-zinc-600 text-center py-4">${t('activity.noExpenses', null, 'Sin gastos todavía. ¡Añade el primero!')}</p>`;
@@ -358,14 +357,13 @@ async function loadDashboardData() {
                 <p class="text-sm font-black" style="color:${color}">${parseFloat(exp.amount).toFixed(2)}€</p>
             </div>`;
         }).join('');
-    }
-
-  } catch (e) {
+      }
+    }  
+  } catch (e) {   // ← ahora sí está alineado con try
     console.error('Dashboard load error:', e);
     dashReset(t('error.system', null, 'Error al cargar'));
   }
 }
-
 loadDashboardData();
 window.addEventListener('pageshow', (e) => { if (e.persisted) loadDashboardData(); });
 
