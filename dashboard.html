@@ -165,7 +165,7 @@
                 <button onclick="SGRouter.navigate('activity','dashboard')" class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hover:text-[#10b981] transition-colors">Ver todo</button>
             </div>
             <div class="space-y-2" id="activity-list">
-                <p class="text-xs text-zinc-600 text-center py-4">Cargando actividad…</p>
+                <p class="text-xs text-zinc-600 text-center py-4" data-i18n="activity.loading">Cargando actividad…</p>
             </div>
         </section>
     </div>
@@ -218,9 +218,9 @@ function dashReset(msg) {
   if (netEl)  netEl.textContent   = '0,00€';
   if (settEl) settEl.textContent = '0,00€';
   if (recEl)  recEl.textContent   = '0,00€';
-  if (nameEl) nameEl.textContent = msg || 'Sin grupos';
-  if (subEl)  subEl.textContent   = 'Crea tu primer grupo';
-  if (actEl)  actEl.innerHTML    = '<p class="text-xs text-zinc-600 text-center py-4">Sin actividad. Crea un grupo y añade gastos.</p>';
+  if (nameEl) nameEl.textContent = msg || t('dashboard.noGroups', null, 'Sin grupos');
+  if (subEl)  subEl.textContent   = t('dashboard.createFirstGroup', null, 'Crea tu primer grupo');
+  if (actEl)  actEl.innerHTML    = `<p class="text-xs text-zinc-600 text-center py-4">${t('activity.empty', null, 'Sin actividad. Crea un grupo y añade gastos.')}</p>`;
 }
 
 async function loadDashboardData() {
@@ -284,7 +284,7 @@ async function loadDashboardData() {
         if (maxDebt > 0.01 && targetUid) {
             liqBtn.onclick = () => window.location.href = `liquidation.html?groupId=${targetGid}&to=${targetUid}&amount=${maxDebt.toFixed(2)}`;
         } else {
-            liqBtn.onclick = () => SGRouter.showToast('No tienes deudas pendientes', 'success');
+            liqBtn.onclick = () => SGRouter.showToast(t('debts.none', null, 'No tienes deudas pendientes'), 'success');
         }
     }
 
@@ -305,8 +305,11 @@ async function loadDashboardData() {
     const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
     const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
 
+    const memberLabel = mc0 === 1 
+      ? t('group.member', null, 'Socio') 
+      : t('group.members', null, 'Socios');
     document.getElementById('active-group-sub').innerHTML =
-      `${mc0} Soci${mc0 !== 1 ? 'os' : 'o'} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
+      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span>                     ${t('group.inPlay', null, 'en juego')}`;
 
     const avatarRow = document.getElementById('active-group-avatars');
     if (avatarRow) {
@@ -352,7 +355,7 @@ async function loadDashboardData() {
             </div>`;
         }).join('');
     }
-  } catch (e) { dashReset('Error de sistema'); }
+  } catch (e) { dashReset(t('error.system', null, 'Error de sistema')); }
 }
 
 loadDashboardData();
@@ -383,4 +386,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
