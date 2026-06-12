@@ -72,7 +72,7 @@
 
             <div class="space-y-6 relative z-10">
                 <div>
-                    <p class="text-[8px] font-black text-zinc-500 uppercase tracking-[.5em] mb-1">Patrimonio Neto Auditado</p>
+                    <p class="text-[8px] font-black text-zinc-500 uppercase tracking-[.5em] mb-1" data-i18n="dashboard.netWorth">Patrimonio Neto Auditado</p>
                     <h2 id="net-worth-value" class="text-5xl sm:text-6xl font-black font-['Space_Grotesk'] tracking-tighter italic text-gradient-cyan">
                         —
                     </h2>
@@ -80,11 +80,11 @@
 
                 <div class="grid grid-cols-2 gap-6 border-t border-white/5 pt-6">
                     <div>
-                        <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">Liquidaciones</p>
+                        <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1" data-i18n="dashboard.liquidations">Liquidaciones</p>
                         <p class="text-lg font-bold font-['Space_Grotesk'] text-[#FF9D42] money-display" id="settlements-value">—</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1">A Recibir</p>
+                        <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest mb-1" data-i18n="dashboard.toReceive">A Recibir</p>
                         <p class="text-lg font-bold font-['Space_Grotesk'] text-[#13ecd6] money-display" id="to-receive-value">—</p>
                     </div>
                 </div>
@@ -92,11 +92,11 @@
                 <div class="flex gap-3 border-t border-white/5 pt-4">
                     <button id="dash-liquidation-trigger" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 hover:bg-[#FF9D42]/20 transition-all active:scale-95 text-[#FF9D42] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">swap_horiz</span>
-                        Liquidar
+                        <span data-i18n="dashboard.btnLiquidate">Liquidar</span>
                     </button>
                     <button onclick="SGRouter.navigate('split','dashboard')" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 hover:bg-[#13ecd6]/20 transition-all active:scale-95 text-[#13ecd6] text-[10px] font-black uppercase tracking-wider">
                         <span class="material-icons-round text-sm">call_split</span>
-                        Repartir
+                        <span data-i18n="dashboard.btnSplit">Repartir</span>
                     </button>
                 </div>
             </div>
@@ -105,28 +105,28 @@
         <section class="grid grid-cols-3 gap-3 reveal-node" style="animation-delay:.1s">
             <button onclick="SGRouter.navigate('scanner','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all">
                 <span class="material-icons-round text-[#13ecd6] text-3xl group-hover:scale-110 transition-transform">qr_code_scanner</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Scanner</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.scanner">Scanner</span>
             </button>
             <button onclick="SGRouter.navigate('groups','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all">
                 <span class="material-icons-round text-[#a855f7] text-3xl group-hover:scale-110 transition-transform">groups_3</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Grupos</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.groups">Grupos</span>
             </button>
             <button onclick="SGRouter.navigate('vault','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all">
                 <span class="material-icons-round text-[#FF9D42] text-3xl group-hover:scale-110 transition-transform">auto_stories</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Bóveda</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.vault">Bóveda</span>
             </button>
             <button onclick="SGRouter.navigate('analytics','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all">
                 <span class="material-icons-round text-zinc-100 text-3xl group-hover:scale-110 transition-transform">query_stats</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Métricas</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.metrics">Métricas</span>
             </button>
             <button onclick="SGRouter.requirePremium('Juegos')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all relative" style="border-color:rgba(212,175,55,.2)">
                 <span class="material-icons-round text-3xl group-hover:scale-110 transition-transform" style="color:#D4AF37">casino</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Juegos</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.games">Juegos</span>
                 <span class="absolute top-2 right-2 premium-badge">PRO</span>
             </button>
             <button onclick="SGRouter.navigate('add-expense','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
                 <span class="material-icons-round text-[#13ecd6] text-3xl group-hover:scale-110 transition-transform">add_circle</span>
-                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500">Gasto</span>
+                <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.expense">Gasto</span>
             </button>
         </section>
 
@@ -161,8 +161,8 @@
         </section>
         <section class="space-y-3 reveal-node" style="animation-delay:.25s">
             <div class="flex justify-between items-center">
-                <p class="text-[9px] font-black uppercase tracking-[.4em] text-zinc-600">Actividad Reciente</p>
-                <button onclick="SGRouter.navigate('activity','dashboard')" class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hover:text-[#10b981] transition-colors">Ver todo</button>
+                <p class="text-[9px] font-black uppercase tracking-[.4em] text-zinc-600" data-i18n="dashboard.recentActivity">Actividad Reciente</p>
+                <button onclick="SGRouter.navigate('activity','dashboard')" class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hover:text-[#10b981] transition-colors" data-i18n="dashboard.viewAll">Ver todo</button>
             </div>
             <div class="space-y-2" id="activity-list">
                 <p class="text-xs text-zinc-600 text-center py-4" data-i18n="activity.loading">Cargando actividad…</p>
@@ -174,23 +174,23 @@
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
@@ -217,9 +217,9 @@ function dashReset(msg) {
   const actEl   = document.getElementById('activity-list');
   if (netEl)  netEl.textContent   = '0,00€';
   if (settEl) settEl.textContent = '0,00€';
-  if (recEl)  recEl.textContent   = '0,00€';
+  if (recEl)  recEl.textContent  = '0,00€';
   if (nameEl) nameEl.textContent = msg || t('dashboard.noGroups', null, 'Sin grupos');
-  if (subEl)  subEl.textContent   = t('dashboard.createFirstGroup', null, 'Crea tu primer grupo');
+  if (subEl)  subEl.textContent  = t('dashboard.createFirstGroup', null, 'Crea tu primer grupo');
   if (actEl)  actEl.innerHTML    = `<p class="text-xs text-zinc-600 text-center py-4">${t('activity.empty', null, 'Sin actividad. Crea un grupo y añade gastos.')}</p>`;
 }
 
@@ -304,12 +304,13 @@ async function loadDashboardData() {
     const balRes0 = allBalResults[0];
     const mc0 = (balRes0?.success && balRes0.balances) ? Object.keys(balRes0.balances).length : (activeGroup.member_count || 1);
     const totalExp = (balRes0?.success && typeof balRes0.totalAmount === 'number') ? balRes0.totalAmount : 0;
+    const memberLabel = mc0 === 1 ? t('group.member', null, 'Socio') : t('group.members', null, 'Socios');
 
     const memberLabel = mc0 === 1 
       ? t('group.member', null, 'Socio') 
       : t('group.members', null, 'Socios');
     document.getElementById('active-group-sub').innerHTML =
-      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span>                     ${t('group.inPlay', null, 'en juego')}`;
+      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> en juego`;
 
     const avatarRow = document.getElementById('active-group-avatars');
     if (avatarRow) {
@@ -345,6 +346,9 @@ async function loadDashboardData() {
     const actEl = document.getElementById('activity-list');
     
     if (actEl) {
+      if (recent.length === 0) {
+        actEl.innerHTML = `<p class="text-xs text-zinc-600 text-center py-4">${t('activity.noExpenses', null, 'Sin gastos todavía. ¡Añade el primero!')}</p>`;
+      } else {
         actEl.innerHTML = recent.map(exp => {
             const icon = DASH_CAT_ICONS[exp.category] || 'receipt';
             const color = DASH_CAT_COLORS[exp.category] || '#6b7280';
@@ -355,7 +359,11 @@ async function loadDashboardData() {
             </div>`;
         }).join('');
     }
-  } catch (e) { dashReset(t('error.system', null, 'Error de sistema')); }
+
+  } catch (e) {
+    console.error('Dashboard load error:', e);
+    dashReset(t('error.system', null, 'Error al cargar'));
+  }
 }
 
 loadDashboardData();
