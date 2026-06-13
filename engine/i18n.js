@@ -1,11 +1,11 @@
 /**
  * SplitGasto 2026 — Sistema de Internacionalización (i18n)
  * API pública:
- *   t(key, lang?, fallback?)  → string traducido
- *   applyTranslations(lang)   → aplica data-i18n al DOM
- *   getSavedLanguage()        → string idioma
- *   getSavedCurrency()        → string moneda
- *   getMonthNames(lang)       → array meses localizados
+ * t(key, lang?, fallback?)  → string traducido
+ * applyTranslations(lang)   → aplica data-i18n al DOM
+ * getSavedLanguage()        → string idioma
+ * getSavedCurrency()        → string moneda
+ * getMonthNames(lang)       → array meses localizados
  */
 
 const translations = {
@@ -145,6 +145,64 @@ const translations = {
     'index.heroSub': 'SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket, elige quién paga con un juego, y liquida sin drama.',
     'index.ctaPrimary': 'Crear cuenta — es gratis',
     'index.ctaSecondary': 'Ya tengo cuenta →',
+    
+    // profile
+    'profile.protocol': 'Protocolo de Identidad',
+    'profile.title': 'Perfil',
+    'profile.auditProtocol': 'Protocolo de Auditoría Alpha activo. Acceso total a nodos de capital y herramientas de digitalización de Grado Militar.',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': 'Seguridad',
+    'profile.biometry': 'Biometría Alpha',
+    'profile.encryption': 'Cifrado AES-256',
+    'profile.blindado': 'Blindado',
+    'profile.manual': 'Manual Alpha',
+    'profile.rankings': 'Rankings Alpha',
+    'profile.settings': 'Configuración',
+    'profile.myFriends': 'Mis Amigos',
+    'profile.inviteFriends': 'Invitar Amigos',
+    'profile.support': 'Soporte',
+    'profile.privileges': 'Privilegios de Nodo',
+    'profile.proGroups': 'Grupos Pro',
+    'profile.audits': 'Auditorías',
+    'profile.efficiency': 'Eficiencia',
+    'profile.eliteLevel': 'Nivel Élite',
+    'profile.manageMembership': 'Gestionar Membresía Élite',
+
+    // analytics
+    'analytics.capitalIntelligence': 'Capital Intelligence',
+    'analytics.title': 'Métricas',
+    'analytics.commandCenter': 'Centro de Mando',
+    'analytics.totalNetBalance': 'Balance Neto Total',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': 'Cargando datos...',
+    'analytics.forecast': 'Previsión Alpha',
+    'analytics.alerts': 'Alertas de Nodo',
+    'analytics.noAlerts': 'Sin alertas activas.',
+    'analytics.expenseByCategory': 'Gasto por Categoría',
+    'analytics.loadingCategories': 'Cargando categorías...',
+    'analytics.nodePartners': 'Socios del Nodo',
+    'analytics.loadingBalances': 'Cargando balances...',
+    'analytics.executeSplit': 'Ejecutar Reparto Pendiente',
+    'analytics.noExpensesRegistered': 'Sin gastos registrados',
+    'analytics.noChartData': 'Sin datos para gráfico',
+    'analytics.joinGroupForMetrics': 'Únete a un grupo para ver métricas',
+    'analytics.noPendingBalances': 'Sin balances pendientes',
+    'analytics.percentOfTotal': '% del gasto total',
+    'analytics.net': ' neto',
+    'analytics.pending': ' pendiente',
+    'analytics.insufficientDataForecast': 'Datos insuficientes para generar previsión.',
+    'analytics.estimatedSaving': 'El sistema estima un ahorro de <span class="text-white">{amount}€</span> mensuales basado en su flujo de liquidación actual.',
+
+    // categorías
+    'category.food': 'Gastronomía',
+    'category.transport': 'Transporte',
+    'category.travel': 'Viajes',
+    'category.shopping': 'Compras',
+    'category.groceries': 'Alimentación',
+    'category.entertainment': 'Ocio',
+    'category.bills': 'Suministros',
+    'category.health': 'Salud',
+    'category.other': 'Otros',
   },
   en: {
     'settings.title': 'Settings',
@@ -282,6 +340,64 @@ const translations = {
     'index.heroSub': 'SplitGasto splits bills between friends in seconds. Scan the receipt, choose who pays with a game, and settle without drama.',
     'index.ctaPrimary': 'Create account — it\'s free',
     'index.ctaSecondary': 'I already have an account →',
+
+    // profile
+    'profile.protocol': 'Identity Protocol',
+    'profile.title': 'Profile',
+    'profile.auditProtocol': 'Alpha Audit Protocol active. Full access to capital nodes and Military Grade digitization tools.',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': 'Security',
+    'profile.biometry': 'Alpha Biometrics',
+    'profile.encryption': 'AES-256 Encryption',
+    'profile.blindado': 'Shielded',
+    'profile.manual': 'Alpha Manual',
+    'profile.rankings': 'Alpha Rankings',
+    'profile.settings': 'Settings',
+    'profile.myFriends': 'My Friends',
+    'profile.inviteFriends': 'Invite Friends',
+    'profile.support': 'Support',
+    'profile.privileges': 'Node Privileges',
+    'profile.proGroups': 'Pro Groups',
+    'profile.audits': 'Audits',
+    'profile.efficiency': 'Efficiency',
+    'profile.eliteLevel': 'Elite Level',
+    'profile.manageMembership': 'Manage Elite Membership',
+
+    // analytics
+    'analytics.capitalIntelligence': 'Capital Intelligence',
+    'analytics.title': 'Metrics',
+    'analytics.commandCenter': 'Command Center',
+    'analytics.totalNetBalance': 'Total Net Balance',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': 'Loading data...',
+    'analytics.forecast': 'Alpha Forecast',
+    'analytics.alerts': 'Node Alerts',
+    'analytics.noAlerts': 'No active alerts.',
+    'analytics.expenseByCategory': 'Expense by Category',
+    'analytics.loadingCategories': 'Loading categories...',
+    'analytics.nodePartners': 'Node Partners',
+    'analytics.loadingBalances': 'Loading balances...',
+    'analytics.executeSplit': 'Execute Pending Split',
+    'analytics.noExpensesRegistered': 'No expenses registered',
+    'analytics.noChartData': 'No chart data available',
+    'analytics.joinGroupForMetrics': 'Join a group to view metrics',
+    'analytics.noPendingBalances': 'No pending balances',
+    'analytics.percentOfTotal': '% of total expense',
+    'analytics.net': ' net',
+    'analytics.pending': ' pending',
+    'analytics.insufficientDataForecast': 'Insufficient data to generate forecast.',
+    'analytics.estimatedSaving': 'The system estimates savings of <span class="text-white">{amount}€</span> monthly based on your current settlement flow.',
+
+    // categories
+    'category.food': 'Gastronomy',
+    'category.transport': 'Transport',
+    'category.travel': 'Travel',
+    'category.shopping': 'Shopping',
+    'category.groceries': 'Groceries',
+    'category.entertainment': 'Entertainment',
+    'category.bills': 'Bills',
+    'category.health': 'Health',
+    'category.other': 'Other',
   },
   fr: {
     'settings.title': 'Paramètres',
@@ -419,6 +535,64 @@ const translations = {
     'index.heroSub': 'SplitGasto divise les factures entre amis en quelques secondes. Scannez le ticket, choisissez qui paie avec un jeu, et réglez sans drame.',
     'index.ctaPrimary': 'Créer un compte — c\'est gratuit',
     'index.ctaSecondary': "J'ai déjà un compte →",
+
+    // profile
+    'profile.protocol': 'Protocole d\'Identité',
+    'profile.title': 'Profil',
+    'profile.auditProtocol': 'Protocole d\'Audit Alpha actif. Accès total aux nœuds de capital et outils de numérisation de Qualité Militaire.',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': 'Sécurité',
+    'profile.biometry': 'Biométrie Alpha',
+    'profile.encryption': 'Chiffrement AES-256',
+    'profile.blindado': 'Blindé',
+    'profile.manual': 'Manuel Alpha',
+    'profile.rankings': 'Classements Alpha',
+    'profile.settings': 'Paramètres',
+    'profile.myFriends': 'Mes Amis',
+    'profile.inviteFriends': 'Inviter des Amis',
+    'profile.support': 'Support',
+    'profile.privileges': 'Privilèges de Nœud',
+    'profile.proGroups': 'Groupes Pro',
+    'profile.audits': 'Audits',
+    'profile.efficiency': 'Efficacité',
+    'profile.eliteLevel': 'Niveau Élite',
+    'profile.manageMembership': 'Gérer l\'Abonnement Élite',
+
+    // analytics
+    'analytics.capitalIntelligence': 'Capital Intelligence',
+    'analytics.title': 'Métriques',
+    'analytics.commandCenter': 'Centre de Commandement',
+    'analytics.totalNetBalance': 'Solde Net Total',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': 'Chargement des données...',
+    'analytics.forecast': 'Prévisions Alpha',
+    'analytics.alerts': 'Alertes de Nœud',
+    'analytics.noAlerts': 'Aucune alerte active.',
+    'analytics.expenseByCategory': 'Dépenses par Catégorie',
+    'analytics.loadingCategories': 'Chargement des catégories...',
+    'analytics.nodePartners': 'Partenaires du Nœud',
+    'analytics.loadingBalances': 'Chargement des soldes...',
+    'analytics.executeSplit': 'Exécuter la Répartition en Attente',
+    'analytics.noExpensesRegistered': 'Aucune dépense enregistrée',
+    'analytics.noChartData': 'Aucune donnée pour le graphique',
+    'analytics.joinGroupForMetrics': 'Rejoignez un groupe pour voir les métriques',
+    'analytics.noPendingBalances': 'Aucun solde en attente',
+    'analytics.percentOfTotal': '% de la dépense totale',
+    'analytics.net': ' net',
+    'analytics.pending': ' en attente',
+    'analytics.insufficientDataForecast': 'Données insuffisantes pour générer des prévisions.',
+    'analytics.estimatedSaving': 'Le système estime une économie de <span class="text-white">{amount}€</span> par mois selon votre flux de règlement actuel.',
+
+    // categories
+    'category.food': 'Gastronomie',
+    'category.transport': 'Transports',
+    'category.travel': 'Voyages',
+    'category.shopping': 'Achats',
+    'category.groceries': 'Alimentation',
+    'category.entertainment': 'Divertissement',
+    'category.bills': 'Factures',
+    'category.health': 'Santé',
+    'category.other': 'Autres',
   },
   de: {
     'settings.title': 'Einstellungen',
@@ -542,27 +716,78 @@ const translations = {
     'groups.invitePlaceholder': 'email@beispiel.com',
     'groups.inviteSuccess': 'Teilnehmer hinzugefügt ✓',
     'groups.inviteError': 'Fehler beim Einladen',
-    /* ── debts ── */
     'debts.none': 'Keine ausstehenden Schulden',
-    /* ── common ── */
     'common.cancel': 'Abbrechen',
     'common.loading': 'Wird geladen…',
     'common.delete': 'Löschen',
     'common.expense': 'Ausgabe',
     'common.invite': 'Einladen',
-    /* ── auth ── */
     'auth.logoutSuccess': 'Abgemeldet',
-    /* ── account ── */
     'account.deleteContactSupport': 'Zum Löschen des Kontos Support kontaktieren',
-    /* ── settings (inline JS) ── */
     'settings.selectCurrency': 'Währung auswählen',
-    /* ── error ── */
     'error.system': 'Ladefehler',
-    /* ── index (landing) ── */
     'index.heroTitleHtml': 'Ausgaben teilen,<br><em>Momente vervielfachen.</em>',
     'index.heroSub': 'SplitGasto teilt Rechnungen zwischen Freunden in Sekunden. Scanne den Beleg, wähle wer zahlt mit einem Spiel, und kläre ohne Drama.',
     'index.ctaPrimary': 'Konto erstellen — kostenlos',
     'index.ctaSecondary': 'Ich habe bereits ein Konto →',
+
+    // profile
+    'profile.protocol': 'Identitätsprotokoll',
+    'profile.title': 'Profil',
+    'profile.auditProtocol': 'Alpha-Audit-Protokoll aktiv. Voller Zugriff auf Kapitalknoten und militärische Digitalisierungstools.',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': 'Sicherheit',
+    'profile.biometry': 'Alpha-Biometrie',
+    'profile.encryption': 'AES-256-Verschlüsselung',
+    'profile.blindado': 'Gepanzert',
+    'profile.manual': 'Alpha-Handbuch',
+    'profile.rankings': 'Alpha-Rankings',
+    'profile.settings': 'Einstellungen',
+    'profile.myFriends': 'Meine Freunde',
+    'profile.inviteFriends': 'Freunde einladen',
+    'profile.support': 'Support',
+    'profile.privileges': 'Knotenprivilegien',
+    'profile.proGroups': 'Pro-Gruppen',
+    'profile.audits': 'Audits',
+    'profile.efficiency': 'Effizienz',
+    'profile.eliteLevel': 'Elite-Level',
+    'profile.manageMembership': 'Elite-Mitgliedschaft verwalten',
+
+    // analytics
+    'analytics.capitalIntelligence': 'Capital Intelligence',
+    'analytics.title': 'Metriken',
+    'analytics.commandCenter': 'Kommandozentrale',
+    'analytics.totalNetBalance': 'Gesamtnettobilanz',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': 'Daten werden geladen...',
+    'analytics.forecast': 'Alpha-Prognose',
+    'analytics.alerts': 'Knoten-Alarme',
+    'analytics.noAlerts': 'Keine aktiven Alarme.',
+    'analytics.expenseByCategory': 'Ausgaben nach Kategorie',
+    'analytics.loadingCategories': 'Kategorien werden geladen...',
+    'analytics.nodePartners': 'Knotenpartner',
+    'analytics.loadingBalances': 'Salden werden geladen...',
+    'analytics.executeSplit': 'Ausstehende Aufteilung ausführen',
+    'analytics.noExpensesRegistered': 'Keine Ausgaben registriert',
+    'analytics.noChartData': 'Keine Diagrammdaten',
+    'analytics.joinGroupForMetrics': 'Tritt einer Gruppe bei, um Metriken zu sehen',
+    'analytics.noPendingBalances': 'Keine ausstehenden Salden',
+    'analytics.percentOfTotal': '% der Gesamtausgaben',
+    'analytics.net': ' netto',
+    'analytics.pending': ' ausstehend',
+    'analytics.insufficientDataForecast': 'Unzureichende Daten zur Erstellung einer Prognose.',
+    'analytics.estimatedSaving': 'Das System schätzt eine Ersparnis von <span class="text-white">{amount}€</span> monatlich, basierend auf Ihrem aktuellen Abrechnungsfluss.',
+
+    // categories
+    'category.food': 'Gastronomie',
+    'category.transport': 'Transport',
+    'category.travel': 'Reisen',
+    'category.shopping': 'Einkaufen',
+    'category.groceries': 'Lebensmittel',
+    'category.entertainment': 'Unterhaltung',
+    'category.bills': 'Rechnungen',
+    'category.health': 'Gesundheit',
+    'category.other': 'Sonstiges',
   },
   zh: {
     'settings.title': '设置',
@@ -615,7 +840,6 @@ const translations = {
     'settings.manualSub': '完整系统指南',
     'settings.version': 'Alpha v2.6.0 · 版本 2026.06.02',
     'settings.versionSub': 'AI引擎 v2.6 · AES-256 · 端到端',
-    /* ── dashboard ── */
     'dashboard.netWorth': '经审计净资产',
     'dashboard.liquidations': '结算',
     'dashboard.toReceive': '待收',
@@ -631,7 +855,6 @@ const translations = {
     'dashboard.viewAll': '查看全部',
     'dashboard.noGroups': '暂无群组',
     'dashboard.createFirstGroup': '创建您的第一个群组',
-    /* ── activity ── */
     'activity.loading': '加载活动中…',
     'activity.empty': '暂无活动。创建群组并添加支出。',
     'activity.noExpenses': '暂无支出。添加第一笔吧！',
@@ -665,7 +888,6 @@ const translations = {
     'activity.deleteSuccess': '支出已删除 ✓',
     'activity.deleteError': '删除支出出错',
     'activity.loginRequired': '请先登录',
-    /* ── group ── */
     'group.member': '成员',
     'group.members': '成员',
     'groups.title': '我的群组',
@@ -689,27 +911,78 @@ const translations = {
     'groups.invitePlaceholder': 'email@example.com',
     'groups.inviteSuccess': '参与者已添加 ✓',
     'groups.inviteError': '邀请出错',
-    /* ── debts ── */
     'debts.none': '您没有待处理的债务',
-    /* ── common ── */
     'common.cancel': '取消',
     'common.loading': '加载中…',
     'common.delete': '删除',
     'common.expense': '支出',
     'common.invite': '邀请',
-    /* ── auth ── */
     'auth.logoutSuccess': '已退出登录',
-    /* ── account ── */
     'account.deleteContactSupport': '如需删除账户，请联系支持',
-    /* ── settings (inline JS) ── */
     'settings.selectCurrency': '选择货币',
-    /* ── error ── */
     'error.system': '加载失败',
-    /* ── index (landing) ── */
     'index.heroTitleHtml': '分摊支出，<br><em>倍增时光。</em>',
     'index.heroSub': 'SplitGasto 几秒钟内在朋友之间分摊账单。扫描收据，用游戏决定谁付款，轻松结清。',
     'index.ctaPrimary': '创建账户 — 免费',
     'index.ctaSecondary': '我已有账户 →',
+
+    // profile
+    'profile.protocol': '身份协议',
+    'profile.title': '个人资料',
+    'profile.auditProtocol': 'Alpha审计协议已激活。完全访问资本节点和军用级数字化工具。',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': '安全',
+    'profile.biometry': 'Alpha生物识别',
+    'profile.encryption': 'AES-256加密',
+    'profile.blindado': '强化防护',
+    'profile.manual': 'Alpha手册',
+    'profile.rankings': 'Alpha排名',
+    'profile.settings': '设置',
+    'profile.myFriends': '我的朋友',
+    'profile.inviteFriends': '邀请好友',
+    'profile.support': '支持',
+    'profile.privileges': '节点特权',
+    'profile.proGroups': 'Pro群组',
+    'profile.audits': '审计',
+    'profile.efficiency': '效率',
+    'profile.eliteLevel': '级别 Elite',
+    'profile.manageMembership': '管理 Elite 会员',
+
+    // analytics
+    'analytics.capitalIntelligence': '资本智能 (Capital Intelligence)',
+    'analytics.title': '指标',
+    'analytics.commandCenter': '指挥中心',
+    'analytics.totalNetBalance': '总净余额',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': '加载数据中...',
+    'analytics.forecast': 'Alpha 预测',
+    'analytics.alerts': '节点警报',
+    'analytics.noAlerts': '无活动警报。',
+    'analytics.expenseByCategory': '按类别支出',
+    'analytics.loadingCategories': '加载类别中...',
+    'analytics.nodePartners': '节点合作伙伴',
+    'analytics.loadingBalances': '加载余额中...',
+    'analytics.executeSplit': '执行待处理分摊',
+    'analytics.noExpensesRegistered': '未登记支出',
+    'analytics.noChartData': '无图表数据',
+    'analytics.joinGroupForMetrics': '加入群组以查看指标',
+    'analytics.noPendingBalances': '无待处理余额',
+    'analytics.percentOfTotal': '占总支出的百分比',
+    'analytics.net': ' 净额',
+    'analytics.pending': ' 待处理',
+    'analytics.insufficientDataForecast': '数据不足以生成预测。',
+    'analytics.estimatedSaving': '根据您当前的结算流，系统估计每月可节省 <span class="text-white">{amount}€</span>。',
+
+    // categories
+    'category.food': '餐饮',
+    'category.transport': '交通',
+    'category.travel': '旅行',
+    'category.shopping': '购物',
+    'category.groceries': '日用杂货',
+    'category.entertainment': '娱乐',
+    'category.bills': '账单',
+    'category.health': '健康',
+    'category.other': '其他',
   },
   ja: {
     'settings.title': '設定',
@@ -762,7 +1035,6 @@ const translations = {
     'settings.manualSub': '完全なシステムガイド',
     'settings.version': 'Alpha v2.6.0 · ビルド 2026.06.02',
     'settings.versionSub': 'AIエンジン v2.6 · AES-256 · エンドツーエンド',
-    /* ── dashboard ── */
     'dashboard.netWorth': '監査済み純資産',
     'dashboard.liquidations': '精算',
     'dashboard.toReceive': '受取予定',
@@ -778,7 +1050,6 @@ const translations = {
     'dashboard.viewAll': 'すべて見る',
     'dashboard.noGroups': 'グループなし',
     'dashboard.createFirstGroup': '最初のグループを作成',
-    /* ── activity ── */
     'activity.loading': '読み込み中…',
     'activity.empty': 'アクティビティなし。グループを作成して支出を追加してください。',
     'activity.noExpenses': 'まだ支出がありません。最初の支出を追加しましょう！',
@@ -812,7 +1083,6 @@ const translations = {
     'activity.deleteSuccess': '支出を削除しました ✓',
     'activity.deleteError': '支出の削除エラー',
     'activity.loginRequired': '先にログインしてください',
-    /* ── group ── */
     'group.member': 'メンバー',
     'group.members': 'メンバー',
     'groups.title': 'マイグループ',
@@ -836,27 +1106,78 @@ const translations = {
     'groups.invitePlaceholder': 'email@example.com',
     'groups.inviteSuccess': '参加者を追加しました ✓',
     'groups.inviteError': '招待エラー',
-    /* ── debts ── */
     'debts.none': '未払いの負債はありません',
-    /* ── common ── */
     'common.cancel': 'キャンセル',
     'common.loading': '読み込み中…',
     'common.delete': '削除',
     'common.expense': '支出',
     'common.invite': '招待',
-    /* ── auth ── */
     'auth.logoutSuccess': 'ログアウトしました',
-    /* ── account ── */
     'account.deleteContactSupport': 'アカウントを削除するにはサポートにお問い合わせください',
-    /* ── settings (inline JS) ── */
     'settings.selectCurrency': '通貨を選択',
-    /* ── error ── */
     'error.system': '読み込みエラー',
-    /* ── index (landing) ── */
     'index.heroTitleHtml': '費用を分割し、<br><em>思い出を増やそう。</em>',
     'index.heroSub': 'SplitGastoは数秒で友人間の請求を分割します。レシートをスキャンして、ゲームで誰が支払うか決め、面倒なくきれいに精算。',
     'index.ctaPrimary': 'アカウント作成 — 無料',
     'index.ctaSecondary': 'すでにアカウントをお持ちの方 →',
+
+    // profile
+    'profile.protocol': 'アイデンティティプロトコル',
+    'profile.title': 'プロフィール',
+    'profile.auditProtocol': 'Alpha監査プロトコルがアクティブです。資本ノードと軍用グレードのデジタル化ツールへの完全アクセス。',
+    'profile.idLabel': 'ID: SG-2026-ALPHA',
+    'profile.security': 'セキュリティ',
+    'profile.biometry': 'Alpha生体認証',
+    'profile.encryption': 'AES-256暗号化',
+    'profile.blindado': 'シールド',
+    'profile.manual': 'Alphaマニュアル',
+    'profile.rankings': 'Alphaランキング',
+    'profile.settings': '設定',
+    'profile.myFriends': '友達',
+    'profile.inviteFriends': '友達を招待',
+    'profile.support': 'サポート',
+    'profile.privileges': 'ノード権限',
+    'profile.proGroups': 'Proグループ',
+    'profile.audits': '監査',
+    'profile.efficiency': '効率',
+    'profile.eliteLevel': 'エリートレベル',
+    'profile.manageMembership': 'エリートメンバーシップの管理',
+
+    // analytics
+    'analytics.capitalIntelligence': 'キャピタルインテリジェンス',
+    'analytics.title': 'メトリクス',
+    'analytics.commandCenter': 'コマンドセンター',
+    'analytics.totalNetBalance': '総純残高',
+    'analytics.aiProtocolActive': 'IA Protocol: Active',
+    'analytics.loadingData': 'データを読み込み中...',
+    'analytics.forecast': 'Alpha予測',
+    'analytics.alerts': 'ノードアラート',
+    'analytics.noAlerts': 'アクティブなアラートなし。',
+    'analytics.expenseByCategory': 'カテゴリ別支出',
+    'analytics.loadingCategories': 'カテゴリを読み込み中...',
+    'analytics.nodePartners': 'ノードパートナー',
+    'analytics.loadingBalances': '残高を読み込み中...',
+    'analytics.executeSplit': '保留中の分割を実行',
+    'analytics.noExpensesRegistered': '支出が登録されていません',
+    'analytics.noChartData': 'グラフデータなし',
+    'analytics.joinGroupForMetrics': 'メトリクスを表示するにはグループに参加してください',
+    'analytics.noPendingBalances': '保留中の残高なし',
+    'analytics.percentOfTotal': '総支出の割合',
+    'analytics.net': ' 純額',
+    'analytics.pending': ' 保留中',
+    'analytics.insufficientDataForecast': '予測を生成するためのデータが不足しています。',
+    'analytics.estimatedSaving': 'システムは現在の決済フローに基づき、月額 <span class="text-white">{amount}€</span> の節約を見込んでいます。',
+
+    // categories
+    'category.food': 'ガストロノミー (飲食)',
+    'category.transport': '交通',
+    'category.travel': '旅行',
+    'category.shopping': 'ショッピング',
+    'category.groceries': '食料品',
+    'category.entertainment': 'エンターテイメント',
+    'category.bills': '光熱費',
+    'category.health': '健康',
+    'category.other': 'その他',
   }
 };
 
@@ -879,8 +1200,8 @@ function getMonthNames(lang) {
  * Aplica las traducciones al DOM actual.
  * Busca todos los elementos con [data-i18n] y reemplaza su contenido.
  * Regla de seguridad:
- *   - Claves que terminan en "Html" → innerHTML (permite <br>, <em>, etc.)
- *   - Resto → textContent (no inyecta HTML arbitrario — seguro)
+ * - Claves que terminan en "Html" → innerHTML (permite <br>, <em>, etc.)
+ * - Resto → textContent (no inyecta HTML arbitrario — seguro)
  */
 function applyTranslations(lang) {
   const dict = translations[lang] || translations['es'];
