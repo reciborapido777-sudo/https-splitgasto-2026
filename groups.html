@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
 
     <style>
-       
         body {  
             background: #000; color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -71,8 +70,8 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
+    </style>
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -99,15 +98,15 @@
                     <span class="material-icons-round text-zinc-400 text-2xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nodos de Activos</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mis Grupos</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="groups.assetNodes">Nodos de Activos</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="groups.title">Mis Grupos</h1>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <button onclick="SGRouter.navigate('create-group','groups')" 
                         class="px-5 py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 hover:bg-[#13ecd6]/15 transition-all active:scale-95">
                     <span class="material-icons-round text-[#13ecd6] text-sm">add</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hidden sm:inline">Nuevo</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hidden sm:inline" data-i18n="groups.new">Nuevo</span>
                 </button>
             </div>
         </header>
@@ -115,15 +114,15 @@
         <!-- Resumen rápido -->
         <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Grupos Activos</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="groups.activeGroups">Grupos Activos</p>
                 <p class="text-2xl font-black font-['Space_Grotesk'] text-white" id="summary-groups">0</p>
             </div>
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance Neto</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="groups.netBalance">Balance Neto</p>
                 <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="summary-balance">0,00€</p>
             </div>
             <div class="summary-pill flex flex-col gap-1">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Socios</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="group.members">Socios</p>
                 <p class="text-2xl font-black font-['Space_Grotesk'] text-white" id="summary-members">0</p>
             </div>
         </section>
@@ -138,8 +137,8 @@
                     <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl transition-colors">add</span>
                 </div>
                 <div class="text-center">
-                    <h4 class="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 group-hover:text-zinc-400 transition-colors">Nuevo Grupo</h4>
-                    <p class="text-[8px] font-bold uppercase text-zinc-800 tracking-widest mt-1">Añadir Nodo</p>
+                    <h4 class="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 group-hover:text-zinc-400 transition-colors" data-i18n="groups.newGroup">Nuevo Grupo</h4>
+                    <p class="text-[8px] font-bold uppercase text-zinc-800 tracking-widest mt-1" data-i18n="groups.addNode">Añadir Nodo</p>
                 </div>
             </div>
 
@@ -149,20 +148,19 @@
         <section class="glass-panel p-6 sm:p-10 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.35s">
             <div class="flex items-center justify-between">
                 <div class="space-y-0.5">
-                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em]">Últimos Movimientos</p>
-                    <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Actividad Reciente</h3>
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="groups.latestMovements">Últimos Movimientos</p>
+                    <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic" data-i18n="groups.recentActivity">Actividad Reciente</h3>
                 </div>
-                <button onclick="SGRouter.navigate('activity', 'groups')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline">Ver todo</button>
+                <button onclick="SGRouter.navigate('activity', 'groups')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline" data-i18n="dashboard.viewAll">Ver todo</button>
             </div>
             <div class="space-y-1" id="groups-activity">
-                <p class="text-xs text-zinc-600 text-center py-6">Cargando actividad…</p>
+                <p class="text-xs text-zinc-600 text-center py-6" data-i18n="activity.loading">Cargando actividad…</p>
             </div>
         </section>
 
-            </div>
+    </div>
 
     <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
@@ -188,6 +186,8 @@
         </div>
     </nav>
 
+</div>
+
 <script>
 const GROUP_BGS = [
   `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23FF6B35'/><stop offset='1' stop-color='%23C0392B'/></linearGradient><radialGradient id='b' cx='75%25' cy='25%25' r='55%25'><stop offset='0' stop-color='%23FF9D42' stop-opacity='.3'/><stop offset='1' stop-color='%230d0500' stop-opacity='0'/></radialGradient></defs><rect width='800' height='400' fill='%230d0500'/><rect width='800' height='400' fill='url(%23b)'/><ellipse cx='600' cy='110' rx='200' ry='200' fill='url(%23a)' opacity='.15'/><polygon points='0,400 250,200 420,280 620,160 800,240 800,400' fill='%231a0800'/><circle cx='600' cy='115' r='50' fill='%23FF6B35' opacity='.28'/><circle cx='600' cy='115' r='25' fill='%23FF9D42' opacity='.35'/></svg>`,
@@ -211,21 +211,18 @@ async function loadGroups() {
   const ctaCard  = grid.querySelector('.event-placeholder');
   const uid      = SGAuth.getUserId();
 
-  // ── FIX: limpiar cards previas para evitar duplicados en bfcache/reload ──
   Array.from(grid.children).forEach(child => {
     if (child !== ctaCard) child.remove();
   });
 
-  // Reparar membresías huérfanas antes de cargar (silencioso)
   try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
 
-  // --- Fetch groups ---
   let groups = [];
   try {
     const result = await SGApi.getGroups();
     if (!result || !result.success || !result.groups) {
       document.getElementById('groups-activity').innerHTML =
-        '<p class="text-xs text-zinc-600 text-center py-6">No se pudieron cargar los grupos.</p>';
+        `<p class="text-xs text-zinc-600 text-center py-6">${t('groups.loadError', null, 'No se pudieron cargar los grupos.')}</p>`;
       return;
     }
     groups = result.groups;
@@ -236,20 +233,17 @@ async function loadGroups() {
 
   document.getElementById('summary-groups').textContent = groups.length;
 
-  // --- Fetch all balances in parallel (safe — no getGroupMembers in the critical path) ---
   const balancePromises = groups.map(g => SGApi.getBalances(g.id).catch(() => null));
   const allBalResults   = await Promise.all(balancePromises);
 
   let totalBalance = 0;
   let totalMembers = 0;
 
-  // --- Build cards ---
   groups.forEach((g, i) => {
     const balRes = allBalResults[i];
     const myBal  = (balRes?.success && balRes.balances) ? (parseFloat(balRes.balances[uid]) || 0) : 0;
     totalBalance += myBal;
 
-    // Use member_count from group object if available, else count from balances, else 1
     const mc = g.member_count || (balRes?.success && balRes.balances ? Object.keys(balRes.balances).length : 1) || 1;
     totalMembers += mc;
 
@@ -261,28 +255,26 @@ async function loadGroups() {
     const card = document.createElement('div');
     card.className = 'group-card group reveal-node';
     card.style.animationDelay = `${i * 0.1}s`;
-    // IMPORTANT: pass groupId via URL — SGRouter.navigate() only accepts 2 params
-    // Click en la card navega al grupo; el botón de eliminar tiene stopPropagation
     card.onclick = () => { window.location.href = 'split.html?groupId=' + g.id + '&from=groups'; };
     card.innerHTML = `
         <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-110 transition-transform duration-1000" alt="">
         <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
           <div class="flex justify-between items-center">
-            <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
+            <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">${t('groups.statusActive', null, 'Activo')}</span>
             <div class="flex items-center gap-2">
               <p class="text-[8px] text-zinc-600 uppercase">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')}</p>
               <button
                 data-gid="${g.id}" data-gname="${g.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
                 onclick="event.stopPropagation(); inviteMember(this.dataset.gid, this.dataset.gname)"
                 class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-[#13ecd6]/20 transition-all"
-                title="Invitar participante" style="background:rgba(19,236,214,0.1);border:1px solid rgba(19,236,214,0.2)">
+                title="${t('groups.inviteTitle', null, 'Invitar participante')}" style="background:rgba(19,236,214,0.1);border:1px solid rgba(19,236,214,0.2)">
                 <span class="material-icons-round text-[#13ecd6] text-xs">person_add</span>
               </button>
               <button
                 data-gid="${g.id}" data-gname="${g.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
                 onclick="event.stopPropagation(); deleteGroup(this.dataset.gid, this.dataset.gname)"
                 class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/20 transition-all"
-                title="Eliminar grupo" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)">
+                title="${t('groups.deleteGroupTitle', null, 'Eliminar grupo')}" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)">
                 <span class="material-icons-round text-red-400 text-xs">delete</span>
               </button>
             </div>
@@ -295,7 +287,6 @@ async function loadGroups() {
     grid.insertBefore(card, ctaCard);
   });
 
-  // --- Update summary pills ---
   const tSign = totalBalance >= 0 ? '+' : '';
   const tColor = totalBalance >= 0 ? '#13ecd6' : '#ef4444';
   const balEl = document.getElementById('summary-balance');
@@ -303,7 +294,6 @@ async function loadGroups() {
   balEl.style.color = tColor;
   document.getElementById('summary-members').textContent = totalMembers;
 
-  // --- Recent activity (first group, safe) ---
   if (groups.length > 0) {
     const actEl = document.getElementById('groups-activity');
     try {
@@ -322,7 +312,7 @@ async function loadGroups() {
                 <span class="material-icons-round text-sm" style="color:${color}">${icon}</span>
               </div>
               <div>
-                <p class="text-xs font-black uppercase">${esc(exp.description || exp.category || 'Gasto')}</p>
+                <p class="text-xs font-black uppercase">${esc(exp.description || exp.category || t('common.expense', null, 'Gasto'))}</p>
                 <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
               </div>
             </div>
@@ -330,7 +320,7 @@ async function loadGroups() {
           </div>`;
         }).join('');
       } else {
-        actEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin actividad reciente</p>';
+        actEl.innerHTML = `<p class="text-xs text-zinc-600 text-center py-6">${t('groups.noRecentActivity', null, 'Sin actividad reciente')}</p>`;
       }
     } catch (e) {
       console.error('Activity fetch error:', e);
@@ -354,44 +344,41 @@ async function deleteGroup(groupId, groupName) {
     modal.innerHTML = `
       <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:360px;width:90%;text-align:center">
         <span class="material-icons-round" style="font-size:40px;color:#ef4444;margin-bottom:12px;display:block">delete_forever</span>
-        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">Eliminar grupo</h3>
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">${t('groups.deleteGroupTitle', null, 'Eliminar grupo')}</h3>
         <p style="font-size:13px;color:#aaa;margin-bottom:6px">${safeName}</p>
-        <p style="font-size:11px;color:#666;margin-bottom:20px">Se eliminarán TODOS los gastos y liquidaciones. Esta acción no se puede deshacer.</p>
+        <p style="font-size:11px;color:#666;margin-bottom:20px">${t('groups.deleteGroupConfirm', null, 'Se eliminarán TODOS los gastos y liquidaciones. Esta acción no se puede deshacer.')}</p>
         <div style="display:flex;gap:10px">
-          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
-          <button id="confirm-delete-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">Eliminar</button>
+          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">${t('common.cancel', null, 'Cancelar')}</button>
+          <button id="confirm-delete-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">${t('common.delete', null, 'Eliminar')}</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
     document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
         _closeModal(modalId);
         try {
-            // Reparar membresías ANTES de eliminar (D1 Read Replication — eventual consistency)
             try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
             const res = await SGApi.deleteGroup(groupId);
             if (res && res.success) {
-                SGRouter.showToast(`Grupo eliminado`, 'success');
+                SGRouter.showToast(t('groups.deleteSuccess', null, 'Grupo eliminado'), 'success');
                 setTimeout(() => loadGroups(), 400);
             } else if (res?.error && (res.error.includes('admin') || res.error.includes('perteneces'))) {
-                // Segundo intento tras purgar cache
                 try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
                 await new Promise(r => setTimeout(r, 300));
                 const retry = await SGApi.deleteGroup(groupId);
                 if (retry && retry.success) {
-                    SGRouter.showToast(`Grupo eliminado`, 'success');
+                    SGRouter.showToast(t('groups.deleteSuccess', null, 'Grupo eliminado'), 'success');
                     setTimeout(() => loadGroups(), 400);
                 } else {
-                    SGRouter.showToast(retry?.error || 'Error al eliminar el grupo', 'error');
+                    SGRouter.showToast(retry?.error || t('groups.deleteError', null, 'Error al eliminar el grupo'), 'error');
                 }
             } else {
-                SGRouter.showToast(res?.error || 'Error al eliminar el grupo', 'error');
+                SGRouter.showToast(res?.error || t('groups.deleteError', null, 'Error al eliminar el grupo'), 'error');
             }
         } catch (e) {
             console.error('deleteGroup error:', e);
-            SGRouter.showToast('Error de conexión', 'error');
+            SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
         }
     });
-    // Cerrar al hacer clic fuera del panel
     modal.addEventListener('click', (e) => { if (e.target === modal) _closeModal(modalId); });
 }
 
@@ -406,61 +393,51 @@ function inviteMember(groupId, groupName) {
     modal.innerHTML = `
       <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:360px;width:90%;text-align:center">
         <span class="material-icons-round" style="font-size:40px;color:#13ecd6;margin-bottom:12px;display:block">person_add</span>
-        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">Invitar participante</h3>
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">${t('groups.inviteTitle', null, 'Invitar participante')}</h3>
         <p style="font-size:12px;color:#666;margin-bottom:16px">${safeName}</p>
-        <input id="invite-email-input" type="email" autocomplete="email" placeholder="email@ejemplo.com"
+        <input id="invite-email-input" type="email" autocomplete="email" placeholder="${t('groups.invitePlaceholder', null, 'email@ejemplo.com')}"
           style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:white;padding:14px 16px;width:100%;font-size:0.9rem;font-weight:600;outline:none;margin-bottom:16px;box-sizing:border-box"/>
         <div style="display:flex;gap:10px">
-          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
-          <button id="invite-submit-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#13ecd6,#0fbfaf);color:#000;font-weight:800;font-size:13px;cursor:pointer">Invitar</button>
+          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">${t('common.cancel', null, 'Cancelar')}</button>
+          <button id="invite-submit-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#13ecd6,#0fbfaf);color:#000;font-weight:800;font-size:13px;cursor:pointer">${t('common.invite', null, 'Invitar')}</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
-    // Focus automático en el input (con pequeño delay para la animación)
     setTimeout(() => document.getElementById('invite-email-input')?.focus(), 80);
 
     async function doInvite() {
         const input = document.getElementById('invite-email-input');
         const email = input?.value?.trim().toLowerCase();
         if (!email) { input?.focus(); return; }
-        // Deshabilitar botón para evitar doble envío
         const btn = document.getElementById('invite-submit-btn');
         if (btn) btn.disabled = true;
         try {
             const res = await SGApi.addGroupMemberByEmail(groupId, email);
             _closeModal(modalId);
             if (res && res.success) {
-                SGRouter.showToast('Participante añadido ✓', 'success');
-                // FIX D1 Read Replication: purgar cache ANTES de recargar
+                SGRouter.showToast(t('groups.inviteSuccess', null, 'Participante añadido ✓'), 'success');
                 try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
-                // Marcar para que split.html sepa que debe recargar miembros
                 try { sessionStorage.setItem('sg_member_added', Date.now()); } catch {}
-                // Delay mayor para que D1 propague el cambio (replicación eventual ~800ms)
                 setTimeout(() => loadGroups(), 900);
             } else if (res && res.exists === false) {
-                // CORREGIDO: Usuario no registrado → redirigir a invite con parámetros
                 window.location.href = 'invite.html?email=' + encodeURIComponent(res.email) + '&groupId=' + encodeURIComponent(groupId);
             } else {
-                SGRouter.showToast(res?.error || 'Error al invitar', 'error');
+                SGRouter.showToast(res?.error || t('groups.inviteError', null, 'Error al invitar'), 'error');
             }
         } catch (e) {
             _closeModal(modalId);
-            SGRouter.showToast('Error de conexión', 'error');
+            SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
         }
     }
 
     document.getElementById('invite-submit-btn').addEventListener('click', doInvite);
-    // Enter en el input también invita
     document.getElementById('invite-email-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') doInvite();
     });
-    // Cerrar al hacer clic fuera del panel
     modal.addEventListener('click', (e) => { if (e.target === modal) _closeModal(modalId); });
 }
 loadGroups();
 
-// FIX bfcache: cuando el navegador restaura la página desde caché, recargar datos
-// También detecta flag sg_group_added para recargar tras crear un grupo nuevo
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
     loadGroups();
@@ -469,7 +446,6 @@ window.addEventListener('pageshow', (e) => {
       const flag = sessionStorage.getItem('sg_group_added');
       if (flag) {
         sessionStorage.removeItem('sg_group_added');
-        // Pequeño delay para que D1 propague el nuevo grupo antes de leer
         setTimeout(() => loadGroups(), 400);
       }
     } catch {}
@@ -504,3 +480,5 @@ window.addEventListener('pageshow', (e) => {
 </div>
 </body>
 </html>
+
+
