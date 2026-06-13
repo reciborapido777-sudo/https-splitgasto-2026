@@ -183,23 +183,23 @@
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
@@ -428,8 +428,9 @@
                     } catch(e) {}
                 }
 
-                // 3. Calcular balance neto
-                Object.keys(allBalances).forEach(function(k) { netBalance += allBalances[k]; });
+                // 3. Calcular balance neto — solo el balance del usuario actual
+                var uid = SGAuth.getUserId();
+                netBalance = parseFloat(allBalances[uid] || 0);
 
                 // 4. Renderizar
                 document.getElementById('total-balance').textContent = formatMoney(netBalance);
