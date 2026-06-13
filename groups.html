@@ -86,8 +86,6 @@
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
-
-    <script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell pb-28">
 <div class="app-frame">
@@ -169,23 +167,23 @@
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
@@ -272,7 +270,7 @@ async function loadGroups() {
           <div class="flex justify-between items-center">
             <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
             <div class="flex items-center gap-2">
-              <p class="text-[8px] text-zinc-600 uppercase">${mc} socio${mc!==1?'s':''}</p>
+              <p class="text-[8px] text-zinc-600 uppercase">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')}</p>
               <button
                 data-gid="${g.id}" data-gname="${g.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
                 onclick="event.stopPropagation(); inviteMember(this.dataset.gid, this.dataset.gname)"
@@ -291,7 +289,7 @@ async function loadGroups() {
           </div>
           <div class="space-y-0.5">
             <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${esc(g.name)}</h3>
-            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} soci${mc!==1?'os':'o'} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
+            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
           </div>
         </div>`;
     grid.insertBefore(card, ctaCard);
