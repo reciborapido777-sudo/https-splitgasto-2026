@@ -351,7 +351,7 @@ const CAT_COLORS = {
       if (!dateStr || dateStr === 'Invalid Date') return '—';
       const d = new Date(dateStr + 'T12:00:00');
       if (isNaN(d.getTime())) return '—';
-      const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const months = getMonthNames(getSavedLanguage());
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
 
@@ -368,7 +368,9 @@ const CAT_COLORS = {
       });
     }
 
-    loadActivityData();
+    document.addEventListener('DOMContentLoaded', () => {
+      loadActivityData();
+    });
 
     window.addEventListener('pageshow', (e) => {
       if (e.persisted) {
@@ -437,5 +439,3 @@ const CAT_COLORS = {
 </div>
 </body>
 </html>
- 
-       
