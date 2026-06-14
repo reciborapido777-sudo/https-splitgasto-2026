@@ -54,37 +54,37 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
         <span class="material-icons-round text-zinc-500">arrow_back</span>
       </button>
       <div>
-        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Operación Táctica</p>
-        <h1 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Liquidar</h1>
+        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="liquidation.operation">Operación Táctica</p>
+        <h1 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none" data-i18n="liquidation.title">Liquidar</h1>
       </div>
     </div>
-    <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Transferencia Segura</span>
+    <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse" data-i18n="liquidation.secureTransfer">Transferencia Segura</span>
   </header>
 
   <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#13ecd6]/10 text-center space-y-6 reveal-node relative overflow-hidden">
     <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
     <div>
-      <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
+      <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3" data-i18n="liquidation.totalToSettle">Total a Liquidar</p>
       <div id="liquidation-amount-display" class="amount-display">0,00€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Cargando...</span></p>
+      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white" data-i18n="common.loading">Cargando...</span></p>
     </div>
     <div id="badges-container" class="flex justify-center gap-3">
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800 animate-pulse">Analizando...</span>
+      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800 animate-pulse" data-i18n="liquidation.analyzing">Analizando...</span>
     </div>
   </section>
 
   <section id="breakdown-container" class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
-    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center animate-pulse">Sincronizando datos...</p>
+    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center animate-pulse" data-i18n="liquidation.syncingData">Sincronizando datos...</p>
   </section>
 
   <section class="space-y-4 reveal-node" style="animation-delay:.1s">
-    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Método de Pago</p>
+    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="liquidation.paymentMethod">Método de Pago</p>
     <div class="space-y-3">
       <div class="pay-method selected flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-[#13ecd6] text-2xl">account_balance</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">Transferencia Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Instantánea · Sin comisiones</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.transferAlpha">Transferencia Alpha</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.transferAlphaSub">Instantánea · Sin comisiones</p>
         </div>
         <span class="size-5 rounded-full border-2 border-[#13ecd6] flex items-center justify-center">
           <span class="size-2.5 bg-[#13ecd6] rounded-full"></span>
@@ -93,16 +93,16 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
       <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-zinc-500 text-2xl">contactless</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">NFC · Pago Contactless</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Requiere cercanía física</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.nfcTitle">NFC · Pago Contactless</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.nfcSub">Requiere cercanía física</p>
         </div>
         <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
       </div>
       <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-zinc-500 text-2xl">qr_code</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">QR Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Genera código para compartir</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.qrTitle">QR Alpha</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.qrSub">Genera código para compartir</p>
         </div>
         <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
       </div>
@@ -112,7 +112,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <section class="reveal-node" style="animation-delay:.15s">
     <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
       <span class="material-icons-round text-zinc-600">edit_note</span>
-      <input type="text" id="liquidation-note" placeholder="Añadir nota opcional..." 
+      <input type="text" id="liquidation-note" placeholder="Añadir nota opcional..." data-i18n="liquidation.notePlaceholder"
         class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700 uppercase tracking-wider">
     </div>
   </section>
@@ -120,11 +120,11 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <div class="space-y-3 reveal-node" style="animation-delay:.2s">
     <button onclick="executeLiquidation()" 
       class="w-full py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
-      Confirmar Liquidación
+      <span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>
     </button>
     <button onclick="SGRouter.back()" 
       class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-      Cancelar
+      <span data-i18n="common.cancel">Cancelar</span>
     </button>
   </div>
 
@@ -134,28 +134,26 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
             <span class="material-icons-round">grid_view</span>
-            <p>Mando</p>
+            <p data-i18n="nav.dashboard">Mando</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('groups')">
             <span class="material-icons-round">groups_3</span>
-            <p>Grupos</p>
+            <p data-i18n="nav.groups">Grupos</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('activity')">
             <span class="material-icons-round">receipt_long</span>
-            <p>Gastos</p>
+            <p data-i18n="nav.expenses">Gastos</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('analytics')">
             <span class="material-icons-round">query_stats</span>
-            <p>Métricas</p>
+            <p data-i18n="nav.metrics">Métricas</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('profile')">
             <span class="material-icons-round">person</span>
-            <p>Perfil</p>
+            <p data-i18n="nav.profile">Perfil</p>
         </button>
     </div>
 </nav>
-
-</div>
 
 <script>
 function selectMethod(el) {
@@ -177,37 +175,29 @@ function selectMethod(el) {
 
 async function executeLiquidation() {
     const btn = document.querySelector('button[onclick="executeLiquidation()"]');
-    
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to'); 
     const amount = parseFloat(params.get('amount')) || 0;
     
     if (!groupId || !toUserId || amount <= 0) {
-        SGRouter.showToast('Parámetros de liquidación inválidos', 'error');
+        SGRouter.showToast(t('liquidation.invalidParams', null, 'Parámetros de liquidación inválidos'), 'error');
         return;
     }
     
-    btn.textContent = 'Procesando...';
+    btn.textContent = t('liquidation.processing', null, 'Procesando...');
     btn.disabled = true;
     btn.classList.add('opacity-70');
 
     try {
         const currency = localStorage.getItem('sg_currency') || 'EUR';
-        
         const res = await fetch('/api/db/settlements', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${SGAuth.getToken()}`
             },
-            body: JSON.stringify({
-                groupId,
-                fromUserId: SGAuth.getUserId(),
-                toUserId,
-                amount,
-                currency
-            })
+            body: JSON.stringify({ groupId, fromUserId: SGAuth.getUserId(), toUserId, amount, currency })
         });
         const data = await res.json();
         
@@ -229,13 +219,13 @@ async function executeLiquidation() {
             }));
             SGRouter.navigate('success', 'liquidation');
         } else {
-            SGRouter.showToast(data.error || 'Error al liquidar', 'error');
+            SGRouter.showToast(data.error || t('liquidation.settlementError', null, 'Error al liquidar'), 'error');
             btn.textContent = 'Confirmar Liquidación';
             btn.disabled = false;
             btn.classList.remove('opacity-70');
         }
     } catch (e) {
-        SGRouter.showToast('Error de conexión', 'error');
+        SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
         btn.textContent = 'Confirmar Liquidación';
         btn.disabled = false;
         btn.classList.remove('opacity-70');
@@ -249,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const amount = params.get('amount');
 
     if (!groupId || !toUserId || !amount) {
-        SGRouter.showToast('Selecciona un grupo o movimiento primero', 'error');
+        SGRouter.showToast(t('liquidation.selectGroupFirst', null, 'Selecciona un grupo o movimiento primero'), 'error');
         setTimeout(() => SGRouter.navigate('groups'), 1000);
         return;
     }
@@ -276,24 +266,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const badgesHtml = `
             <span class="px-3 py-1.5 bg-zinc-900 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20">${groupName}</span>
-            <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Liquidación de Balance</span>
+            <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800" data-i18n="liquidation.balanceSettlement">Liquidación de Balance</span>
         `;
         document.getElementById('badges-container').innerHTML = badgesHtml;
 
         const breakdownHtml = `
-            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center">Desglose Consolidado</p>
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center" data-i18n="liquidation.syncingData">Sincronizando datos...</p>
             <div class="debt-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons-round text-[#a855f7] text-sm">account_balance_wallet</span>
                 <div class="flex-1">
-                    <p class="text-xs font-black uppercase">Balance Pendiente</p>
+                    <p class="text-xs font-black uppercase" data-i18n="liquidation.pendingBalance">Balance Pendiente</p>
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest">${groupName}</p>
                 </div>
               </div>
               <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">${parsedAmount}</p>
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-white/10 mt-2">
-              <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total a Transferir</p>
+              <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest" data-i18n="liquidation.totalToTransfer">Total a Transferir</p>
               <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">${parsedAmount}</p>
             </div>
         `;
@@ -304,6 +294,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 </script>
-</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+                .then(reg => {
+                    reg.update().catch(() => {});
+                    reg.addEventListener('updatefound', () => {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                sw.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+                })
+                .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
+        });
+    }
+</script>
 </body>
 </html>
