@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liquidar Deuda | SplitGasto 2026</title>
+<title data-i18n="liquidation.title">Liquidar Deuda | SplitGasto 2026</title>
 <link rel="stylesheet" href="engine/global.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -39,7 +39,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 <link sizes="180x180" rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <script src="engine/desktop-fix.js" defer></script>
-<script src="engine/router.js" defer></script>
+<script src="engine/router.js"></script>
 <script src="engine/auth.js"></script>
 <script src="engine/api.js"></script>
 <script src="engine/i18n.js" defer></script>
@@ -112,7 +112,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <section class="reveal-node" style="animation-delay:.15s">
     <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
       <span class="material-icons-round text-zinc-600">edit_note</span>
-      <input type="text" id="liquidation-note" placeholder="Añadir nota opcional..." data-i18n="liquidation.notePlaceholder"
+      <input type="text" id="liquidation-note" data-i18n="liquidation.notePlaceholder" placeholder="Añadir nota opcional..." 
         class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700 uppercase tracking-wider">
     </div>
   </section>
@@ -175,6 +175,7 @@ function selectMethod(el) {
 
 async function executeLiquidation() {
     const btn = document.querySelector('button[onclick="executeLiquidation()"]');
+    
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to'); 
@@ -185,19 +186,26 @@ async function executeLiquidation() {
         return;
     }
     
-    btn.textContent = t('liquidation.processing', null, 'Procesando...');
+    btn.innerHTML = '<span data-i18n="liquidation.processing">Procesando...</span>';
     btn.disabled = true;
     btn.classList.add('opacity-70');
 
     try {
         const currency = localStorage.getItem('sg_currency') || 'EUR';
+        
         const res = await fetch('/api/db/settlements', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${SGAuth.getToken()}`
             },
-            body: JSON.stringify({ groupId, fromUserId: SGAuth.getUserId(), toUserId, amount, currency })
+            body: JSON.stringify({
+                groupId,
+                fromUserId: SGAuth.getUserId(),
+                toUserId,
+                amount,
+                currency
+            })
         });
         const data = await res.json();
         
@@ -208,25 +216,25 @@ async function executeLiquidation() {
                 txid: data.id || crypto.randomUUID(),
                 timestamp: new Date().toISOString(),
                 groupId: groupId,
-                groupName: document.querySelector('#badges-container span')?.textContent || 'Grupo',
+                groupName: document.querySelector('#badges-container span')?.textContent || t('expense.group', null, 'Grupo'),
                 amount: amount,
                 currency: currency,
                 fromUser: SGAuth.getUserId(),
                 toUser: toUserId,
                 toUserName: recipientName,
                 balanceAfter: 0.00,
-                description: document.getElementById('liquidation-note')?.value || 'Liquidación de deuda'
+                description: document.getElementById('liquidation-note')?.value || t('liquidation.settlementNote', null, 'Liquidación de deuda')
             }));
             SGRouter.navigate('success', 'liquidation');
         } else {
             SGRouter.showToast(data.error || t('liquidation.settlementError', null, 'Error al liquidar'), 'error');
-            btn.textContent = 'Confirmar Liquidación';
+            btn.innerHTML = '<span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>';
             btn.disabled = false;
             btn.classList.remove('opacity-70');
         }
     } catch (e) {
         SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
-        btn.textContent = 'Confirmar Liquidación';
+        btn.innerHTML = '<span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>';
         btn.disabled = false;
         btn.classList.remove('opacity-70');
     }
@@ -271,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('badges-container').innerHTML = badgesHtml;
 
         const breakdownHtml = `
-            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center" data-i18n="liquidation.syncingData">Sincronizando datos...</p>
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center" data-i18n="liquidation.breakdownTitle">Desglose Consolidado</p>
             <div class="debt-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons-round text-[#a855f7] text-sm">account_balance_wallet</span>
@@ -293,31 +301,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.warn("[SG Liquidation] Error renderizando datos reales:", err);
     }
 });
-</script>
-
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-                .then(reg => {
-                    reg.update().catch(() => {});
-                    reg.addEventListener('updatefound', () => {
-                        const sw = reg.installing;
-                        if (!sw) return;
-                        sw.addEventListener('statechange', () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                sw.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                        });
-                    });
-                })
-                .catch(e => console.warn('[SW] Failed:', e));
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-        });
-    }
 </script>
 </body>
 </html>
