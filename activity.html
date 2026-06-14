@@ -368,7 +368,10 @@ const CAT_COLORS = {
       });
     }
 
-    loadActivityData();
+    document.addEventListener('DOMContentLoaded', () => {
+      loadActivityData();
+    });
+
 
     // Recargar al volver con botón atrás (bfcache) o tras añadir gasto
     window.addEventListener('pageshow', (e) => {
