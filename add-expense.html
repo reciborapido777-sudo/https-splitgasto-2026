@@ -488,7 +488,9 @@ window.addEventListener('pageshow', (e) => {
   if (e.persisted) { loadGroups(); }
 });
 
-init();
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+});
 
 </script>
 
