@@ -112,13 +112,13 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <section class="reveal-node" style="animation-delay:.15s">
     <div class="glass-panel px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5">
       <span class="material-icons-round text-zinc-600">edit_note</span>
-      <input type="text" id="liquidation-note" data-i18n="liquidation.notePlaceholder" placeholder="Añadir nota opcional..." 
+      <input type="text" id="liquidation-note" placeholder="Añadir nota opcional..." 
         class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700 uppercase tracking-wider">
     </div>
   </section>
 
   <div class="space-y-3 reveal-node" style="animation-delay:.2s">
-    <button onclick="executeLiquidation()" 
+    <button id="btn-confirm-liquidation" onclick="executeLiquidation()" 
       class="w-full py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
       <span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>
     </button>
@@ -174,7 +174,8 @@ function selectMethod(el) {
 }
 
 async function executeLiquidation() {
-    const btn = document.querySelector('button[onclick="executeLiquidation()"]');
+    const btn = document.getElementById('btn-confirm-liquidation');
+    if (!btn) return;
     
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
@@ -241,6 +242,13 @@ async function executeLiquidation() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // === AUTH GUARD ===
+    if (!SGAuth || !SGAuth.isLoggedIn || !SGAuth.isLoggedIn()) {
+        SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
+        setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+        return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to');
@@ -259,14 +267,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         let groupName = "Bóveda Alpha";
         const groupsRes = await SGApi.getGroups().catch(() => null);
         if (groupsRes?.success && groupsRes.groups) {
-            const foundGroup = groupsRes.groups.find(g => g.id === groupId);
+            const foundGroup = groupsRes.groups.find(g => String(g.id) === String(groupId));
             if (foundGroup) groupName = foundGroup.name;
         }
 
         let recipientName = `Socio (${toUserId.substring(0,6)})`;
         const membersRes = await SGApi.getGroupMembers(groupId).catch(() => null);
         if (membersRes?.success && membersRes.members) {
-            const member = membersRes.members.find(m => m.userId === toUserId || m.id === toUserId);
+            const member = membersRes.members.find(m => String(m.userId || m.id) === String(toUserId));
             if (member?.name) recipientName = member.name;
         }
         
@@ -296,6 +304,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
         document.getElementById('breakdown-container').innerHTML = breakdownHtml;
+
+        // Aplicar traducciones a elementos dinámicos inyectados
+        applyTranslations(getSavedLanguage());
 
     } catch(err) {
         console.warn("[SG Liquidation] Error renderizando datos reales:", err);
