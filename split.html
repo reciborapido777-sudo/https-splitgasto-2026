@@ -288,16 +288,17 @@ async function loadGroupData(groupId) {
       const safeAmount = Math.abs(bal).toFixed(2);
 
       return `
-        <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
-          <div class="flex items-center gap-4">
-            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all"
+        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0"
                  style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
-            <div>
+            <div class="min-w-0">
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${roleLabel}</p>
-              <p class="text-xs font-black uppercase text-white">${name}</p>
+              <p class="text-xs font-black uppercase text-white truncate">${name}</p>
             </div>
           </div>
-          <div class="flex items-center gap-3">
+          
+          <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <div class="text-right">
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-0.5">Cuota estimada</p>
               <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">
@@ -307,18 +308,20 @@ async function loadGroupData(groupId) {
                 ${balSign}${bal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
               </p>
             </div>
-            ${canLiquidate ? `
-            <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
-              class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
-              style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
-              Liquidar
-            </button>` : ''}
-            ${canRemove ? `
-            <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
-              class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20"
-              title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
-              <span class="material-icons-round text-red-400 text-sm">person_remove</span>
-            </button>` : ''}
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${canLiquidate ? `
+              <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
+                class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap"
+                style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
+                Liquidar
+              </button>` : ''}
+              ${canRemove ? `
+              <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
+                class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20 flex-shrink-0"
+                title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
+                <span class="material-icons-round text-red-400 text-sm">person_remove</span>
+              </button>` : ''}
+            </div>
           </div>
         </div>`;
     }).join('');
