@@ -196,6 +196,7 @@
     </nav>
     
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
     (function() {
         // === AUTH GUARD ===
         if (!SGAuth || !SGAuth.isLoggedIn()) {
@@ -203,6 +204,7 @@
             setTimeout(function() { SGRouter.navigate('auth-login'); }, 1500);
             return;
         }
+
 
         const CATEGORY_MAP = {
             'food':          { icon: 'restaurant',    label: t('category.food', null, 'Gastronomía'), color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
@@ -449,7 +451,8 @@
 
         loadAnalytics();
     })();
-    </script>
+});
+</script>
   
         <script>
     if ('serviceWorker' in navigator) {
