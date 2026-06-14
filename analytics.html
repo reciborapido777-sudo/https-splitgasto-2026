@@ -78,10 +78,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <!-- FIX: router.js SIN defer para evitar race condition con onclick inline -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <!-- FIX: auth.js y api.js añadidos para datos reales y auth guard -->
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
@@ -97,32 +95,30 @@
                     <span class="material-icons-round text-zinc-500 text-2xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Capital Intelligence</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Métricas</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="analytics.capitalIntelligence">Capital Intelligence</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="analytics.title">Métricas</h1>
                 </div>
             </div>
 
             <button onclick="SGRouter.navigate('dashboard', 'analytics')" class="px-5 py-3 glass-panel rounded-2xl flex items-center gap-3 hover:bg-white/10 transition-all active:scale-95 border-white/5">
                 <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Centro de Mando</span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400" data-i18n="analytics.commandCenter">Centro de Mando</span>
             </button>
         </header>
 
-        <!-- Balance total dinámico -->
         <section class="glass-panel p-12 rounded-[3.5rem] border-[#13ecd6]/10 space-y-14 reveal-node">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div class="space-y-3">
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]">Balance Neto Total</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.5em]" data-i18n="analytics.totalNetBalance">Balance Neto Total</p>
                     <h2 id="total-balance" class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] tracking-tighter text-gradient-cyan">—</h2>
                 </div>
                 <div class="px-6 py-3 rounded-xl bg-[#13ecd6]/10 border border-[#13ecd6]/20">
-                    <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest leading-none">IA Protocol: Active</p>
+                    <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest leading-none" data-i18n="analytics.aiProtocolActive">IA Protocol: Active</p>
                 </div>
             </div>
 
             <div id="chart-container" class="chart-frame">
-                <!-- Barras dinámicas se insertan aquí -->
-                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Cargando datos...</p>
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center" data-i18n="analytics.loadingData">Cargando datos...</p>
             </div>
         </section>
 
@@ -130,7 +126,7 @@
             <div onclick="SGRouter.navigate('vault', 'analytics')" class="glass-panel p-10 rounded-[3rem] border-[#a855f7]/15 space-y-6 bg-gradient-to-br from-[#a855f7]/5 to-transparent cursor-pointer hover:bg-white/5 transition-all">
                 <div class="flex items-center gap-4 text-[#a855f7]">
                     <span class="material-icons-round">auto_awesome</span>
-                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic">Previsión Alpha</h3>
+                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic" data-i18n="analytics.forecast">Previsión Alpha</h3>
                 </div>
                 <p id="forecast-text" class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
                     Cargando previsión...
@@ -140,9 +136,9 @@
             <div onclick="SGRouter.navigate('notifications', 'analytics')" class="glass-panel p-10 rounded-[3rem] border-[#FF9D42]/15 space-y-6 cursor-pointer hover:bg-white/5 transition-all">
                 <div class="flex items-center gap-4 text-[#FF9D42]">
                     <span class="material-icons-round">warning</span>
-                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic">Alertas de Nodo</h3>
+                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase italic" data-i18n="analytics.alerts">Alertas de Nodo</h3>
                 </div>
-                <p id="alerts-text" class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold">
+                <p id="alerts-text" class="text-[11px] text-zinc-500 leading-relaxed uppercase tracking-tighter font-bold" data-i18n="analytics.noAlerts">
                     Sin alertas activas.
                 </p>
             </div>
@@ -150,36 +146,31 @@
     </div>
 
 
-        <!-- Desglose por categorías dinámico -->
         <section class="space-y-6 reveal-node" style="animation-delay:0.25s">
             <div class="flex items-center justify-between">
-                <h2 class="text-xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter">Gasto por Categoría</h2>
-                <button onclick="SGRouter.navigate('activity', 'analytics')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline">Ver todo →</button>
+                <h2 class="text-xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter" data-i18n="analytics.expenseByCategory">Gasto por Categoría</h2>
+                <button onclick="SGRouter.navigate('activity', 'analytics')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline" data-i18n="dashboard.viewAll">Ver todo →</button>
             </div>
             <div id="categories-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Categorías dinámicas -->
-                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Cargando categorías...</p>
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8" data-i18n="analytics.loadingCategories">Cargando categorías...</p>
             </div>
         </section>
 
-        <!-- Socios más activos dinámico -->
         <section class="glass-panel p-10 rounded-[3.5rem] border-[#a855f7]/10 space-y-8 reveal-node" style="animation-delay:0.35s">
             <div class="flex items-center gap-4">
                 <span class="material-icons-round text-[#a855f7]">group</span>
-                <h2 class="text-lg font-black font-['Space_Grotesk'] uppercase italic tracking-tighter">Socios del Nodo</h2>
+                <h2 class="text-lg font-black font-['Space_Grotesk'] uppercase italic tracking-tighter" data-i18n="analytics.nodePartners">Socios del Nodo</h2>
             </div>
             <div id="members-container" class="space-y-5">
-                <!-- Miembros dinámicos -->
-                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Cargando balances...</p>
+                <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4" data-i18n="analytics.loadingBalances">Cargando balances...</p>
             </div>
-            <button onclick="SGRouter.navigate('split', 'analytics')" class="w-full py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] hover:bg-[#a855f7]/10 hover:border-[#a855f7]/30 transition-all active:scale-95">
+            <button onclick="SGRouter.navigate('split', 'analytics')" class="w-full py-5 bg-white/5 border border-white/10 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] hover:bg-[#a855f7]/10 hover:border-[#a855f7]/30 transition-all active:scale-95" data-i18n="analytics.executeSplit">
                 Ejecutar Reparto Pendiente
             </button>
         </section>
 
 
-        <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+        <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
@@ -208,21 +199,21 @@
     (function() {
         // === AUTH GUARD ===
         if (!SGAuth || !SGAuth.isLoggedIn()) {
-            SGRouter.showToast('Inicia sesión primero', 'error');
+            SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
             setTimeout(function() { SGRouter.navigate('auth-login'); }, 1500);
             return;
         }
 
         const CATEGORY_MAP = {
-            'food':          { icon: 'restaurant',    label: 'Gastronomía', color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
-            'transport':     { icon: 'directions_car', label: 'Transporte',  color: '#a855f7', iconClass: 'cat-icon-flight' },
-            'travel':        { icon: 'flight',        label: 'Viajes',      color: '#a855f7', iconClass: 'cat-icon-flight' },
-            'shopping':      { icon: 'shopping_cart',  label: 'Compras',     color: '#13ecd6', iconClass: 'cat-icon-cart' },
-            'groceries':     { icon: 'shopping_cart',  label: 'Alimentación',color: '#13ecd6', iconClass: 'cat-icon-cart' },
-            'entertainment': { icon: 'movie',         label: 'Ocio',        color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
-            'bills':         { icon: 'bolt',          label: 'Suministros',  color: '#71717a', iconClass: 'cat-icon-bolt' },
-            'health':        { icon: 'local_hospital',label: 'Salud',       color: '#f43f5e', iconClass: 'cat-icon-default' },
-            'other':         { icon: 'category',      label: 'Otros',       color: '#71717a', iconClass: 'cat-icon-default' }
+            'food':          { icon: 'restaurant',    label: t('category.food', null, 'Gastronomía'), color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'transport':     { icon: 'directions_car', label: t('category.transport', null, 'Transporte'),  color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'travel':        { icon: 'flight',        label: t('category.travel', null, 'Viajes'),      color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'shopping':      { icon: 'shopping_cart',  label: t('category.shopping', null, 'Compras'),     color: '#13ecd6', iconClass: 'cat-icon-cart' },
+            'groceries':     { icon: 'shopping_cart',  label: t('category.groceries', null, 'Alimentación'),color: '#13ecd6', iconClass: 'cat-icon-cart' },
+            'entertainment': { icon: 'movie',         label: t('category.entertainment', null, 'Ocio'),        color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'bills':         { icon: 'bolt',          label: t('category.bills', null, 'Suministros'),  color: '#71717a', iconClass: 'cat-icon-bolt' },
+            'health':        { icon: 'local_hospital',label: t('category.health', null, 'Salud'),       color: '#f43f5e', iconClass: 'cat-icon-default' },
+            'other':         { icon: 'category',      label: t('category.other', null, 'Otros'),       color: '#71717a', iconClass: 'cat-icon-default' }
         };
 
         function getCatMeta(cat) {
@@ -251,7 +242,7 @@
             var entries = Object.entries(catTotals).sort(function(a, b) { return b[1] - a[1]; });
 
             if (entries.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Sin gastos registrados</p>';
+                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">' + t('analytics.noExpensesRegistered', null, 'Sin gastos registrados') + '</p>';
                 return;
             }
 
@@ -273,7 +264,7 @@
                         '<div class="h-1.5 bg-white/5 rounded-full overflow-hidden">' +
                             '<div class="h-full rounded-full" style="width:' + pct + '%;background:' + meta.color + '"></div>' +
                         '</div>' +
-                        '<p class="text-[8px] text-zinc-700 uppercase mt-1">' + pct + '% del gasto total</p>' +
+                        '<p class="text-[8px] text-zinc-700 uppercase mt-1">' + pct + t('analytics.percentOfTotal', null, '% del gasto total') + '</p>' +
                     '</div>' +
                 '</div>';
             });
@@ -286,7 +277,8 @@
 
             // Agrupar gastos por mes
             var monthTotals = {};
-            var monthLabels = { '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr', '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic' };
+            var monthLabelsArr = getMonthNames(getSavedLanguage());
+            var monthLabels = { '01': monthLabelsArr[0], '02': monthLabelsArr[1], '03': monthLabelsArr[2], '04': monthLabelsArr[3], '05': monthLabelsArr[4], '06': monthLabelsArr[5], '07': monthLabelsArr[6], '08': monthLabelsArr[7], '09': monthLabelsArr[8], '10': monthLabelsArr[9], '11': monthLabelsArr[10], '12': monthLabelsArr[11] };
 
             (expenses || []).forEach(function(exp) {
                 var d = (exp.created_at || exp.date || '').substring(0, 7); // "2026-03"
@@ -297,7 +289,7 @@
 
             var months = Object.keys(monthTotals).sort();
             if (months.length === 0) {
-                chartEl.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Sin datos para gráfico</p>';
+                chartEl.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">' + t('analytics.noChartData', null, 'Sin datos para gráfico') + '</p>';
                 return;
             }
 
@@ -345,7 +337,7 @@
             }
 
             if (list.length === 0) {
-                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Sin balances pendientes</p>';
+                container.innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">' + t('analytics.noPendingBalances', null, 'Sin balances pendientes') + '</p>';
                 return;
             }
 
@@ -358,7 +350,7 @@
                 var barColor = isPositive ? 'background:linear-gradient(90deg,#13ecd6,#10b981)' : 'background:#FF9D42';
                 var amtColor = isPositive ? '#13ecd6' : '#FF9D42';
                 var barWidth = Math.min(Math.abs(amount) > 0 ? Math.max(10, Math.round((Math.abs(amount) / 200) * 100)) : 0, 100);
-                var label = isPositive ? ' neto' : ' pendiente';
+                var label = isPositive ? t('analytics.net', null, ' neto') : t('analytics.pending', null, ' pendiente');
 
                 html += '<div class="flex items-center gap-4">' +
                     '<img src="https://api.dicebear.com/9.x/initials/svg?seed=' + encodeURIComponent(initials) + '&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="size-10 rounded-xl border border-white/10">' +
@@ -388,9 +380,9 @@
 
                 if (groups.length === 0) {
                     document.getElementById('total-balance').textContent = formatMoney(0);
-                    document.getElementById('chart-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">Únete a un grupo para ver métricas</p>';
-                    document.getElementById('categories-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">Sin gastos registrados</p>';
-                    document.getElementById('members-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">Sin balances pendientes</p>';
+                    document.getElementById('chart-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest self-center">' + t('analytics.joinGroupForMetrics', null, 'Únete a un grupo para ver métricas') + '</p>';
+                    document.getElementById('categories-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest col-span-2 text-center py-8">' + t('analytics.noExpensesRegistered', null, 'Sin gastos registrados') + '</p>';
+                    document.getElementById('members-container').innerHTML = '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-4">' + t('analytics.noPendingBalances', null, 'Sin balances pendientes') + '</p>';
                     return;
                 }
 
@@ -444,14 +436,14 @@
                     var totalExp = allExpenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
                     var uniqueMonths = new Set(allExpenses.map(function(e) { return (e.created_at || e.date || '').substring(0,7); }));
                     var saving = Math.round((totalExp / Math.max(1, uniqueMonths.size)) * 0.12);
-                    forecastEl.innerHTML = 'El sistema estima un ahorro de <span class="text-white">' + saving.toLocaleString('es-ES') + '€</span> mensuales basado en su flujo de liquidación actual.';
+                    forecastEl.innerHTML = t('analytics.estimatedSaving', null, 'El sistema estima un ahorro de <span class="text-white">{amount}€</span> mensuales basado en su flujo de liquidación actual.').replace('{amount}', saving.toLocaleString('es-ES'));
                 } else if (forecastEl) {
-                    forecastEl.textContent = 'Datos insuficientes para generar previsión.';
+                    forecastEl.textContent = t('analytics.insufficientDataForecast', null, 'Datos insuficientes para generar previsión.');
                 }
 
             } catch (e) {
                 console.error('[Analytics] Load error:', e);
-                document.getElementById('total-balance').textContent = 'Error';
+                document.getElementById('total-balance').textContent = t('error.system', null, 'Error');
             }
         }
 
@@ -486,5 +478,3 @@
 </div>
 </body>
 </html>
-
-    
