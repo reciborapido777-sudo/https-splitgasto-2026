@@ -37,7 +37,7 @@
     </style>
 
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/router.js"></script>
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
@@ -196,7 +196,7 @@
           const isPositive = f.totalBalance > 0.01;
           const isNegative = f.totalBalance < -0.01;
           const balClass = isPositive ? 'balance-pos' : (isNegative ? 'balance-neg' : 'balance-zero');
-          const balLabel = isPositive ? 'te debe' : (isNegative ? 'debes' : 'saldo');
+          const balLabel = isPositive ? 'le deben' : (isNegative ? 'debe' : 'saldo');
           const balSign = isPositive ? '+' : (isNegative ? '-' : '');
           const absBal = Math.abs(f.totalBalance).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
           
@@ -266,3 +266,4 @@
 </div>
 </body>
 </html>
+  
