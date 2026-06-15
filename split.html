@@ -280,7 +280,8 @@ async function loadGroupData(groupId) {
       const roleLabel = m.role === 'admin' ? 'Administrador' : (isMe ? 'Usted' : 'Socio');
 
       const canRemove = isAdmin && !isMe;
-      const canLiquidate = !isMe && bal < -0.01;
+      const myBalance = parseFloat(balancesRaw[myUid]) || 0;
+      const canLiquidate = !isMe && bal > 0.01 && myBalance < -0.01;
 
       // Escapar comillas simples para evitar romper el onclick inline
       const safeGroupId = String(group.id).replace(/'/g, "\\'");
