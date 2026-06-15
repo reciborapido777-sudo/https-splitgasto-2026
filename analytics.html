@@ -143,8 +143,6 @@
                 </p>
             </div>
         </main>
-    </div>
-
 
         <section class="space-y-6 reveal-node" style="animation-delay:0.25s">
             <div class="flex items-center justify-between">
@@ -168,6 +166,8 @@
                 Ejecutar Reparto Pendiente
             </button>
         </section>
+  
+    </div>
 
 
         <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
@@ -408,7 +408,7 @@
                         if (balResult) {
                             if (Array.isArray(balResult.balances)) {
                                 balResult.balances.forEach(function(b) {
-                                    var key = b.name || b.user_name || b.user_id || 'unknown';
+                                    var key = b.user_id || b.userId || b.name || b.user_name || 'unknown';
                                     allBalances[key] = (allBalances[key] || 0) + parseFloat(b.balance || b.amount || 0);
                                 });
                             } else {
