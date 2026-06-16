@@ -79,7 +79,7 @@
                     <p class="text-[9px] text-zinc-600 font-black uppercase" data-i18n="activity.viewMetrics">Ver métricas →</p>
                 </div>
                 <div class="space-y-1">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.settled">Liquidadas</p>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.transactions">Transacciones</p>
                     <p class="text-2xl font-black money-display text-white">14</p>
                     <p class="text-[9px] text-[#13ecd6] font-black uppercase" data-i18n="activity.transactions">Transacciones</p>
                 </div>
@@ -291,7 +291,7 @@ const CAT_COLORS = {
         const el = cells[0].querySelector('.money-display');
         if (el) el.textContent = totalGasto.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + '€';
         const sub = cells[0].querySelector('p:last-child');
-        if (sub) sub.textContent = 'este período';
+        if (sub) sub.textContent = t('activity.thisPeriod', null, 'este período');
       }
       if (cells[2]) {
         const el = cells[2].querySelector('.money-display');
