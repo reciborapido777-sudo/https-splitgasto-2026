@@ -223,17 +223,53 @@
             }
         }
 
-        function subscribe() {
-            // Show confirmation toast – AI payment integration coming soon
-            const plan = document.getElementById('plan-monthly').classList.contains('selected') ? 'Mensual' : 'Anual';
-            const btn = document.getElementById('cta-btn');
-            btn.disabled = true;
-            btn.textContent = '✓ Procesando...';
+async function subscribe() {
+    const btn = document.getElementById('cta-btn');
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        SGRouter.showToast('Debes iniciar sesión primero', 'error');
+        setTimeout(() => SGRouter.navigate('auth-login', 'membership'), 1500);
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Procesando...';
+
+    try {
+        const res = await fetch('/api/membership/start-trial', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.hasAccess) {
+            btn.textContent = '✓ ¡Activado!';
             btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
-            SGRouter.showToast('¡Plan ' + plan + ' activado! Gestión de pagos próximamente vía Workers AI', 'premium');
-            // Return to previous page after 2s (profile/dashboard) instead of forcing dashboard
-            setTimeout(() => SGRouter.back(), 2000);
+            SGRouter.showToast(`Prueba activada. ${data.daysRemaining} días restantes`, 'success');
+            // Redirige a la sección Split / Juegos
+            setTimeout(() => window.location.href = '/split.html', 1500);
+        } else if (data.type === 'trial_expired') {
+            btn.textContent = 'Prueba expirada';
+            SGRouter.showToast('Tu prueba gratuita ya expiró', 'error');
+            btn.disabled = false;
+        } else {
+            // Ya tenía prueba o error controlado
+            SGRouter.showToast(data.message || 'No se pudo activar la prueba', 'error');
+            btn.disabled = false;
+            btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
         }
+    } catch (err) {
+        console.error('Error activando prueba:', err);
+        SGRouter.showToast('Error de conexión. Intenta de nuevo.', 'error');
+        btn.disabled = false;
+        btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
+    }
+}
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -256,6 +292,39 @@
                 });
             });
         }
+
+// Verificar estado de membresía al cargar
+(async function checkMembershipOnLoad() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    try {
+        const res = await fetch('/api/membership/status', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.hasAccess) {
+            // Ya tiene prueba activa: muestra banner y oculta el botón de prueba
+            const btn = document.getElementById('cta-btn');
+            if (btn) {
+                btn.textContent = `✓ Prueba activa · ${data.daysRemaining} días`;
+                btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+                btn.disabled = true;
+            }
+            SGRouter.showToast(`Tienes ${data.daysRemaining} días de prueba restantes`, 'success');
+        } else if (data.type === 'trial_expired') {
+            const btn = document.getElementById('cta-btn');
+            if (btn) {
+                btn.textContent = 'Prueba expirada · Elige un plan';
+                btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+            }
+        }
+    } catch (e) {
+        // Silencioso: si falla, deja la UI normal
+    }
+})();
+
     </script>
 </div>
 </body>
