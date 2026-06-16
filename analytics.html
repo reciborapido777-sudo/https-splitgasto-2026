@@ -205,17 +205,15 @@
             return;
         }
 
-
         const CATEGORY_MAP = {
-            'food':          { icon: 'restaurant',    label: t('category.food', null, 'Gastronomía'), color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
-            'transport':     { icon: 'directions_car', label: t('category.transport', null, 'Transporte'),  color: '#a855f7', iconClass: 'cat-icon-flight' },
-            'travel':        { icon: 'flight',        label: t('category.travel', null, 'Viajes'),      color: '#a855f7', iconClass: 'cat-icon-flight' },
-            'shopping':      { icon: 'shopping_cart',  label: t('category.shopping', null, 'Compras'),     color: '#13ecd6', iconClass: 'cat-icon-cart' },
-            'groceries':     { icon: 'shopping_cart',  label: t('category.groceries', null, 'Alimentación'),color: '#13ecd6', iconClass: 'cat-icon-cart' },
-            'entertainment': { icon: 'movie',         label: t('category.entertainment', null, 'Ocio'),        color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
-            'bills':         { icon: 'bolt',          label: t('category.bills', null, 'Suministros'),  color: '#71717a', iconClass: 'cat-icon-bolt' },
-            'health':        { icon: 'local_hospital',label: t('category.health', null, 'Salud'),       color: '#f43f5e', iconClass: 'cat-icon-default' },
-            'other':         { icon: 'category',      label: t('category.other', null, 'Otros'),       color: '#71717a', iconClass: 'cat-icon-default' }
+            'comida':          { icon: 'restaurant',    label: t('category.food', null, 'Gastronomía'), color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'transporte':      { icon: 'directions_car', label: t('category.transport', null, 'Transporte'),  color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'entretenimiento': { icon: 'movie',         label: t('category.entertainment', null, 'Ocio'),        color: '#FF9D42', iconClass: 'cat-icon-restaurant' },
+            'alojamiento':     { icon: 'flight',        label: t('category.lodging', null, 'Alojamiento'),      color: '#a855f7', iconClass: 'cat-icon-flight' },
+            'compras':         { icon: 'shopping_cart',  label: t('category.shopping', null, 'Compras'),     color: '#13ecd6', iconClass: 'cat-icon-cart' },
+            'salud':           { icon: 'local_hospital',label: t('category.health', null, 'Salud'),       color: '#f43f5e', iconClass: 'cat-icon-default' },
+            'servicios':       { icon: 'bolt',          label: t('category.services', null, 'Servicios'),  color: '#71717a', iconClass: 'cat-icon-bolt' },
+            'otro':            { icon: 'category',      label: t('category.other', null, 'Otros'),       color: '#71717a', iconClass: 'cat-icon-default' }
         };
 
         function getCatMeta(cat) {
@@ -345,7 +343,13 @@
 
             var html = '';
             list.forEach(function(b) {
-                var name = b.name || b.user_name || b.userName || String(b.user_id || b.userId || 'Socio');
+                var rawName = b.name || b.user_name || b.userName || String(b.user_id || b.userId || 'Socio');
+                var name = (nameMap && nameMap[rawName]) ? nameMap[rawName] : rawName;
+                // Fallback: si sigue siendo un UUID, mostrar genérico
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(name)) {
+                    name = 'Socio';
+                }
+
                 var amount = parseFloat(b.balance || b.amount || 0);
                 var isPositive = amount >= 0;
                 var initials = name.substring(0, 2).toUpperCase();
@@ -388,13 +392,24 @@
                     return;
                 }
 
-                // 2. Cargar gastos y balances de TODOS los grupos
+                // 2. Cargar gastos, balances y miembros de TODOS los grupos
                 var allExpenses = [];
                 var allBalances = {};
+                var memberNames = {};
                 var netBalance = 0;
 
                 for (var i = 0; i < groups.length; i++) {
                     var gid = groups[i].id || groups[i].group_id;
+
+                    try {
+                        var memResult = await SGApi.getGroupMembers(gid);
+                        if (memResult && memResult.success && memResult.members) {
+                            memResult.members.forEach(function(m) {
+                                var mid = m.id || m.user_id || m.userId;
+                                if (mid && m.name) memberNames[mid] = m.name;
+                            });
+                        }
+                    } catch(e) {}
 
                     try {
                         var expResult = await SGApi.getExpenses(gid);
@@ -411,10 +426,9 @@
                                     var key = b.user_id || b.userId || b.name || b.user_name || 'unknown';
                                     allBalances[key] = (allBalances[key] || 0) + parseFloat(b.balance || b.amount || 0);
                                 });
-                            } else {
-                                Object.keys(balResult).forEach(function(k) {
-                                    if (k === 'success' || k === 'group_id') return;
-                                    var val = parseFloat(balResult[k]);
+                            } else if (balResult.balances && typeof balResult.balances === 'object') {
+                                Object.keys(balResult.balances).forEach(function(k) {
+                                    var val = parseFloat(balResult.balances[k]);
                                     if (!isNaN(val)) allBalances[k] = (allBalances[k] || 0) + val;
                                 });
                             }
@@ -430,7 +444,7 @@
                 document.getElementById('total-balance').textContent = formatMoney(netBalance);
                 renderChart(allExpenses);
                 renderCategories(allExpenses);
-                renderMembers(allBalances);
+                renderMembers(allBalances, memberNames);
 
                 // 5. Previsión
                 var forecastEl = document.getElementById('forecast-text');
