@@ -410,22 +410,8 @@ window.addEventListener('pageshow', (e) => {
 <script>
     let selectedGame = null;
 
-    function _checkPremiumAccess() {
-        // Valida contra el perfil real cargado desde la API, no contra sessionStorage
-        if (!_userProfile) return false;
-        return !!(_userProfile.isPremium === true || _userProfile.plan === 'premium');
-    }
-
     function selectGame(element, game) {
-        if (!_checkPremiumAccess()) {
-            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
-                SGRouter.requirePremium('Juegos');
-            } else {
-                SGRouter.showToast('Función Premium requerida', 'error');
-            }
-            return;
-        }
-
+        // Selección visual siempre permitida
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
         selectedGame = game;
         element.classList.add('active-glow');
@@ -459,20 +445,11 @@ window.addEventListener('pageshow', (e) => {
             SGRouter.showToast('Seleccione un protocolo de azar', 'error');
             return;
         }
-        if (!_checkPremiumAccess()) {
-            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
-                SGRouter.requirePremium('Juegos');
-            } else {
-                SGRouter.showToast('Suscríbete a Premium para jugar', 'error');
-            }
-            return;
-        }
         const route = gameRoutes[selectedGame];
-        SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
-        setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+        // El router verifica membresía y navega (o manda a membership si no hay acceso)
+        SGRouter.requirePremium('Juegos', route);
     }
 
-    // Navegación coherente con liquidation.html: URL con query params escapados
     function goToLiquidation(groupId, toId, amount) {
         const url = 'liquidation.html?groupId=' + encodeURIComponent(groupId) 
                   + '&to=' + encodeURIComponent(toId) 
