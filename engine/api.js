@@ -101,19 +101,26 @@ const SGApi = (function(){
         return request(`/api/db/expenses?groupId=${groupId}`);
     }
 
-    async function addExpense(groupId, amount, currency, category, description, splitType, payerId) {
+    async function addExpense(groupId, amount, currency, category, description, splitType, payerId, splitDetails) {
         const userId = SGAuth.getUserId();
+        const body = { 
+            groupId, 
+            amount, 
+            currency: currency || getDefaultCurrency(),
+            category, 
+            description, 
+            splitType,
+            paidBy: payerId || userId
+        };
+        if (splitDetails && Array.isArray(splitDetails) && splitDetails.length > 0) {
+            body.splits = splitDetails.map(d => ({
+                userId: d.userId,
+                shareAmount: d.value
+            }));
+        }
         return request('/api/db/expenses', {
             method: 'POST',
-            body: JSON.stringify({ 
-                groupId, 
-                amount, 
-                currency: currency || getDefaultCurrency(),  // ← Modificación Alpha Inyectada
-                category, 
-                description, 
-                splitType,
-                paidBy: payerId || userId
-            })
+            body: JSON.stringify(body)
         });
     }
 
