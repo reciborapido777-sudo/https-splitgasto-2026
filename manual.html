@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,13 +11,25 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
-        html, body {  
+
+        html { 
+            background: #000; 
+            overflow-x: hidden; 
+        }
+        body {  
             background: #000; color: #fff; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box; touch-action: manipulation; }
-
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%; 
+            margin: 0; 
+            padding: 0;
+            box-sizing: border-box; 
+            touch-action: manipulation; 
+            min-height: 100dvh;
+        }
+    
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(40px);
