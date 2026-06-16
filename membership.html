@@ -225,7 +225,7 @@
 
 async function subscribe() {
     const btn = document.getElementById('cta-btn');
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('sg_token');
     
     if (!token) {
         SGRouter.showToast('Debes iniciar sesión primero', 'error');
@@ -295,7 +295,7 @@ async function subscribe() {
 
 // Verificar estado de membresía al cargar
 (async function checkMembershipOnLoad() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('sg_token');
     if (!token) return;
     
     try {
