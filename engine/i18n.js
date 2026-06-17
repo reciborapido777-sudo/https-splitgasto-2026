@@ -167,6 +167,39 @@ const translations = {
     'profile.efficiency': 'Eficiencia',
     'profile.eliteLevel': 'Nivel Élite',
     'profile.manageMembership': 'Gestionar Membresía Élite',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': 'FUNDADOR',
+
+    // settings extended
+    'settings.legalDocs': 'Documentos legales',
+    'settings.loadingProfile': 'Cargando...',
+
+    // friends
+    'friends.title': 'Mis Amigos',
+    'friends.loading': 'Cargando...',
+    'friends.searchPlaceholder': 'Buscar amigo...',
+    'friends.theyOwe': 'Te deben',
+    'friends.youOwe': 'Debes',
+    'friends.friends': 'Amigos',
+    'friends.loadingFriends': 'Cargando amigos…',
+    'friends.inviteTitle': 'Invita a tus amigos',
+    'friends.inviteSubtitle': 'Gana 1 mes Premium por cada amigo que se una',
+    'friends.inviteBtn': 'Invitar amigos →',
+    'friends.noGroups': 'Sin grupos todavía',
+    'friends.contact': 'contacto',
+    'friends.contacts': 'contactos',
+    'friends.theyOweHim': 'le deben',
+    'friends.heOwes': 'debe',
+    'friends.even': 'saldo',
+    'friends.groupSingular': 'grupo',
+    'friends.groupPlural': 'grupos',
+    'friends.pendingDebts': 'Deudas Pendientes',
+    'friends.noDebts': 'Sin deudas',
+    'friends.noOtherMembers': 'No hay otros socios en tus grupos',
+    'friends.errorLoading': 'Error al cargar amigos',
 
     // analytics
     'analytics.capitalIntelligence': 'Capital Intelligence',
@@ -298,7 +331,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total a Transferir',
     'liquidation.settlementError': 'Error al liquidar',
     'liquidation.breakdownTitle': 'Desglose Consolidado',
-    'liquidation.settlementNote': 'Liquidación de deuda',
+    'liquidation.settlementNote': 'Liquidación de deuda'
   },
   en: {
     'settings.title': 'Settings',
@@ -458,6 +491,39 @@ const translations = {
     'profile.efficiency': 'Efficiency',
     'profile.eliteLevel': 'Elite Level',
     'profile.manageMembership': 'Manage Elite Membership',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': 'FOUNDER',
+
+    // settings extended
+    'settings.legalDocs': 'Legal documents',
+    'settings.loadingProfile': 'Loading...',
+
+    // friends
+    'friends.title': 'My Friends',
+    'friends.loading': 'Loading...',
+    'friends.searchPlaceholder': 'Search friend...',
+    'friends.theyOwe': 'They owe you',
+    'friends.youOwe': 'You owe',
+    'friends.friends': 'Friends',
+    'friends.loadingFriends': 'Loading friends…',
+    'friends.inviteTitle': 'Invite your friends',
+    'friends.inviteSubtitle': 'Get 1 Premium month for each friend that joins',
+    'friends.inviteBtn': 'Invite friends →',
+    'friends.noGroups': 'No groups yet',
+    'friends.contact': 'contact',
+    'friends.contacts': 'contacts',
+    'friends.theyOweHim': 'they owe him',
+    'friends.heOwes': 'he owes',
+    'friends.even': 'settled',
+    'friends.groupSingular': 'group',
+    'friends.groupPlural': 'groups',
+    'friends.pendingDebts': 'Pending Debts',
+    'friends.noDebts': 'No debts',
+    'friends.noOtherMembers': 'No other members in your groups',
+    'friends.errorLoading': 'Error loading friends',
 
     // analytics
     'analytics.capitalIntelligence': 'Capital Intelligence',
@@ -589,7 +655,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement',
+    'liquidation.settlementNote': 'Debt settlement'
   },
   fr: {
     'settings.title': 'Paramètres',
@@ -749,6 +815,39 @@ const translations = {
     'profile.efficiency': 'Efficacité',
     'profile.eliteLevel': 'Niveau Élite',
     'profile.manageMembership': 'Gérer l\'Abonnement Élite',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': 'FONDATEUR',
+
+    // settings extended
+    'settings.legalDocs': 'Documents légaux',
+    'settings.loadingProfile': 'Chargement...',
+
+    // friends
+    'friends.title': 'Mes Amis',
+    'friends.loading': 'Chargement...',
+    'friends.searchPlaceholder': 'Rechercher un ami...',
+    'friends.theyOwe': 'Ils vous doivent',
+    'friends.youOwe': 'Vous devez',
+    'friends.friends': 'Amis',
+    'friends.loadingFriends': 'Chargement des amis…',
+    'friends.inviteTitle': 'Invitez vos amis',
+    'friends.inviteSubtitle': 'Gagnez 1 mois Premium pour chaque ami qui rejoint',
+    'friends.inviteBtn': 'Inviter des amis →',
+    'friends.noGroups': 'Aucun groupe pour le moment',
+    'friends.contact': 'contact',
+    'friends.contacts': 'contacts',
+    'friends.theyOweHim': 'ils lui doivent',
+    'friends.heOwes': 'il doit',
+    'friends.even': 'solde',
+    'friends.groupSingular': 'groupe',
+    'friends.groupPlural': 'groupes',
+    'friends.pendingDebts': 'Dettes en attente',
+    'friends.noDebts': 'Aucune dette',
+    'friends.noOtherMembers': 'Aucun autre membre dans vos groupes',
+    'friends.errorLoading': 'Erreur de chargement des amis',
 
     // analytics
     'analytics.capitalIntelligence': 'Capital Intelligence',
@@ -880,7 +979,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement',
+    'liquidation.settlementNote': 'Debt settlement'
   },
   de: {
     'settings.title': 'Einstellungen',
@@ -1040,6 +1139,39 @@ const translations = {
     'profile.efficiency': 'Effizienz',
     'profile.eliteLevel': 'Elite-Level',
     'profile.manageMembership': 'Elite-Mitgliedschaft verwalten',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': 'GRÜNDER',
+
+    // settings extended
+    'settings.legalDocs': 'Rechtsdokumente',
+    'settings.loadingProfile': 'Wird geladen...',
+
+    // friends
+    'friends.title': 'Meine Freunde',
+    'friends.loading': 'Wird geladen...',
+    'friends.searchPlaceholder': 'Freund suchen...',
+    'friends.theyOwe': 'Sie schulden dir',
+    'friends.youOwe': 'Du schuldest',
+    'friends.friends': 'Freunde',
+    'friends.loadingFriends': 'Freunde werden geladen…',
+    'friends.inviteTitle': 'Lade deine Freunde ein',
+    'friends.inviteSubtitle': 'Erhalte 1 Premium-Monat für jeden Freund, der beitritt',
+    'friends.inviteBtn': 'Freunde einladen →',
+    'friends.noGroups': 'Noch keine Gruppen',
+    'friends.contact': 'Kontakt',
+    'friends.contacts': 'Kontakte',
+    'friends.theyOweHim': 'sie schulden ihm',
+    'friends.heOwes': 'er schuldet',
+    'friends.even': 'ausgeglichen',
+    'friends.groupSingular': 'Gruppe',
+    'friends.groupPlural': 'Gruppen',
+    'friends.pendingDebts': 'Ausstehende Schulden',
+    'friends.noDebts': 'Keine Schulden',
+    'friends.noOtherMembers': 'Keine anderen Mitglieder in deinen Gruppen',
+    'friends.errorLoading': 'Fehler beim Laden der Freunde',
 
     // analytics
     'analytics.capitalIntelligence': 'Capital Intelligence',
@@ -1171,7 +1303,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement',
+    'liquidation.settlementNote': 'Debt settlement'
   },
   zh: {
     'settings.title': '设置',
@@ -1331,6 +1463,39 @@ const translations = {
     'profile.efficiency': '效率',
     'profile.eliteLevel': '级别 Elite',
     'profile.manageMembership': '管理 Elite 会员',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': '创始人',
+
+    // settings extended
+    'settings.legalDocs': '法律文件',
+    'settings.loadingProfile': '加载中...',
+
+    // friends
+    'friends.title': '我的朋友',
+    'friends.loading': '加载中...',
+    'friends.searchPlaceholder': '搜索好友...',
+    'friends.theyOwe': '他们欠你',
+    'friends.youOwe': '你欠',
+    'friends.friends': '朋友',
+    'friends.loadingFriends': '加载好友中…',
+    'friends.inviteTitle': '邀请你的朋友',
+    'friends.inviteSubtitle': '每邀请一位好友加入即可获得1个月高级会员',
+    'friends.inviteBtn': '邀请好友 →',
+    'friends.noGroups': '暂无群组',
+    'friends.contact': '联系人',
+    'friends.contacts': '联系人',
+    'friends.theyOweHim': '他们欠他',
+    'friends.heOwes': '他欠',
+    'friends.even': '已结清',
+    'friends.groupSingular': '群组',
+    'friends.groupPlural': '群组',
+    'friends.pendingDebts': '待处理债务',
+    'friends.noDebts': '无债务',
+    'friends.noOtherMembers': '你的群组中没有其他成员',
+    'friends.errorLoading': '加载好友出错',
 
     // analytics
     'analytics.capitalIntelligence': '资本智能 (Capital Intelligence)',
@@ -1462,7 +1627,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement',
+    'liquidation.settlementNote': 'Debt settlement'
   },
   ja: {
     'settings.title': '設定',
@@ -1622,6 +1787,39 @@ const translations = {
     'profile.efficiency': '効率',
     'profile.eliteLevel': 'エリートレベル',
     'profile.manageMembership': 'エリートメンバーシップの管理',
+    'profile.defaultName': 'Comandante',
+    'profile.statGroups': '12',
+    'profile.statAudits': '1.2k',
+    'profile.statEfficiency': 'Top 1%',
+    'profile.statLevel': '創設者',
+
+    // settings extended
+    'settings.legalDocs': '法的文書',
+    'settings.loadingProfile': '読み込み中...',
+
+    // friends
+    'friends.title': 'マイフレンド',
+    'friends.loading': '読み込み中...',
+    'friends.searchPlaceholder': '友達を検索...',
+    'friends.theyOwe': '貸し',
+    'friends.youOwe': '借り',
+    'friends.friends': '友達',
+    'friends.loadingFriends': '友達を読み込み中…',
+    'friends.inviteTitle': '友達を招待する',
+    'friends.inviteSubtitle': '参加する友達ごとにプレミアムを1ヶ月獲得',
+    'friends.inviteBtn': '友達を招待 →',
+    'friends.noGroups': 'グループがありません',
+    'friends.contact': '連絡先',
+    'friends.contacts': '連絡先',
+    'friends.theyOweHim': '貸し',
+    'friends.heOwes': '借り',
+    'friends.even': '精算済み',
+    'friends.groupSingular': 'グループ',
+    'friends.groupPlural': 'グループ',
+    'friends.pendingDebts': '保留中の負債',
+    'friends.noDebts': '負債なし',
+    'friends.noOtherMembers': 'グループに他のメンバーがいません',
+    'friends.errorLoading': '友達の読み込みエラー',
 
     // analytics
     'analytics.capitalIntelligence': 'キャピタルインテリジェンス',
@@ -1753,7 +1951,7 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement',
+    'liquidation.settlementNote': 'Debt settlement'
   }
 };
 
@@ -1810,7 +2008,7 @@ function getSavedCurrency() {
 /**
  * Función imperativa para textos generados desde JS.
  * Uso: t('dashboard.noGroups', null, 'Sin grupos')
- * @param {string} key     - Clave de traducción
+ * @param {string} key      - Clave de traducción
  * @param {string} [lang]  - Idioma (si null, usa getSavedLanguage())
  * @param {string} [fallback] - Texto de reserva si la clave no existe
  * @returns {string}
