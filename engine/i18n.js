@@ -108,6 +108,7 @@ const translations = {
     'activity.deleteSuccess': 'Gasto eliminado ✓',
     'activity.deleteError': 'Error al eliminar gasto',
     'activity.loginRequired': 'Inicia sesión primero',
+    'activity.thisPeriod': 'este período',
     'group.member': 'Socio',
     'group.members': 'Socios',
     'groups.title': 'Mis Grupos',
@@ -237,6 +238,8 @@ const translations = {
     'category.bills': 'Suministros',
     'category.health': 'Salud',
     'category.other': 'Otros',
+    'category.lodging': 'Alojamiento',
+    'category.services': 'Servicios',
 
     // add-expense
     'expense.title': 'Nuevo Gasto',
@@ -331,7 +334,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total a Transferir',
     'liquidation.settlementError': 'Error al liquidar',
     'liquidation.breakdownTitle': 'Desglose Consolidado',
-    'liquidation.settlementNote': 'Liquidación de deuda'
+    'liquidation.settlementNote': 'Liquidación de deuda',
+
+   // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'Cifrado AES-256',
+    'scanner.alignmentRequired': 'Alineación Requerida',
+    'scanner.frameTicket': 'Encuadre el ticket para auditoría',
+    'scanner.flash': 'Flash',
+    'scanner.flashOn': 'Flash ON',
+    'scanner.flashActivated': 'Flash activado — se aplicará al abrir cámara',
+    'scanner.flashDeactivated': 'Flash desactivado',
+    'scanner.gallery': 'Galería',
+    'scanner.digitalization': 'Digitalización de',
+    'scanner.militaryGrade': 'Grado Militar',
+
+   // notifications
+    'notifications.alertSystem': 'Sistema de Alertas',
+    'notifications.title': 'Notificaciones',
+    'notifications.markAllRead': 'Leer todas',
+    'notifications.loading': 'Cargando notificaciones...',
+    'notifications.empty': 'Sin notificaciones',
+    'notifications.allRead': 'Todas leídas',
+    'notifications.period.today': 'Hoy',
+    'notifications.period.yesterday': 'Ayer',
+    'notifications.period.thisWeek': 'Esta semana',
+    'notifications.period.earlier': 'Anterior',
+    'notifications.timeAgo.minutes': 'hace {n} min',
+    'notifications.timeAgo.hours': 'hace {n} hora',
+    'notifications.timeAgo.days': 'hace {n} días',
+    'notifications.timeAgo.yesterday': 'ayer'
   },
   en: {
     'settings.title': 'Settings',
@@ -432,6 +464,7 @@ const translations = {
     'activity.deleteSuccess': 'Expense deleted ✓',
     'activity.deleteError': 'Error deleting expense',
     'activity.loginRequired': 'Please log in first',
+    'activity.thisPeriod': 'this period',
     'group.member': 'Member',
     'group.members': 'Members',
     'groups.title': 'My Groups',
@@ -561,6 +594,8 @@ const translations = {
     'category.bills': 'Bills',
     'category.health': 'Health',
     'category.other': 'Other',
+    'category.lodging': 'Lodging',
+    'category.services': 'Services',
 
     // add-expense
     'expense.title': 'New Expense',
@@ -655,7 +690,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement'
+    'liquidation.settlementNote': 'Debt settlement',
+
+   // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'AES-256 Encryption',
+    'scanner.alignmentRequired': 'Alignment Required',
+    'scanner.frameTicket': 'Frame receipt for audit',
+    'scanner.flash': 'Flash',
+    'scanner.flashOn': 'Flash ON',
+    'scanner.flashActivated': 'Flash on — will apply when opening camera',
+    'scanner.flashDeactivated': 'Flash off',
+    'scanner.gallery': 'Gallery',
+    'scanner.digitalization': 'Digitization of',
+    'scanner.militaryGrade': 'Military Grade',
+
+   // notifications
+    'notifications.alertSystem': 'Alert System',
+    'notifications.title': 'Notifications',
+    'notifications.markAllRead': 'Mark all read',
+    'notifications.loading': 'Loading notifications...',
+    'notifications.empty': 'No notifications',
+    'notifications.allRead': 'All read',
+    'notifications.period.today': 'Today',
+    'notifications.period.yesterday': 'Yesterday',
+    'notifications.period.thisWeek': 'This week',
+    'notifications.period.earlier': 'Earlier',
+    'notifications.timeAgo.minutes': '{n} min ago',
+    'notifications.timeAgo.hours': '{n} hour ago',
+    'notifications.timeAgo.days': '{n} days ago',
+    'notifications.timeAgo.yesterday': 'yesterday'
   },
   fr: {
     'settings.title': 'Paramètres',
@@ -756,6 +820,7 @@ const translations = {
     'activity.deleteSuccess': 'Dépense supprimée ✓',
     'activity.deleteError': 'Erreur lors de la suppression',
     'activity.loginRequired': 'Veuillez vous connecter',
+    'activity.thisPeriod': 'cette période',
     'group.member': 'Membre',
     'group.members': 'Membres',
     'groups.title': 'Mes Groupes',
@@ -770,7 +835,7 @@ const translations = {
     'groups.recentActivity': 'Activité Récente',
     'groups.noRecentActivity': 'Aucune activité récente',
     'groups.loadError': 'Impossible de charger les groupes.',
-    'groups.statusActive': 'Actif',
+    'groups.statusActive': 'Activo',
     'groups.deleteGroupTitle': 'Supprimer groupe',
     'groups.deleteGroupConfirm': 'TOUTES les dépenses et règlements seront supprimés. Irréversible.',
     'groups.deleteSuccess': 'Groupe supprimé',
@@ -885,6 +950,8 @@ const translations = {
     'category.bills': 'Factures',
     'category.health': 'Santé',
     'category.other': 'Autres',
+    'category.lodging': 'Hébergement',
+    'category.services': 'Services',
 
     // add-expense
     'expense.title': 'Nouvelle Dépense',
@@ -979,7 +1046,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement'
+    'liquidation.settlementNote': 'Debt settlement',
+
+    // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'Chiffrement AES-256',
+    'scanner.alignmentRequired': 'Alignement Requis',
+    'scanner.frameTicket': 'Cadrez le ticket pour audit',
+    'scanner.flash': 'Flash',
+    'scanner.flashOn': 'Flash ON',
+    'scanner.flashActivated': 'Flash activé — s\'appliquera en ouvrant la caméra',
+    'scanner.flashDeactivated': 'Flash désactivé',
+    'scanner.gallery': 'Galerie',
+    'scanner.digitalization': 'Numérisation de',
+    'scanner.militaryGrade': 'Grade Militaire',
+
+    // notifications
+    'notifications.alertSystem': 'Système d\'Alertes',
+    'notifications.title': 'Notifications',
+    'notifications.markAllRead': 'Tout marquer comme lu',
+    'notifications.loading': 'Chargement des notifications...',
+    'notifications.empty': 'Aucune notification',
+    'notifications.allRead': 'Toutes lues',
+    'notifications.period.today': 'Aujourd\'hui',
+    'notifications.period.yesterday': 'Hier',
+    'notifications.period.thisWeek': 'Cette semaine',
+    'notifications.period.earlier': 'Plus tôt',
+    'notifications.timeAgo.minutes': 'il y a {n} min',
+    'notifications.timeAgo.hours': 'il y a {n} heure',
+    'notifications.timeAgo.days': 'il y a {n} jours',
+    'notifications.timeAgo.yesterday': 'hier'
   },
   de: {
     'settings.title': 'Einstellungen',
@@ -1080,6 +1176,7 @@ const translations = {
     'activity.deleteSuccess': 'Ausgabe gelöscht ✓',
     'activity.deleteError': 'Fehler beim Löschen',
     'activity.loginRequired': 'Bitte zuerst anmelden',
+    'activity.thisPeriod': 'dieser Zeitraum',
     'group.member': 'Mitglied',
     'group.members': 'Mitglieder',
     'groups.title': 'Meine Gruppen',
@@ -1209,6 +1306,8 @@ const translations = {
     'category.bills': 'Rechnungen',
     'category.health': 'Gesundheit',
     'category.other': 'Sonstiges',
+    'category.lodging': 'Unterkunft',
+    'category.services': 'Dienstleistungen',
 
     // add-expense
     'expense.title': 'Neue Ausgabe',
@@ -1303,7 +1402,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement'
+    'liquidation.settlementNote': 'Debt settlement',
+
+    // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'AES-256-Verschlüsselung',
+    'scanner.alignmentRequired': 'Ausrichtung Erforderlich',
+    'scanner.frameTicket': 'Beleg für Audit einrahmen',
+    'scanner.flash': 'Blitz',
+    'scanner.flashOn': 'Blitz AN',
+    'scanner.flashActivated': 'Blitz aktiviert — wird beim Öffnen der Kamera angewendet',
+    'scanner.flashDeactivated': 'Blitz deaktiviert',
+    'scanner.gallery': 'Galerie',
+    'scanner.digitalization': 'Digitalisierung von',
+    'scanner.militaryGrade': 'Militärische Qualität',
+
+    // notifications
+    'notifications.alertSystem': 'Alarmsystem',
+    'notifications.title': 'Benachrichtigungen',
+    'notifications.markAllRead': 'Alle als gelesen markieren',
+    'notifications.loading': 'Benachrichtigungen werden geladen...',
+    'notifications.empty': 'Keine Benachrichtigungen',
+    'notifications.allRead': 'Alle gelesen',
+    'notifications.period.today': 'Heute',
+    'notifications.period.yesterday': 'Gestern',
+    'notifications.period.thisWeek': 'Diese Woche',
+    'notifications.period.earlier': 'Früher',
+    'notifications.timeAgo.minutes': 'vor {n} Min',
+    'notifications.timeAgo.hours': 'vor {n} Std',
+    'notifications.timeAgo.days': 'vor {n} Tagen',
+    'notifications.timeAgo.yesterday': 'gestern'
   },
   zh: {
     'settings.title': '设置',
@@ -1404,6 +1532,7 @@ const translations = {
     'activity.deleteSuccess': '支出已删除 ✓',
     'activity.deleteError': '删除支出出错',
     'activity.loginRequired': '请先登录',
+    'activity.thisPeriod': '本期',
     'group.member': '成员',
     'group.members': '成员',
     'groups.title': '我的群组',
@@ -1533,6 +1662,8 @@ const translations = {
     'category.bills': '账单',
     'category.health': '健康',
     'category.other': '其他',
+    'category.lodging': '住宿',
+    'category.services': '服务',
 
     // add-expense
     'expense.title': '新增支出',
@@ -1627,7 +1758,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement'
+    'liquidation.settlementNote': 'Debt settlement',
+
+    // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'AES-256加密',
+    'scanner.alignmentRequired': '需要对齐',
+    'scanner.frameTicket': '框选票据以进行审计',
+    'scanner.flash': '闪光灯',
+    'scanner.flashOn': '闪光灯开启',
+    'scanner.flashActivated': '闪光灯已开启 — 打开相机时生效',
+    'scanner.flashDeactivated': '闪光灯已关闭',
+    'scanner.gallery': '相册',
+    'scanner.digitalization': '数字化',
+    'scanner.militaryGrade': '军用级',
+
+    // notifications
+    'notifications.alertSystem': '警报系统',
+    'notifications.title': '通知',
+    'notifications.markAllRead': '全部标记为已读',
+    'notifications.loading': '加载通知中...',
+    'notifications.empty': '暂无通知',
+    'notifications.allRead': '全部已读',
+    'notifications.period.today': '今天',
+    'notifications.period.yesterday': '昨天',
+    'notifications.period.thisWeek': '本周',
+    'notifications.period.earlier': '更早',
+    'notifications.timeAgo.minutes': '{n} 分钟前',
+    'notifications.timeAgo.hours': '{n} 小时前',
+    'notifications.timeAgo.days': '{n} 天前',
+    'notifications.timeAgo.yesterday': '昨天'
   },
   ja: {
     'settings.title': '設定',
@@ -1728,6 +1888,7 @@ const translations = {
     'activity.deleteSuccess': '支出を削除しました ✓',
     'activity.deleteError': '支出の削除エラー',
     'activity.loginRequired': '先にログインしてください',
+    'activity.thisPeriod': '今期',
     'group.member': 'メンバー',
     'group.members': 'メンバー',
     'groups.title': 'マイグループ',
@@ -1857,6 +2018,8 @@ const translations = {
     'category.bills': '光熱費',
     'category.health': '健康',
     'category.other': 'その他',
+    'category.lodging': '宿泊',
+    'category.services': 'サービス',
 
     // add-expense
     'expense.title': '新規支出',
@@ -1951,7 +2114,36 @@ const translations = {
     'liquidation.totalToTransfer': 'Total to Transfer',
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
-    'liquidation.settlementNote': 'Debt settlement'
+    'liquidation.settlementNote': 'Debt settlement',
+
+    // scanner
+    'scanner.aiVision': 'AI Vision Alpha',
+    'scanner.encryption': 'AES-256暗号化',
+    'scanner.alignmentRequired': 'アライメントが必要',
+    'scanner.frameTicket': '監査用にレシートを枠取り',
+    'scanner.flash': 'フラッシュ',
+    'scanner.flashOn': 'フラッシュ ON',
+    'scanner.flashActivated': 'フラッシュ有効 — カメラ起動時に適用',
+    'scanner.flashDeactivated': 'フラッシュ無効',
+    'scanner.gallery': 'ギャラリー',
+    'scanner.digitalization': 'デジタル化',
+    'scanner.militaryGrade': '軍用グレード',
+
+    // notifications
+    'notifications.alertSystem': 'アラートシステム',
+    'notifications.title': '通知',
+    'notifications.markAllRead': 'すべて既読にする',
+    'notifications.loading': '通知を読み込み中...',
+    'notifications.empty': '通知なし',
+    'notifications.allRead': 'すべて既読',
+    'notifications.period.today': '今日',
+    'notifications.period.yesterday': '昨日',
+    'notifications.period.thisWeek': '今週',
+    'notifications.period.earlier': 'それ以前',
+    'notifications.timeAgo.minutes': '{n} 分前',
+    'notifications.timeAgo.hours': '{n} 時間前',
+    'notifications.timeAgo.days': '{n} 日前',
+    'notifications.timeAgo.yesterday': '昨日'
   }
 };
 
