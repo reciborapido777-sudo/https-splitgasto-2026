@@ -1,96 +1,79 @@
-Necesito estos cambios en notifications.html
-Header
-Reemplaza:
-                <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Sistema de Alertas</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Notificaciones</h1>
-                </div>
-            </div>
-            <button class="px-5 py-2.5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" onclick="markAllRead()">
-                Leer todas
-            </button>
-Por:
-                <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="notifications.alertSystem">Sistema de Alertas</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="notifications.title">Notificaciones</h1>
-                </div>
-            </div>
-            <button class="px-5 py-2.5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" onclick="markAllRead()" data-i18n="notifications.markAllRead">
-                Leer todas
-            </button>
- Loading state
-Reemplaza:
-            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12">Cargando notificaciones...</p>
-Por:
-            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12" data-i18n="notifications.loading">Cargando notificaciones...</p>
- JS timeAgo
-Reemplaza la función timeAgo completa:
-        function timeAgo(dateStr) {
-            if (!dateStr) return '';
-            var diff = Date.now() - new Date(dateStr).getTime();
-            var mins = Math.floor(diff / 60000);
-            if (mins < 60) return t('notifications.timeAgo.minutes', null, 'hace {n} min').replace('{n}', mins);
-            var hours = Math.floor(mins / 60);
-            if (hours < 24) return t('notifications.timeAgo.hours', null, 'hace {n} hora').replace('{n}', hours) + (hours > 1 ? 's' : '');
-            var days = Math.floor(hours / 24);
-            if (days === 1) return t('notifications.timeAgo.yesterday', null, 'ayer');
-            if (days < 7) return t('notifications.timeAgo.days', null, 'hace {n} días').replace('{n}', days);
-            return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-        }
-S renderNotifications (empty state + períodos)
-Reemplaza el bloque de empty state dentro de renderNotifications:
-                container.innerHTML =
-                    '<div class="flex flex-col items-center py-20 space-y-4">' +
-                        '<span class="material-icons-round text-zinc-700 text-5xl">notifications_off</span>' +
-                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest" data-i18n="notifications.empty">Sin notificaciones</p>' +
-                    '</div>';
-Como es HTML inyectado por JS, data-i18n no se aplicará automáticamente a menos que i18n.js escuche mutaciones. Mejor usa t() directamente:
-                container.innerHTML =
-                    '<div class="flex flex-col items-center py-20 space-y-4">' +
-                        '<span class="material-icons-round text-zinc-700 text-5xl">notifications_off</span>' +
-                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest">' + t('notifications.empty', null, 'Sin notificaciones') + '</p>' +
-                    '</div>';
-Y reemplaza los períodos hardcodeados en renderNotifications:
-            var groups = {
-                [t('notifications.period.today', null, 'Hoy')]: [],
-                [t('notifications.period.yesterday', null, 'Ayer')]: [],
-                [t('notifications.period.thisWeek', null, 'Esta semana')]: [],
-                [t('notifications.period.earlier', null, 'Anterior')]: []
-            };
-Y dentro del forEach de Object.keys(groups):
-                html += '<section class="space-y-3 reveal-node">' +
-                    '<p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">' + period + '</p>';
-JS markAllRead
-Reemplaza:
-            SGRouter.showToast('Todas leídas', 'success');
-Por:
-            SGRouter.showToast(t('notifications.allRead', null, 'Todas leídas'), 'success');
- Nav inferior
-Reemplaza los 5 <p> del nav por:
-                <p data-i18n="nav.dashboard">Mando</p>
-                <p data-i18n="nav.groups">Grupos</p>
-                <p data-i18n="nav.expenses">Gastos</p>
-                <p data-i18n="nav.metrics">Métricas</p>
-                <p data-i18n="nav.profile">Perfil</p>
-archivo--------
 <!DOCTYPE html>
 <html lang="es" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificaciones | SplitGasto 2026</title>
+    <title>Scanner Alpha 2026 | Perímetro Limpio</title>
+    
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space_Grotesk:wght@500;700;900&display=swap');
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden !important; margin: 0; padding: 0;  touch-action: manipulation; }
-        .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
-        .reveal-node { animation: revealUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; }
-        @keyframes revealUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .notif-row { transition: all 0.3s; cursor: pointer; }
-        .notif-row:hover { background: rgba(255,255,255,0.04); }
-        .notif-row.unread { border-left: 3px solid; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space_Grotesk:wght@500;700;900&display=swap');
+        
+        body { 
+            background: #000; color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 100vh; overflow-x: hidden !important; margin: 0; padding: 0; 
+            touch-action: manipulation; overscroll-behavior: contain; 
+        }
+ 
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(40px); 
+            -webkit-backdrop-filter: blur(40px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        .ui-layer { 
+            position: relative; z-index: 50; 
+            background: rgba(0,0,0,0.7); 
+            backdrop-filter: blur(25px); 
+        }
+
+        .viewfinder-master { 
+            flex: 1; position: relative; 
+            background: #020202; overflow: hidden; 
+            margin: 0 20px; border-radius: 3.5rem; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9); 
+            transform: translateZ(0);
+        }
+
+        .frame-guides { position: absolute; inset: 80px 40px; pointer-events: none; }
+        
+        .corner { 
+            position: absolute; width: 45px; height: 45px; 
+            border: 4px solid #13ecd6; 
+            filter: drop-shadow(0 0 10px rgba(19,236,214,0.4)); 
+            transform: translateZ(0);
+        }
+
+        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 1.8rem 0 0 0; }
+        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-radius: 0 1.8rem 0 0; }
+        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 1.8rem; }
+        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 1.8rem 0; }
+
+        .scan-pulse { 
+            position: absolute; width: 100%; height: 2px; 
+            background: linear-gradient(to right, transparent, #13ecd6, transparent); 
+            box-shadow: 0 0 30px #13ecd6; 
+            animation: moveScan 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1); 
+            transform: translateZ(0);
+        }
+
+        @keyframes moveScan { 0% { top: 10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+
+        .shutter-alpha { 
+            background: #FF9D42; 
+            box-shadow: 0 0 50px rgba(255, 157, 66, 0.3); 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        .shutter-alpha:active { transform: scale(0.9) rotate(2deg); filter: brightness(1.2); }
+        .reveal-node { animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     
         .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
         .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
@@ -108,205 +91,122 @@ archivo--------
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- FIX: router.js SIN defer para evitar race condition -->
+    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <!-- FIX: auth.js y api.js añadidos para datos reales y auth guard -->
     <script src="engine/auth.js"></script>
-    <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
-
+    
 </head>
-<body class="app-shell pb-20">
+<body class="app-shell pb-32">
 <div class="app-frame">
-    <div class="max-w-3xl mx-auto px-6 py-8 space-y-10">
 
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
-            <div class="flex items-center gap-6">
-                <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
-                    <span class="material-icons-round text-zinc-500">arrow_back</span>
-                </button>
-                <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Sistema de Alertas</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Notificaciones</h1>
-                </div>
+    <header class="ui-layer p-8 flex justify-between items-center">
+        <button onclick="SGRouter.back()" class="size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
+            <span class="material-icons-round text-white text-3xl">close</span>
+        </button>
+        <div class="flex flex-col items-end">
+            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.5em] mb-1 leading-none" data-i18n="scanner.aiVision">AI Vision Alpha</p>
+            <div class="flex items-center gap-2 px-3 py-1 bg-[#a855f7]/10 rounded-full border border-[#a855f7]/20">
+                <span class="material-icons-round text-[#a855f7] text-[10px]">verified_user</span>
+                <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none" data-i18n="scanner.encryption">Cifrado AES-256</p>
             </div>
-            <button class="px-5 py-2.5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" onclick="markAllRead()">
-                Leer todas
+        </div>
+    </header>
+
+    <main class="viewfinder-master reveal-node">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%230a0a0a'/%3E%3Crect x='200' y='150' width='400' height='300' rx='16' fill='none' stroke='%2313ecd6' stroke-width='2' stroke-opacity='0.2'/%3E%3Cline x1='200' y1='300' x2='600' y2='300' stroke='%2313ecd6' stroke-width='1' stroke-opacity='0.15'/%3E%3C/svg%3E')] bg-cover bg-center opacity-30 scale-105"></div>
+        
+        <div class="frame-guides">
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            <div class="scan-pulse"></div>
+            
+            <div class="absolute bottom-10 w-full text-center space-y-2">
+                <p class="text-[10px] font-black text-white uppercase tracking-[0.6em]" data-i18n="scanner.alignmentRequired">Alineación Requerida</p>
+                <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]" data-i18n="scanner.frameTicket">Encuadre el ticket para auditoría</p>
+            </div>
+         </div>
+    </main>
+
+    <footer class="ui-layer p-10 flex flex-col items-center gap-10 reveal-node" style="animation-delay: 0.2s">
+        <div class="flex justify-between items-center w-full max-w-sm px-4">
+        <button id="flash-btn" onclick="toggleFlash()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
+            <span class="material-icons-round text-3xl text-white">flash_on</span>
+            <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600" data-i18n="scanner.flash">Flash</span>
+        </button>
+
+            <button onclick="SGRouter.navigate('receipt', 'scanner')" class="size-24 shutter-alpha rounded-full flex items-center justify-center border-8 border-black/30 group" title="Abrir cámara">
+                <div class="size-20 rounded-full border-2 border-white/20 flex items-center justify-center">
+                    <span class="material-icons-round text-black text-4xl">photo_camera</span>
+                </div>
             </button>
-        </header>
 
-        <!-- Notificaciones dinámicas -->
-        <section id="notifications-container" class="space-y-10">
-            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12">Cargando notificaciones...</p>
-        </section>
+            <button onclick="openGallery()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
+                <span class="material-icons-round text-3xl text-white">photo_library</span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600" data-i18n="scanner.gallery">Galería</span>
+            </button>
+        </div>
+        <p class="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em]"><span data-i18n="scanner.digitalization">Digitalización de</span> <span class="text-[#13ecd6]" data-i18n="scanner.militaryGrade">Grado Militar</span></p>
+    </footer>
 
-    </div>
-
-    <script>
-    (function() {
-        // === AUTH GUARD ===
-        if (!SGAuth || !SGAuth.isLoggedIn()) {
-            SGRouter.showToast('Inicia sesión primero', 'error');
-            setTimeout(function() { SGRouter.navigate('auth-login'); }, 1500);
-            return;
-        }
-
-        var ICON_MAP = {
-            'payment':     { icon: 'payments',         color: '#13ecd6' },
-            'expense':     { icon: 'pending_actions',   color: '#FF9D42' },
-            'settlement':  { icon: 'payments',          color: '#13ecd6' },
-            'scan':        { icon: 'receipt_long',      color: '#a855f7' },
-            'member':      { icon: 'group_add',         color: '#13ecd6' },
-            'alert':       { icon: 'trending_up',       color: '#FF9D42' },
-            'membership':  { icon: 'workspace_premium',  color: '#FF9D42' },
-            'group':       { icon: 'group_add',         color: '#13ecd6' },
-            'default':     { icon: 'notifications',     color: '#71717a' }
-        };
-
-        function getIconMeta(type) {
-            return ICON_MAP[type] || ICON_MAP['default'];
-        }
-
-        function timeAgo(dateStr) {
-            if (!dateStr) return '';
-            var diff = Date.now() - new Date(dateStr).getTime();
-            var mins = Math.floor(diff / 60000);
-            if (mins < 60) return 'hace ' + mins + ' min';
-            var hours = Math.floor(mins / 60);
-            if (hours < 24) return 'hace ' + hours + ' hora' + (hours > 1 ? 's' : '');
-            var days = Math.floor(hours / 24);
-            if (days === 1) return 'ayer';
-            if (days < 7) return 'hace ' + days + ' días';
-            return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-        }
-
-        function renderNotifications(notifications) {
-            var container = document.getElementById('notifications-container');
-            if (!container) return;
-
-            if (!notifications || notifications.length === 0) {
-                container.innerHTML =
-                    '<div class="flex flex-col items-center py-20 space-y-4">' +
-                        '<span class="material-icons-round text-zinc-700 text-5xl">notifications_off</span>' +
-                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest">Sin notificaciones</p>' +
-                    '</div>';
-                return;
-            }
-
-            // Agrupar por período
-            var now = Date.now();
-            var groups = { 'Hoy': [], 'Ayer': [], 'Esta semana': [], 'Anterior': [] };
-            notifications.forEach(function(n) {
-                var d = new Date(n.created_at || n.date || Date.now()).getTime();
-                var diff = now - d;
-                var days = diff / 86400000;
-                if (days < 1) groups['Hoy'].push(n);
-                else if (days < 2) groups['Ayer'].push(n);
-                else if (days < 7) groups['Esta semana'].push(n);
-                else groups['Anterior'].push(n);
-            });
-
-            var html = '';
-            Object.keys(groups).forEach(function(period) {
-                var items = groups[period];
-                if (items.length === 0) return;
-
-                html += '<section class="space-y-3 reveal-node">' +
-                    '<p class="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em] px-2">' + period + '</p>';
-
-                items.forEach(function(n) {
-                    var meta = getIconMeta(n.type);
-                    var isUnread = !n.read && !n.read_at;
-                    var unreadClass = isUnread ? 'unread' : '';
-                    var opacityStyle = isUnread ? '' : 'opacity:0.7;';
-                    var borderStyle = isUnread ? 'border-left-color:' + meta.color : '';
-                    var target = n.target_page || n.link || '';
-
-                    html += '<div class="notif-row ' + unreadClass + ' glass-panel p-5 rounded-[2rem] flex items-start gap-5" style="' + opacityStyle + borderStyle + '"' +
-                        (target ? ' onclick="SGRouter.navigate(\'' + target + '\')"' : '') + '>' +
-                        '<div class="size-11 rounded-2xl flex items-center justify-center border flex-shrink-0 mt-0.5" style="background:' + meta.color + '10;border-color:' + meta.color + '33">' +
-                            '<span class="material-icons-round text-lg" style="color:' + meta.color + '">' + meta.icon + '</span>' +
-                        '</div>' +
-                        '<div class="flex-1 min-w-0">' +
-                            '<div class="flex justify-between items-start gap-2">' +
-                                '<p class="text-sm font-bold leading-tight">' + (n.title || n.message || '') + '</p>' +
-                                (isUnread ? '<span class="size-2 rounded-full flex-shrink-0 mt-1.5 animate-pulse" style="background:' + meta.color + '"></span>' : '') +
-                            '</div>' +
-                            '<p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tight mt-1">' + (n.body || n.description || '') + '</p>' +
-                            '<p class="text-[8px] text-zinc-700 uppercase mt-2">' + timeAgo(n.created_at || n.date) + '</p>' +
-                        '</div>' +
-                    '</div>';
-                });
-
-                html += '</section>';
-            });
-
-            container.innerHTML = html;
-        }
-
-        // === CARGA ===
-        async function loadNotifications() {
-            try {
-                var result = await SGApi.getNotifications();
-                var notifs = [];
-                if (result && result.success && result.notifications) {
-                    notifs = result.notifications;
-                }
-                renderNotifications(notifs);
-            } catch (e) {
-                console.error('[Notifications] Load error:', e);
-                renderNotifications([]);
-            }
-        }
-
-        // === MARK ALL READ ===
-        window.markAllRead = async function() {
-            document.querySelectorAll('.notif-row.unread').forEach(function(row) {
-                row.classList.remove('unread');
-                row.style.borderLeft = '';
-                row.style.opacity = '0.7';
-                row.querySelectorAll('.animate-pulse').forEach(function(dot) { dot.remove(); });
-            });
-            try {
-                await SGApi.markNotificationsRead();
-            } catch (e) { /* silencioso */ }
-            SGRouter.showToast('Todas leídas', 'success');
-        };
-
-        loadNotifications();
-    })();
-    </script>
-
+    
     <!-- Bottom Navigation Bar -->
         <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
 
+      <script>
+      var flashOn = false;
 
-        <script>
+    function toggleFlash() {
+        flashOn = !flashOn;
+        var btn = document.getElementById('flash-btn');
+        var label = btn.querySelector('span:last-child');
+        if (flashOn) {
+            btn.classList.remove('opacity-30');
+            btn.classList.add('opacity-100');
+            label.textContent = t('scanner.flashOn', null, 'Flash ON');
+            sessionStorage.setItem('sg_flash', 'on');
+            SGRouter.showToast(t('scanner.flashActivated', null, 'Flash activado — se aplicará al abrir cámara'), 'info');
+        } else {
+            btn.classList.remove('opacity-100');
+            btn.classList.add('opacity-30');
+            label.textContent = t('scanner.flash', null, 'Flash');
+            sessionStorage.removeItem('sg_flash');
+            SGRouter.showToast(t('scanner.flashDeactivated', null, 'Flash desactivado'), 'info');
+        }
+    }
+
+    function openGallery() {
+        // Navegar a receipt-view en modo galería
+        SGRouter.navigate('receipt', 'scanner');
+    }
+    </script>
+  
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
