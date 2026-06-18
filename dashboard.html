@@ -208,28 +208,36 @@ const DASH_CAT_COLORS = {
   servicios:'#f59e0b', otro:'#6b7280'
 };
 
-function dashReset(msg) {
+function dashReset(msg, isError = false) {
   const netEl   = document.getElementById('net-worth-value');
   const settEl  = document.getElementById('settlements-value');
   const recEl   = document.getElementById('to-receive-value');
   const nameEl  = document.getElementById('active-group-name');
   const subEl   = document.getElementById('active-group-sub');
   const actEl   = document.getElementById('activity-list');
-  if (netEl)  netEl.textContent    = '0,00€';
-  if (settEl) settEl.textContent = '0,00€';
-  if (recEl)  recEl.textContent  = '0,00€';
-  if (nameEl) nameEl.textContent = msg || t('dashboard.noGroups', null, 'Sin grupos');
-  if (subEl)  subEl.textContent  = t('dashboard.createFirstGroup', null, 'Crea tu primer grupo');
-  if (actEl)  actEl.innerHTML    = `<p class="text-xs text-zinc-600 text-center py-4">${t('activity.empty', null, 'Sin actividad. Crea un grupo y añade gastos.')}</p>`;
+  
+  const display = isError ? '—' : '0,00€';
+  const label   = isError ? (msg || 'Error') : (msg || 'Sin grupos');
+  
+  if (netEl)  netEl.textContent    = display;
+  if (settEl) settEl.textContent   = display;
+  if (recEl)  recEl.textContent    = display;
+  if (nameEl) nameEl.textContent   = label;
+  if (subEl)  subEl.textContent    = isError ? 'Reintenta o inicia sesión' : t('dashboard.createFirstGroup', null, 'Crea tu primer grupo');
+  if (actEl)  actEl.innerHTML      = `<p class="text-xs ${isError ? 'text-red-400' : 'text-zinc-600'} text-center py-4">${msg || t('activity.empty', null, 'Sin actividad. Crea un grupo y añade gastos.')}</p>`;
 }
 
 async function loadDashboardData() {
-  if (!SGAuth || !SGAuth.isLoggedIn()) return;
+  if (!SGAuth || !SGAuth.isLoggedIn()) {
+    dashReset('Sesión requerida', true);
+    return;
+  }
+  
   try {
     const profile = await SGApi.getProfile().catch(() => null);
     if (profile?.success && profile.profile) {
       const p = profile.profile;
-      const headerDiv = document.getElementById('dash-user-name') || document.querySelector('header .flex-1 h1');
+      const headerDiv = document.getElementById('dash-user-name');
       if (headerDiv) headerDiv.textContent = p.name || 'Usuario';
       const avatarEl = document.querySelector('header img[alt="Avatar Comandante"]');
       if (avatarEl && p.name) {
@@ -239,47 +247,71 @@ async function loadDashboardData() {
     }
 
     const groupsResult = await SGApi.getGroups().catch(() => null);
-    const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
-
+    
+    // DEBUG: Ver error de grupos
+    if (!groupsResult?.success) {
+      console.error('[Dashboard] Error cargando grupos:', groupsResult);
+      dashReset(groupsResult?.error || 'Error cargando grupos', true);
+      return;
+    }
+    
+    const groups = groupsResult.groups || [];
     if (groups.length === 0) { dashReset(); return; }
+    
     const uid = SGAuth.getUserId();
-    const allBalResults = await Promise.all(groups.map(g => SGApi.getBalances(g.id).catch(() => null)));
+    if (!uid) {
+      dashReset('Error de sesión', true);
+      return;
+    }
+    
+    const allBalResults = await Promise.all(groups.map(g => SGApi.getBalances(g.id).catch(e => {
+      console.error(`[Dashboard] Error balances grupo ${g.id}:`, e);
+      return null;
+    })));
 
     let totalOwed = 0;
     let totalReceive = 0;
     let maxDebt = 0;
     let targetGid = groups[0].id;
     let targetUid = null;
+    
     groups.forEach((g, i) => {
       const br = allBalResults[i];
-      if (br?.success && br.balances) {
-        // Normalizar array → objeto {uuid: balance}
-        let balances = br.balances;
-        if (Array.isArray(balances)) {
-            const obj = {};
-            balances.forEach(function(b) {
-                const key = b.user_id || b.userId || b.id || 'unknown';
-                obj[key] = parseFloat(b.balance || b.amount || 0);
-            });
-            balances = obj;
+      if (!br?.success) {
+        console.warn(`[Dashboard] Sin datos de balances para grupo ${g.name}:`, br);
+        return;
+      }
+      
+      let balances = br.balances;
+      if (Array.isArray(balances)) {
+        const obj = {};
+        balances.forEach(b => {
+          const key = b.user_id || b.userId || b.id || 'unknown';
+          obj[key] = parseFloat(b.balance || b.amount || 0);
+        });
+        balances = obj;
+      }
+      
+      const myBal = parseFloat(balances[uid]);
+      const effectiveBal = isNaN(myBal) ? 0 : myBal;
+      
+      console.log(`[Dashboard] Grupo "${g.name}": mi balance = ${effectiveBal}, keys = ${Object.keys(balances).join(',')}`);
+
+      if (effectiveBal < -0.01) {
+        totalOwed += Math.abs(effectiveBal);
+        if (Math.abs(effectiveBal) > maxDebt) {
+          maxDebt = Math.abs(effectiveBal);
+          targetGid = g.id;
+          let maxCreditorBal = 0;
+          Object.entries(balances).forEach(([mid, val]) => {
+            if (mid !== uid && val > maxCreditorBal) {
+              maxCreditorBal = val;
+              targetUid = mid;
+            }
+          });
         }
-        const myBal = parseFloat(balances[uid]) || 0;
-        if (myBal < 0) {
-          totalOwed += Math.abs(myBal);
-              if (Math.abs(myBal) > maxDebt) {
-            maxDebt = Math.abs(myBal);
-            targetGid = g.id;
-            let maxCreditorBal = 0;
-            Object.entries(balances).forEach(([mid, val]) => {
-                if (mid !== uid && val > maxCreditorBal) {
-                    maxCreditorBal = val;
-                    targetUid = mid;
-                }
-            });
-          }
-        } else if (myBal > 0) {
-          totalReceive += myBal;
-        }
+      } else if (effectiveBal > 0.01) {
+        totalReceive += effectiveBal;
       }
     });
 
