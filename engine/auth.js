@@ -7,7 +7,7 @@ const SGAuth = (function(){
     const USER_KEY = 'sg_user';
 
     function getToken() {
-        return localStorage.getItem(TOKEN_KEY);
+        try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
     }
 
     function getUser() {
@@ -15,13 +15,19 @@ const SGAuth = (function(){
     }
 
     function setSession(token, user) {
-        localStorage.setItem(TOKEN_KEY, token);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        try {
+            localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+        } catch (e) {
+            console.error('[SGAuth] Error guardando sesión:', e);
+        }
     }
 
     function logout() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        try {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+        } catch {}
         if(window.SGRouter) SGRouter.navigate('auth-login');
     }
 
@@ -43,9 +49,6 @@ const SGAuth = (function(){
         return user ? user.id : null;
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // Registro — SIN auto-join inseguro
-    // ═════════════════════════════════════════════════════════════════
     async function register(name, email, password) {
         try {
             const normalizedEmail = email.toLowerCase().trim();
@@ -55,7 +58,7 @@ const SGAuth = (function(){
                 body: JSON.stringify({ name, email: normalizedEmail, password })
             });
             const data = await res.json();
-            if(data.success) {
+            if(data.success && data.token && data.user) {
                 setSession(data.token, data.user);
             }
             return data;
@@ -64,9 +67,6 @@ const SGAuth = (function(){
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // Login
-    // ═════════════════════════════════════════════════════════════════
     async function login(email, password) {
         try {
             const normalizedEmail = email.toLowerCase().trim();
@@ -76,7 +76,7 @@ const SGAuth = (function(){
                 body: JSON.stringify({ email: normalizedEmail, password })
             });
             const data = await res.json();
-            if(data.success) {
+            if(data.success && data.token && data.user) {
                 setSession(data.token, data.user);
             }
             return data;
@@ -85,9 +85,6 @@ const SGAuth = (function(){
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // NUEVO: Unirse a grupo (requiere estar autenticado)
-    // ═════════════════════════════════════════════════════════════════
     async function joinGroup(groupId) {
         if (!groupId) return { success: false, error: 'groupId requerido' };
         const token = getToken();
@@ -108,22 +105,16 @@ const SGAuth = (function(){
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // NUEVO: Registro + unión a grupo en secuencia segura
-    // ═════════════════════════════════════════════════════════════════
     async function registerAndJoin(name, email, password, groupId) {
         const reg = await register(name, email, password);
         if (!reg.success) return reg;
-
         if (groupId) {
             const join = await joinGroup(groupId);
             if (!join.success) {
-                // No fallamos el registro completo, pero advertimos
                 return { ...reg, joinWarning: join.error || 'No se pudo unir al grupo' };
             }
             return { ...reg, joinedGroup: groupId };
         }
-
         return reg;
     }
 
@@ -131,7 +122,10 @@ const SGAuth = (function(){
         getToken, getUser, setSession, logout,
         isLoggedIn, getUserId,
         register, login,
-        joinGroup,           // NUEVO
-        registerAndJoin      // NUEVO
+        joinGroup,
+        registerAndJoin
     };
 })();
+
+// CRÍTICO: Exponer a window para que el HTML inline y la consela puedan acceder
+window.SGAuth = SGAuth;
