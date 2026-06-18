@@ -1,2 +1,8 @@
 dist/
 .github/workflows/deploy.yml
+.wrangler/ 
+node_modules/ 
+fix-i18n.js 
+fix-i18n-v2.js 
+package.json 
+package-lock.json 
