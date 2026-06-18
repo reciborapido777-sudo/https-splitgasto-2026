@@ -363,7 +363,26 @@ const translations = {
     'notifications.timeAgo.minutes': 'hace {n} min',
     'notifications.timeAgo.hours': 'hace {n} hora',
     'notifications.timeAgo.days': 'hace {n} días',
-    'notifications.timeAgo.yesterday': 'ayer'
+    'notifications.timeAgo.yesterday': 'ayer',
+
+    // Custom ES Block
+    'dashboard.founderMember': 'Socio Fundador',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Membresía Activa',
+    'dashboard.eliteFounder': 'Socio Fundador Elite',
+    'dashboard.membershipBenefits': '0% comisiones · Soporte VIP · Acceso total',
+    'dashboard.activeGroup': 'Grupo Activo',
+    'dashboard.loadingGroup': 'Cargando…',
+    'dashboard.membersPlaceholder': '— socios',
+    'activity.othersExpenses': 'Gastos de otros',
+    'activity.paidByOthers': 'Pagados por otros socios',
+    'category.comida': 'Comida',
+    'category.transporte': 'Transporte',
+    'category.entretenimiento': 'Ocio',
+    'category.alojamiento': 'Hogar',
+    'category.compras': 'Compras',
+    'category.salud': 'Salud',
+    'category.otro': 'Otro'
   },
   en: {
     'settings.title': 'Settings',
@@ -719,7 +738,26 @@ const translations = {
     'notifications.timeAgo.minutes': '{n} min ago',
     'notifications.timeAgo.hours': '{n} hour ago',
     'notifications.timeAgo.days': '{n} days ago',
-    'notifications.timeAgo.yesterday': 'yesterday'
+    'notifications.timeAgo.yesterday': 'yesterday',
+
+    // Custom EN Block
+    'dashboard.founderMember': 'Founding Member',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Active Membership',
+    'dashboard.eliteFounder': 'Elite Founding Member',
+    'dashboard.membershipBenefits': '0% fees · VIP Support · Full Access',
+    'dashboard.activeGroup': 'Active Group',
+    'dashboard.loadingGroup': 'Loading…',
+    'dashboard.membersPlaceholder': '— members',
+    'activity.othersExpenses': 'Others\' Expenses',
+    'activity.paidByOthers': 'Paid by other members',
+    'category.comida': 'Food',
+    'category.transporte': 'Transport',
+    'category.entretenimiento': 'Entertainment',
+    'category.alojamiento': 'Lodging',
+    'category.compras': 'Shopping',
+    'category.salud': 'Health',
+    'category.otro': 'Other'
   },
   fr: {
     'settings.title': 'Paramètres',
@@ -1075,7 +1113,26 @@ const translations = {
     'notifications.timeAgo.minutes': 'il y a {n} min',
     'notifications.timeAgo.hours': 'il y a {n} heure',
     'notifications.timeAgo.days': 'il y a {n} jours',
-    'notifications.timeAgo.yesterday': 'hier'
+    'notifications.timeAgo.yesterday': 'hier',
+
+    // Fallback EN Block
+    'dashboard.founderMember': 'Founding Member',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Active Membership',
+    'dashboard.eliteFounder': 'Elite Founding Member',
+    'dashboard.membershipBenefits': '0% fees · VIP Support · Full Access',
+    'dashboard.activeGroup': 'Active Group',
+    'dashboard.loadingGroup': 'Loading…',
+    'dashboard.membersPlaceholder': '— members',
+    'activity.othersExpenses': 'Others\' Expenses',
+    'activity.paidByOthers': 'Paid by other members',
+    'category.comida': 'Food',
+    'category.transporte': 'Transport',
+    'category.entretenimiento': 'Entertainment',
+    'category.alojamiento': 'Lodging',
+    'category.compras': 'Shopping',
+    'category.salud': 'Health',
+    'category.otro': 'Other'
   },
   de: {
     'settings.title': 'Einstellungen',
@@ -1431,7 +1488,26 @@ const translations = {
     'notifications.timeAgo.minutes': 'vor {n} Min',
     'notifications.timeAgo.hours': 'vor {n} Std',
     'notifications.timeAgo.days': 'vor {n} Tagen',
-    'notifications.timeAgo.yesterday': 'gestern'
+    'notifications.timeAgo.yesterday': 'gestern',
+
+    // Fallback EN Block
+    'dashboard.founderMember': 'Founding Member',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Active Membership',
+    'dashboard.eliteFounder': 'Elite Founding Member',
+    'dashboard.membershipBenefits': '0% fees · VIP Support · Full Access',
+    'dashboard.activeGroup': 'Active Group',
+    'dashboard.loadingGroup': 'Loading…',
+    'dashboard.membersPlaceholder': '— members',
+    'activity.othersExpenses': 'Others\' Expenses',
+    'activity.paidByOthers': 'Paid by other members',
+    'category.comida': 'Food',
+    'category.transporte': 'Transport',
+    'category.entretenimiento': 'Entertainment',
+    'category.alojamiento': 'Lodging',
+    'category.compras': 'Shopping',
+    'category.salud': 'Health',
+    'category.otro': 'Other'
   },
   zh: {
     'settings.title': '设置',
@@ -1787,7 +1863,26 @@ const translations = {
     'notifications.timeAgo.minutes': '{n} 分钟前',
     'notifications.timeAgo.hours': '{n} 小时前',
     'notifications.timeAgo.days': '{n} 天前',
-    'notifications.timeAgo.yesterday': '昨天'
+    'notifications.timeAgo.yesterday': '昨天',
+
+    // Fallback EN Block
+    'dashboard.founderMember': 'Founding Member',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Active Membership',
+    'dashboard.eliteFounder': 'Elite Founding Member',
+    'dashboard.membershipBenefits': '0% fees · VIP Support · Full Access',
+    'dashboard.activeGroup': 'Active Group',
+    'dashboard.loadingGroup': 'Loading…',
+    'dashboard.membersPlaceholder': '— members',
+    'activity.othersExpenses': 'Others\' Expenses',
+    'activity.paidByOthers': 'Paid by other members',
+    'category.comida': 'Food',
+    'category.transporte': 'Transport',
+    'category.entretenimiento': 'Entertainment',
+    'category.alojamiento': 'Lodging',
+    'category.compras': 'Shopping',
+    'category.salud': 'Health',
+    'category.otro': 'Other'
   },
   ja: {
     'settings.title': '設定',
@@ -2143,7 +2238,26 @@ const translations = {
     'notifications.timeAgo.minutes': '{n} 分前',
     'notifications.timeAgo.hours': '{n} 時間前',
     'notifications.timeAgo.days': '{n} 日前',
-    'notifications.timeAgo.yesterday': '昨日'
+    'notifications.timeAgo.yesterday': '昨日',
+
+    // Fallback EN Block
+    'dashboard.founderMember': 'Founding Member',
+    'dashboard.proBadge': 'PRO',
+    'dashboard.activeMembership': 'Active Membership',
+    'dashboard.eliteFounder': 'Elite Founding Member',
+    'dashboard.membershipBenefits': '0% fees · VIP Support · Full Access',
+    'dashboard.activeGroup': 'Active Group',
+    'dashboard.loadingGroup': 'Loading…',
+    'dashboard.membersPlaceholder': '— members',
+    'activity.othersExpenses': 'Others\' Expenses',
+    'activity.paidByOthers': 'Paid by other members',
+    'category.comida': 'Food',
+    'category.transporte': 'Transport',
+    'category.entretenimiento': 'Entertainment',
+    'category.alojamiento': 'Lodging',
+    'category.compras': 'Shopping',
+    'category.salud': 'Health',
+    'category.otro': 'Other'
   }
 };
 
