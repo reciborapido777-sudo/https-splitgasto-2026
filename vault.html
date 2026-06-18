@@ -282,18 +282,32 @@
 
         // ── Cargar datos reales (grupos + gastos) ──────────────────────
         const CAT_MAP = {
-            food:        { label: 'Alimentación', cat: 'alimentacion', color: '#13ecd6', icon: 'restaurant', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
-            transport:   { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
-            leisure:     { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie', img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
-            home:        { label: 'Suministros',  cat: 'suministros',  color: '#f59e0b', icon: 'bolt', img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
-            travel:      { label: 'Viajes',       cat: 'ocio',         color: '#3b82f6', icon: 'flight', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&q=80' },
-            health:      { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services', img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
-            gastronomia: { label: 'Gastronomía',  cat: 'gastronomia',  color: '#a855f7', icon: 'restaurant', img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80' },
-            other:       { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt', img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' }
+            // Claves que la base de datos suele devolver en español
+            'comida':          { label: 'Comida',       cat: 'gastronomia',  color: '#13ecd6', icon: 'restaurant',     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
+            'transporte':      { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
+            'entretenimiento': { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie',          img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
+            'alojamiento':     { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'bolt',           img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
+            'compras':         { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80' },
+            'salud':           { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services',img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
+            'otro':            { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
+            
+            // Claves de respaldo en inglés
+            'food':            { label: 'Comida',       cat: 'gastronomia',  color: '#13ecd6', icon: 'restaurant',     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
+            'transport':       { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
+            'leisure':         { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie',          img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
+            'home':            { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'bolt',           img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
+            'shopping':        { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80' },
+            'health':          { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services',img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
+            'other':           { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
+            
+            // Fallback total
+            'default':         { label: 'Gasto',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' }
         };
 
         function buildCard(exp, idx) {
-            const meta = CAT_MAP[exp.category] || CAT_MAP.other;
+            const rawCat = (exp.category || '').toLowerCase().trim();
+            const meta = CAT_MAP[rawCat] || CAT_MAP['default'];
+            
             const dateStr = exp.created_at
                 ? new Date(exp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
                 : 'Reciente';
@@ -333,7 +347,6 @@
                 if (groups.length === 0) {
                     document.getElementById('vault-total').textContent = '0,00€';
                     document.getElementById('vault-tickets').textContent = '0';
-                    // Sin grupos: mostrar solo el separador demo (ya visible en HTML)
                     return;
                 }
 
