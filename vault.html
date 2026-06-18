@@ -125,7 +125,6 @@
             <button class="filter-btn" onclick="setFilter(this,'transporte')">Transporte</button>
         </div>
 
-        <!-- Cards de gastos reales se inyectan aquí por JS -->
         <section id="realGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 hidden">
         </section>
 
@@ -283,14 +282,14 @@
 
         // ── Cargar datos reales (grupos + gastos) ──────────────────────
         const CAT_MAP = {
-            food:        { label: 'Alimentación', cat: 'alimentacion', color: '#13ecd6', icon: 'restaurant' },
-            transport:   { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
-            leisure:     { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie' },
-            home:        { label: 'Suministros',  cat: 'suministros',  color: '#f59e0b', icon: 'bolt' },
-            travel:      { label: 'Ocio',         cat: 'ocio',         color: '#3b82f6', icon: 'flight' },
-            health:      { label: 'Alimentación', cat: 'alimentacion', color: '#22c55e', icon: 'medical_services' },
-            gastronomia: { label: 'Gastronomía',  cat: 'gastronomia',  color: '#a855f7', icon: 'restaurant' },
-            other:       { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt' }
+            food:        { label: 'Alimentación', cat: 'alimentacion', color: '#13ecd6', icon: 'restaurant', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
+            transport:   { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
+            leisure:     { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie', img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
+            home:        { label: 'Suministros',  cat: 'suministros',  color: '#f59e0b', icon: 'bolt', img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
+            travel:      { label: 'Viajes',       cat: 'ocio',         color: '#3b82f6', icon: 'flight', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&q=80' },
+            health:      { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services', img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
+            gastronomia: { label: 'Gastronomía',  cat: 'gastronomia',  color: '#a855f7', icon: 'restaurant', img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80' },
+            other:       { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt', img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' }
         };
 
         function buildCard(exp, idx) {
@@ -305,17 +304,19 @@
             card.dataset.name = (exp.description || exp.category || '').toLowerCase();
             card.setAttribute('onclick', "SGRouter.navigate('receipt','vault')");
             card.innerHTML = `
-                <div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,${meta.color}18,#000)">
-                    <span class="material-icons-round opacity-20" style="font-size:6rem;color:${meta.color}">${meta.icon}</span>
+                <img src="${meta.img}" class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700" alt="${meta.label}" loading="lazy">
+                <div class="absolute inset-0 flex items-center justify-center mix-blend-overlay">
+                    <span class="material-icons-round opacity-30" style="font-size:6rem;color:${meta.color}">${meta.icon}</span>
                 </div>
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3 z-10">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 text-[7px] font-black uppercase rounded-full border"
-                              style="background:${meta.color}15;color:${meta.color};border-color:${meta.color}30">${meta.label}</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">${dateStr}</p>
+                        <span class="px-2 py-1 text-[7px] font-black uppercase rounded-full border backdrop-blur-md"
+                              style="background:${meta.color}20;color:${meta.color};border-color:${meta.color}40">${meta.label}</span>
+                        <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">${dateStr}</p>
                     </div>
                     <div>
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">
+                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white drop-shadow-lg">
                             ${exp.description || exp.category}
                         </h3>
                     </div>
