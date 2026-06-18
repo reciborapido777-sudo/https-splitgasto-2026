@@ -77,9 +77,15 @@
             </div>
             
             <div class="flex flex-col md:flex-row items-center gap-12 relative z-10">
-                <div class="relative group">
+                <div class="relative group cursor-pointer" onclick="document.getElementById('avatarUpload').click()">
                     <div class="absolute -inset-2 bg-[#FF9D42] rounded-[3.8rem] blur-xl opacity-10 group-hover:opacity-30 transition-all"></div>
-                    <img id="profile-avatar" src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40" class="relative size-40 md:size-52 rounded-[3.5rem] border-2 border-[#FF9D42]/30 object-cover shadow-2xl" alt="">    
+                    <img id="profile-avatar" src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40" class="relative size-40 md:size-52 rounded-[3.5rem] border-2 border-[#FF9D42]/30 object-cover shadow-2xl transition-all group-hover:opacity-60" alt="">    
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 pointer-events-none">
+                        <div class="bg-black/60 p-3 rounded-full border border-[#13ecd6]/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(19,236,214,0.4)]">
+                            <span class="material-icons-round text-[#13ecd6] text-3xl">edit</span>
+                        </div>
+                    </div>
+                    <input type="file" id="avatarUpload" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="updateSocioAvatar(event)">
                 </div>                
                 <div class="text-center md:text-left space-y-8">
                     <div class="space-y-4">
@@ -208,6 +214,29 @@
         </div>
     </nav>
     <script>
+    function updateSocioAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            if (window.SGRouter) SGRouter.showToast(t('error.system', null, 'El archivo excede los 2MB'), 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Str = e.target.result;
+            const avatarEl = document.getElementById('profile-avatar');
+            if (avatarEl) avatarEl.src = base64Str;
+            
+            const uid = SGAuth && SGAuth.getUserId() ? SGAuth.getUserId() : 'alpha_user';
+            localStorage.setItem(`sg_avatar_${uid}`, base64Str);
+            
+            if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+
     async function loadProfileData() {
       if (!SGAuth || !SGAuth.isLoggedIn()) {
         SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
@@ -224,9 +253,14 @@
           const nameEl = document.getElementById('profile-name');
           if (nameEl) nameEl.textContent = p.name || 'Comandante';
 
-          // Update avatar
+          // Update avatar (Check localStorage first, then DB, then dicebear fallback)
           const avatarEl = document.getElementById('profile-avatar');
-          if (avatarEl && p.avatar_url) {
+          const uid = SGAuth.getUserId() || 'alpha_user';
+          const localAvatar = localStorage.getItem(`sg_avatar_${uid}`);
+
+          if (localAvatar && avatarEl) {
+              avatarEl.src = localAvatar;
+          } else if (avatarEl && p.avatar_url) {
             avatarEl.src = p.avatar_url;
           } else if (avatarEl) {
             const initials = (p.name || 'SG')[0].toUpperCase();
