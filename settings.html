@@ -102,8 +102,8 @@
   <div class="glass p-5 flex items-center gap-4">
     <div id="profile-avatar" class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black" style="background:rgba(19,236,214,0.15);color:var(--cyan)">?</div>
     <div class="flex-1">
-      <p id="profile-name" class="font-black">Cargando...</p>
-      <p id="profile-role" class="text-xs" style="color:var(--cyan)">Socio</p>
+      <p id="profile-name" class="font-black" data-i18n="settings.loadingProfile">Cargando...</p>
+      <p id="profile-role" class="text-xs" style="color:var(--cyan)" data-i18n="role.member">Socio</p>
       <p id="profile-email" class="text-xs opacity-40">...</p>
     </div>
     <button onclick="SGRouter.navigate('profile')" class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:rgba(19,236,214,0.1);color:var(--cyan);border:1px solid rgba(19,236,214,0.2)" data-i18n="settings.edit">
@@ -273,7 +273,7 @@
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold" data-i18n="settings.terms">Términos y Privacidad</p>
-          <p class="text-xs opacity-40">Documentos legales</p>
+          <p class="text-xs opacity-40" data-i18n="settings.legalDocs">Documentos legales</p>
         </div>
         <span class="material-icons-round text-sm opacity-30">chevron_right</span>
       </div>
@@ -386,15 +386,13 @@ async function loadUserProfile() {
     if (emailEl) emailEl.textContent = user.email || '';
     if (avatarEl) avatarEl.textContent = (user.name || 'U').charAt(0).toUpperCase();
 
-    const lang = getSavedLanguage();
-    const t = translations[lang] || translations['es'];
-    let roleText = t['role.member'] || 'Socio';
+    let roleText = t('role.member', null, 'Socio');
 
     try {
       const resp = await SGApi.getGroups();
       const groupList = (resp && resp.success && resp.groups) ? resp.groups : [];
       const isAdmin = groupList.some(g => g.created_by === user.id || g.role === 'admin');
-      if (isAdmin) roleText = t['role.admin'] || 'Administrador';
+      if (isAdmin) roleText = t('role.admin', null, 'Administrador');
     } catch {}
     if (roleEl) roleEl.textContent = roleText;
   } catch (e) {
@@ -407,12 +405,10 @@ function toggle(row, id) {
   const track = document.getElementById(id);
   track.classList.toggle('on');
   
-  const lang = getSavedLanguage();
-  const t = translations[lang] || translations['es'];
-  const label = track.classList.contains('on') 
-    ? (t['toggle.on'] || 'Activado') 
-    : (t['toggle.off'] || 'Desactivado');
-  
+  const label = track.classList.contains('on')
+    ? t('toggle.on', null, 'Activado')
+    : t('toggle.off', null, 'Desactivado');
+
   SGRouter.showToast(label, 'info');
 }
 
@@ -460,9 +456,9 @@ function showCurrencySelector() {
   ).join('');
   
   m.innerHTML = `<div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;max-width:340px;width:90%">
-    <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;text-align:center">Selecciona moneda</h3>
+    <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;text-align:center">${t('settings.selectCurrency', null, 'Selecciona moneda')}</h3>
     <div id="currency-sel-list">${btns}</div>
-    <button onclick="document.getElementById('${mid}').remove()" style="width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">Cancelar</button>
+    <button onclick="document.getElementById('${mid}').remove()" style="width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">${t('common.cancel', null, 'Cancelar')}</button>
   </div>`;
   
   document.body.appendChild(m);
@@ -482,13 +478,13 @@ function showCurrencySelector() {
 /* ─── Logout real ─── */
 function doLogout() {
   SGAuth.logout();
-  SGRouter.showToast('Sesión cerrada', 'info');
+  SGRouter.showToast(t('auth.logoutSuccess', null, 'Sesión cerrada'), 'info');
   setTimeout(() => SGRouter.navigate('landing'), 800);
 }
 
 /* ─── Eliminar cuenta ─── */
 function confirmDelete() {
-  SGRouter.showToast('Para eliminar la cuenta, contacta soporte', 'warning');
+  SGRouter.showToast(t('account.deleteContactSupport', null, 'Para eliminar la cuenta, contacta soporte'), 'warning');
 }
 
 /* ─── Inicialización ─── */

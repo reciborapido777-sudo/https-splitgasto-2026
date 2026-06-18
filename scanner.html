@@ -95,8 +95,8 @@
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
-
     <script src="engine/i18n.js" defer></script>
+    
 </head>
 <body class="app-shell pb-32">
 <div class="app-frame">
@@ -106,10 +106,10 @@
             <span class="material-icons-round text-white text-3xl">close</span>
         </button>
         <div class="flex flex-col items-end">
-            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.5em] mb-1 leading-none">AI Vision Alpha</p>
+            <p class="text-[10px] font-black text-[#13ecd6] uppercase tracking-[0.5em] mb-1 leading-none" data-i18n="scanner.aiVision">AI Vision Alpha</p>
             <div class="flex items-center gap-2 px-3 py-1 bg-[#a855f7]/10 rounded-full border border-[#a855f7]/20">
                 <span class="material-icons-round text-[#a855f7] text-[10px]">verified_user</span>
-                <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">Cifrado AES-256</p>
+                <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none" data-i18n="scanner.encryption">Cifrado AES-256</p>
             </div>
         </div>
     </header>
@@ -123,17 +123,17 @@
             <div class="scan-pulse"></div>
             
             <div class="absolute bottom-10 w-full text-center space-y-2">
-                <p class="text-[10px] font-black text-white uppercase tracking-[0.6em]">Alineación Requerida</p>
-                <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Encuadre el ticket para auditoría</p>
+                <p class="text-[10px] font-black text-white uppercase tracking-[0.6em]" data-i18n="scanner.alignmentRequired">Alineación Requerida</p>
+                <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-[0.3em]" data-i18n="scanner.frameTicket">Encuadre el ticket para auditoría</p>
             </div>
-        </div>
+         </div>
     </main>
 
     <footer class="ui-layer p-10 flex flex-col items-center gap-10 reveal-node" style="animation-delay: 0.2s">
         <div class="flex justify-between items-center w-full max-w-sm px-4">
         <button id="flash-btn" onclick="toggleFlash()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
             <span class="material-icons-round text-3xl text-white">flash_on</span>
-            <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Flash</span>
+            <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600" data-i18n="scanner.flash">Flash</span>
         </button>
 
             <button onclick="SGRouter.navigate('receipt', 'scanner')" class="size-24 shutter-alpha rounded-full flex items-center justify-center border-8 border-black/30 group" title="Abrir cámara">
@@ -144,10 +144,10 @@
 
             <button onclick="openGallery()" class="flex flex-col items-center gap-3 opacity-30 hover:opacity-100 transition-all active:scale-90">
                 <span class="material-icons-round text-3xl text-white">photo_library</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600">Galería</span>
-            </button>    
+                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-600" data-i18n="scanner.gallery">Galería</span>
+            </button>
         </div>
-        <p class="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em]">Digitalización de <span class="text-[#13ecd6]">Grado Militar</span></p>
+        <p class="text-[10px] font-black text-zinc-700 uppercase tracking-[0.5em]"><span data-i18n="scanner.digitalization">Digitalización de</span> <span class="text-[#13ecd6]" data-i18n="scanner.militaryGrade">Grado Militar</span></p>
     </footer>
 
     
@@ -157,23 +157,23 @@
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
@@ -184,19 +184,19 @@
     function toggleFlash() {
         flashOn = !flashOn;
         var btn = document.getElementById('flash-btn');
+        var label = btn.querySelector('span:last-child');
         if (flashOn) {
             btn.classList.remove('opacity-30');
             btn.classList.add('opacity-100');
-            btn.querySelector('span:last-child').textContent = 'Flash ON';
-            // El torch real se activa en receipt-view.html al abrir la cámara
+            label.textContent = t('scanner.flashOn', null, 'Flash ON');
             sessionStorage.setItem('sg_flash', 'on');
-            SGRouter.showToast('Flash activado — se aplicará al abrir cámara', 'info');
+            SGRouter.showToast(t('scanner.flashActivated', null, 'Flash activado — se aplicará al abrir cámara'), 'info');
         } else {
             btn.classList.remove('opacity-100');
             btn.classList.add('opacity-30');
-            btn.querySelector('span:last-child').textContent = 'Flash';
+            label.textContent = t('scanner.flash', null, 'Flash');
             sessionStorage.removeItem('sg_flash');
-            SGRouter.showToast('Flash desactivado', 'info');
+            SGRouter.showToast(t('scanner.flashDeactivated', null, 'Flash desactivado'), 'info');
         }
     }
 

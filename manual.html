@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,13 +11,7 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
-        
-        html, body {  
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0;
-            box-sizing: border-box; touch-action: manipulation; }
-
+    
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(40px);
@@ -96,7 +90,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
     <script src="engine/i18n.js" defer></script>
@@ -113,8 +106,8 @@
                     <span class="material-icons-round text-zinc-600 group-hover:text-[#13ecd6] transition-colors text-3xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Knowledge Base</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Manual Alpha</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="manual.header.subtitle">Knowledge Base</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="manual.header.title">Manual Alpha</h1>
                 </div>
             </div>
             <div class="size-14 glass-panel rounded-2xl flex items-center justify-center text-[#13ecd6]">
@@ -125,24 +118,24 @@
         <!-- Filosofía -->
         <section class="glass-panel p-8 md:p-12 rounded-[3rem] border-[#13ecd6]/10 space-y-8 reveal-node">
             <div class="space-y-3">
-                <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.5em]">Protocolo Core</p>
-                <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic text-gradient-cyan">¿Qué es SplitGasto?</h2>
-                <p class="text-base text-zinc-400 font-medium leading-relaxed">
+                <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[0.5em]" data-i18n="manual.philosophy.label">Protocolo Core</p>
+                <h2 class="text-3xl font-black font-['Space_Grotesk'] uppercase italic text-gradient-cyan" data-i18n="manual.philosophy.title">¿Qué es SplitGasto?</h2>
+                <p class="text-base text-zinc-400 font-medium leading-relaxed" data-i18n="manual.philosophy.description">
                     SplitGasto es una plataforma de <strong class="text-white">justicia financiera de élite</strong>. Divide gastos entre grupos de manera precisa, audita cada operación con IA y garantiza que nadie pague de más ni de menos. Sin discrepancias. Sin errores de redondeo.
                 </p>
             </div>
             <div class="grid md:grid-cols-3 gap-6 pt-4 border-t border-white/5">
                 <div class="blueprint-node space-y-2">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white">Justicia Táctica</h4>
-                    <p class="text-xs text-zinc-500">Algoritmos de reparto con precisión absoluta al céntimo.</p>
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white" data-i18n="manual.philosophy.feature1.title">Justicia Táctica</h4>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.philosophy.feature1.desc">Algoritmos de reparto con precisión absoluta al céntimo.</p>
                 </div>
                 <div class="blueprint-node purple space-y-2">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white">Auditoría IA</h4>
-                    <p class="text-xs text-zinc-500">Cada gasto es analizado y verificado automáticamente.</p>
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white" data-i18n="manual.philosophy.feature2.title">Auditoría IA</h4>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.philosophy.feature2.desc">Cada gasto es analizado y verificado automáticamente.</p>
                 </div>
                 <div class="blueprint-node orange space-y-2">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white">Bóveda Digital</h4>
-                    <p class="text-xs text-zinc-500">Todos tus tickets y recibos guardados con cifrado AES-256.</p>
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-white" data-i18n="manual.philosophy.feature3.title">Bóveda Digital</h4>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.philosophy.feature3.desc">Todos tus tickets y recibos guardados con cifrado AES-256.</p>
                 </div>
             </div>
         </section>
@@ -150,36 +143,36 @@
         <!-- Cómo empezar -->
         <section class="space-y-6 reveal-node" style="animation-delay: 0.1s">
             <div class="space-y-1">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Inicio Rápido</p>
-                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic">Cómo Empezar</h2>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="manual.gettingstarted.label">Inicio Rápido</p>
+                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic" data-i18n="manual.gettingstarted.title">Cómo Empezar</h2>
             </div>
             <div class="grid md:grid-cols-2 gap-5">
                 <div class="step-card flex gap-5">
                     <div class="size-10 shrink-0 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center justify-center text-[#13ecd6] font-black text-sm font-['Space_Grotesk']">1</div>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Crear Cuenta</h4>
-                        <p class="text-xs text-zinc-500">Regístrate con tu correo o accede con Google/Apple. Tu cuenta queda cifrada desde el primer momento.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.steps.1.title">Crear Cuenta</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.steps.1.desc">Regístrate con tu correo o accede con Google/Apple. Tu cuenta queda cifrada desde el primer momento.</p>
                     </div>
                 </div>
                 <div class="step-card flex gap-5">
                     <div class="size-10 shrink-0 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/20 flex items-center justify-center text-[#a855f7] font-black text-sm font-['Space_Grotesk']">2</div>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Crear un Grupo</h4>
-                        <p class="text-xs text-zinc-500">Crea un grupo para cada evento: viaje, piso compartido, cenas con amigos. Invita a los socios del grupo.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.steps.2.title">Crear un Grupo</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.steps.2.desc">Crea un grupo para cada evento: viaje, piso compartido, cenas con amigos. Invita a los socios del grupo.</p>
                     </div>
                 </div>
                 <div class="step-card flex gap-5">
                     <div class="size-10 shrink-0 rounded-2xl bg-[#FF9D42]/10 border border-[#FF9D42]/20 flex items-center justify-center text-[#FF9D42] font-black text-sm font-['Space_Grotesk']">3</div>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Registrar Gasto</h4>
-                        <p class="text-xs text-zinc-500">Escanea el ticket o añade el importe manualmente. La IA verifica y distribuye automáticamente entre los socios.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.steps.3.title">Registrar Gasto</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.steps.3.desc">Escanea el ticket o añade el importe manualmente. La IA verifica y distribuye automáticamente entre los socios.</p>
                     </div>
                 </div>
                 <div class="step-card flex gap-5">
                     <div class="size-10 shrink-0 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center justify-center text-[#13ecd6] font-black text-sm font-['Space_Grotesk']">4</div>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Liquidar y Cerrar</h4>
-                        <p class="text-xs text-zinc-500">Cuando todos hayan saldado sus deudas, cierra el grupo. La bóveda guarda el historial completo.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.steps.4.title">Liquidar y Cerrar</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.steps.4.desc">Cuando todos hayan saldado sus deudas, cierra el grupo. La bóveda guarda el historial completo.</p>
                     </div>
                 </div>
             </div>
@@ -188,50 +181,50 @@
         <!-- Funciones principales -->
         <section class="glass-panel p-8 md:p-12 rounded-[3rem] space-y-8 reveal-node" style="animation-delay: 0.15s">
             <div class="space-y-1">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Funciones</p>
-                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic text-gradient-purple">Módulos del Sistema</h2>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="manual.features.label">Funciones</p>
+                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic text-gradient-purple" data-i18n="manual.features.title">Módulos del Sistema</h2>
             </div>
             <div class="space-y-5">
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#13ecd6] text-2xl mt-0.5">dashboard</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Dashboard (Mando)</h4>
-                        <p class="text-xs text-zinc-500">Panel central con balance neto, últimas operaciones y acceso rápido a todos los módulos. Tu cuartel general financiero.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.dashboard.title">Dashboard (Mando)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.dashboard.desc">Panel central con balance neto, últimas operaciones y acceso rápido a todos los módulos. Tu cuartel general financiero.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#a855f7] text-2xl mt-0.5">groups_3</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Grupos (Nodos)</h4>
-                        <p class="text-xs text-zinc-500">Gestiona todos tus grupos activos. Cada grupo es un nodo independiente con sus propios socios y balance.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.groups.title">Grupos (Nodos)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.groups.desc">Gestiona todos tus grupos activos. Cada grupo es un nodo independiente con sus propios socios y balance.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#FF9D42] text-2xl mt-0.5">receipt_long</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Actividad (Gastos)</h4>
-                        <p class="text-xs text-zinc-500">Historial completo de todas las operaciones. Filtra por estado, fecha o socio. Exporta en cualquier momento.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.activity.title">Actividad (Gastos)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.activity.desc">Historial completo de todas las operaciones. Filtra por estado, fecha o socio. Exporta en cualquier momento.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#13ecd6] text-2xl mt-0.5">document_scanner</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Scanner (OCR Alpha)</h4>
-                        <p class="text-xs text-zinc-500">Escanea cualquier ticket físico. La IA extrae importe, fecha y concepto automáticamente con verificación de hash.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.scanner.title">Scanner (OCR Alpha)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.scanner.desc">Escanea cualquier ticket físico. La IA extrae importe, fecha y concepto automáticamente con verificación de hash.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#a855f7] text-2xl mt-0.5">lock</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Bóveda (Vault)</h4>
-                        <p class="text-xs text-zinc-500">Archivo permanente cifrado con AES-256 de todos tus recibos y evidencias financieras. Inmutable y seguro.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.vault.title">Bóveda (Vault)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.vault.desc">Archivo permanente cifrado con AES-256 de todos tus recibos y evidencias financieras. Inmutable y seguro.</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-5 p-5 rounded-2xl hover:bg-white/3 transition-all cursor-default">
                     <span class="material-icons-round text-[#FF9D42] text-2xl mt-0.5">query_stats</span>
                     <div class="space-y-1">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Métricas (Analytics)</h4>
-                        <p class="text-xs text-zinc-500">Análisis de patrones de gasto por categoría, período y socio. Proyecciones con IA para optimizar tu economía.</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="manual.features.analytics.title">Métricas (Analytics)</h4>
+                        <p class="text-xs text-zinc-500" data-i18n="manual.features.analytics.desc">Análisis de patrones de gasto por categoría, período y socio. Proyecciones con IA para optimizar tu economía.</p>
                     </div>
                 </div>
             </div>
@@ -240,29 +233,29 @@
         <!-- FAQ -->
         <section class="glass-panel p-8 md:p-12 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.2s">
             <div class="space-y-1">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Soporte</p>
-                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic">Preguntas Frecuentes</h2>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="manual.faq.label">Soporte</p>
+                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic" data-i18n="manual.faq.title">Preguntas Frecuentes</h2>
             </div>
             <div class="space-y-0">
                 <div class="faq-item py-5">
-                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2">¿Cuántos socios puede tener un grupo?</p>
-                    <p class="text-xs text-zinc-500">No hay límite técnico. El algoritmo de reparto escala automáticamente. Grupos de 2 a 200+ personas sin problema.</p>
+                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2" data-i18n="manual.faq.q1.question">¿Cuántos socios puede tener un grupo?</p>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.faq.q1.answer">No hay límite técnico. El algoritmo de reparto escala automáticamente. Grupos de 2 a 200+ personas sin problema.</p>
                 </div>
                 <div class="faq-item py-5">
-                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2">¿Mis datos financieros están seguros?</p>
-                    <p class="text-xs text-zinc-500">Sí. Cifrado AES-256 en reposo y TLS 1.3 en tránsito. Nunca vendemos datos. Cumplimiento total con GDPR.</p>
+                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2" data-i18n="manual.faq.q2.question">¿Mis datos financieros están seguros?</p>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.faq.q2.answer">Sí. Cifrado AES-256 en reposo y TLS 1.3 en tránsito. Nunca vendemos datos. Cumplimiento total con GDPR.</p>
                 </div>
                 <div class="faq-item py-5">
-                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2">¿Se puede dividir desigualmente?</p>
-                    <p class="text-xs text-zinc-500">Sí. Puedes asignar porcentajes personalizados a cada socio, cantidades fijas, o usar el algoritmo equitativo automático.</p>
+                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2" data-i18n="manual.faq.q3.question">¿Se puede dividir desigualmente?</p>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.faq.q3.answer">Sí. Puedes asignar porcentajes personalizados a cada socio, cantidades fijas, o usar el algoritmo equitativo automático.</p>
                 </div>
                 <div class="faq-item py-5">
-                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2">¿Qué pasa si un socio no acepta su deuda?</p>
-                    <p class="text-xs text-zinc-500">El sistema envía recordatorios automáticos. La evidencia queda registrada en la bóveda con hash verificable. La IA lleva el seguimiento.</p>
+                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2" data-i18n="manual.faq.q4.question">¿Qué pasa si un socio no acepta su deuda?</p>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.faq.q4.answer">El sistema envía recordatorios automáticos. La evidencia queda registrada en la bóveda con hash verificable. La IA lleva el seguimiento.</p>
                 </div>
                 <div class="faq-item py-5">
-                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2">¿Es gratuito?</p>
-                    <p class="text-xs text-zinc-500">La versión base es gratuita. La membresía Élite desbloquea scanner OCR avanzado, analytics premium, bóveda ilimitada y acceso al Lounge.</p>
+                    <p class="text-sm font-black uppercase tracking-wide text-white mb-2" data-i18n="manual.faq.q5.question">¿Es gratuito?</p>
+                    <p class="text-xs text-zinc-500" data-i18n="manual.faq.q5.answer">La versión base es gratuita. La membresía Élite desbloquea scanner OCR avanzado, analytics premium, bóveda ilimitada y acceso al Lounge.</p>
                 </div>
             </div>
         </section>
@@ -271,32 +264,32 @@
         <section class="grid md:grid-cols-3 gap-6 reveal-node" style="animation-delay: 0.25s">
             <div class="glass-panel p-7 rounded-[2.5rem] border-[#13ecd6]/10 space-y-4 hover:bg-white/5 transition-all cursor-default group">
                 <div class="size-10 bg-[#13ecd6] rounded-full shadow-[0_0_20px_#13ecd6] group-hover:scale-110 transition-transform"></div>
-                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']">Cian Tech</h4>
-                <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Éxito, validación y flujos de capital positivos.</p>
+                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']" data-i18n="manual.colors.cyan.title">Cian Tech</h4>
+                <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="manual.colors.cyan.desc">Éxito, validación y flujos de capital positivos.</p>
             </div>
             <div class="glass-panel p-7 rounded-[2.5rem] border-[#a855f7]/10 space-y-4 hover:bg-white/5 transition-all cursor-default group">
                 <div class="size-10 bg-[#a855f7] rounded-full shadow-[0_0_20px_#a855f7] group-hover:scale-110 transition-transform"></div>
-                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']">Púrpura Deep</h4>
-                <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Lógica IA, auditoría y procesos de seguridad.</p>
+                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']" data-i18n="manual.colors.purple.title">Púrpura Deep</h4>
+                <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="manual.colors.purple.desc">Lógica IA, auditoría y procesos de seguridad.</p>
             </div>
             <div class="glass-panel p-7 rounded-[2.5rem] border-[#FF9D42]/10 space-y-4 hover:bg-white/5 transition-all cursor-default group">
                 <div class="size-10 bg-[#FF9D42] rounded-full shadow-[0_0_20px_#FF9D42] group-hover:scale-110 transition-transform"></div>
-                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']">Naranja Socio</h4>
-                <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Estatus Élite, Membresía y Acceso de Fundador.</p>
+                <h4 class="text-sm font-black uppercase font-['Space_Grotesk']" data-i18n="manual.colors.orange.title">Naranja Socio</h4>
+                <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="manual.colors.orange.desc">Estatus Élite, Membresía y Acceso de Fundador.</p>
             </div>
         </section>
 
         <!-- CTA Soporte -->
         <section class="glass-panel p-8 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-6 reveal-node" style="animation-delay: 0.3s">
             <div class="space-y-1 text-center md:text-left">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">¿Necesitas más ayuda?</p>
-                <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Contacta al Soporte Alpha</h3>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="manual.support.label">¿Necesitas más ayuda?</p>
+                <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic" data-i18n="manual.support.title">Contacta al Soporte Alpha</h3>
             </div>
             <div class="flex flex-col sm:flex-row gap-4">
-                <button onclick="SGRouter.showToast('Canal de soporte próximamente disponible', 'info')" class="px-8 py-4 bg-[#13ecd6] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(19,236,214,0.4)] transition-all active:scale-95">
+                <button onclick="SGRouter.showToast('Canal de soporte próximamente disponible', 'info')" class="px-8 py-4 bg-[#13ecd6] text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-[0_0_30px_rgba(19,236,214,0.4)] transition-all active:scale-95" data-i18n="manual.support.chat">
                     Chat Alpha
                 </button>
-                <button onclick="SGRouter.navigate('profile')" class="px-8 py-4 glass-panel text-zinc-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-white transition-all">
+                <button onclick="SGRouter.navigate('profile')" class="px-8 py-4 glass-panel text-zinc-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-white transition-all" data-i18n="manual.support.profile">
                     Mi Perfil
                 </button>
             </div>
@@ -304,36 +297,33 @@
 
     </div>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
+    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })

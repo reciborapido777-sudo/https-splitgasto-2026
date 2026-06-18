@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,12 +12,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap');
         
-        html, body {  
-            background: #000; color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            overflow-x: hidden !important; width: 100% !important; margin: 0; padding: 0; 
-            box-sizing: border-box; touch-action: manipulation; }
-
         .glass-panel { 
             background: rgba(255, 255, 255, 0.02); 
             backdrop-filter: blur(30px); 
@@ -105,7 +99,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/router.js" defer></script>
     <script src="engine/i18n.js" defer></script>
@@ -122,11 +115,11 @@
                     <span class="material-icons-round text-zinc-600 group-hover:text-[#a855f7] transition-colors text-3xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault Security</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-[#a855f7] leading-none">Blindaje</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="security.header.subtitle">Vault Security</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-[#a855f7] leading-none" data-i18n="security.header.title">Blindaje</h1>
                 </div>
             </div>
-            <div class="security-status animate-pulse">AES-256 Activo</div>
+            <div class="security-status animate-pulse" data-i18n="security.header.status">AES-256 Activo</div>
         </header>
 
         <!-- Score de seguridad -->
@@ -135,18 +128,18 @@
                 <span class="score-value">85</span>
             </div>
             <div class="text-center sm:text-left space-y-2 flex-1">
-                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Índice de Seguridad Alpha</p>
-                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic">Nivel Élite</h2>
-                <p class="text-xs text-zinc-500">Tu cuenta está protegida con los más altos estándares de seguridad. Activa la verificación en 2 pasos para llegar al 100%.</p>
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="security.score.label">Índice de Seguridad Alpha</p>
+                <h2 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic" data-i18n="security.score.title">Nivel Élite</h2>
+                <p class="text-xs text-zinc-500" data-i18n="security.score.desc">Tu cuenta está protegida con los más altos estándares de seguridad. Activa la verificación en 2 pasos para llegar al 100%.</p>
             </div>
             <div class="shrink-0">
-                <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest">Verificado</span>
+                <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest" data-i18n="security.score.badge">Verificado</span>
             </div>
         </section>
 
         <!-- Controles de seguridad -->
         <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#a855f7]/10 space-y-2 reveal-node" style="animation-delay: 0.1s">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-4">Controles Activos</p>
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-4" data-i18n="security.controls.label">Controles Activos</p>
 
             <!-- Biometría -->
             <div class="security-row">
@@ -155,8 +148,8 @@
                         <span class="material-icons-round text-[#a855f7]">fingerprint</span>
                     </div>
                     <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Desbloqueo Biométrico</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">FaceID / Huella Dactilar</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="security.controls.biometric.title">Desbloqueo Biométrico</h4>
+                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="security.controls.biometric.desc">FaceID / Huella Dactilar</p>
                     </div>
                 </div>
                 <div class="toggle-box toggle-active" 
@@ -172,8 +165,8 @@
                         <span class="material-icons-round text-[#13ecd6]">verified_user</span>
                     </div>
                     <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Verificación 2 Pasos</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">SMS / App Authenticator</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="security.controls.2fa.title">Verificación 2 Pasos</h4>
+                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="security.controls.2fa.desc">SMS / App Authenticator</p>
                     </div>
                 </div>
                 <div class="toggle-box" 
@@ -189,8 +182,8 @@
                         <span class="material-icons-round text-[#FF9D42]">notifications_active</span>
                     </div>
                     <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Alertas de Acceso</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Notificación en cada login</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="security.controls.alerts.title">Alertas de Acceso</h4>
+                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="security.controls.alerts.desc">Notificación en cada login</p>
                     </div>
                 </div>
                 <div class="toggle-box toggle-active" 
@@ -206,27 +199,27 @@
                         <span class="material-icons-round text-[#a855f7]">lock</span>
                     </div>
                     <div class="space-y-0.5">
-                        <h4 class="text-sm font-black uppercase tracking-wide">Cifrado Bóveda</h4>
-                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest">AES-256 · Siempre activo</p>
+                        <h4 class="text-sm font-black uppercase tracking-wide" data-i18n="security.controls.vault.title">Cifrado Bóveda</h4>
+                        <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="security.controls.vault.desc">AES-256 · Siempre activo</p>
                     </div>
                 </div>
-                <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest">Forzado</span>
+                <span class="px-3 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20 tracking-widest" data-i18n="security.controls.vault.badge">Forzado</span>
             </div>
         </section>
 
         <!-- Cambiar contraseña -->
         <section class="glass-panel p-8 rounded-[3rem] space-y-5 reveal-node" style="animation-delay: 0.15s">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Credenciales</p>
+            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="security.credentials.label">Credenciales</p>
             <div class="flex flex-col sm:flex-row gap-4">
                 <button onclick="SGRouter.showToast('Enlace de cambio enviado a tu correo', 'success')" 
                         class="flex-1 py-5 glass-panel rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-300 hover:text-white hover:bg-white/5 transition-all active:scale-95 flex items-center justify-center gap-3">
                     <span class="material-icons-round text-[#a855f7]">key</span>
-                    Cambiar Contraseña
+                    <span data-i18n="security.credentials.changepass">Cambiar Contraseña</span>
                 </button>
                 <button onclick="SGRouter.showToast('Sesiones cerradas en todos los dispositivos', 'success')" 
                         class="flex-1 py-5 glass-panel rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-500 hover:text-red-400 hover:border-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-3">
                     <span class="material-icons-round">logout</span>
-                    Cerrar Todas las Sesiones
+                    <span data-i18n="security.credentials.closesessions">Cerrar Todas las Sesiones</span>
                 </button>
             </div>
         </section>
@@ -236,74 +229,71 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <span class="material-icons-round text-zinc-600">history</span>
-                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]">Log de Auditoría</p>
+                    <p class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em]" data-i18n="security.log.title">Log de Auditoría</p>
                 </div>
-                <span class="text-[8px] font-black text-zinc-700 uppercase tracking-widest">Últimos 7 días</span>
+                <span class="text-[8px] font-black text-zinc-700 uppercase tracking-widest" data-i18n="security.log.period">Últimos 7 días</span>
             </div>
             <div class="space-y-0">
                 <div class="log-entry">
                     <div class="flex items-center gap-3">
                         <span class="size-2 bg-[#13ecd6] rounded-full shadow-[0_0_8px_#13ecd6]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Conexión Exitosa · Madrid, ES</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" data-i18n="security.log.entry1">Conexión Exitosa · Madrid, ES</p>
                     </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">Hoy, 04:00</p>
+                    <p class="text-[9px] font-black text-zinc-700 uppercase" data-i18n="security.log.time1">Hoy, 04:00</p>
                 </div>
                 <div class="log-entry">
                     <div class="flex items-center gap-3">
                         <span class="size-2 bg-[#a855f7] rounded-full shadow-[0_0_8px_#a855f7]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Cifrado Bóveda Sincronizado</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" data-i18n="security.log.entry2">Cifrado Bóveda Sincronizado</p>
                     </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">Ayer, 23:15</p>
+                    <p class="text-[9px] font-black text-zinc-700 uppercase" data-i18n="security.log.time2">Ayer, 23:15</p>
                 </div>
                 <div class="log-entry">
                     <div class="flex items-center gap-3">
                         <span class="size-2 bg-[#FF9D42] rounded-full shadow-[0_0_8px_#FF9D42]"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Cambio de Configuración</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" data-i18n="security.log.entry3">Cambio de Configuración</p>
                     </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">12 Mar, 18:30</p>
+                    <p class="text-[9px] font-black text-zinc-700 uppercase" data-i18n="security.log.time3">12 Mar, 18:30</p>
                 </div>
                 <div class="log-entry">
                     <div class="flex items-center gap-3">
                         <span class="size-2 bg-zinc-600 rounded-full"></span>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Sesión Cerrada · Safari iOS</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-600" data-i18n="security.log.entry4">Sesión Cerrada · Safari iOS</p>
                     </div>
-                    <p class="text-[9px] font-black text-zinc-700 uppercase">11 Mar, 09:00</p>
+                    <p class="text-[9px] font-black text-zinc-700 uppercase" data-i18n="security.log.time4">11 Mar, 09:00</p>
                 </div>
             </div>
         </section>
 
     </div>
 
-    
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
+    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })

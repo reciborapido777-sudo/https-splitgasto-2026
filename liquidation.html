@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liquidar Deuda | SplitGasto 2026</title>
+<title data-i18n="liquidation.title">Liquidar Deuda | SplitGasto 2026</title>
 <link rel="stylesheet" href="engine/global.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -39,7 +39,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
 <link sizes="180x180" rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <script src="engine/desktop-fix.js" defer></script>
-<script src="engine/router.js" defer></script>
+<script src="engine/router.js"></script>
 <script src="engine/auth.js"></script>
 <script src="engine/api.js"></script>
 <script src="engine/i18n.js" defer></script>
@@ -54,37 +54,37 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
         <span class="material-icons-round text-zinc-500">arrow_back</span>
       </button>
       <div>
-        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Operación Táctica</p>
-        <h1 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Liquidar</h1>
+        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="liquidation.operation">Operación Táctica</p>
+        <h1 class="text-2xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none" data-i18n="liquidation.title">Liquidar</h1>
       </div>
     </div>
-    <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse">Transferencia Segura</span>
+    <span class="px-4 py-2 bg-[#13ecd6]/10 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20 animate-pulse" data-i18n="liquidation.secureTransfer">Transferencia Segura</span>
   </header>
 
   <section class="glass-panel p-8 sm:p-12 rounded-[3rem] border-[#13ecd6]/10 text-center space-y-6 reveal-node relative overflow-hidden">
     <div class="absolute -right-10 -top-10 size-40 bg-[#13ecd6]/5 rounded-full blur-3xl pointer-events-none"></div>
     <div>
-      <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3">Total a Liquidar</p>
+      <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em] mb-3" data-i18n="liquidation.totalToSettle">Total a Liquidar</p>
       <div id="liquidation-amount-display" class="amount-display">0,00€</div>
-      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white">Cargando...</span></p>
+      <p class="text-xs text-zinc-600 uppercase tracking-widest mt-2 font-bold">a <span id="recipient-name" class="text-white" data-i18n="common.loading">Cargando...</span></p>
     </div>
     <div id="badges-container" class="flex justify-center gap-3">
-      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800 animate-pulse">Analizando...</span>
+      <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800 animate-pulse" data-i18n="liquidation.analyzing">Analizando...</span>
     </div>
   </section>
 
   <section id="breakdown-container" class="glass-panel p-7 rounded-[2.5rem] space-y-1 reveal-node" style="animation-delay:.05s">
-    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center animate-pulse">Sincronizando datos...</p>
+    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center animate-pulse" data-i18n="liquidation.syncingData">Sincronizando datos...</p>
   </section>
 
   <section class="space-y-4 reveal-node" style="animation-delay:.1s">
-    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Método de Pago</p>
+    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]" data-i18n="liquidation.paymentMethod">Método de Pago</p>
     <div class="space-y-3">
       <div class="pay-method selected flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-[#13ecd6] text-2xl">account_balance</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">Transferencia Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Instantánea · Sin comisiones</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.transferAlpha">Transferencia Alpha</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.transferAlphaSub">Instantánea · Sin comisiones</p>
         </div>
         <span class="size-5 rounded-full border-2 border-[#13ecd6] flex items-center justify-center">
           <span class="size-2.5 bg-[#13ecd6] rounded-full"></span>
@@ -93,16 +93,16 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
       <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-zinc-500 text-2xl">contactless</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">NFC · Pago Contactless</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Requiere cercanía física</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.nfcTitle">NFC · Pago Contactless</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.nfcSub">Requiere cercanía física</p>
         </div>
         <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
       </div>
       <div class="pay-method flex items-center gap-4" onclick="selectMethod(this)">
         <span class="material-icons-round method-icon text-zinc-500 text-2xl">qr_code</span>
         <div class="flex-1">
-          <p class="text-sm font-black uppercase">QR Alpha</p>
-          <p class="text-[9px] text-zinc-600 uppercase tracking-widest">Genera código para compartir</p>
+          <p class="text-sm font-black uppercase" data-i18n="liquidation.qrTitle">QR Alpha</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest" data-i18n="liquidation.qrSub">Genera código para compartir</p>
         </div>
         <span class="size-5 rounded-full border-2 border-zinc-700 flex items-center justify-center"></span>
       </div>
@@ -118,13 +118,13 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   </section>
 
   <div class="space-y-3 reveal-node" style="animation-delay:.2s">
-    <button onclick="executeLiquidation()" 
+    <button id="btn-confirm-liquidation" onclick="executeLiquidation()" 
       class="w-full py-7 bg-white text-black rounded-[2.5rem] font-black text-xs uppercase tracking-[0.5em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-2xl">
-      Confirmar Liquidación
+      <span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>
     </button>
     <button onclick="SGRouter.back()" 
       class="w-full py-5 glass-panel rounded-[2rem] text-zinc-600 font-black text-[10px] uppercase tracking-[0.4em] hover:text-white transition-all">
-      Cancelar
+      <span data-i18n="common.cancel">Cancelar</span>
     </button>
   </div>
 
@@ -134,28 +134,26 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
     <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
         <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
             <span class="material-icons-round">grid_view</span>
-            <p>Mando</p>
+            <p data-i18n="nav.dashboard">Mando</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('groups')">
             <span class="material-icons-round">groups_3</span>
-            <p>Grupos</p>
+            <p data-i18n="nav.groups">Grupos</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('activity')">
             <span class="material-icons-round">receipt_long</span>
-            <p>Gastos</p>
+            <p data-i18n="nav.expenses">Gastos</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('analytics')">
             <span class="material-icons-round">query_stats</span>
-            <p>Métricas</p>
+            <p data-i18n="nav.metrics">Métricas</p>
         </button>
         <button class="nav-item" onclick="SGRouter.navigate('profile')">
             <span class="material-icons-round">person</span>
-            <p>Perfil</p>
+            <p data-i18n="nav.profile">Perfil</p>
         </button>
     </div>
 </nav>
-
-</div>
 
 <script>
 function selectMethod(el) {
@@ -176,7 +174,8 @@ function selectMethod(el) {
 }
 
 async function executeLiquidation() {
-    const btn = document.querySelector('button[onclick="executeLiquidation()"]');
+    const btn = document.getElementById('btn-confirm-liquidation');
+    if (!btn) return;
     
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
@@ -184,11 +183,11 @@ async function executeLiquidation() {
     const amount = parseFloat(params.get('amount')) || 0;
     
     if (!groupId || !toUserId || amount <= 0) {
-        SGRouter.showToast('Parámetros de liquidación inválidos', 'error');
+        SGRouter.showToast(t('liquidation.invalidParams', null, 'Parámetros de liquidación inválidos'), 'error');
         return;
     }
     
-    btn.textContent = 'Procesando...';
+    btn.innerHTML = '<span data-i18n="liquidation.processing">Procesando...</span>';
     btn.disabled = true;
     btn.classList.add('opacity-70');
 
@@ -218,38 +217,45 @@ async function executeLiquidation() {
                 txid: data.id || crypto.randomUUID(),
                 timestamp: new Date().toISOString(),
                 groupId: groupId,
-                groupName: document.querySelector('#badges-container span')?.textContent || 'Grupo',
+                groupName: document.querySelector('#badges-container span')?.textContent || t('expense.group', null, 'Grupo'),
                 amount: amount,
                 currency: currency,
                 fromUser: SGAuth.getUserId(),
                 toUser: toUserId,
                 toUserName: recipientName,
                 balanceAfter: 0.00,
-                description: document.getElementById('liquidation-note')?.value || 'Liquidación de deuda'
+                description: document.getElementById('liquidation-note')?.value || t('liquidation.settlementNote', null, 'Liquidación de deuda')
             }));
             SGRouter.navigate('success', 'liquidation');
         } else {
-            SGRouter.showToast(data.error || 'Error al liquidar', 'error');
-            btn.textContent = 'Confirmar Liquidación';
+            SGRouter.showToast(data.error || t('liquidation.settlementError', null, 'Error al liquidar'), 'error');
+            btn.innerHTML = '<span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>';
             btn.disabled = false;
             btn.classList.remove('opacity-70');
         }
     } catch (e) {
-        SGRouter.showToast('Error de conexión', 'error');
-        btn.textContent = 'Confirmar Liquidación';
+        SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
+        btn.innerHTML = '<span data-i18n="liquidation.confirmSettlement">Confirmar Liquidación</span>';
         btn.disabled = false;
         btn.classList.remove('opacity-70');
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // === AUTH GUARD ===
+    if (!SGAuth || !SGAuth.isLoggedIn || !SGAuth.isLoggedIn()) {
+        SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
+        setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+        return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('groupId');
     const toUserId = params.get('to');
     const amount = params.get('amount');
 
     if (!groupId || !toUserId || !amount) {
-        SGRouter.showToast('Selecciona un grupo o movimiento primero', 'error');
+        SGRouter.showToast(t('liquidation.selectGroupFirst', null, 'Selecciona un grupo o movimiento primero'), 'error');
         setTimeout(() => SGRouter.navigate('groups'), 1000);
         return;
     }
@@ -261,14 +267,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         let groupName = "Bóveda Alpha";
         const groupsRes = await SGApi.getGroups().catch(() => null);
         if (groupsRes?.success && groupsRes.groups) {
-            const foundGroup = groupsRes.groups.find(g => g.id === groupId);
+            const foundGroup = groupsRes.groups.find(g => String(g.id) === String(groupId));
             if (foundGroup) groupName = foundGroup.name;
         }
 
         let recipientName = `Socio (${toUserId.substring(0,6)})`;
         const membersRes = await SGApi.getGroupMembers(groupId).catch(() => null);
         if (membersRes?.success && membersRes.members) {
-            const member = membersRes.members.find(m => m.userId === toUserId || m.id === toUserId);
+            const member = membersRes.members.find(m => String(m.userId || m.id) === String(toUserId));
             if (member?.name) recipientName = member.name;
         }
         
@@ -276,34 +282,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const badgesHtml = `
             <span class="px-3 py-1.5 bg-zinc-900 text-[#13ecd6] text-[8px] font-black uppercase rounded-full border border-[#13ecd6]/20">${groupName}</span>
-            <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800">Liquidación de Balance</span>
+            <span class="px-3 py-1.5 bg-zinc-900 text-zinc-400 text-[8px] font-black uppercase rounded-full border border-zinc-800" data-i18n="liquidation.balanceSettlement">Liquidación de Balance</span>
         `;
         document.getElementById('badges-container').innerHTML = badgesHtml;
 
         const breakdownHtml = `
-            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center">Desglose Consolidado</p>
+            <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em] pb-3 text-center" data-i18n="liquidation.breakdownTitle">Desglose Consolidado</p>
             <div class="debt-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons-round text-[#a855f7] text-sm">account_balance_wallet</span>
                 <div class="flex-1">
-                    <p class="text-xs font-black uppercase">Balance Pendiente</p>
+                    <p class="text-xs font-black uppercase" data-i18n="liquidation.pendingBalance">Balance Pendiente</p>
                     <p class="text-[8px] text-zinc-500 uppercase tracking-widest">${groupName}</p>
                 </div>
               </div>
               <p class="text-sm font-black font-['Space_Grotesk'] text-white money-display">${parsedAmount}</p>
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-white/10 mt-2">
-              <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Total a Transferir</p>
+              <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest" data-i18n="liquidation.totalToTransfer">Total a Transferir</p>
               <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display">${parsedAmount}</p>
             </div>
         `;
         document.getElementById('breakdown-container').innerHTML = breakdownHtml;
+
+        // Aplicar traducciones a elementos dinámicos inyectados
+        applyTranslations(getSavedLanguage());
 
     } catch(err) {
         console.warn("[SG Liquidation] Error renderizando datos reales:", err);
     }
 });
 </script>
-</div>
 </body>
 </html>

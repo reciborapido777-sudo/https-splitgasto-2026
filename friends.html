@@ -36,159 +36,210 @@
         .search-input::placeholder{color:#3a3a3a}
     </style>
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/desktop-fix.js" defer></script>
-    <script src="engine/router.js" defer></script>
+    <script src="engine/router.js"></script>
+    <script src="engine/auth.js"></script>
+    <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell pb-28">
 <div class="app-frame">
     <div class="max-w-lg mx-auto px-4 py-6 space-y-5">
 
-        <!-- Header -->
         <header class="flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-50 -mx-4 px-4 py-3">
             <button onclick="SGRouter.back()" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
                 <span class="material-icons-round text-zinc-400">arrow_back_ios</span>
             </button>
             <div class="text-center">
-                <h1 class="text-sm font-black uppercase tracking-wider">Mis Amigos</h1>
-                <p class="text-[9px] text-zinc-500">24 contactos</p>
+                <h1 class="text-sm font-black uppercase tracking-wider" data-i18n="friends.title">Mis Amigos</h1>
+                <p class="text-[9px] text-zinc-500" id="friends-count-subtitle" data-i18n="friends.loading">Cargando...</p>
             </div>
             <button onclick="SGRouter.navigate('invite','friends')" class="size-11 rounded-2xl glass-panel flex items-center justify-center active:scale-90 transition-all">
                 <span class="material-icons-round text-[#13ecd6]">person_add</span>
             </button>
         </header>
 
-        <!-- Search -->
         <div class="relative">
             <span class="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 text-lg">search</span>
-            <input type="search" class="search-input" placeholder="Buscar amigo..." inputmode="search">
+            <input type="search" class="search-input" inputmode="search" id="friends-search-input">
         </div>
 
-        <!-- Summary chips -->
         <div class="grid grid-cols-3 gap-3">
             <div class="glass-panel p-4 text-center">
-                <p class="text-[#13ecd6] text-lg font-black font-['Space_Grotesk']">+45,50€</p>
-                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Te deben</p>
+                <p class="text-[#13ecd6] text-lg font-black font-['Space_Grotesk']">+0,00€</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1" data-i18n="friends.theyOwe">Te deben</p>
             </div>
             <div class="glass-panel p-4 text-center">
-                <p class="text-[#FF9D42] text-lg font-black font-['Space_Grotesk']">-28,00€</p>
-                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Debes</p>
+                <p class="text-[#FF9D42] text-lg font-black font-['Space_Grotesk']">-0,00€</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1" data-i18n="friends.youOwe">Debes</p>
             </div>
             <div class="glass-panel p-4 text-center">
-                <p class="text-white text-lg font-black font-['Space_Grotesk']">24</p>
-                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1">Amigos</p>
+                <p class="text-white text-lg font-black font-['Space_Grotesk']">0</p>
+                <p class="text-[9px] text-zinc-500 uppercase tracking-wider mt-1" data-i18n="friends.friends">Amigos</p>
             </div>
         </div>
 
-        <!-- Friends list -->
-        <div class="space-y-2">
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1">Deudas Pendientes</p>
-            
-            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=AM&backgroundColor=1a2a1a&fontSize=40" class="size-11 rounded-xl" alt="">
-                <div class="flex-1">
-                    <p class="font-bold text-sm">Ana Martínez</p>
-                    <p class="text-[10px] text-zinc-500">Sushi Kyoto · hace 2h</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-sm balance-pos">+25,00€</p>
-                    <p class="text-[9px] text-zinc-600">te debe</p>
-                </div>
-            </div>
-
-            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=LR&backgroundColor=0d1f2d&fontSize=40" class="size-11 rounded-xl" alt="">
-                <div class="flex-1">
-                    <p class="font-bold text-sm">Luis Rodríguez</p>
-                    <p class="text-[10px] text-zinc-500">Piso Alpha · ayer</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-sm balance-neg">-28,00€</p>
-                    <p class="text-[9px] text-zinc-600">debes</p>
-                </div>
-            </div>
-
-            <div class="friend-card" onclick="SGRouter.navigate('liquidation','friends')">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=MV&backgroundColor=1a0d1f&fontSize=40" class="size-11 rounded-xl" alt="">
-                <div class="flex-1">
-                    <p class="font-bold text-sm">María Vega</p>
-                    <p class="text-[10px] text-zinc-500">Pirineos · hace 3 días</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-sm balance-pos">+20,50€</p>
-                    <p class="text-[9px] text-zinc-600">te debe</p>
-                </div>
-            </div>
-
-            <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1 pt-4">Sin deudas</p>
-
-            <div class="friend-card">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=CP&backgroundColor=1a1a0d&fontSize=40" class="size-11 rounded-xl" alt="">
-                <div class="flex-1">
-                    <p class="font-bold text-sm">Carlos Pérez</p>
-                    <p class="text-[10px] text-zinc-500">Último pago: hace 1 semana</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-sm balance-zero">0,00€</p>
-                    <p class="text-[9px] text-zinc-600">saldo</p>
-                </div>
-            </div>
-
-            <div class="friend-card">
-                <img src="https://api.dicebear.com/9.x/initials/svg?seed=SR&backgroundColor=0d1a1a&fontSize=40" class="size-11 rounded-xl" alt="">
-                <div class="flex-1">
-                    <p class="font-bold text-sm">Sara Ruiz</p>
-                    <p class="text-[10px] text-zinc-500">Sin gastos recientes</p>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-sm balance-zero">0,00€</p>
-                    <p class="text-[9px] text-zinc-600">saldo</p>
-                </div>
-            </div>
+        <div id="friends-container" class="space-y-2">
+        <p class="text-xs text-zinc-600 text-center py-6" id="friends-loading" data-i18n="friends.loadingFriends">Cargando amigos…</p>
         </div>
 
-        <!-- Invite CTA -->
         <div class="glass-panel p-5 border-dashed border-[#13ecd6]/20 text-center space-y-3" style="border-style:dashed">
             <span class="material-icons-round text-[#13ecd6] text-3xl">group_add</span>
             <div>
-                <p class="font-bold text-sm">Invita a tus amigos</p>
-                <p class="text-[11px] text-zinc-500 mt-1">Gana 1 mes Premium por cada amigo que se una</p>
+                <p class="font-bold text-sm" data-i18n="friends.inviteTitle">Invita a tus amigos</p>
+                <p class="text-[11px] text-zinc-500 mt-1" data-i18n="friends.inviteSubtitle">Gana 1 mes Premium por cada amigo que se una</p>
             </div>
-            <button onclick="SGRouter.navigate('invite','friends')" class="w-full py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 text-[#13ecd6] text-[11px] font-black uppercase tracking-wider hover:bg-[#13ecd6]/20 transition-all active:scale-95">
+            <button onclick="SGRouter.navigate('invite','friends')" class="w-full py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 text-[#13ecd6] text-[11px] font-black uppercase tracking-wider hover:bg-[#13ecd6]/20 transition-all active:scale-95" data-i18n="friends.inviteBtn">
                 Invitar amigos →
             </button>
         </div>
     </div>
 
-    <!-- Bottom Nav -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
 
-            <script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!SGAuth || !SGAuth.isLoggedIn()) {
+        SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
+        setTimeout(() => SGRouter.navigate('auth-login'), 1500);
+        return;
+      }
+      
+      const container = document.getElementById('friends-container');
+      const loadingEl = document.getElementById('friends-loading');
+      const myUid = SGAuth.getUserId();
+      
+      try {
+        const groupsRes = await SGApi.getGroups();
+        if (!groupsRes?.success || !groupsRes.groups?.length) {
+          if (container) container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">' + t('friends.noGroups', null, 'Sin grupos todavía') + '</p>'; 
+          document.getElementById('friends-count-subtitle').textContent = '0 contactos';
+          return;
+        }
+        
+        const groups = groupsRes.groups;
+        
+        // Cargar miembros y balances de todos los grupos en paralelo
+        const allData = await Promise.all(groups.map(g => Promise.all([
+          SGApi.getGroupMembers(g.id).catch(() => null),
+          SGApi.getBalances(g.id).catch(() => null)
+        ])));
+        
+        const friendMap = new Map();
+        
+        groups.forEach((g, idx) => {
+          const [memRes, balRes] = allData[idx];
+          const members = (memRes?.success && memRes.members) ? memRes.members : [];
+          const balances = (balRes?.success && balRes.balances) ? balRes.balances : {};
+          
+          members.forEach(m => {
+            if (!m.id || String(m.id) === String(myUid)) return;
+            
+            if (!friendMap.has(m.id)) {
+              friendMap.set(m.id, {
+                id: m.id,
+                name: m.name || 'Socio',
+                initials: (m.name || 'SG').slice(0, 2).toUpperCase(),
+                totalBalance: 0,
+                groupCount: 0,
+                lastGroup: g.name,
+                lastGroupId: g.id
+              });
+            }
+            
+            const f = friendMap.get(m.id);
+            f.groupCount += 1;
+            const bal = parseFloat(balances[m.id]) || 0;
+            f.totalBalance += bal;
+          });
+        });
+        
+        const friends = Array.from(friendMap.values());
+        var contactLabel = friends.length === 1 ? t('friends.contact', null, 'contacto') : t('friends.contacts', null, 'contactos');
+        document.getElementById('friends-search-input').placeholder = t('friends.searchPlaceholder', null, 'Buscar amigo...');
+        
+        const withDebt = friends.filter(f => Math.abs(f.totalBalance) > 0.01);
+        const noDebt = friends.filter(f => Math.abs(f.totalBalance) <= 0.01);
+        
+        // Actualizar chips resumen
+        const totalOwed = friends.reduce((s, f) => f.totalBalance > 0 ? s + f.totalBalance : s, 0);
+        const totalDue = friends.reduce((s, f) => f.totalBalance < 0 ? s + Math.abs(f.totalBalance) : s, 0);
+        
+        const chips = document.querySelectorAll('.grid.grid-cols-3 .text-lg');
+        if (chips[0]) chips[0].textContent = '+' + totalOwed.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
+        if (chips[1]) chips[1].textContent = '-' + totalDue.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
+        if (chips[2]) chips[2].textContent = friends.length;
+        
+        function renderFriendCard(f) {
+          const isPositive = f.totalBalance > 0.01;
+          const isNegative = f.totalBalance < -0.01;
+          const balClass = isPositive ? 'balance-pos' : (isNegative ? 'balance-neg' : 'balance-zero');
+          const balLabel = isPositive ? t('friends.theyOweHim', null, 'le deben') : (isNegative ? t('friends.heOwes', null, 'debe') : t('friends.even', null, 'saldo'));
+          const balSign = isPositive ? '+' : (isNegative ? '-' : '');
+          const absBal = Math.abs(f.totalBalance).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€';
+          
+          const bgColors = ['1a2a1a','0d1f2d','1a0d1f','1a1a0d','0d1a1a'];
+          const bg = bgColors[Math.abs(f.name.charCodeAt(0)) % bgColors.length];
+          
+          return `
+            <div class="friend-card" onclick="window.location.href='liquidation.html?groupId=${encodeURIComponent(f.lastGroupId)}&to=${encodeURIComponent(f.id)}&amount=${encodeURIComponent(Math.abs(f.totalBalance).toFixed(2))}'">
+              <img src="https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(f.initials)}&backgroundColor=${bg}&fontSize=40" class="size-11 rounded-xl" alt="">
+              <div class="flex-1">
+                <p class="font-bold text-sm">${f.name}</p>
+                <p class="text-[10px] text-zinc-500">${f.lastGroup} · ${f.groupCount} ${f.groupCount===1?t('friends.groupSingular',null,'grupo'):t('friends.groupPlural',null,'grupos')}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-black text-sm ${balClass}">${balSign}${absBal}</p>
+                <p class="text-[9px] text-zinc-600">${balLabel}</p>
+              </div>
+            </div>`;
+        }
+        
+        let html = '';
+        if (withDebt.length > 0) {
+          html += '<p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1">' + t('friends.pendingDebts', null, 'Deudas Pendientes') + '</p>';
+          html += withDebt.map(renderFriendCard).join('');
+        }
+        if (noDebt.length > 0) {
+          html += '<p class="text-[9px] font-black text-zinc-600 uppercase tracking-[.4em] px-1 pt-4">' + t('friends.noDebts', null, 'Sin deudas') + '</p>';
+          html += noDebt.map(renderFriendCard).join('');
+        }
+        
+        if (friends.length === 0) {
+          html = '<p class="text-xs text-zinc-600 text-center py-6">' + t('friends.noOtherMembers', null, 'No hay otros socios en tus grupos') + '</p>';
+        }
+        
+      } catch (e) {
+        console.error('Friends load error:', e);
+        if (container) container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">' + t('friends.errorLoading', null, 'Error al cargar amigos') + '</p>';
+      }
+    });
+    </script>
+
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
@@ -215,3 +266,4 @@
 </div>
 </body>
 </html>
+  

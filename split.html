@@ -120,7 +120,6 @@
             </div>
         </section>
 
-        <!-- Selector de grupo -->
         <section class="glass-panel p-5 rounded-[2rem] reveal" style="animation-delay: 0.15s">
           <div class="flex items-center gap-4">
             <div class="size-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(168,85,247,0.15)">
@@ -249,7 +248,15 @@ async function loadGroupData(groupId) {
     const total = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
     if (totalEl) totalEl.textContent = total.toLocaleString('es-ES', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '€';
 
-    const balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
+    let balancesRaw = (balResult?.success && balResult.balances) ? balResult.balances : {};
+    if (Array.isArray(balancesRaw)) {
+        const obj = {};
+        balancesRaw.forEach(function(b) {
+            const key = b.user_id || b.userId || b.id || 'unknown';
+            obj[key] = parseFloat(b.balance || b.amount || 0);
+        });
+        balancesRaw = obj;
+    }
 
     const members = (memResult?.success && memResult.members && memResult.members.length > 0)
       ? memResult.members
@@ -280,7 +287,8 @@ async function loadGroupData(groupId) {
       const roleLabel = m.role === 'admin' ? 'Administrador' : (isMe ? 'Usted' : 'Socio');
 
       const canRemove = isAdmin && !isMe;
-      const canLiquidate = !isMe && bal < -0.01;
+      const myBalance = parseFloat(balancesRaw[myUid]) || 0;
+      const canLiquidate = !isMe && bal > 0.01 && myBalance < -0.01;
 
       // Escapar comillas simples para evitar romper el onclick inline
       const safeGroupId = String(group.id).replace(/'/g, "\\'");
@@ -288,16 +296,17 @@ async function loadGroupData(groupId) {
       const safeAmount = Math.abs(bal).toFixed(2);
 
       return `
-        <div class="participant-row flex items-center justify-between p-5 glass-panel rounded-2xl border-white/5">
-          <div class="flex items-center gap-4">
-            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all"
+        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0"
                  style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
-            <div>
+            <div class="min-w-0">
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${roleLabel}</p>
-              <p class="text-xs font-black uppercase text-white">${name}</p>
+              <p class="text-xs font-black uppercase text-white truncate">${name}</p>
             </div>
           </div>
-          <div class="flex items-center gap-3">
+          
+          <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <div class="text-right">
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-0.5">Cuota estimada</p>
               <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">
@@ -307,18 +316,20 @@ async function loadGroupData(groupId) {
                 ${balSign}${bal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
               </p>
             </div>
-            ${canLiquidate ? `
-            <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
-              class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
-              style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
-              Liquidar
-            </button>` : ''}
-            ${canRemove ? `
-            <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
-              class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20"
-              title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
-              <span class="material-icons-round text-red-400 text-sm">person_remove</span>
-            </button>` : ''}
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${canLiquidate ? `
+              <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
+                class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap"
+                style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
+                Liquidar
+              </button>` : ''}
+              ${canRemove ? `
+              <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
+                class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20 flex-shrink-0"
+                title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
+                <span class="material-icons-round text-red-400 text-sm">person_remove</span>
+              </button>` : ''}
+            </div>
           </div>
         </div>`;
     }).join('');
@@ -399,22 +410,8 @@ window.addEventListener('pageshow', (e) => {
 <script>
     let selectedGame = null;
 
-    function _checkPremiumAccess() {
-        // Valida contra el perfil real cargado desde la API, no contra sessionStorage
-        if (!_userProfile) return false;
-        return !!(_userProfile.isPremium === true || _userProfile.plan === 'premium');
-    }
-
     function selectGame(element, game) {
-        if (!_checkPremiumAccess()) {
-            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
-                SGRouter.requirePremium('Juegos');
-            } else {
-                SGRouter.showToast('Función Premium requerida', 'error');
-            }
-            return;
-        }
-
+        // Selección visual siempre permitida
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
         selectedGame = game;
         element.classList.add('active-glow');
@@ -448,20 +445,11 @@ window.addEventListener('pageshow', (e) => {
             SGRouter.showToast('Seleccione un protocolo de azar', 'error');
             return;
         }
-        if (!_checkPremiumAccess()) {
-            if (typeof SGRouter !== 'undefined' && SGRouter.requirePremium) {
-                SGRouter.requirePremium('Juegos');
-            } else {
-                SGRouter.showToast('Suscríbete a Premium para jugar', 'error');
-            }
-            return;
-        }
         const route = gameRoutes[selectedGame];
-        SGRouter.showToast(`Lanzando ${selectedGame}…`, 'premium');
-        setTimeout(() => SGRouter.navigate(route, 'split'), 600);
+        // El router verifica membresía y navega (o manda a membership si no hay acceso)
+        SGRouter.requirePremium('Juegos', route);
     }
 
-    // Navegación coherente con liquidation.html: URL con query params escapados
     function goToLiquidation(groupId, toId, amount) {
         const url = 'liquidation.html?groupId=' + encodeURIComponent(groupId) 
                   + '&to=' + encodeURIComponent(toId) 
@@ -470,28 +458,27 @@ window.addEventListener('pageshow', (e) => {
     }
 </script>
 
-    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>

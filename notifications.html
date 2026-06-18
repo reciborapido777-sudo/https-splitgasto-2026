@@ -33,14 +33,12 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- FIX: router.js SIN defer para evitar race condition -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
-    <!-- FIX: auth.js y api.js añadidos para datos reales y auth guard -->
     <script src="engine/auth.js"></script>
     <script src="engine/api.js"></script>
+    <script src="engine/i18n.js" defer></script>
 
-        <script src="engine/i18n.js" defer></script>
 </head>
 <body class="app-shell pb-20">
 <div class="app-frame">
@@ -52,18 +50,17 @@
                     <span class="material-icons-round text-zinc-500">arrow_back</span>
                 </button>
                 <div>
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Sistema de Alertas</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Notificaciones</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="notifications.alertSystem">Sistema de Alertas</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="notifications.title">Notificaciones</h1>
                 </div>
             </div>
-            <button class="px-5 py-2.5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" onclick="markAllRead()">
+            <button class="px-5 py-2.5 glass-panel rounded-2xl text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" onclick="markAllRead()" data-i18n="notifications.markAllRead">
                 Leer todas
             </button>
         </header>
 
-        <!-- Notificaciones dinámicas -->
         <section id="notifications-container" class="space-y-10">
-            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12">Cargando notificaciones...</p>
+            <p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest text-center py-12" data-i18n="notifications.loading">Cargando notificaciones...</p>
         </section>
 
     </div>
@@ -97,12 +94,12 @@
             if (!dateStr) return '';
             var diff = Date.now() - new Date(dateStr).getTime();
             var mins = Math.floor(diff / 60000);
-            if (mins < 60) return 'hace ' + mins + ' min';
+            if (mins < 60) return t('notifications.timeAgo.minutes', null, 'hace {n} min').replace('{n}', mins);
             var hours = Math.floor(mins / 60);
-            if (hours < 24) return 'hace ' + hours + ' hora' + (hours > 1 ? 's' : '');
+            if (hours < 24) return t('notifications.timeAgo.hours', null, 'hace {n} hora').replace('{n}', hours) + (hours > 1 ? 's' : '');
             var days = Math.floor(hours / 24);
-            if (days === 1) return 'ayer';
-            if (days < 7) return 'hace ' + days + ' días';
+            if (days === 1) return t('notifications.timeAgo.yesterday', null, 'ayer');
+            if (days < 7) return t('notifications.timeAgo.days', null, 'hace {n} días').replace('{n}', days);
             return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
         }
 
@@ -114,22 +111,29 @@
                 container.innerHTML =
                     '<div class="flex flex-col items-center py-20 space-y-4">' +
                         '<span class="material-icons-round text-zinc-700 text-5xl">notifications_off</span>' +
-                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest">Sin notificaciones</p>' +
+                        '<p class="text-zinc-600 text-[10px] font-black uppercase tracking-widest">' + t('notifications.empty', null, 'Sin notificaciones') + '</p>' +
                     '</div>';
                 return;
             }
 
             // Agrupar por período
             var now = Date.now();
-            var groups = { 'Hoy': [], 'Ayer': [], 'Esta semana': [], 'Anterior': [] };
+            var groups = {
+                [t('notifications.period.today', null, 'Hoy')]: [],
+                [t('notifications.period.yesterday', null, 'Ayer')]: [],
+                [t('notifications.period.thisWeek', null, 'Esta semana')]: [],
+                [t('notifications.period.earlier', null, 'Anterior')]: []
+            };
+            
             notifications.forEach(function(n) {
                 var d = new Date(n.created_at || n.date || Date.now()).getTime();
                 var diff = now - d;
                 var days = diff / 86400000;
-                if (days < 1) groups['Hoy'].push(n);
-                else if (days < 2) groups['Ayer'].push(n);
-                else if (days < 7) groups['Esta semana'].push(n);
-                else groups['Anterior'].push(n);
+                
+                if (days < 1) groups[t('notifications.period.today', null, 'Hoy')].push(n);
+                else if (days < 2) groups[t('notifications.period.yesterday', null, 'Ayer')].push(n);
+                else if (days < 7) groups[t('notifications.period.thisWeek', null, 'Esta semana')].push(n);
+                else groups[t('notifications.period.earlier', null, 'Anterior')].push(n);
             });
 
             var html = '';
@@ -196,36 +200,34 @@
             try {
                 await SGApi.markNotificationsRead();
             } catch (e) { /* silencioso */ }
-            SGRouter.showToast('Todas leídas', 'success');
+            SGRouter.showToast(t('notifications.allRead', null, 'Todas leídas'), 'success');
         };
 
         loadNotifications();
     })();
     </script>
 
-    <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>

@@ -151,8 +151,8 @@
   <button onclick="SGRouter.back()" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.07)">
     <span class="material-icons-round text-white/60">close</span>
   </button>
-  <h1 class="font-bold text-base">Nuevo Gasto</h1>
-  <button id="save-btn" class="px-5 py-2 text-sm" onclick="saveExpense()">Guardar</button>
+  <h1 class="font-bold text-base" data-i18n="expense.title">Nuevo Gasto</h1>
+  <button id="save-btn" class="px-5 py-2 text-sm" onclick="saveExpense()" data-i18n="expense.save">Guardar</button>
 </header>
 
 <main class="max-w-md mx-auto px-4 pt-4 space-y-5 w-full">
@@ -162,71 +162,71 @@
       <span class="material-icons-round" style="color:var(--cyan)">document_scanner</span>
     </div>
     <div>
-      <p class="font-bold text-sm">Escanear Ticket con IA</p>
-      <p class="text-xs opacity-50">Extrae datos automáticamente</p>
+      <p class="font-bold text-sm" data-i18n="expense.scanTicket">Escanear Ticket con IA</p>
+      <p class="text-xs opacity-50" data-i18n="expense.scanTicketSub">Extrae datos automáticamente</p>
     </div>
     <span class="material-icons-round ml-auto opacity-30">chevron_right</span>
   </div>
 
   <div class="glass p-6 text-center">
-    <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3">Importe</p>
+    <p class="text-xs font-bold uppercase tracking-widest opacity-40 mb-3" data-i18n="expense.amount">Importe</p>
     <div class="flex items-center justify-center gap-3">
       <span class="text-2xl font-black opacity-40">€</span>
       <input type="number" id="amount-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal"/>
     </div>
-    <p class="text-xs opacity-30 mt-2" id="per-person-hint">— € por persona</p>
+    <p class="text-xs opacity-30 mt-2" id="per-person-hint">— € <span data-i18n="expense.perPerson">por persona</span></p>
   </div>
 
   <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Descripción</label>
+    <label class="text-xs font-bold uppercase tracking-widest opacity-40" data-i18n="expense.description">Descripción</label>
     <div class="relative">
-      <input type="text" id="desc-input" class="sg-input pl-12" placeholder="¿En qué se gastó?"/>
+      <input type="text" id="desc-input" class="sg-input pl-12" placeholder="¿En qué se gastó?" data-i18n="expense.descriptionPlaceholder"/>
       <span class="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 opacity-30">edit_note</span>
     </div>
   </div>
 
   <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Categoría</label>
+    <label class="text-xs font-bold uppercase tracking-widest opacity-40" data-i18n="expense.category">Categoría</label>
     <div class="cats-scroll">
-      <button class="cat-btn active" data-cat="comida" onclick="selectCat(this)">🍣<span>Comida</span></button>
-      <button class="cat-btn" data-cat="transporte" onclick="selectCat(this)">🚗<span>Transporte</span></button>
-      <button class="cat-btn" data-cat="entretenimiento" onclick="selectCat(this)">🎬<span>Ocio</span></button>
-      <button class="cat-btn" data-cat="alojamiento" onclick="selectCat(this)">🏠<span>Hogar</span></button>
-      <button class="cat-btn" data-cat="compras" onclick="selectCat(this)">🛍️<span>Compras</span></button>
-      <button class="cat-btn" data-cat="salud" onclick="selectCat(this)">💊<span>Salud</span></button>
-      <button class="cat-btn" data-cat="otro" onclick="selectCat(this)">📦<span>Otro</span></button>
+      <button class="cat-btn active" data-cat="comida" onclick="selectCat(this)">🍣<span data-i18n="category.comida">Comida</span></button>
+      <button class="cat-btn" data-cat="transporte" onclick="selectCat(this)">🚗<span data-i18n="category.transporte">Transporte</span></button>
+      <button class="cat-btn" data-cat="entretenimiento" onclick="selectCat(this)">🎬<span data-i18n="category.entretenimiento">Ocio</span></button>
+      <button class="cat-btn" data-cat="alojamiento" onclick="selectCat(this)">🏠<span data-i18n="category.alojamiento">Hogar</span></button>
+      <button class="cat-btn" data-cat="compras" onclick="selectCat(this)">🛍️<span data-i18n="category.compras">Compras</span></button>
+      <button class="cat-btn" data-cat="salud" onclick="selectCat(this)">💊<span data-i18n="category.salud">Salud</span></button>
+      <button class="cat-btn" data-cat="otro" onclick="selectCat(this)">📦<span data-i18n="category.otro">Otro</span></button>
     </div>
   </div>
 
   <div class="grid grid-cols-2 gap-3">
     <div class="space-y-2">
-      <label class="text-xs font-bold uppercase tracking-widest opacity-40">Fecha</label>
+      <label class="text-xs font-bold uppercase tracking-widest opacity-40" data-i18n="expense.date">Fecha</label>
       <input type="date" id="date-input" class="sg-input"/>
     </div>
  <div class="space-y-2">
-  <label class="text-xs font-bold uppercase tracking-widest opacity-40">Grupo</label>
+  <label class="text-xs font-bold uppercase tracking-widest opacity-40" data-i18n="expense.group">Grupo</label>
   <select id="group-input" class="sg-input" style="appearance:none;cursor:pointer">
-    <option value="">Cargando grupos…</option>
+    <option value="" data-i18n="expense.groupLoading">Cargando grupos…</option>
   </select>
 </div>
   </div>
 
   <div class="glass p-5 space-y-4">
     <div class="flex justify-between items-center">
-      <h3 class="font-bold text-sm">Pagado por</h3>
-      <button class="text-xs font-bold" style="color:var(--cyan)">+ Múltiples</button>
+      <h3 class="font-bold text-sm" data-i18n="expense.paidBy">Pagado por</h3>
+      <button class="text-xs font-bold" style="color:var(--cyan)" data-i18n="expense.multiplePayers">+ Múltiples</button>
     </div>
     <div class="flex gap-4 overflow-x-auto pb-1" id="payers-row" style="scrollbar-width:none">
       </div>
   </div>
 
   <div class="glass p-5 space-y-4">
-    <h3 class="font-bold text-sm">Método de reparto</h3>
+    <h3 class="font-bold text-sm" data-i18n="expense.splitMethod">Método de reparto</h3>
     <div class="flex p-1 rounded-xl" style="background:rgba(255,255,255,0.04)">
-      <div class="split-option active" onclick="selectSplit(this,'equal')">Igual</div>
-      <div class="split-option" onclick="selectSplit(this,'percentage')">%</div>
-      <div class="split-option" onclick="selectSplit(this,'exact')">Exacto</div>
-      <div class="split-option" onclick="selectSplit(this,'shares')">Partes</div>
+      <div class="split-option active" onclick="selectSplit(this,'equal')" data-i18n="expense.splitEqual">Igual</div>
+      <div class="split-option" onclick="selectSplit(this,'percentage')" data-i18n="expense.splitPercentage">%</div>
+      <div class="split-option" onclick="selectSplit(this,'exact')" data-i18n="expense.splitExact">Exacto</div>
+      <div class="split-option" onclick="selectSplit(this,'shares')" data-i18n="expense.splitShares">Partes</div>
     </div>
 
     <div id="split-details" class="space-y-3 mt-2">
@@ -234,14 +234,14 @@
   </div>
 
   <div class="space-y-2">
-    <label class="text-xs font-bold uppercase tracking-widest opacity-40">Nota (opcional)</label>
-    <textarea id="notes-input" class="sg-input resize-none" rows="2" placeholder="Añade una nota…"></textarea>
+    <label class="text-xs font-bold uppercase tracking-widest opacity-40" data-i18n="expense.note">Nota (opcional)</label>
+    <textarea id="notes-input" class="sg-input resize-none" rows="2" placeholder="Añade una nota…" data-i18n="expense.notePlaceholder"></textarea>
   </div>
 
   <button id="save-btn-bottom" class="w-full py-5 rounded-full font-black text-lg" style="background:linear-gradient(135deg,var(--cyan),#0fbfaf);color:#0a0a0a;box-shadow:0 8px 32px rgba(19,236,214,0.35)" onclick="saveExpense()">
     <span class="flex items-center justify-center gap-2">
       <span class="material-icons-round">check_circle</span>
-      GUARDAR GASTO
+      <span data-i18n="expense.saveExpense">GUARDAR GASTO</span>
     </span>
   </button>
 
@@ -268,10 +268,10 @@ async function loadGroups() {
       groups = result.groups;
       const sel = document.getElementById('group-input');
       if (groups.length === 0) {
-        sel.innerHTML = '<option value="">Sin grupos — crea uno primero</option>';
+        sel.innerHTML = '<option value="">' + t('expense.groupEmpty', null, 'Sin grupos — crea uno primero') + '</option>';
         return;
       }
-      sel.innerHTML = '<option value="">Selecciona un grupo</option>';
+      sel.innerHTML = '<option value="">' + t('expense.groupSelect', null, 'Selecciona un grupo') + '</option>';
       groups.forEach(g => {
         const opt = document.createElement('option');
         opt.value = g.id;
@@ -291,12 +291,12 @@ async function loadGroups() {
       }
     } else {
       const sel = document.getElementById('group-input');
-      sel.innerHTML = '<option value="">Error al cargar grupos</option>';
+      sel.innerHTML = '<option value="">' + t('expense.groupError', null, 'Error al cargar grupos') + '</option>';
     }
   } catch (e) {
     console.error('Error loading groups:', e);
     const sel = document.getElementById('group-input');
-    sel.innerHTML = '<option value="">Error al cargar</option>';
+    sel.innerHTML = '<option value="">' + t('error.system', null, 'Error al cargar') + '</option>';
   }
 }
 
@@ -315,18 +315,18 @@ async function loadGroupMembers(groupId) {
     if (memResult?.success && memResult.members && memResult.members.length > 0) {
       members = memResult.members.map((m, i) => {
         const isMe = m.id === uid;
-        const displayName = isMe ? 'Tú' : (m.name || `Socio ${i + 1}`);
+        const displayName = isMe ? t('expense.you', null, 'Tú') : (m.name || `Socio ${i + 1}`);
         const initials = displayName.slice(0, 2).toUpperCase();
         return { id: m.id, name: displayName, initials, color: colors[i % colors.length] };
       });
       // «Tú» siempre primero
       members.sort((a, b) => (a.id === uid ? -1 : b.id === uid ? 1 : 0));
     } else {
-      members = [{ name: 'Tú', initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
+      members = [{ name: t('expense.you', null, 'Tú'), initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
     }
   } catch (e) {
     console.error('Error loading members:', e);
-    members = [{ name: 'Tú', initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
+    members = [{ name: t('expense.you', null, 'Tú'), initials: 'TÚ', color: '#13ecd6', id: uid || 'self' }];
   }
   selectedPayer = 0;
   renderPayers();
@@ -336,7 +336,7 @@ async function loadGroupMembers(groupId) {
 function renderPayers() {
   const row = document.getElementById('payers-row');
   if (members.length === 0) {
-    row.innerHTML = '<p class="text-xs opacity-30 py-3">Selecciona un grupo primero</p>';
+    row.innerHTML = '<p class="text-xs opacity-30 py-3">' + t('expense.selectGroupFirst', null, 'Selecciona un grupo primero') + '</p>';
     return;
   }
   row.innerHTML = members.map((m, i) => `
@@ -364,7 +364,7 @@ function selectSplit(el, method) {
 function renderSplitDetails() {
   const amount = parseFloat(document.getElementById('amount-input').value) || 0;
   const perPerson = splitMethod === 'equal' && members.length > 0 ? (amount / members.length).toFixed(2) : '—';
-  document.getElementById('per-person-hint').textContent = splitMethod === 'equal' ? `${perPerson} € por persona` : '— € por persona';
+  document.getElementById('per-person-hint').textContent = splitMethod === 'equal' ? `${perPerson} € ` + t('expense.perPerson', null, 'por persona') : '— € ' + t('expense.perPerson', null, 'por persona');
 
   const container = document.getElementById('split-details');
   container.innerHTML = members.map((m, i) => {
@@ -372,11 +372,11 @@ function renderSplitDetails() {
     if (splitMethod === 'equal') {
       valueContent = `<span class="text-sm font-bold" style="color:var(--cyan)">${perPerson} €</span>`;
     } else if (splitMethod === 'percentage') {
-      valueContent = `<div class="flex items-center gap-1"><input type="number" value="${Math.round(100/members.length)}" min="0" max="100" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">%</span></div>`;
+      valueContent = `<div class="flex items-center gap-1"><input type="number" data-member-id="${m.id}" data-split-type="percentage" value="${Math.round(100/members.length)}" min="0" max="100" class="sg-input w-16 text-center py-2 text-sm split-input" style="padding:6px;"/><span class="opacity-40">%</span></div>`;
     } else if (splitMethod === 'exact') {
-      valueContent = `<input type="number" placeholder="0.00" class="sg-input w-24 text-center py-2 text-sm" style="padding:6px;"/>`;
+      valueContent = `<input type="number" data-member-id="${m.id}" data-split-type="exact" placeholder="0.00" step="0.01" class="sg-input w-24 text-center py-2 text-sm split-input" style="padding:6px;"/>`;
     } else {
-      valueContent = `<div class="flex items-center gap-1"><input type="number" value="1" min="1" class="sg-input w-16 text-center py-2 text-sm" style="padding:6px;"/><span class="opacity-40">parte</span></div>`;
+      valueContent = `<div class="flex items-center gap-1"><input type="number" data-member-id="${m.id}" data-split-type="shares" value="1" min="1" class="sg-input w-16 text-center py-2 text-sm split-input" style="padding:6px;"/><span class="opacity-40">` + t('expense.part', null, 'parte') + `</span></div>`;
     }
     return `
       <div class="flex items-center justify-between">
@@ -397,12 +397,12 @@ async function saveExpense() {
   const groupSel = document.getElementById('group-input');
   const groupId = groupSel ? groupSel.value : null;
 
-  if (!amount || amount <= 0) { SGRouter.showToast('Introduce un importe válido', 'warning'); return; }
-  if (!desc) { SGRouter.showToast('Añade una descripción', 'warning'); return; }
-  if (!groupId) { SGRouter.showToast('Selecciona un grupo', 'warning'); return; }
+  if (!amount || amount <= 0) { SGRouter.showToast(t('expense.errorAmount', null, 'Introduce un importe válido'), 'warning'); return; }
+  if (!desc) { SGRouter.showToast(t('expense.errorDescription', null, 'Añade una descripción'), 'warning'); return; }
+  if (!groupId) { SGRouter.showToast(t('expense.errorGroup', null, 'Selecciona un grupo'), 'warning'); return; }
 
   if (!SGAuth.isLoggedIn()) {
-    SGRouter.showToast('Inicia sesión primero', 'error');
+    SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
     setTimeout(() => SGRouter.navigate('auth-login'), 1200);
     return;
   }
@@ -416,26 +416,67 @@ async function saveExpense() {
   if (saveBtnTop) saveBtnTop.disabled = true;
   if (saveBtnBot) saveBtnBot.disabled = true;
 
+  // Leer split details si no es reparto igual
+  let splitDetails = null;
+  if (splitMethod !== 'equal') {
+    const inputs = document.querySelectorAll('.split-input');
+    splitDetails = [];
+    inputs.forEach(input => {
+      splitDetails.push({
+        userId: input.dataset.memberId,
+        value: parseFloat(input.value) || 0,
+        type: input.dataset.splitType
+      });
+    });
+
+    // Validaciones
+    if (splitMethod === 'percentage') {
+      const totalPct = splitDetails.reduce((s, d) => s + d.value, 0);
+      if (Math.abs(totalPct - 100) > 0.1) {
+        SGRouter.showToast(t('expense.errorPercentage', null, 'Los porcentajes deben sumar 100%'), 'warning');
+        if (saveBtnTop) saveBtnTop.disabled = false;
+        if (saveBtnBot) saveBtnBot.disabled = false;
+        return;
+      }
+    } else if (splitMethod === 'exact') {
+      const totalExact = splitDetails.reduce((s, d) => s + d.value, 0);
+      if (Math.abs(totalExact - amount) > 0.01) {
+        SGRouter.showToast(t('expense.errorExact', null, 'Las cantidades deben sumar el total'), 'warning');
+        if (saveBtnTop) saveBtnTop.disabled = false;
+        if (saveBtnBot) saveBtnBot.disabled = false;
+        return;
+      }
+    } else if (splitMethod === 'shares') {
+      const totalShares = splitDetails.reduce((s, d) => s + d.value, 0);
+      if (totalShares <= 0) {
+        SGRouter.showToast(t('expense.errorShares', null, 'Las partes deben ser mayores a 0'), 'warning');
+        if (saveBtnTop) saveBtnTop.disabled = false;
+        if (saveBtnBot) saveBtnBot.disabled = false;
+        return;
+      }
+    }
+  }
+
   try {
-    const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
+    const result = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId, splitDetails);
 
     if (result && result.success) {
       storeExpenseTicket(result, groupId, amount, desc);
-      SGRouter.showToast('Gasto guardado ✓', 'success');
+      SGRouter.showToast(t('expense.saved', null, 'Gasto guardado ✓'), 'success');
       try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
       setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
     } else {
-      const errMsg = result?.error || 'Error al guardar el gasto';
+      const errMsg = result?.error || t('expense.saveError', null, 'Error al guardar el gasto');
       console.error('saveExpense backend error:', errMsg);
       if (errMsg.includes('perteneces') || errMsg.includes('403')) {
-        SGRouter.showToast('Reparando membresía… reintentando', 'warning');
+        SGRouter.showToast(t('expense.repairingMembership', null, 'Reparando membresía… reintentando'), 'warning');
         try {
           await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } });
           await new Promise(r => setTimeout(r, 500));
-          const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId);
+          const retry = await SGApi.addExpense(groupId, amount, 'EUR', selectedCat, desc, splitMethod, payerId, splitDetails);
           if (retry && retry.success) {
             storeExpenseTicket(retry, groupId, amount, desc);
-            SGRouter.showToast('Gasto guardado ✓', 'success');
+            SGRouter.showToast(t('expense.saved', null, 'Gasto guardado ✓'), 'success');
             try { sessionStorage.setItem('sg_expense_added', Date.now()); } catch {}
             setTimeout(() => SGRouter.navigate('success', 'add-expense'), 800);
             return;
@@ -446,14 +487,15 @@ async function saveExpense() {
     }
   } catch (e) {
     console.error('saveExpense error:', e);
-    SGRouter.showToast('Error de conexión', 'error');
+    SGRouter.showToast(t('error.system', null, 'Error de conexión'), 'error');
   } finally {
     if (saveBtnTop) saveBtnTop.disabled = false;
     if (saveBtnBot) saveBtnBot.disabled = false;
   }
 }
+
 function storeExpenseTicket(apiResult, groupId, amount, desc) {
-    const groupName = groups.find(g => g.id === groupId)?.name || 'Grupo';
+    const groupName = groups.find(g => g.id === groupId)?.name || t('expense.group', null, 'Grupo');
     sessionStorage.setItem('sg_success_ticket', JSON.stringify({
         type: 'expense',
         txid: apiResult.id || crypto.randomUUID(),
@@ -488,7 +530,9 @@ window.addEventListener('pageshow', (e) => {
   if (e.persisted) { loadGroups(); }
 });
 
-init();
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+});
 
 </script>
 
@@ -496,23 +540,23 @@ init();
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item active" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>

@@ -97,6 +97,7 @@ async function handleAPI(request, env, ctx, path) {
         }, 200, request);
     }
 
+    if (path.startsWith('/api/membership/')) return handleMembership(request, env, path);
     if (path.startsWith('/api/auth/')) return handleAuth(request, env, path);
     if (path === '/api/db/balances') return handleBalances(request, env);
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
@@ -1809,4 +1810,116 @@ function setSecurityHeaders(headers) {
     if (ct.includes('text/html')) {
         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Membresía — Prueba gratuita de 7 días (persistente en D1)
+// ═══════════════════════════════════════════════════════════════════════
+async function handleMembership(request, env, path) {
+    if (!env.SPLITGASTO_DB) {
+        return jsonResponse({ error: 'Servicio de membresía no disponible' }, 503, request);
+    }
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+    const method = request.method;
+
+    if (path === '/api/membership/status' && method === 'GET') {
+        const status = await getMembershipStatus(env, authUser.userId);
+        return jsonResponse({ success: true, ...status }, 200, request);
+    }
+
+    if (path === '/api/membership/start-trial' && method === 'POST') {
+        const existing = await env.SPLITGASTO_DB.prepare(
+            'SELECT started_at, expires_at FROM user_trials WHERE user_id = ?'
+        ).bind(authUser.userId).first();
+
+        if (existing) {
+            const status = await getMembershipStatus(env, authUser.userId);
+            return jsonResponse({ 
+                success: true, 
+                message: 'Ya tienes una prueba activa o finalizada', 
+                ...status 
+            }, 200, request);
+        }
+
+        const now = Date.now();
+        const expiresAt = now + (7 * 24 * 60 * 60 * 1000);
+
+        try {
+            await env.SPLITGASTO_DB.prepare(
+                'INSERT INTO user_trials (user_id, started_at, expires_at) VALUES (?, ?, ?)'
+            ).bind(authUser.userId, now, expiresAt).run();
+        } catch (dbErr) {
+            if (dbErr.message && dbErr.message.includes('UNIQUE')) {
+                const status = await getMembershipStatus(env, authUser.userId);
+                return jsonResponse({ 
+                    success: true, 
+                    message: 'Ya tienes una prueba activa o finalizada', 
+                    ...status 
+                }, 200, request);
+            }
+            throw dbErr;
+        }
+
+        return jsonResponse({ 
+            success: true, 
+            message: 'Prueba de 7 días activada correctamente', 
+            hasAccess: true,
+            type: 'trial',
+            active: true,
+            activatedAt: new Date(now).toISOString(),
+            expiresAt: new Date(expiresAt).toISOString(),
+            daysRemaining: 7 
+        }, 200, request);
+    }
+
+    if (path === '/api/membership/status' && method !== 'GET') {
+        return jsonResponse({ error: 'Usa GET para consultar estado' }, 405, request);
+    }
+    if (path === '/api/membership/start-trial' && method !== 'POST') {
+        return jsonResponse({ error: 'Usa POST para activar prueba' }, 405, request);
+    }
+
+    return jsonResponse({ error: 'Ruta de membresía no encontrada', path }, 404, request);
+}
+
+async function getMembershipStatus(env, userId) {
+    const trial = await env.SPLITGASTO_DB.prepare(
+        'SELECT started_at, expires_at FROM user_trials WHERE user_id = ?'
+    ).bind(userId).first();
+    
+    if (trial) {
+        const now = Date.now();
+        const expiresAt = trial.expires_at;
+        const remaining = expiresAt - now;
+        const daysRemaining = Math.ceil(remaining / (1000 * 60 * 60 * 24));
+
+        if (remaining > 0) {
+            return { 
+                hasAccess: true, 
+                type: 'trial', 
+                active: true, 
+                activatedAt: new Date(trial.started_at).toISOString(),
+                expiresAt: new Date(expiresAt).toISOString(),
+                daysRemaining: Math.max(0, daysRemaining)
+            };
+        } else {
+            return { 
+                hasAccess: false, 
+                type: 'trial_expired', 
+                active: false, 
+                activatedAt: new Date(trial.started_at).toISOString(),
+                expiresAt: new Date(expiresAt).toISOString(),
+                daysRemaining: 0,
+                message: 'Tu prueba gratuita ha expirado'
+            };
+        }
+    }
+
+    return { 
+        hasAccess: false, 
+        type: 'none', 
+        active: false, 
+        message: 'No tienes una membresía activa. Activa tu prueba gratuita de 7 días.' 
+    };
 }

@@ -133,9 +133,38 @@ const SGRouter = {
 
     /**
      * Navega a premium si la funcionalidad está bloqueada
+     * v4.31-hotfix: consulta /api/membership/status antes de bloquear
      */
-    requirePremium(feature = '') {
-        console.log('[SG Router] requirePremium:', feature || 'generic');
+    async requirePremium(feature = '', targetRoute = '') {
+        console.log('[SG Router] requirePremium:', feature || 'generic', '→ target:', targetRoute || 'none');
+
+        const token = localStorage.getItem('sg_token');
+        if (!token) {
+            this.showToast('Debes iniciar sesión para acceder', 'error');
+            setTimeout(() => this.navigate('auth-login', 'dashboard'), 1200);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/membership/status', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.success && data.hasAccess) {
+                // ✅ Tiene prueba activa (o premium real): navegar al juego
+                if (targetRoute && this.routes[targetRoute]) {
+                    this.navigate(targetRoute, 'games');
+                } else {
+                    this.showToast(feature ? `${feature} desbloqueado 👑` : 'Función desbloqueada', 'success');
+                }
+                return;
+            }
+        } catch (err) {
+            console.error('[SG Router] Error verificando membresía:', err);
+        }
+
+        // ❌ Sin acceso: mostrar toast y redirigir a membresía
         this.showToast(feature ? `${feature} es Premium 👑` : '¡Función Premium! Desbloquea todo por 2,99€/mes', 'premium');
         setTimeout(() => {
             this.navigate('membership', 'dashboard');
