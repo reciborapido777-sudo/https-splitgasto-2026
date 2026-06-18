@@ -214,28 +214,73 @@
         </div>
     </nav>
     <script>
-    function updateSocioAvatar(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+function updateSocioAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            if (window.SGRouter) SGRouter.showToast(t('error.system', null, 'El archivo excede los 2MB'), 'error');
-            return;
-        }
+    // Validación estricta MIME
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        if (window.SGRouter) SGRouter.showToast('Formato no válido. Usa JPG, PNG o WebP.', 'warning');
+        event.target.value = '';
+        return;
+    }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Str = e.target.result;
+    if (file.size > 2 * 1024 * 1024) {
+        if (window.SGRouter) SGRouter.showToast('El archivo excede los 2MB.', 'error');
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    
+    reader.onerror = function() {
+        if (window.SGRouter) SGRouter.showToast('Error al leer el archivo.', 'error');
+        event.target.value = '';
+    };
+
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Resize a 300x300px manteniendo proporción
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 300;
+            canvas.width = size;
+            canvas.height = size;
+
+            // Cover crop centrado
+            const scale = Math.max(size / img.width, size / img.height);
+            const x = (size - img.width * scale) / 2;
+            const y = (size - img.height * scale) / 2;
+            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+            // Exportar como JPEG 80% calidad (~20-40KB típico)
+            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+            
             const avatarEl = document.getElementById('profile-avatar');
-            if (avatarEl) avatarEl.src = base64Str;
+            if (avatarEl) avatarEl.src = compressed;
             
             const uid = SGAuth && SGAuth.getUserId() ? SGAuth.getUserId() : 'alpha_user';
-            localStorage.setItem(`sg_avatar_${uid}`, base64Str);
+            try {
+                localStorage.setItem(`sg_avatar_${uid}`, compressed);
+            } catch (storageErr) {
+                console.warn('[Avatar] localStorage lleno:', storageErr);
+                if (window.SGRouter) SGRouter.showToast('Espacio de almacenamiento lleno.', 'error');
+                return;
+            }
             
-            if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada', 'success');
+            if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada ✓', 'success');
         };
-        reader.readAsDataURL(file);
-    }
+        img.onerror = function() {
+            if (window.SGRouter) SGRouter.showToast('Imagen corrupta.', 'error');
+        };
+        img.src = e.target.result;
+    };
+    
+    reader.readAsDataURL(file);
+    event.target.value = ''; // Permitir re-seleccionar el mismo archivo
+}
 
     async function loadProfileData() {
       if (!SGAuth || !SGAuth.isLoggedIn()) {
