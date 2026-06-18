@@ -249,168 +249,193 @@
 
     </div>
 
-    <script>
-        let currentFilter = 'todos';
+<script>
+    let currentFilter = 'todos';
 
-        function setFilter(btn, cat) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = cat;
-            applyFilters();
-        }
+    function setFilter(btn, cat) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = cat;
+        applyFilters();
+    }
 
-        function filterVault(query) {
-            applyFilters(query);
-        }
+    function filterVault(query) {
+        applyFilters(query);
+    }
 
-        function applyFilters(query = '') {
-            // Buscar en ambos grids: real + demo
-            const cards = document.querySelectorAll('#realGrid [data-cat], #vaultGrid [data-cat]');
-            let visible = 0;
-            cards.forEach(card => {
-                const matchCat = currentFilter === 'todos' || card.dataset.cat === currentFilter;
-                const matchName = !query || card.dataset.name.includes(query.toLowerCase());
-                if (matchCat && matchName) {
-                    card.style.display = '';
-                    visible++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            document.getElementById('emptyVault').classList.toggle('hidden', visible > 0);
-        }
-
-        // ── Cargar datos reales (grupos + gastos) ──────────────────────
-        const CAT_MAP = {
-            // Claves que la base de datos suele devolver en español
-            'comida':          { label: 'Comida',       cat: 'gastronomia',  color: '#13ecd6', icon: 'restaurant',     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
-            'transporte':      { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
-            'entretenimiento': { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie',          img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
-            'alojamiento':     { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'bolt',           img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
-            'compras':         { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80' },
-            'salud':           { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services',img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
-            'otro':            { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
-            
-            // Claves de respaldo en inglés
-            'food':            { label: 'Comida',       cat: 'gastronomia',  color: '#13ecd6', icon: 'restaurant',     img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
-            'transport':       { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car', img: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=400&q=80' },
-            'leisure':         { label: 'Ocio',         cat: 'ocio',         color: '#FF9D42', icon: 'movie',          img: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80' },
-            'home':            { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'bolt',           img: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=400&q=80' },
-            'shopping':        { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80' },
-            'health':          { label: 'Salud',        cat: 'alimentacion', color: '#22c55e', icon: 'medical_services',img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80' },
-            'other':           { label: 'Otros',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
-            
-            // Fallback total
-            'default':         { label: 'Gasto',        cat: 'todos',        color: '#6b7280', icon: 'receipt',        img: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' }
-        };
-
-        function buildCard(exp, idx) {
-            const rawCat = (exp.category || '').toLowerCase().trim();
-            const meta = CAT_MAP[rawCat] || CAT_MAP['default'];
-            
-            const dateStr = exp.created_at
-                ? new Date(exp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-                : 'Reciente';
-            const card = document.createElement('div');
-            card.className = 'asset-card group cursor-pointer reveal-node';
-            card.style.animationDelay = `${idx * 0.05}s`;
-            card.dataset.cat = meta.cat;
-            card.dataset.name = (exp.description || exp.category || '').toLowerCase();
-            card.setAttribute('onclick', "SGRouter.navigate('receipt','vault')");
-            card.innerHTML = `
-                <img src="${meta.img}" class="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700" alt="${meta.label}" loading="lazy">
-                <div class="absolute inset-0 flex items-center justify-center mix-blend-overlay">
-                    <span class="material-icons-round opacity-30" style="font-size:6rem;color:${meta.color}">${meta.icon}</span>
-                </div>
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3 z-10">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 text-[7px] font-black uppercase rounded-full border backdrop-blur-md"
-                              style="background:${meta.color}20;color:${meta.color};border-color:${meta.color}40">${meta.label}</span>
-                        <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">${dateStr}</p>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white drop-shadow-lg">
-                            ${exp.description || exp.category}
-                        </h3>
-                    </div>
-                </div>`;
-            return card;
-        }
-
-        async function loadVaultData() {
-            if (!SGAuth || !SGAuth.isLoggedIn()) return;
-            try {
-                const groupsResult = await SGApi.getGroups();
-                const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
-
-                if (groups.length === 0) {
-                    document.getElementById('vault-total').textContent = '0,00€';
-                    document.getElementById('vault-tickets').textContent = '0';
-                    return;
-                }
-
-                // Recopilar gastos de todos los grupos
-                let allExpenses = [];
-                for (const g of groups) {
-                    const expRes = await SGApi.getExpenses(g.id).catch(() => null);
-                    if (expRes?.success && expRes.expenses) allExpenses.push(...expRes.expenses);
-                }
-
-                // Ordenar por fecha desc
-                allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-                // Estadísticas
-                const total = allExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-                document.getElementById('vault-total').textContent =
-                    total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
-                document.getElementById('vault-tickets').textContent = allExpenses.length;
-
-                // Rellenar grid de gastos reales (primeros 8)
-                if (allExpenses.length > 0) {
-                    const realGrid = document.getElementById('realGrid');
-                    realGrid.classList.remove('hidden');
-                    // Botón «Digitalizar» va siempre al inicio del grid real
-                    const addBtn = document.querySelector('#vaultGrid > div:first-child');
-                    realGrid.appendChild(addBtn);
-                    allExpenses.slice(0, 8).forEach((exp, idx) => {
-                        realGrid.appendChild(buildCard(exp, idx + 1));
-                    });
-                    // Mostrar separador antes del archivo demo
-                    document.getElementById('demoHeader').style.display = 'flex';
-                }
-
-            } catch (e) {
-                console.error('[Vault] load error:', e);
-                document.getElementById('vault-total').textContent = '—';
-                document.getElementById('vault-tickets').textContent = '—';
+    function applyFilters(query = '') {
+        const cards = document.querySelectorAll('#realGrid [data-cat], #vaultGrid [data-cat]');
+        let visible = 0;
+        cards.forEach(card => {
+            const matchCat = currentFilter === 'todos' || card.dataset.cat === currentFilter;
+            const matchName = !query || card.dataset.name.includes(query.toLowerCase());
+            if (matchCat && matchName) {
+                card.style.display = '';
+                visible++;
+            } else {
+                card.style.display = 'none';
             }
-        }
+        });
+        document.getElementById('emptyVault').classList.toggle('hidden', visible > 0);
+    }
 
-        loadVaultData();
-    </script>
+    // ── Visualización premium por categoría ──────────────────────────
+    const CAT_MAP = {
+        'comida':          { label: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
+        'transporte':      { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
+        'entretenimiento': { label: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
+        'alojamiento':     { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
+        'compras':         { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
+        'salud':           { label: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
+        'servicios':       { label: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
+        'otro':            { label: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
+        'food':            { label: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
+        'transport':       { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
+        'leisure':         { label: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
+        'home':            { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
+        'shopping':        { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
+        'health':          { label: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
+        'services':        { label: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
+        'other':           { label: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
+        'default':         { label: 'Gasto',        cat: 'todos',        color: '#71717a', icon: 'receipt' }
+    };
+
+    function getCategoryArt(catKey) {
+        const c = (catKey || '').toLowerCase().trim();
+        const map = {
+            'comida': 'food', 'food': 'food',
+            'transporte': 'transport', 'transport': 'transport',
+            'entretenimiento': 'leisure', 'leisure': 'leisure',
+            'alojamiento': 'home', 'home': 'home',
+            'compras': 'shopping', 'shopping': 'shopping',
+            'salud': 'health', 'health': 'health',
+            'servicios': 'services', 'services': 'services'
+        };
+        const type = map[c] || 'default';
+        
+        const svgs = {
+            food: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23FF6B35"/><stop offset="100%" stop-color="%23C0392B"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23FF9D42" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%230d0500"/><circle cx="280" cy="140" r="170" fill="url(%23g)" opacity="0.18"/><ellipse cx="200" cy="440" rx="200" ry="90" fill="%23FF6B35" opacity="0.08"/><path d="M0,500 L120,380 Q200,460 320,360 Q400,420 400,500Z" fill="%231a0800"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            transport: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23a855f7"/><stop offset="100%" stop-color="%233b82f6"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23a855f7" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%2305020d"/><circle cx="120" cy="120" r="160" fill="url(%23g)" opacity="0.18"/><path d="M-40,500 L160,280 L360,400 L400,380 L400,500Z" fill="%231a0d2e"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            leisure: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23ec4899"/><stop offset="100%" stop-color="%23FF9D42"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23ec4899" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%230d0205"/><circle cx="320" cy="180" r="160" fill="url(%23g)" opacity="0.18"/><ellipse cx="200" cy="460" rx="220" ry="80" fill="%23ec4899" opacity="0.08"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            home: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23f59e0b"/><stop offset="100%" stop-color="%23d97706"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23f59e0b" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%230d0802"/><circle cx="200" cy="160" r="170" fill="url(%23g)" opacity="0.18"/><polygon points="200,70 340,210 60,210" fill="%23f59e0b" opacity="0.1"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            shopping: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%233b82f6"/><stop offset="100%" stop-color="%2313ecd6"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%233b82f6" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%23020d0d"/><circle cx="300" cy="100" r="160" fill="url(%23g)" opacity="0.18"/><ellipse cx="100" cy="420" rx="140" ry="140" fill="%2313ecd6" opacity="0.06"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            health: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2322c55e"/><stop offset="100%" stop-color="%2313ecd6"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%2322c55e" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%23020d05"/><circle cx="150" cy="150" r="170" fill="url(%23g)" opacity="0.18"/><path d="M0,500 Q200,360 400,460 L400,500Z" fill="%23052e16" opacity="0.5"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            services: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%236b7280"/><stop offset="100%" stop-color="%2313ecd6"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%236b7280" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%23050505"/><circle cx="320" cy="120" r="160" fill="url(%23g)" opacity="0.18"/><rect x="60" y="360" width="280" height="2" fill="%2313ecd6" opacity="0.12"/><rect x="100" y="390" width="200" height="2" fill="%2313ecd6" opacity="0.08"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`,
+            
+            default: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2371717a"/><stop offset="100%" stop-color="%2327272a"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%2371717a" stop-opacity="0.2"/><stop offset="100%" stop-color="%23000" stop-opacity="0.85"/></linearGradient></defs><rect width="400" height="500" fill="%23050505"/><circle cx="200" cy="200" r="170" fill="url(%23g)" opacity="0.12"/><rect y="300" width="400" height="200" fill="url(%23v)"/></svg>`
+        };
+        return 'data:image/svg+xml,' + encodeURIComponent(svgs[type] || svgs.default);
+    }
+
+    function buildCard(exp, idx) {
+        const rawCat = (exp.category || '').toLowerCase().trim();
+        const meta = CAT_MAP[rawCat] || CAT_MAP['default'];
+        const artUrl = getCategoryArt(rawCat);
+        
+        const dateStr = exp.created_at
+            ? new Date(exp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+            : 'Reciente';
+            
+        const card = document.createElement('div');
+        card.className = 'asset-card group cursor-pointer reveal-node';
+        card.style.animationDelay = `${idx * 0.05}s`;
+        card.dataset.cat = meta.cat;
+        card.dataset.name = (exp.description || exp.category || '').toLowerCase();
+        card.setAttribute('onclick', "SGRouter.navigate('receipt','vault')");
+        card.innerHTML = `
+            <img src="${artUrl}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="${meta.label}" loading="lazy">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span class="material-icons-round opacity-20" style="font-size:6rem;color:${meta.color}">${meta.icon}</span>
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+            <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3 z-10">
+                <div class="flex justify-between items-center">
+                    <span class="px-2 py-1 text-[7px] font-black uppercase rounded-full border backdrop-blur-md"
+                          style="background:${meta.color}15;color:${meta.color};border-color:${meta.color}30">${meta.label}</span>
+                    <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">${dateStr}</p>
+                </div>
+                <div>
+                    <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white drop-shadow-lg">
+                        ${exp.description || meta.label}
+                    </h3>
+                </div>
+            </div>`;
+        return card;
+    }
+
+    async function loadVaultData() {
+        if (!SGAuth || !SGAuth.isLoggedIn()) return;
+        try {
+            const groupsResult = await SGApi.getGroups();
+            const groups = (groupsResult?.success && groupsResult.groups) ? groupsResult.groups : [];
+
+            if (groups.length === 0) {
+                document.getElementById('vault-total').textContent = '0,00€';
+                document.getElementById('vault-tickets').textContent = '0';
+                return;
+            }
+
+            let allExpenses = [];
+            for (const g of groups) {
+                const expRes = await SGApi.getExpenses(g.id).catch(() => null);
+                if (expRes?.success && expRes.expenses) allExpenses.push(...expRes.expenses);
+            }
+
+            allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+            const total = allExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+            document.getElementById('vault-total').textContent =
+                total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+            document.getElementById('vault-tickets').textContent = allExpenses.length;
+
+            if (allExpenses.length > 0) {
+                const realGrid = document.getElementById('realGrid');
+                realGrid.classList.remove('hidden');
+                const addBtn = document.querySelector('#vaultGrid > div:first-child');
+                realGrid.appendChild(addBtn);
+                allExpenses.slice(0, 8).forEach((exp, idx) => {
+                    realGrid.appendChild(buildCard(exp, idx + 1));
+                });
+                document.getElementById('demoHeader').style.display = 'flex';
+            }
+
+        } catch (e) {
+            console.error('[Vault] load error:', e);
+            document.getElementById('vault-total').textContent = '—';
+            document.getElementById('vault-tickets').textContent = '—';
+        }
+    }
+
+    loadVaultData();
+</script>
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
-                <p>Mando</p>
+                <p data-i18n="nav.dashboard">Mando</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
-                <p>Grupos</p>
+                <p data-i18n="nav.groups">Grupos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
-                <p>Gastos</p>
+                <p data-i18n="nav.expenses">Gastos</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
-                <p>Métricas</p>
+                <p data-i18n="nav.metrics">Métricas</p>
             </button>
             <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
-                <p>Perfil</p>
+                <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
