@@ -55,7 +55,7 @@
                     </div>
                 </div>
                 <div>
-                    <p class="text-[8px] font-black text-[#D4AF37] uppercase tracking-[.35em]">Socio Fundador</p>
+                    <p class="text-[8px] font-black text-[#D4AF37] uppercase tracking-[.35em]" data-i18n="dashboard.founderMember">Socio Fundador</p>
                     <h1 class="text-sm font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" id="dash-user-name">—</h1>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             <button onclick="SGRouter.requirePremium('Juegos')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all relative" style="border-color:rgba(212,175,55,.2)">
                 <span class="material-icons-round text-3xl group-hover:scale-110 transition-transform" style="color:#D4AF37">casino</span>
                 <span class="text-[8px] font-black uppercase tracking-wider text-zinc-500" data-i18n="dashboard.games">Juegos</span>
-                <span class="absolute top-2 right-2 premium-badge">PRO</span>
+                <span class="absolute top-2 right-2 premium-badge" data-i18n="dashboard.proBadge">PRO</span>
             </button>
             <button onclick="SGRouter.navigate('add-expense','dashboard')" class="glass-panel action-card p-5 rounded-[1.75rem] flex flex-col items-center gap-3 hover:bg-white/5 group active:scale-95 transition-all" style="border-color:rgba(19,236,214,.15)">
                 <span class="material-icons-round text-[#13ecd6] text-3xl group-hover:scale-110 transition-transform">add_circle</span>
@@ -136,9 +136,9 @@
                     <span class="material-icons-round text-[#D4AF37] text-xl">workspace_premium</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-[8px] font-black text-[#D4AF37] uppercase tracking-[.3em] mb-0.5">Membresía Activa</p>
-                    <p class="text-sm font-black font-['Space_Grotesk'] italic tracking-tighter uppercase">Socio Fundador Elite</p>
-                    <p class="text-[10px] text-zinc-500 mt-0.5">0% comisiones · Soporte VIP · Acceso total</p>
+                    <p class="text-[8px] font-black text-[#D4AF37] uppercase tracking-[.3em] mb-0.5" data-i18n="dashboard.activeMembership">Membresía Activa</p>
+                    <p class="text-sm font-black font-['Space_Grotesk'] italic tracking-tighter uppercase" data-i18n="dashboard.eliteFounder">Socio Fundador Elite</p>
+                    <p class="text-[10px] text-zinc-500 mt-0.5" data-i18n="dashboard.membershipBenefits">0% comisiones · Soporte VIP · Acceso total</p>
                 </div>
                 <span class="material-icons-round text-zinc-600 group-hover:text-zinc-400 transition-colors">chevron_right</span>
             </div>
@@ -150,11 +150,11 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-8 space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="size-2 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[.5em]">Grupo Activo</p>
+                    <p class="text-[9px] font-black text-[#13ecd6] uppercase tracking-[.5em]" data-i18n="dashboard.activeGroup">Grupo Activo</p>
                 </div>
-                <h3 id="active-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter">Cargando…</h3>
+                <h3 id="active-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic leading-none tracking-tighter" data-i18n="dashboard.loadingGroup">Cargando…</h3>
                 <div class="flex items-center justify-between">
-                    <p id="active-group-sub" class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">— socios</p>
+                <p id="active-group-sub" class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider" data-i18n="dashboard.membersPlaceholder">— socios</p>
                     <div id="active-group-avatars" class="flex -space-x-2"></div>
                 </div>
             </div>
