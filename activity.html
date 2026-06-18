@@ -84,9 +84,9 @@
                     <p class="text-[9px] text-[#13ecd6] font-black uppercase" data-i18n="activity.transactions">Transacciones</p>
                 </div>
                 <div class="space-y-1">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.pending">Pendientes</p>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.othersExpenses">Gastos de otros</p>
                     <p class="text-2xl font-black money-display text-[#FF9D42]">3</p>
-                    <p class="text-[9px] text-zinc-600 font-black uppercase" data-i18n="activity.requireAction">Requieren acción</p>
+                    <p class="text-[9px] text-zinc-600 font-black uppercase" data-i18n="activity.paidByOthers">Pagados por otros socios</p>
                 </div>
             </div>
         </section>
@@ -281,9 +281,9 @@ const CAT_COLORS = {
 
     function updateSummary(expenses, uid) {
       const totalGasto = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-      const pendientes = expenses.filter(e => e.paid_by !== uid).length;
+      const othersCount = expenses.filter(e => e.paid_by !== uid).length;
       const totalCount = expenses.length;
-
+    
       const summaryEl = document.querySelector('.glass-panel .grid');
       if (!summaryEl) return;
       const cells = summaryEl.querySelectorAll('.space-y-1');
@@ -299,7 +299,7 @@ const CAT_COLORS = {
       }
       if (cells[3]) {
         const el = cells[3].querySelector('.money-display');
-        if (el) el.textContent = pendientes;
+        if (el) el.textContent = othersCount;
       }
     }
 
