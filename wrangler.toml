@@ -51,6 +51,7 @@ APP_VERSION = "4.31"
 APP_ENV     = "production"
 AI_GATEWAY  = "splitgasto-ai"
 STRIPE_PRICE_ID = "price_1Tjuod7yapeB0FLotjYes3aN"
+STRIPE_PRICE_ID_MONTHLY = "price_1TjvZo9V7TZ4NU3DigZuGdfF"
 
 # ── Observabilidad ────────────────────────────────────────────────────
 [observability]
