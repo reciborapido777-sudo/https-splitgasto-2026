@@ -253,6 +253,20 @@ const SGApi = (function(){
         return request('/api/health');
     }
 
+    async function createStripeCheckout(successUrl, cancelUrl) {
+        return request('/api/payments/checkout', {
+            method: 'POST',
+            body: JSON.stringify({ successUrl, cancelUrl })
+        });
+    }
+
+    async function createStripePortal(returnUrl) {
+        return request('/api/payments/portal', {
+            method: 'POST',
+            body: JSON.stringify({ returnUrl })
+        });
+    }
+
     return {
         login,
         getGroups, createGroup, deleteGroup, getGroupMembers, addGroupMember, addGroupMemberByEmail, removeGroupMember, getUserByEmail,
@@ -264,6 +278,8 @@ const SGApi = (function(){
         uploadFile, getSignedUrl, listFiles, deleteFile,
         aiChat, aiClassify, aiScanTicket, aiSummary,
         health
+        createStripeCheckout,
+        createStripePortal
     };
 
 })();
