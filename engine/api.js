@@ -277,7 +277,7 @@ const SGApi = (function(){
         getNotifications, markNotificationsRead,
         uploadFile, getSignedUrl, listFiles, deleteFile,
         aiChat, aiClassify, aiScanTicket, aiSummary,
-        health
+        health,
         createStripeCheckout,
         createStripePortal
     };
