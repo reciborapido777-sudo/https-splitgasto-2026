@@ -223,6 +223,11 @@
             }
         }
 
+const PRICE_IDS = {
+    monthly: 'price_1TjvZo9V7TZ4NU3DigZuGdfF',
+    yearly: 'price_1Tjuod7yapeB0FLotjYes3aN'
+};
+
 async function subscribe() {
     const btn = document.getElementById('cta-btn');
     const token = localStorage.getItem('sg_token');
@@ -234,38 +239,26 @@ async function subscribe() {
     }
 
     btn.disabled = true;
-    btn.textContent = '⏳ Procesando...';
+    btn.textContent = '⏳ Conectando con Stripe...';
 
     try {
-        const res = await fetch('/api/membership/start-trial', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const priceId = PRICE_IDS[selectedPlan];
+        const returnUrl = window.location.origin + '/membership.html';
+        const successUrl = `${returnUrl}?status=success&plan=${selectedPlan}`;
+        const cancelUrl = `${returnUrl}?status=cancelled`;
 
-        const data = await res.json();
+        const result = await SGApi.createStripeCheckout(successUrl, cancelUrl, priceId);
 
-        if (data.success && data.hasAccess) {
-            btn.textContent = '✓ ¡Activado!';
-            btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
-            SGRouter.showToast(`Prueba activada. ${data.daysRemaining} días restantes`, 'success');
-            // Redirige a la sección Split / Juegos
-            setTimeout(() => window.location.href = '/split.html', 1500);
-        } else if (data.type === 'trial_expired') {
-            btn.textContent = 'Prueba expirada';
-            SGRouter.showToast('Tu prueba gratuita ya expiró', 'error');
-            btn.disabled = false;
+        if (result.success && result.checkoutUrl) {
+            window.location.href = result.checkoutUrl;
         } else {
-            // Ya tenía prueba o error controlado
-            SGRouter.showToast(data.message || 'No se pudo activar la prueba', 'error');
+            SGRouter.showToast(result.error || 'Error iniciando pago', 'error');
             btn.disabled = false;
             btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
         }
     } catch (err) {
-        console.error('Error activando prueba:', err);
-        SGRouter.showToast('Error de conexión. Intenta de nuevo.', 'error');
+        console.error('Error Stripe:', err);
+        SGRouter.showToast('Error de conexión', 'error');
         btn.disabled = false;
         btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
     }
@@ -303,22 +296,33 @@ async function subscribe() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
+        const btn = document.getElementById('cta-btn');
+        if (!btn) return;
         
         if (data.success && data.hasAccess) {
-            // Ya tiene prueba activa: muestra banner y oculta el botón de prueba
-            const btn = document.getElementById('cta-btn');
-            if (btn) {
+            if (data.type === 'subscription') {
+                // Usuario con suscripción de pago activa
+                btn.textContent = `✓ Pro activo · ${data.plan || 'Premium'}`;
+                btn.style.background = 'linear-gradient(135deg,#D4AF37,#F9E076)';
+                btn.style.color = '#000';
+                btn.disabled = true;
+                SGRouter.showToast('Membresía Pro activa', 'success');
+            } else {
+                // Usuario con prueba gratuita activa
                 btn.textContent = `✓ Prueba activa · ${data.daysRemaining} días`;
                 btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+                btn.style.color = '#fff';
                 btn.disabled = true;
+                SGRouter.showToast(`Tienes ${data.daysRemaining} días de prueba restantes`, 'success');
             }
-            SGRouter.showToast(`Tienes ${data.daysRemaining} días de prueba restantes`, 'success');
         } else if (data.type === 'trial_expired') {
-            const btn = document.getElementById('cta-btn');
-            if (btn) {
-                btn.textContent = 'Prueba expirada · Elige un plan';
-                btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
-            }
+            btn.textContent = 'Prueba expirada · Elige un plan';
+            btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+            btn.style.color = '#fff';
+            btn.disabled = false;
+        } else if (data.type === 'none') {
+            // Sin membresía: deja el botón normal para que elija plan
+            btn.disabled = false;
         }
     } catch (e) {
         // Silencioso: si falla, deja la UI normal
