@@ -252,11 +252,11 @@ const SGApi = (function(){
     async function health() {
         return request('/api/health');
     }
-
-    async function createStripeCheckout(successUrl, cancelUrl) {
+    
+    async function createStripeCheckout(successUrl, cancelUrl, priceId) {
         return request('/api/payments/checkout', {
             method: 'POST',
-            body: JSON.stringify({ successUrl, cancelUrl })
+            body: JSON.stringify({ successUrl, cancelUrl, priceId })
         });
     }
 
@@ -280,6 +280,6 @@ const SGApi = (function(){
         health,
         createStripeCheckout,
         createStripePortal
-    };
+    };  
 
 })();
