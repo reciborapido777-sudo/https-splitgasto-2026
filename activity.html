@@ -67,26 +67,26 @@
 
         <!-- Resumen mensual -->
         <section class="glass-panel p-8 rounded-[3rem] border-[#a855f7]/10 reveal-node">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div class="space-y-1">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.totalExpense">Gasto Total</p>
-                    <p class="text-2xl font-black money-display text-white">840,36€</p>
-                    <p class="text-[9px] text-[#FF9D42] font-black uppercase">+8% vs Feb</p>
+                    <p class="text-2xl font-black money-display text-white">—</p>
+                    <p class="text-[9px] text-zinc-500 font-black uppercase" data-i18n="activity.thisPeriod">este período</p>
                 </div>
                 <div class="space-y-1" onclick="SGRouter.navigate('analytics', 'activity')" style="cursor:pointer">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.aiEfficiency">Eficiencia IA</p>
-                    <p class="text-2xl font-black money-display text-[#13ecd6]">+12.4%</p>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.yourBalance">Tu Balance</p>
+                    <p class="text-2xl font-black money-display text-[#13ecd6]">—</p>
                     <p class="text-[9px] text-zinc-600 font-black uppercase" data-i18n="activity.viewMetrics">Ver métricas →</p>
                 </div>
                 <div class="space-y-1">
                     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.transactions">Transacciones</p>
-                    <p class="text-2xl font-black money-display text-white">14</p>
-                    <p class="text-[9px] text-[#13ecd6] font-black uppercase" data-i18n="activity.transactions">Transacciones</p>
+                    <p class="text-2xl font-black money-display text-white">—</p>
+                    <p class="text-[9px] text-zinc-500 font-black uppercase" data-i18n="activity.transactions">Transacciones</p>
                 </div>
                 <div class="space-y-1">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.othersExpenses">Gastos de otros</p>
-                    <p class="text-2xl font-black money-display text-[#FF9D42]">3</p>
-                    <p class="text-[9px] text-zinc-600 font-black uppercase" data-i18n="activity.paidByOthers">Pagados por otros socios</p>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="activity.youOwe">Tus Deudas</p>
+                    <p class="text-2xl font-black money-display text-[#FF9D42]">—</p>
+                    <p class="text-[9px] text-zinc-500 font-black uppercase" data-i18n="activity.pendingPayment">Pendiente de pago</p>
                 </div>
             </div>
         </section>
@@ -96,8 +96,6 @@
             <button class="filter-btn active px-7 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest flex-shrink-0" onclick="filterTx('all', this)" data-i18n="activity.filterAll">Todos</button>
             <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('income', this)" data-i18n="activity.filterIncome">A cobrar</button>
             <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('expense', this)" data-i18n="activity.filterExpense">A pagar</button>
-            <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('pending', this)" data-i18n="activity.filterPending">Pendientes</button>
-            <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('settled', this)" data-i18n="activity.filterSettled">Liquidados</button>
         </nav>
 
         <main class="space-y-12" id="activity-content">
@@ -281,7 +279,7 @@ const CAT_COLORS = {
 
             const icon = CAT_ICONS[exp.category] || 'receipt';
             const color = CAT_COLORS[exp.category] || '#6b7280';
-            const txType = netImpact > 0 ? 'income' : (netImpact < 0 ? 'expense' : 'settled');
+            const txType = netImpact > 0 ? 'income' : (netImpact < 0 ? 'expense' : 'pending');
             const absAmount = Math.abs(netImpact).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             const amountStr = (netImpact >= 0 ? '+' : '-') + absAmount + '€';
             const amountColor = netImpact >= 0 ? '#13ecd6' : '#FF9D42';
