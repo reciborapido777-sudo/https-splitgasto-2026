@@ -98,6 +98,9 @@ async function handleAPI(request, env, ctx, path) {
     }
 
     if (path.startsWith('/api/membership/')) return handleMembership(request, env, path);
+    if (path === '/api/payments/checkout' && method === 'POST') return handleStripeCheckout(request, env);
+    if (path === '/api/payments/webhook' && method === 'POST') return handleStripeWebhook(request, env);
+    if (path === '/api/payments/portal' && method === 'POST') return handleStripePortal(request, env);
     if (path.startsWith('/api/auth/')) return handleAuth(request, env, path);
     if (path === '/api/db/balances') return handleBalances(request, env);
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
@@ -1884,6 +1887,30 @@ async function handleMembership(request, env, path) {
 }
 
 async function getMembershipStatus(env, userId) {
+    // 1. Verificar suscripción de pago (Stripe)
+    const activeSub = await env.SPLITGASTO_DB.prepare(`
+        SELECT * FROM user_subscriptions 
+        WHERE user_id = ? AND status = 'active' AND current_period_end > ?
+        ORDER BY created_at DESC LIMIT 1
+    `).bind(userId, Date.now()).first();
+
+    if (activeSub) {
+        const daysRemaining = Math.ceil((activeSub.current_period_end - Date.now()) / (1000 * 60 * 60 * 24));
+        return {
+            hasAccess: true,
+            type: 'subscription',
+            active: true,
+            plan: activeSub.plan_name,
+            provider: activeSub.provider,
+            subscriptionId: activeSub.subscription_id,
+            activatedAt: new Date(activeSub.current_period_start).toISOString(),
+            expiresAt: new Date(activeSub.current_period_end).toISOString(),
+            daysRemaining: Math.max(0, daysRemaining),
+            message: 'Membresía Pro activa'
+        };
+    }
+
+    // 2. Fallback a prueba gratuita
     const trial = await env.SPLITGASTO_DB.prepare(
         'SELECT started_at, expires_at FROM user_trials WHERE user_id = ?'
     ).bind(userId).first();
@@ -1908,10 +1935,8 @@ async function getMembershipStatus(env, userId) {
                 hasAccess: false, 
                 type: 'trial_expired', 
                 active: false, 
-                activatedAt: new Date(trial.started_at).toISOString(),
-                expiresAt: new Date(expiresAt).toISOString(),
                 daysRemaining: 0,
-                message: 'Tu prueba gratuita ha expirado'
+                message: 'Tu prueba gratuita ha expirado. Suscríbete para continuar.'
             };
         }
     }
@@ -1920,6 +1945,209 @@ async function getMembershipStatus(env, userId) {
         hasAccess: false, 
         type: 'none', 
         active: false, 
-        message: 'No tienes una membresía activa. Activa tu prueba gratuita de 7 días.' 
+        message: 'No tienes una membresía activa. Activa tu prueba gratuita o suscríbete.' 
     };
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Stripe Payments
+// ═══════════════════════════════════════════════════════════════════════
+
+async function handleStripeCheckout(request, env) {
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+
+    if (!env.STRIPE_SECRET_KEY) {
+        return jsonResponse({ error: 'Sistema de pagos no configurado' }, 503, request);
+    }
+
+    try {
+        const body = await request.json().catch(() => ({}));
+        const returnUrl = new URL(request.url).origin;
+        const successUrl = body.successUrl || `${returnUrl}/membership.html?status=success`;
+        const cancelUrl = body.cancelUrl || `${returnUrl}/membership.html?status=cancelled`;
+        const priceId = body.priceId || env.STRIPE_PRICE_ID;
+
+        if (!priceId) {
+            return jsonResponse({ error: 'Price ID no configurado' }, 503, request);
+        }
+
+        // Buscar o crear customer
+        const customerSearch = await fetch(
+            `https://api.stripe.com/v1/customers/search?query=metadata['user_id']:'${authUser.userId}'`,
+            { headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` } }
+        );
+        const searchData = await customerSearch.json();
+        let customerId = searchData.data?.[0]?.id;
+
+        if (!customerId) {
+            const customerCreate = await fetch('https://api.stripe.com/v1/customers', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    email: authUser.email || '',
+                    'metadata[user_id]': authUser.userId
+                })
+            });
+            const custData = await customerCreate.json();
+            if (!customerCreate.ok) {
+                return jsonResponse({ error: 'Error creando cliente', detail: custData.error?.message }, 502, request);
+            }
+            customerId = custData.id;
+        }
+
+        // Crear Checkout Session
+        const sessionRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'customer': customerId,
+                'line_items[0][price]': priceId,
+                'line_items[0][quantity]': '1',
+                'mode': 'subscription',
+                'success_url': successUrl,
+                'cancel_url': cancelUrl,
+                'subscription_data[metadata][user_id]': authUser.userId,
+                'client_reference_id': authUser.userId
+            })
+        });
+
+        const sessionData = await sessionRes.json();
+        if (!sessionRes.ok) {
+            return jsonResponse({ error: 'Error creando checkout', detail: sessionData.error?.message }, 502, request);
+        }
+
+        return jsonResponse({
+            success: true,
+            checkoutUrl: sessionData.url,
+            sessionId: sessionData.id
+        }, 200, request);
+
+    } catch (err) {
+        return jsonResponse({ error: 'Error de conexión con el proveedor de pagos' }, 500, request);
+    }
+}
+
+async function handleStripeWebhook(request, env) {
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+        return jsonResponse({ error: 'Webhook no configurado' }, 503, request);
+    }
+
+    try {
+        const signature = request.headers.get('stripe-signature');
+        const body = await request.text();
+        const isValid = await verifyStripeSignature(body, signature, env.STRIPE_WEBHOOK_SECRET);
+        if (!isValid) {
+            return jsonResponse({ error: 'Firma inválida' }, 401, request);
+        }
+
+        const event = JSON.parse(body);
+        console.log(`[Stripe Webhook] Evento: ${event.type}`);
+
+        if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
+            const sub = event.data.object;
+            const userId = sub.metadata?.user_id || sub.client_reference_id;
+            if (!userId) return jsonResponse({ received: true }, 200, request);
+
+            const status = (sub.status === 'active' || sub.status === 'trialing') ? 'active' : sub.status;
+            const periodStart = sub.current_period_start * 1000;
+            const periodEnd = sub.current_period_end * 1000;
+
+            await env.SPLITGASTO_DB.prepare(`
+                INSERT INTO user_subscriptions 
+                (id, user_id, provider, subscription_id, order_id, status, plan_name, current_period_start, current_period_end)
+                VALUES (?, ?, 'stripe', ?, ?, ?, 'pro', ?, ?)
+                ON CONFLICT(subscription_id) DO UPDATE SET
+                    status = excluded.status,
+                    current_period_start = excluded.current_period_start,
+                    current_period_end = excluded.current_period_end,
+                    updated_at = strftime('%s', 'now') * 1000
+            `).bind(
+                crypto.randomUUID(), userId, sub.id, sub.latest_invoice || '', status, periodStart, periodEnd
+            ).run();
+
+            await env.SPLITGASTO_CACHE?.delete(`membership:${userId}`);
+            return jsonResponse({ received: true, status: 'activated' }, 200, request);
+        }
+
+        if (event.type === 'customer.subscription.deleted') {
+            const sub = event.data.object;
+            await env.SPLITGASTO_DB.prepare(`
+                UPDATE user_subscriptions 
+                SET status = 'cancelled', updated_at = strftime('%s', 'now') * 1000
+                WHERE subscription_id = ?
+            `).bind(sub.id).run();
+            return jsonResponse({ received: true, status: 'cancelled' }, 200, request);
+        }
+
+        return jsonResponse({ received: true }, 200, request);
+
+    } catch (err) {
+        return jsonResponse({ error: 'Error procesando webhook' }, 500, request);
+    }
+}
+
+async function handleStripePortal(request, env) {
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+
+    try {
+        const body = await request.json().catch(() => ({}));
+        const returnUrl = body.returnUrl || `${new URL(request.url).origin}/membership.html`;
+
+        const searchRes = await fetch(
+            `https://api.stripe.com/v1/customers/search?query=metadata['user_id']:'${authUser.userId}'`,
+            { headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` } }
+        );
+        const searchData = await searchRes.json();
+        const customerId = searchData.data?.[0]?.id;
+
+        if (!customerId) {
+            return jsonResponse({ error: 'No se encontró cliente de Stripe' }, 404, request);
+        }
+
+        const portalRes = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ customer: customerId, return_url: returnUrl })
+        });
+
+        const portalData = await portalRes.json();
+        if (!portalRes.ok) {
+            return jsonResponse({ error: 'Error creando portal', detail: portalData.error?.message }, 502, request);
+        }
+
+        return jsonResponse({ success: true, portalUrl: portalData.url }, 200, request);
+
+    } catch (err) {
+        return jsonResponse({ error: 'Error de conexión' }, 500, request);
+    }
+}
+
+async function verifyStripeSignature(payload, signature, secret) {
+    if (!signature || !secret) return false;
+    try {
+        const parts = signature.split(',');
+        const sig = {};
+        parts.forEach(p => { const [k, v] = p.split('='); sig[k.trim()] = v.trim(); });
+        const signedPayload = `${sig.t}.${payload}`;
+        const encoder = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+            'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+        );
+        const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
+        const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)));
+        return computed === sig.v1;
+    } catch { return false; }
+}
+
+   
