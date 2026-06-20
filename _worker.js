@@ -2011,6 +2011,7 @@ async function handleStripeCheckout(request, env) {
                 'line_items[0][price]': priceId,
                 'line_items[0][quantity]': '1',
                 'mode': 'subscription',
+                'subscription_data[trial_period_days]': '7',
                 'success_url': successUrl,
                 'cancel_url': cancelUrl,
                 'subscription_data[metadata][user_id]': authUser.userId,
