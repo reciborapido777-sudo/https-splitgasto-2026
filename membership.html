@@ -172,8 +172,8 @@
 
         <!-- CTA -->
         <div class="space-y-3">
-            <button class="cta-btn" id="cta-btn" style="background:linear-gradient(135deg,#13ecd6,#10b981);color:#000" onclick="subscribe()">
-                Prueba 7 días gratis
+            <button class="cta-btn" id="cta-btn" style="background:linear-gradient(135deg,#13ecd6,#10b981);color:#000">
+    Prueba 7 días gratis
             </button>
             <p class="text-zinc-600 text-[10px] text-center px-4 leading-tight">
                 Después de la prueba, se cargará el plan elegido. Cancela en cualquier momento desde los ajustes.
@@ -341,6 +341,10 @@ async function subscribe() {
     }
 })();
 
+const btn = document.getElementById('cta-btn');
+if (btn) {
+    btn.addEventListener('click', subscribe);
+}
     </script>
 </div>
 </body>
