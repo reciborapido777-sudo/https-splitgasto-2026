@@ -230,35 +230,46 @@ const PRICE_IDS = {
 };
 
 async function subscribe() {
+    console.log('DEBUG 1: Botón clickeado');
     const btn = document.getElementById('cta-btn');
     const token = localStorage.getItem('sg_token');
+    console.log('DEBUG 2: Token =', token ? 'EXISTS' : 'NULL');
     
     if (!token) {
+        console.log('DEBUG 3: No hay token, redirigiendo...');
         SGRouter.showToast('Debes iniciar sesión primero', 'error');
         setTimeout(() => SGRouter.navigate('auth-login', 'membership'), 1500);
         return;
     }
 
+    console.log('DEBUG 4: Desactivando botón...');
     btn.disabled = true;
     btn.textContent = '⏳ Conectando con Stripe...';
 
     try {
+        console.log('DEBUG 5: Dentro del try');
         const priceId = PRICE_IDS[selectedPlan];
+        console.log('DEBUG 6: priceId =', priceId);
+        
         const returnUrl = window.location.origin + '/membership.html';
         const successUrl = `${returnUrl}?status=success&plan=${selectedPlan}`;
         const cancelUrl = `${returnUrl}?status=cancelled`;
+        console.log('DEBUG 7: URLs preparadas');
 
         const result = await SGApi.createStripeCheckout(successUrl, cancelUrl, priceId);
+        console.log('DEBUG 8: Respuesta backend =', result);
 
         if (result.success && result.checkoutUrl) {
+            console.log('DEBUG 9: Redirigiendo a Stripe...');
             window.location.href = result.checkoutUrl;
         } else {
+            console.log('DEBUG ERROR: Backend respondió sin URL', result);
             SGRouter.showToast(result.error || 'Error iniciando pago', 'error');
             btn.disabled = false;
             btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
         }
     } catch (err) {
-        console.error('Error Stripe:', err);
+        console.error('DEBUG ERROR CATCH:', err);
         SGRouter.showToast('Error de conexión', 'error');
         btn.disabled = false;
         btn.textContent = selectedPlan === 'yearly' ? 'Prueba 7 días gratis' : 'Suscribirme · 2,99€/mes';
