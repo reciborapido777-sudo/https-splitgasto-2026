@@ -298,53 +298,61 @@ async function subscribe() {
             });
         }
 
-// Verificar estado de membresía al cargar
-(async function checkMembershipOnLoad() {
-    const token = localStorage.getItem('sg_token');
-    if (!token) return;
+async function goToPortal() {
+    const btn = document.getElementById('cta-btn');
+    btn.textContent = '⏳ Abriendo portal...';
+    try {
+        const result = await SGApi.createStripePortal(window.location.href);
+        if (result.success && result.portalUrl) {
+            window.location.href = result.portalUrl;
+        } else {
+            SGRouter.showToast('Error abriendo portal', 'error');
+        }
+    } catch (err) {
+        SGRouter.showToast('Error de conexión', 'error');
+    }
+}
+
+async function initMembershipButton() {
+    const btn = document.getElementById('cta-btn');
+    if (!btn) return;
+    
+    let clickHandler = subscribe; // Por defecto: suscribir
     
     try {
-        const res = await fetch('/api/membership/status', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        const btn = document.getElementById('cta-btn');
-        if (!btn) return;
-        
-        if (data.success && data.hasAccess) {
-            if (data.type === 'subscription') {
-                // Usuario con suscripción de pago activa
-                btn.textContent = `✓ Pro activo · ${data.plan || 'Premium'}`;
-                btn.style.background = 'linear-gradient(135deg,#D4AF37,#F9E076)';
-                btn.style.color = '#000';
-                btn.disabled = true;
-                SGRouter.showToast('Membresía Pro activa', 'success');
-            } else {
-                // Usuario con prueba gratuita activa
-                btn.textContent = `✓ Prueba activa · ${data.daysRemaining} días`;
-                btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+        const token = localStorage.getItem('sg_token');
+        if (token) {
+            const res = await fetch('/api/membership/status', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            if (data.success && data.hasAccess) {
+                if (data.type === 'subscription') {
+                    btn.textContent = `✓ Pro activo · ${data.plan || 'Premium'}`;
+                    btn.style.background = 'linear-gradient(135deg,#D4AF37,#F9E076)';
+                    btn.style.color = '#000';
+                } else {
+                    btn.textContent = `✓ Prueba activa · ${data.daysRemaining} días`;
+                    btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+                    btn.style.color = '#fff';
+                }
+                clickHandler = goToPortal; // Cambia a portal si tiene acceso
+            } else if (data.type === 'trial_expired') {
+                btn.textContent = 'Prueba expirada · Elige un plan';
+                btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
                 btn.style.color = '#fff';
-                btn.disabled = true;
-                SGRouter.showToast(`Tienes ${data.daysRemaining} días de prueba restantes`, 'success');
             }
-        } else if (data.type === 'trial_expired') {
-            btn.textContent = 'Prueba expirada · Elige un plan';
-            btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
-            btn.style.color = '#fff';
-            btn.disabled = false;
-        } else if (data.type === 'none') {
-            // Sin membresía: deja el botón normal para que elija plan
-            btn.disabled = false;
         }
     } catch (e) {
-        // Silencioso: si falla, deja la UI normal
+        // Silencioso: si falla, deja el botón con suscripción por defecto
     }
-})();
-
-const btn = document.getElementById('cta-btn');
-if (btn) {
-    btn.addEventListener('click', subscribe);
+    
+    btn.addEventListener('click', clickHandler);
 }
+
+initMembershipButton();
+
     </script>
 </div>
 </body>
