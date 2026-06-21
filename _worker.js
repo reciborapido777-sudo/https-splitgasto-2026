@@ -306,15 +306,17 @@ async function handleAuth(request, env, path) {
     if (!env.JWT_SECRET) return jsonResponse({ error: 'Servicio de autenticación no disponible', detail: 'JWT_SECRET no configurado' }, 503, request);
     const method = request.method;
 
-    // PARCHE 5: Firewall perimetral anti-fuerza bruta en rutas críticas de Auth
+   // PARCHE 5: Firewall perimetral anti-fuerza bruta SOLO en login/register
     const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
     const authLimitKey = `ratelimit:auth:${clientIP}`;
-    if (env.SPLITGASTO_CACHE) {
+    const isBruteForceRoute = (path === '/api/auth/login' || path === '/api/auth/register');
+    
+    if (isBruteForceRoute && env.SPLITGASTO_CACHE) {
         const attempts = parseInt(await env.SPLITGASTO_CACHE.get(authLimitKey) || '0', 10);
         if (attempts >= 5) {
             return jsonResponse({ error: 'Demasiados intentos. Espera 1 minuto.' }, 429, request);
         }
-        await env.SPLITGASTO_CACHE.put(authLimitKey, (attempts + 1).toString(), { expirationTtl: 60 });
+        // NOTA: NO incrementamos aquí. Solo se incrementa en intento FALLIDO.
     }
 
     if (path === '/api/auth/register' && method === 'POST') {
@@ -368,7 +370,19 @@ async function handleAuth(request, env, path) {
 
         if (!user.password_hash) return jsonResponse({ error: 'Cuenta sin contraseña. Usa recuperación.' }, 401, request);
         const validPassword = await verifyPassword(password, user.password_hash);
-        if (!validPassword) return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401, request);
+        if (!validPassword) {
+            // Incrementar rate limit SOLO en fallo
+            if (env.SPLITGASTO_CACHE) {
+                const attempts = parseInt(await env.SPLITGASTO_CACHE.get(authLimitKey) || '0', 10);
+                await env.SPLITGASTO_CACHE.put(authLimitKey, (attempts + 1).toString(), { expirationTtl: 60 });
+            }
+            return jsonResponse({ error: 'Email o contraseña incorrectos' }, 401, request);
+        }
+        
+        // Login exitoso: opcionalmente resetear contador de fallos
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.delete(authLimitKey);
+        }
 
         if (user.email !== normalizedEmail) {
             try {
@@ -443,7 +457,7 @@ async function handleAuth(request, env, path) {
         );
 
         try {
-            await fetch('https://api.mailchannels.net/tx/v1/send', {
+            const emailRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -456,8 +470,15 @@ async function handleAuth(request, env, path) {
                     }],
                 }),
             });
+            if (!emailRes.ok) throw new Error(`MailChannels HTTP ${emailRes.status}`);
         } catch (emailErr) {
             console.error('Error enviando email:', emailErr.message);
+            // Invalidar código huérfano para evitar que quede en KV sin entregar
+            await env.SPLITGASTO_CACHE.delete(`recovery:${user.id}`);
+            return jsonResponse({ 
+                success: false, 
+                error: "No se pudo enviar el email de recuperación. Intenta más tarde o contacta soporte." 
+            }, 503, request);
         }
 
         return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' }, 200, request);
@@ -864,9 +885,19 @@ async function handleSignedUrl(request, env, key, authUser) {
 
 async function handleStorageDelete(request, env, key, authUser) {
     try {
-        if (!key.startsWith(`usuarios/${authUser.userId}/`)) {
+        if (key.startsWith(`usuarios/${authUser.userId}/`)) {
+            // OK: path propio del usuario
+        } else if (key.startsWith('receipts/')) {
+            // Verificar ownership vía metadata para receipts
+            const headObj = await env.SPLITGASTO_BUCKET.head(key);
+            if (!headObj) return jsonResponse({ error: 'Archivo no encontrado' }, 404, request);
+            if (headObj.customMetadata?.userId !== authUser.userId) {
+                return jsonResponse({ error: 'Acceso denegado' }, 403, request);
+            }
+        } else {
             return jsonResponse({ error: 'Acceso denegado' }, 403, request);
         }
+
         const object = await env.SPLITGASTO_BUCKET.head(key);
         if (!object) return jsonResponse({ error: 'Archivo no encontrado' }, 404, request);
         await env.SPLITGASTO_BUCKET.delete(key);
@@ -1054,14 +1085,21 @@ async function handleBalances(request, env) {
     }
 
     const totalAmount = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+    // Redondear balances antes de enviar para evitar errores de punto flotante
+    const roundedBalances = {};
+    Object.entries(balances).forEach(([uid, val]) => {
+        roundedBalances[uid] = Math.round(val * 100) / 100;
+    });
+
     const response = {
         success: true,
-        balances,
+        balances: roundedBalances,
         debts,
         totalExpenses: expenses.length,
         totalAmount: Math.round(totalAmount * 100) / 100
     };
-    await setCache(env, cacheKey, response, 60);
+    // TTL reducido a 5s para consistencia transaccional (balances son datos en tiempo real)
+    await setCache(env, cacheKey, response, 5);
     return jsonResponse(response, 200, request);
 }
 
