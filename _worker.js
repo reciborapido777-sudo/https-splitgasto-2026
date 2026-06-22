@@ -2177,7 +2177,21 @@ async function verifyStripeSignature(payload, signature, secret) {
     try {
         const parts = signature.split(',');
         const sig = {};
-        parts.forEach(p => { const [k, v] = p.split('='); sig[k.trim()] = v.trim(); });
+        const v1List = [];
+        
+        parts.forEach(p => {
+            const [k, v] = p.split('=');
+            const key = k.trim();
+            const value = v.trim();
+            sig[key] = value;
+            if (key === 'v1') v1List.push(value);
+        });
+        
+        // Protección contra replay attacks: timestamp no puede tener más de 5 minutos
+        const timestamp = parseInt(sig.t, 10);
+        const now = Math.floor(Date.now() / 1000);
+        if (Math.abs(now - timestamp) > 300) return false;
+        
         const signedPayload = `${sig.t}.${payload}`;
         const encoder = new TextEncoder();
         const key = await crypto.subtle.importKey(
@@ -2185,12 +2199,13 @@ async function verifyStripeSignature(payload, signature, secret) {
         );
         const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
         
-        // Convertir a HEX (Stripe envía v1 en hex, no en base64)
+        // Convertir a HEX (Stripe envía v1 en hex)
         const computed = Array.from(new Uint8Array(sigBytes))
             .map(b => b.toString(16).padStart(2, '0'))
             .join('');
             
-        return computed === sig.v1;
+        // Stripe puede enviar múltiples firmas v1 (rotación de secretos)
+        return v1List.includes(computed);
     } catch { return false; }
 }
 
