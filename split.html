@@ -72,15 +72,15 @@
                         <img src="https://api.dicebear.com/9.x/initials/svg?seed=SG&backgroundColor=1a2a1a&fontFamily=Arial&fontSize=40" class="relative size-12 rounded-xl border border-[#FF9D42]/30 group-hover:border-[#FF9D42] transition-all" alt="Comandante">
                     </div>
                     <div>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] mb-0.5">Socio Fundador</p>
-                        <h1 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Perfil Alpha</h1>
+                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] mb-0.5" data-i18n="split.founderPartner">Socio Fundador</p>
+                        <h1 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="split.alphaProfile">Perfil Alpha</h1>
                     </div>
                 </div>
             </div>
 
             <button onclick="SGRouter.navigate('dashboard', 'split')" class="px-5 py-3 rounded-2xl glass-panel flex items-center gap-3 border-white/5 hover:bg-white/10 transition-all">
                 <span class="material-icons-round text-[#13ecd6] text-sm">dashboard</span>
-                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400">Mando</span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-zinc-400" data-i18n="nav.dashboard">Mando</span>
             </button>
         </header>
 
@@ -88,19 +88,19 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div onclick="selectGame(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:rotate-180 transition-transform duration-700">autorenew</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Ruleta Alpha</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameRoulette">Ruleta Alpha</span>
                 </div>
                 <div onclick="selectGame(this, 'Carta Alta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:-translate-y-1 transition-transform">style</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Carta Alta</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameCards">Carta Alta</span>
                 </div>
                 <div onclick="selectGame(this, 'Dardos')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-125 transition-transform">ads_click</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Dardos</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameDarts">Dardos</span>
                 </div>
                 <div onclick="selectGame(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:animate-bounce">monetization_on</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">Moneda</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameCoin">Moneda</span>
                 </div>
             </div>
 
@@ -110,11 +110,11 @@
                         <span id="game-icon" class="material-icons-round text-[#a855f7] animate-pulse">psychology</span>
                     </div>
                     <div>
-                        <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Estado de Ejecución</p>
-                        <h4 id="active-game-label" class="text-xl font-black font-['Space_Grotesk'] uppercase italic">Seleccione Juego</h4>
+                        <p class="text-[9px] font-black text-zinc-500 uppercase tracking-widest" data-i18n="split.executionStatus">Estado de Ejecución</p>
+                        <h4 id="active-game-label" class="text-xl font-black font-['Space_Grotesk'] uppercase italic" data-i18n="split.selectGame">Seleccione Juego</h4>
                     </div>
                 </div>
-                <button id="execute-game-btn" onclick="executeSplit()" class="w-full md:w-auto px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-xl">
+                <button id="execute-game-btn" onclick="executeSplit()" class="w-full md:w-auto px-10 py-5 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-[#13ecd6] transition-all active:scale-95 shadow-xl" data-i18n="split.selectGameButton">
                     Seleccione juego
                 </button>
             </div>
@@ -126,18 +126,18 @@
               <span class="material-icons-round text-[#a855f7]">groups_3</span>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Grupo Activo</p>
+              <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1" data-i18n="split.activeGroup">Grupo Activo</p>
               <select id="split-group-selector" class="w-full bg-transparent text-white font-black text-base outline-none cursor-pointer"
                 style="border:none;background:transparent;font-family:'Space_Grotesk',sans-serif"
                 onchange="onSplitGroupChange(this.value)">
-                <option value="">Cargando grupos…</option>
+                <option value="" data-i18n="common.loading">Cargando…</option>
               </select>
             </div>
             <button onclick="SGRouter.navigate('add-expense','split')"
               class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
               <span class="material-icons-round text-sm">add</span>
-              Gasto
+              <span data-i18n="common.expense">Gasto</span>
             </button>
           </div>
         </section>
@@ -146,12 +146,12 @@
             <div class="flex justify-between items-center border-b border-white/5 pb-6">
                 <div class="flex items-center gap-4">
                     <span class="size-3 bg-[#13ecd6] rounded-full animate-pulse"></span>
-                    <h2 id="split-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none">Cargando…</h2>
+                    <h2 id="split-group-name" class="text-3xl font-black font-['Space_Grotesk'] uppercase italic tracking-tighter leading-none" data-i18n="split.loadingGroup">Cargando…</h2>
                 </div>
                 <p id="split-total" class="text-4xl font-black font-['Space_Grotesk'] text-[#13ecd6] money-display leading-none">0,00€</p>
             </div>
             <div id="split-participants" class="grid grid-cols-1 gap-4">
-                <p class="text-xs text-zinc-600 text-center py-6">Cargando participantes…</p>
+                <p class="text-xs text-zinc-600 text-center py-6" data-i18n="split.loadingParticipants">Cargando participantes…</p>
             </div>
         </main>
 
@@ -162,7 +162,7 @@ let _userProfile = null;
 
 async function initSplit() {
   if (!SGAuth || !SGAuth.isLoggedIn()) {
-    SGRouter.showToast('Inicia sesión primero', 'error');
+    SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
     setTimeout(() => SGRouter.navigate('auth-login'), 1500);
     return;
   }
@@ -174,7 +174,7 @@ async function initSplit() {
       _userProfile = profile.profile;
       const p = profile.profile;
       const headerName = document.querySelector('header h1');
-      if (headerName) headerName.textContent = p.name || 'Perfil Alpha';
+      if (headerName) headerName.textContent = p.name || t('split.alphaProfile', null, 'Perfil Alpha');
       const headerAvatar = document.querySelector('header img[alt="Comandante"]');
       if (headerAvatar && p.name) {
         const seed = encodeURIComponent(p.name.slice(0,2).toUpperCase());
@@ -192,12 +192,12 @@ async function initSplit() {
   const contEl = document.getElementById('split-participants');
 
   if (_splitGroups.length === 0) {
-    if (sel) sel.innerHTML = '<option value="">Sin grupos</option>';
-    if (nameEl) nameEl.textContent = 'Sin grupos';
+    if (sel) sel.innerHTML = `<option value="">${t('split.noGroups', null, 'Sin grupos')}</option>`;
+    if (nameEl) nameEl.textContent = t('split.noGroups', null, 'Sin grupos');
     if (contEl) contEl.innerHTML = `<div class="text-center py-8 space-y-3">
-      <p class="text-zinc-500 text-sm">No tienes grupos todavía</p>
+      <p class="text-zinc-500 text-sm">${t('split.noGroupsYet', null, 'No tienes grupos todavía')}</p>
       <button onclick="SGRouter.navigate('create-group','split')" class="px-5 py-2 rounded-xl text-sm font-bold" style="background:rgba(19,236,214,0.1);color:#13ecd6">
-        + Crear grupo
+        ${t('split.createGroup', null, '+ Crear grupo')}
       </button>
     </div>`;
     return;
@@ -235,7 +235,7 @@ async function loadGroupData(groupId) {
   const contEl  = document.getElementById('split-participants');
 
   if (nameEl) nameEl.textContent = group.name;
-  if (contEl) contEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Cargando…</p>';
+  if (contEl) contEl.innerHTML = `<p class="text-xs text-zinc-600 text-center py-6">${t('common.loading', null, 'Cargando…')}</p>`;
 
   try {
     const [memResult, expResult, balResult] = await Promise.all([
@@ -264,8 +264,8 @@ async function loadGroupData(groupId) {
 
     if (members.length === 0) {
       if (contEl) contEl.innerHTML = `<div class="text-center py-6 space-y-3">
-        <p class="text-zinc-600 text-xs">Sin participantes en este grupo</p>
-        <p class="text-zinc-700 text-xs">Ve a Crear Grupo para añadir miembros por email</p>
+        <p class="text-zinc-600 text-xs">${t('split.noParticipants', null, 'Sin participantes en este grupo')}</p>
+        <p class="text-zinc-700 text-xs">${t('split.addMembersHint', null, 'Ve a Crear Grupo para añadir miembros por email')}</p>
       </div>`;
       return;
     }
@@ -278,13 +278,13 @@ async function loadGroupData(groupId) {
 
     if (contEl) contEl.innerHTML = members.map((m, i) => {
       const isMe     = String(m.id) === String(myUid);
-      const name     = isMe ? (m.name || 'Tú') : (m.name || `Socio ${i+1}`);
+      const name     = isMe ? (m.name || t('split.you', null, 'Tú')) : (m.name || t('split.partner', null, 'Socio') + ' ' + (i+1));
       const initials = name.slice(0,2).toUpperCase();
       const color    = colors[i % colors.length];
       const bal      = parseFloat(balancesRaw[m.id]) || 0;
       const balSign  = bal >= 0 ? '+' : '';
       const balColor = bal > 0.01 ? '#13ecd6' : (bal < -0.01 ? '#ef4444' : '#6b7280');
-      const roleLabel = m.role === 'admin' ? 'Administrador' : (isMe ? 'Usted' : 'Socio');
+      const roleLabel = m.role === 'admin' ? t('split.roleAdmin', null, 'Administrador') : (isMe ? t('split.roleYou', null, 'Usted') : t('split.rolePartner', null, 'Socio'));
 
       const canRemove = isAdmin && !isMe;
       const myBalance = parseFloat(balancesRaw[myUid]) || 0;
@@ -308,7 +308,7 @@ async function loadGroupData(groupId) {
           
           <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <div class="text-right">
-              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-0.5">Cuota estimada</p>
+              <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-0.5">${t('split.estimatedShare', null, 'Cuota estimada')}</p>
               <p class="font-black font-['Space_Grotesk'] money-display leading-none ${isMe ? 'text-white' : 'text-zinc-400'}">
                 ${perPerson.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€
               </p>
@@ -321,12 +321,12 @@ async function loadGroupData(groupId) {
               <button onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"
                 class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap"
                 style="background:rgba(19,236,214,0.1);color:#13ecd6;border:1px solid rgba(19,236,214,0.2)">
-                Liquidar
+                ${t('split.settle', null, 'Liquidar')}
               </button>` : ''}
               ${canRemove ? `
               <button onclick="removeMemberFromGroup('${safeGroupId}','${safeMemberId}','${name.replace(/'/g, "\\'")}')"
                 class="size-8 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/20 flex-shrink-0"
-                title="Eliminar miembro" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
+                title="${t('split.removeMemberTitle', null, 'Eliminar miembro')}" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15)">
                 <span class="material-icons-round text-red-400 text-sm">person_remove</span>
               </button>` : ''}
             </div>
@@ -336,7 +336,7 @@ async function loadGroupData(groupId) {
 
   } catch (e) {
     console.error('Split loadGroupData error:', e);
-    if (contEl) contEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Error al cargar datos</p>';
+    if (contEl) contEl.innerHTML = `<p class="text-xs text-zinc-600 text-center py-6">${t('split.loadingDataError', null, 'Error al cargar datos')}</p>`;
   }
 }
 
@@ -352,12 +352,12 @@ function removeMemberFromGroup(groupId, memberId, memberName) {
   modal.innerHTML = `
     <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:340px;width:90%;text-align:center">
       <span class="material-icons-round" style="font-size:36px;color:#ef4444;margin-bottom:10px;display:block">person_remove</span>
-      <h3 style="font-size:15px;font-weight:800;margin-bottom:4px">Eliminar participante</h3>
+      <h3 style="font-size:15px;font-weight:800;margin-bottom:4px">${t('split.removeParticipantTitle', null, 'Eliminar participante')}</h3>
       <p style="font-size:13px;color:#aaa;margin-bottom:6px">${safeName}</p>
-      <p style="font-size:11px;color:#666;margin-bottom:20px">Sus gastos se mantendrán en el grupo.</p>
+      <p style="font-size:11px;color:#666;margin-bottom:20px">${t('split.removeParticipantKeep', null, 'Sus gastos se mantendrán en el grupo.')}</p>
       <div style="display:flex;gap:10px">
-        <button onclick="_closeSplitModal('${modalId}')" style="flex:1;padding:11px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
-        <button id="confirm-remove-member-btn" style="flex:1;padding:11px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">Eliminar</button>
+        <button onclick="_closeSplitModal('${modalId}')" style="flex:1;padding:11px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">${t('common.cancel', null, 'Cancelar')}</button>
+        <button id="confirm-remove-member-btn" style="flex:1;padding:11px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">${t('common.delete', null, 'Eliminar')}</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -367,7 +367,7 @@ function removeMemberFromGroup(groupId, memberId, memberName) {
     try {
       const res = await SGApi.removeGroupMember(groupId, memberId);
       if (res && res.success) {
-        SGRouter.showToast(`${memberName} eliminado del grupo`, 'success');
+        SGRouter.showToast(t('split.memberRemoved', null, '{member} eliminado del grupo').replace('{member}', memberName), 'success');
 
         try {
           await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } });
@@ -375,10 +375,10 @@ function removeMemberFromGroup(groupId, memberId, memberName) {
         await new Promise(r => setTimeout(r, 600));
         await loadGroupData(groupId);
       } else {
-        SGRouter.showToast(res?.error || 'Error al eliminar miembro', 'error');
+        SGRouter.showToast(res?.error || t('split.removeMemberError', null, 'Error al eliminar miembro'), 'error');
       }
     } catch(e) {
-      SGRouter.showToast('Error de conexión', 'error');
+      SGRouter.showToast(t('common.connectionError', null, 'Error de conexión'), 'error');
     }
   });
 }
@@ -411,7 +411,6 @@ window.addEventListener('pageshow', (e) => {
     let selectedGame = null;
 
     function selectGame(element, game) {
-        // Selección visual siempre permitida
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
         selectedGame = game;
         element.classList.add('active-glow');
@@ -420,7 +419,7 @@ window.addEventListener('pageshow', (e) => {
         const icon = document.getElementById('game-icon');
         const btn = document.getElementById('execute-game-btn');
         
-        label.innerText = game.toUpperCase() + ' — ¿Quién paga?';
+        label.innerText = game.toUpperCase() + ' — ' + t('split.whoPays', null, '¿Quién paga?');
         label.style.color = '#a855f7';
         
         const icons = {
@@ -428,9 +427,9 @@ window.addEventListener('pageshow', (e) => {
         };
         icon.innerText = icons[game] || 'psychology';
         
-        if (btn) btn.innerText = 'Lanzar ' + game;
+        if (btn) btn.innerText = t('split.launchGame', null, 'Lanzar {game}').replace('{game}', game);
         
-        SGRouter.showToast(`${game} lista para ejecución`, 'info');
+        SGRouter.showToast(t('split.gameReady', null, '{game} lista para ejecución').replace('{game}', game), 'info');
     }
 
     const gameRoutes = {
@@ -442,11 +441,10 @@ window.addEventListener('pageshow', (e) => {
 
     function executeSplit() {
         if (!selectedGame) {
-            SGRouter.showToast('Seleccione un protocolo de azar', 'error');
+            SGRouter.showToast(t('split.selectGameFirst', null, 'Seleccione un protocolo de azar'), 'error');
             return;
         }
         const route = gameRoutes[selectedGame];
-        // El router verifica membresía y navega (o manda a membership si no hay acceso)
         SGRouter.requirePremium('Juegos', route);
     }
 
