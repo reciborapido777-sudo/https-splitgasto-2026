@@ -2174,11 +2174,13 @@ async function handleStripePortal(request, env) {
 
 async function verifyStripeSignature(payload, signature, secret) {
     if (!signature || !secret) return false;
+
     try {
         const parts = signature.split(',');
         const sig = {};
         const v1List = [];
-        
+
+        // Parsear todas las partes del header
         parts.forEach(p => {
             const [k, v] = p.split('=');
             const key = k.trim();
@@ -2186,27 +2188,47 @@ async function verifyStripeSignature(payload, signature, secret) {
             sig[key] = value;
             if (key === 'v1') v1List.push(value);
         });
-        
-        // Protección contra replay attacks: timestamp no puede tener más de 5 minutos
+
+        // 1. Protección contra replay attacks (5 minutos)
         const timestamp = parseInt(sig.t, 10);
         const now = Math.floor(Date.now() / 1000);
         if (Math.abs(now - timestamp) > 300) return false;
-        
+
+        // 2. Construir payload firmado
         const signedPayload = `${sig.t}.${payload}`;
+
+        // 3. Firmar con HMAC-SHA256 usando WebCrypto
         const encoder = new TextEncoder();
         const key = await crypto.subtle.importKey(
-            'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+            'raw',
+            encoder.encode(secret),
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['sign']
         );
         const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
-        
-        // Convertir a HEX (Stripe envía v1 en hex)
+
+        // 4. Convertir firma a HEX (Stripe usa HEX)
         const computed = Array.from(new Uint8Array(sigBytes))
             .map(b => b.toString(16).padStart(2, '0'))
             .join('');
-            
-        // Stripe puede enviar múltiples firmas v1 (rotación de secretos)
-        return v1List.includes(computed);
-    } catch { return false; }
+
+        // 5. Comparación timing-safe
+        const timingSafeEqual = (a, b) => {
+            if (a.length !== b.length) return false;
+            let result = 0;
+            for (let i = 0; i < a.length; i++) {
+                result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+            }
+            return result === 0;
+        };
+
+        // 6. Stripe puede enviar múltiples firmas v1
+        return v1List.some(v1 => timingSafeEqual(v1, computed));
+
+    } catch {
+        return false;
+    }
 }
 
    
