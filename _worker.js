@@ -2095,8 +2095,9 @@ async function handleStripeWebhook(request, env) {
             if (!userId) return jsonResponse({ received: true }, 200, request);
 
             const status = (sub.status === 'active' || sub.status === 'trialing') ? 'active' : sub.status;
-            const periodStart = sub.current_period_start * 1000;
-            const periodEnd = sub.current_period_end * 1000;
+            const now = Date.now();
+            const periodStart = (sub.current_period_start || sub.start_date || Math.floor(now / 1000)) * 1000;
+            const periodEnd = (sub.current_period_end || sub.trial_end || sub.current_period_start || Math.floor(now / 1000) + 7 * 24 * 60 * 60) * 1000;
 
             await env.SPLITGASTO_DB.prepare(`
                 INSERT INTO user_subscriptions 
