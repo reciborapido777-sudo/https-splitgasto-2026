@@ -2146,7 +2146,12 @@ async function verifyStripeSignature(payload, signature, secret) {
             'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
         );
         const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
-        const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)));
+        
+        // Convertir a HEX (Stripe envía v1 en hex, no en base64)
+        const computed = Array.from(new Uint8Array(sigBytes))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+            
         return computed === sig.v1;
     } catch { return false; }
 }
