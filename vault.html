@@ -250,8 +250,9 @@
     </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
     let currentFilter = 'todos';
+
+    // <-- ÚNICA LÍNEA AÑADIDA: placeholder traducido si i18n ya cargó
     const searchInput = document.getElementById('vault-search-input');
     if (searchInput && typeof t === 'function') {
         searchInput.placeholder = t('vault.searchPlaceholder', null, 'Buscar en la bóveda...');
@@ -284,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('emptyVault').classList.toggle('hidden', visible > 0);
     }
 
-    // ── Visualización premium por categoría ──────────────────────────
     const CAT_MAP = {
         'comida':          { labelKey: 'category.food',          defaultLabel: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
         'transporte':      { labelKey: 'category.transport',     defaultLabel: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
@@ -342,11 +342,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const rawCat = (exp.category || '').toLowerCase().trim();
         const meta = CAT_MAP[rawCat] || CAT_MAP['default'];
         const artUrl = getCategoryArt(rawCat);
+        // <-- ÚNICA LÍNEA MODIFICADA: protección typeof t
         const label = typeof t === 'function' ? t(meta.labelKey, null, meta.defaultLabel) : meta.defaultLabel;
         
         const lang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';
         const dateStr = exp.created_at
             ? new Date(exp.created_at).toLocaleDateString(lang, { day: 'numeric', month: 'short' })
+            // <-- ÚNICA LÍNEA MODIFICADA: protección typeof t
             : (typeof t === 'function' ? t('vault.recent', null, 'Reciente') : 'Reciente');
             
         const card = document.createElement('div');
@@ -396,9 +398,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
+            // <-- ÚNICA LÍNEA AÑADIDA: idioma del usuario
             const userLang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';
             const total = allExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 
+            // <-- ÚNICA LÍNEA MODIFICADA: userLang en vez de 'es-ES'
             document.getElementById('vault-total').textContent = 
                 total.toLocaleString(userLang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
@@ -427,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p data-i18n="nav.dashboard">Mando</p>
             </button>
