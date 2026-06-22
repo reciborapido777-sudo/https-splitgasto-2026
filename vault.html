@@ -82,15 +82,15 @@
                     <span class="material-icons-round text-zinc-500 text-2xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Vault System · AES-256</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Bóveda</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="vault.subtitle">Vault System · AES-256</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="vault.title">Bóveda</h1>
                 </div>
             </div>
             
             <div class="flex gap-3 w-full sm:w-auto">
                 <div class="flex-1 sm:w-72 glass-panel search-field px-5 py-3 rounded-2xl flex items-center gap-3 transition-all border-white/5">
                     <span class="material-icons-round text-zinc-500 text-lg">search</span>
-                    <input type="text" placeholder="Buscar en la bóveda..." class="bg-transparent border-none outline-none text-xs w-full text-zinc-300 font-bold placeholder:text-zinc-700" oninput="filterVault(this.value)">
+                    <input type="text" id="vault-search-input" placeholder="Buscar en la bóveda..." class="bg-transparent border-none outline-none text-xs w-full text-zinc-300 font-bold placeholder:text-zinc-700" oninput="filterVault(this.value)">
                 </div>
                 <button onclick="SGRouter.navigate('dashboard', 'vault')" class="size-12 sm:size-14 glass-panel rounded-2xl flex items-center justify-center hover:bg-white/5 border-white/5 text-[#13ecd6] active:scale-90 transition-all shrink-0">
                     <span class="material-icons-round text-lg">dashboard</span>
@@ -100,29 +100,29 @@
 
         <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
             <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Total Guardado</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="vault.totalSaved">Total Guardado</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="vault-total">—</p>
-                <p class="text-[8px] text-zinc-600 uppercase">Este mes</p>
+                <p class="text-[8px] text-zinc-600 uppercase" data-i18n="vault.thisMonth">Este mes</p>
             </div>
             <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Tickets</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="vault.tickets">Tickets</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-white" id="vault-tickets">—</p>
-                <p class="text-[8px] text-zinc-600 uppercase">Digitalizados</p>
+                <p class="text-[8px] text-zinc-600 uppercase" data-i18n="vault.digitized">Digitalizados</p>
             </div>
             <div class="stat-pill">
-                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Cifrado</p>
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="vault.encryption">Cifrado</p>
                 <p class="text-xl font-black font-['Space_Grotesk'] text-[#a855f7]">AES</p>
-                <p class="text-[8px] text-zinc-600 uppercase">256-bit</p>
+                <p class="text-[8px] text-zinc-600 uppercase" data-i18n="vault.encryptionType">256-bit</p>
             </div>
         </section>
 
         <div class="flex gap-2 flex-wrap reveal-node" style="animation-delay: 0.05s">
-            <button class="filter-btn active" onclick="setFilter(this,'todos')">Todos</button>
-            <button class="filter-btn" onclick="setFilter(this,'alimentacion')">Alimentación</button>
-            <button class="filter-btn" onclick="setFilter(this,'gastronomia')">Gastronomía</button>
-            <button class="filter-btn" onclick="setFilter(this,'ocio')">Ocio</button>
-            <button class="filter-btn" onclick="setFilter(this,'suministros')">Suministros</button>
-            <button class="filter-btn" onclick="setFilter(this,'transporte')">Transporte</button>
+            <button class="filter-btn active" onclick="setFilter(this,'todos')" data-i18n="vault.filterAll">Todos</button>
+            <button class="filter-btn" onclick="setFilter(this,'alimentacion')" data-i18n="vault.filterFood">Alimentación</button>
+            <button class="filter-btn" onclick="setFilter(this,'gastronomia')" data-i18n="vault.filterGastronomy">Gastronomía</button>
+            <button class="filter-btn" onclick="setFilter(this,'ocio')" data-i18n="vault.filterLeisure">Ocio</button>
+            <button class="filter-btn" onclick="setFilter(this,'suministros')" data-i18n="vault.filterUtilities">Suministros</button>
+            <button class="filter-btn" onclick="setFilter(this,'transporte')" data-i18n="vault.filterTransport">Transporte</button>
         </div>
 
         <section id="realGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 hidden">
@@ -130,7 +130,7 @@
 
         <div id="demoHeader" class="hidden items-center gap-3 pt-2">
             <div class="flex-1 h-px bg-white/5"></div>
-            <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.3em] shrink-0">Archivo de Demostración</p>
+            <p class="text-[8px] font-black text-zinc-700 uppercase tracking-[0.3em] shrink-0" data-i18n="vault.demoHeader">Archivo de Demostración</p>
             <div class="flex-1 h-px bg-white/5"></div>
         </div>
 
@@ -142,8 +142,8 @@
                     <span class="material-icons-round text-[#FF9D42] text-2xl">add_a_photo</span>
                 </div>
                 <div class="text-center px-3">
-                    <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-1">Digitalizar</p>
-                    <p class="text-[9px] font-bold text-zinc-700 uppercase">Nuevo Ticket</p>
+                    <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.4em] mb-1" data-i18n="vault.scan">Digitalizar</p>
+                    <p class="text-[9px] font-bold text-zinc-700 uppercase" data-i18n="vault.newTicket">Nuevo Ticket</p>
                 </div>
             </div>
 
@@ -153,8 +153,8 @@
                      class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Mercadona">
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20">Alimentación</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">Hoy</p>
+                        <span class="px-2 py-1 bg-[#13ecd6]/10 text-[#13ecd6] text-[7px] font-black uppercase rounded-full border border-[#13ecd6]/20" data-i18n="vault.filterFood">Alimentación</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="common.today">Hoy</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mercadona</h3>
@@ -168,8 +168,8 @@
                      class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Sushi">
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#a855f7]/10 text-[#a855f7] text-[7px] font-black uppercase rounded-full border border-[#a855f7]/20">Gastronomía</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">Ayer</p>
+                        <span class="px-2 py-1 bg-[#a855f7]/10 text-[#a855f7] text-[7px] font-black uppercase rounded-full border border-[#a855f7]/20" data-i18n="vault.filterGastronomy">Gastronomía</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="common.yesterday">Ayer</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Sushi Kyoto</h3>
@@ -184,8 +184,8 @@
                 </div>
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-red-500/10 text-red-400 text-[7px] font-black uppercase rounded-full border border-red-500/20">Ocio</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">12 Mar</p>
+                        <span class="px-2 py-1 bg-red-500/10 text-red-400 text-[7px] font-black uppercase rounded-full border border-red-500/20" data-i18n="vault.filterLeisure">Ocio</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="vault.demoDate1">12 Mar</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Netflix</h3>
@@ -200,8 +200,8 @@
                 </div>
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[7px] font-black uppercase rounded-full border border-yellow-500/20">Suministros</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">10 Mar</p>
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[7px] font-black uppercase rounded-full border border-yellow-500/20" data-i18n="vault.filterUtilities">Suministros</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="vault.demoDate2">10 Mar</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Factura Luz</h3>
@@ -216,8 +216,8 @@
                 </div>
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-zinc-700/30 text-zinc-400 text-[7px] font-black uppercase rounded-full border border-zinc-700/40">Transporte</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">9 Mar</p>
+                        <span class="px-2 py-1 bg-zinc-700/30 text-zinc-400 text-[7px] font-black uppercase rounded-full border border-zinc-700/40" data-i18n="vault.filterTransport">Transporte</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="vault.demoDate3">9 Mar</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Uber Alpha</h3>
@@ -231,8 +231,8 @@
                      class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="Pirineos">
                 <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 bg-[#FF9D42]/10 text-[#FF9D42] text-[7px] font-black uppercase rounded-full border border-[#FF9D42]/20">Ocio</span>
-                        <p class="text-[8px] font-bold text-zinc-600 uppercase">5 Mar</p>
+                        <span class="px-2 py-1 bg-[#FF9D42]/10 text-[#FF9D42] text-[7px] font-black uppercase rounded-full border border-[#FF9D42]/20" data-i18n="vault.filterLeisure">Ocio</span>
+                        <p class="text-[8px] font-bold text-zinc-600 uppercase" data-i18n="vault.demoDate4">5 Mar</p>
                     </div>
                     <div class="space-y-0.5">
                         <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Pirineos</h3>
@@ -244,13 +244,19 @@
 
         <div id="emptyVault" class="hidden text-center py-20 space-y-4">
             <span class="material-icons-round text-zinc-700 text-6xl">search_off</span>
-            <p class="text-zinc-600 font-black uppercase text-sm tracking-widest">Sin resultados</p>
+            <p class="text-zinc-600 font-black uppercase text-sm tracking-widest" data-i18n="vault.noResults">Sin resultados</p>
         </div>
 
     </div>
 
 <script>
     let currentFilter = 'todos';
+
+    // <-- ÚNICA LÍNEA AÑADIDA: placeholder traducido si i18n ya cargó
+    const searchInput = document.getElementById('vault-search-input');
+    if (searchInput && typeof t === 'function') {
+        searchInput.placeholder = t('vault.searchPlaceholder', null, 'Buscar en la bóveda...');
+    }
 
     function setFilter(btn, cat) {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -279,25 +285,24 @@
         document.getElementById('emptyVault').classList.toggle('hidden', visible > 0);
     }
 
-    // ── Visualización premium por categoría ──────────────────────────
     const CAT_MAP = {
-        'comida':          { label: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
-        'transporte':      { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
-        'entretenimiento': { label: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
-        'alojamiento':     { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
-        'compras':         { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
-        'salud':           { label: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
-        'servicios':       { label: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
-        'otro':            { label: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
-        'food':            { label: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
-        'transport':       { label: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
-        'leisure':         { label: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
-        'home':            { label: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
-        'shopping':        { label: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
-        'health':          { label: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
-        'services':        { label: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
-        'other':           { label: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
-        'default':         { label: 'Gasto',        cat: 'todos',        color: '#71717a', icon: 'receipt' }
+        'comida':          { labelKey: 'category.food',          defaultLabel: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
+        'transporte':      { labelKey: 'category.transport',     defaultLabel: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
+        'entretenimiento': { labelKey: 'category.entertainment', defaultLabel: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
+        'alojamiento':     { labelKey: 'category.lodging',       defaultLabel: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
+        'compras':         { labelKey: 'category.shopping',      defaultLabel: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
+        'salud':           { labelKey: 'category.health',        defaultLabel: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
+        'servicios':       { labelKey: 'category.services',      defaultLabel: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
+        'otro':            { labelKey: 'category.other',         defaultLabel: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
+        'food':            { labelKey: 'category.food',          defaultLabel: 'Comida',       cat: 'gastronomia',  color: '#FF6B35', icon: 'restaurant' },
+        'transport':       { labelKey: 'category.transport',     defaultLabel: 'Transporte',   cat: 'transporte',   color: '#a855f7', icon: 'directions_car' },
+        'leisure':         { labelKey: 'category.entertainment', defaultLabel: 'Ocio',         cat: 'ocio',         color: '#ec4899', icon: 'movie' },
+        'home':            { labelKey: 'category.lodging',       defaultLabel: 'Hogar',        cat: 'suministros',  color: '#f59e0b', icon: 'home' },
+        'shopping':        { labelKey: 'category.shopping',      defaultLabel: 'Compras',      cat: 'todos',        color: '#3b82f6', icon: 'shopping_bag' },
+        'health':          { labelKey: 'category.health',        defaultLabel: 'Salud',        cat: 'todos',        color: '#22c55e', icon: 'medical_services' },
+        'services':        { labelKey: 'category.services',      defaultLabel: 'Servicios',    cat: 'suministros',  color: '#6b7280', icon: 'build' },
+        'other':           { labelKey: 'category.other',         defaultLabel: 'Otros',        cat: 'todos',        color: '#71717a', icon: 'receipt' },
+        'default':         { labelKey: 'category.other',         defaultLabel: 'Gasto',        cat: 'todos',        color: '#71717a', icon: 'receipt' }
     };
 
     function getCategoryArt(catKey) {
@@ -337,10 +342,14 @@
         const rawCat = (exp.category || '').toLowerCase().trim();
         const meta = CAT_MAP[rawCat] || CAT_MAP['default'];
         const artUrl = getCategoryArt(rawCat);
+        // <-- ÚNICA LÍNEA MODIFICADA: protección typeof t
+        const label = typeof t === 'function' ? t(meta.labelKey, null, meta.defaultLabel) : meta.defaultLabel;
         
+        const lang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';
         const dateStr = exp.created_at
-            ? new Date(exp.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-            : 'Reciente';
+            ? new Date(exp.created_at).toLocaleDateString(lang, { day: 'numeric', month: 'short' })
+            // <-- ÚNICA LÍNEA MODIFICADA: protección typeof t
+            : (typeof t === 'function' ? t('vault.recent', null, 'Reciente') : 'Reciente');
             
         const card = document.createElement('div');
         card.className = 'asset-card group cursor-pointer reveal-node';
@@ -349,7 +358,7 @@
         card.dataset.name = (exp.description || exp.category || '').toLowerCase();
         card.setAttribute('onclick', "SGRouter.navigate('receipt','vault')");
         card.innerHTML = `
-            <img src="${artUrl}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="${meta.label}" loading="lazy">
+            <img src="${artUrl}" class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" alt="${label}" loading="lazy">
             <div class="absolute inset-0 flex items-center justify-center">
                 <span class="material-icons-round opacity-20" style="font-size:6rem;color:${meta.color}">${meta.icon}</span>
             </div>
@@ -357,12 +366,12 @@
             <div class="absolute inset-0 asset-overlay flex flex-col justify-end p-5 sm:p-7 space-y-3 z-10">
                 <div class="flex justify-between items-center">
                     <span class="px-2 py-1 text-[7px] font-black uppercase rounded-full border backdrop-blur-md"
-                          style="background:${meta.color}15;color:${meta.color};border-color:${meta.color}30">${meta.label}</span>
+                          style="background:${meta.color}15;color:${meta.color};border-color:${meta.color}30">${label}</span>
                     <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">${dateStr}</p>
                 </div>
                 <div>
                     <h3 class="text-base font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none text-white drop-shadow-lg">
-                        ${exp.description || meta.label}
+                        ${exp.description || label}
                     </h3>
                 </div>
             </div>`;
@@ -389,9 +398,14 @@
 
             allExpenses.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
+            // <-- ÚNICA LÍNEA AÑADIDA: idioma del usuario
+            const userLang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';
             const total = allExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
-            document.getElementById('vault-total').textContent =
-                total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+
+            // <-- ÚNICA LÍNEA MODIFICADA: userLang en vez de 'es-ES'
+            document.getElementById('vault-total').textContent = 
+                total.toLocaleString(userLang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+
             document.getElementById('vault-tickets').textContent = allExpenses.length;
 
             if (allExpenses.length > 0) {
@@ -417,23 +431,23 @@
 
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item active" onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p data-i18n="nav.dashboard">Mando</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('groups')">
+            <button class="nav-item" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p data-i18n="nav.groups">Grupos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('activity')">
+            <button class="nav-item" onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p data-i18n="nav.expenses">Gastos</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p data-i18n="nav.metrics">Métricas</p>
             </button>
-            <button class="nav-item " onclick="SGRouter.navigate('profile')">
+            <button class="nav-item" onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p data-i18n="nav.profile">Perfil</p>
             </button>
