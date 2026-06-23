@@ -363,13 +363,15 @@ const CAT_COLORS = {
         }
         if (sub) {
           if (totalOwed > 0.01 && totalReceive > 0.01) {
-            sub.textContent = `Debes ${totalOwed.toFixed(2)}€ · Te deben ${totalReceive.toFixed(2)}€`;
+            sub.textContent = t('activity.youOweThem', null, 'Debes {owed}€ · Te deben {receive}€')
+              .replace('{owed}', totalOwed.toFixed(2))
+              .replace('{receive}', totalReceive.toFixed(2));
           } else if (totalOwed > 0.01) {
-            sub.textContent = `Debes ${totalOwed.toFixed(2)}€ en total`;
+            sub.textContent = t('activity.youOweTotal', null, 'Debes {amount}€ en total').replace('{amount}', totalOwed.toFixed(2));
           } else if (totalReceive > 0.01) {
-            sub.textContent = `Te deben ${totalReceive.toFixed(2)}€ en total`;
+            sub.textContent = t('activity.theyOweYou', null, 'Te deben {amount}€ en total').replace('{amount}', totalReceive.toFixed(2));
           } else {
-            sub.textContent = 'Sin deudas pendientes';
+            sub.textContent = t('activity.noDebts', null, 'Sin deudas pendientes');
           }
           sub.style.color = '#6b7280';
         }
