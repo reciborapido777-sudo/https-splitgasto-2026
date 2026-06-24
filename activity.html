@@ -119,6 +119,7 @@ const CAT_COLORS = {
     let _allExpensesCache = [];
 
     async function loadActivityData() {
+      const userLang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';
       if (!SGAuth || !SGAuth.isLoggedIn()) {
         SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
         setTimeout(() => SGRouter.navigate('auth-login'), 1500);
@@ -280,10 +281,10 @@ const CAT_COLORS = {
             const icon = CAT_ICONS[exp.category] || 'receipt';
             const color = CAT_COLORS[exp.category] || '#6b7280';
             const txType = netImpact > 0 ? 'income' : (netImpact < 0 ? 'expense' : 'pending');
-            const absAmount = Math.abs(netImpact).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const absAmount = Math.abs(netImpact).toLocaleString(userLang, {minimumFractionDigits: 2, maximumFractionDigits: 2});
             const amountStr = (netImpact >= 0 ? '+' : '-') + absAmount + '€';
             const amountColor = netImpact >= 0 ? '#13ecd6' : '#FF9D42';
-            const time = exp.created_at ? new Date(exp.created_at).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}) : '';
+            const time = exp.created_at ? new Date(exp.created_at).toLocaleTimeString(userLang, {hour:'2-digit', minute:'2-digit'}) : '';
             const expId = exp.id;
 
             html += `
@@ -334,6 +335,7 @@ const CAT_COLORS = {
     }
 
     function updateSummary(totalCount, totalReceive, totalOwed, totalGasto) {
+      const userLang = (typeof getSavedLanguage === 'function') ? getSavedLanguage() : 'es-ES';   
       const summaryEl = document.querySelector('.glass-panel .grid');
       if (!summaryEl) return;
       const cells = summaryEl.querySelectorAll('.space-y-1');
@@ -342,7 +344,7 @@ const CAT_COLORS = {
       if (cells[0]) {
         const el = cells[0].querySelector('.money-display');
         if (el) {
-          el.textContent = totalGasto.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+          el.textContent = totalGasto.toLocaleString(userLang, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
           el.style.color = '#fff';
         }
         const sub = cells[0].querySelector('p:last-child');
@@ -358,7 +360,7 @@ const CAT_COLORS = {
     
         if (title) title.textContent = net >= 0 ? t('activity.toReceive', null, 'A Recibir') : t('activity.toPay', null, 'A Pagar');
         if (el) {
-          el.textContent = (net >= 0 ? '+' : '-') + Math.abs(net).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+          el.textContent = (net >= 0 ? '+' : '-') + Math.abs(net).toLocaleString(userLang, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
           el.style.color = net >= 0 ? '#13ecd6' : '#FF9D42';
         }
         if (sub) {
@@ -392,7 +394,7 @@ const CAT_COLORS = {
       if (cells[3]) {
         const el = cells[3].querySelector('.money-display');
         if (el) {
-          el.textContent = totalOwed > 0 ? totalOwed.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€' : '0,00€';
+          el.textContent = (totalOwed > 0 ? totalOwed : 0).toLocaleString(userLang, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
           el.style.color = totalOwed > 0 ? '#FF9D42' : '#6b7280';
         }
         const title = cells[3].querySelector('p:first-child');
