@@ -54,16 +54,19 @@
             </div>
         </header>
 
-       <!-- Hero Corregido: Integridad tipográfica restaurada -->
+      <!-- Hero: Estabilidad total para dispositivos estrechos -->
         <section class="text-center space-y-8 reveal-node">
             <div class="glass-panel inline-block px-6 py-2 rounded-full border-[#FF9D42]/20">
                 <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.5em]">Serie A — Ronda Abierta</p>
             </div>
-            <h2 class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1.05] w-full">
+            
+            <!-- Corrección: text-4xl en móvil para evitar truncamiento, flex-wrap para asegurar flujo -->
+            <h2 class="text-4xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1] w-full px-2">
                 El futuro del <br>
-                <span class="text-gradient-orange money-display block">dinero compartido</span>
+                <span class="text-gradient-orange money-display block whitespace-normal">dinero compartido</span>
             </h2>
-            <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest max-w-2xl mx-auto leading-relaxed">
+            
+            <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest max-w-2xl mx-auto leading-relaxed px-4">
                 SplitGasto está redefiniendo cómo millones de personas gestionan sus gastos colectivos. Únete a nuestra ronda de inversión.
             </p>
         </section>
