@@ -22,6 +22,7 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+        .app-frame { width: 100% !important; }
         @media (min-width: 1024px) {
             .app-frame { max-width: 1200px !important; margin-left: auto !important; margin-right: auto !important; }
         }
@@ -41,7 +42,7 @@
 </head>
 <body class="app-shell pb-32 md:pb-8">
 <div class="app-frame">
-    <div class="max-w-6xl mx-auto px-6 py-8 space-y-16">
+    <div class="max-w-6xl mx-auto px-6 py-8 space-y-16 w-full">
 
         <header class="flex items-center gap-6 py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50 reveal-node">
             <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all">
