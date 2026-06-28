@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color: #000 !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        html { background: #000; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; margin: 0; padding: 0; -webkit-overflow-scrolling: touch; }
         .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -18,14 +16,14 @@
         .metric-card:hover { transform: translateY(-8px); background: rgba(255,255,255,0.04); }
         .bar { animation: growBar 1.5s cubic-bezier(0.16,1,0.3,1) forwards; transform-origin: bottom; opacity: 0; transform: scaleY(0); }
         @keyframes growBar { to { transform: scaleY(1); opacity: 1; } }
-    
+
         .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
         .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-</style>
-<link rel="manifest" href="manifest.json">
+    </style>
+ <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -59,7 +57,7 @@
             </div>
             <h2 class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1.05]">
                 El futuro del <br>
-                <span style="background:linear-gradient(135deg,#FF9D42,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent; display: inline-block; padding-right: 0.2em;">dinero compartido</span>
+            <span class="text-gradient-orange money-display" style="display:inline-block;">dinero compartido</span>
             </h2>
             <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest max-w-2xl mx-auto leading-relaxed">
                 SplitGasto está redefiniendo cómo millones de personas gestionan sus gastos colectivos. Únete a nuestra ronda de inversión.
