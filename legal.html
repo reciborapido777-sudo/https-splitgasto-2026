@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
+<html lang="es" style="background-color: #000 !important; overflow-x: clip;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        html, body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; margin: 0; padding: 0;  touch-action: manipulation; }
+        html { background: #000; overflow-x: clip; overflow-y: auto; }
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: clip; margin: 0; padding: 0; touch-action: pan-y; }
         .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -37,7 +38,7 @@
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/i18n.js" defer></script>
 </head>
-<body class="app-shell pb-32">
+<body class="app-shell pb-32 md:pb-8">
 <div class="app-frame">
     <div class="max-w-4xl mx-auto px-6 py-8 space-y-12">
 
@@ -56,7 +57,7 @@
                 <span class="material-icons-round text-[#13ecd6] text-3xl">verified_user</span>
                 <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">Última actualización: Marzo 2026</p>
             </div>
-            <h2 class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none mb-4">Términos de <span style="background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Servicio</span></h2>
+            <h2 class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1.05] mb-4">Términos de <span style="background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent; padding-right: 0.15em;">Servicio</span></h2>
             <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest leading-relaxed">SplitGasto 2026 es una plataforma de gestión financiera compartida. Al usar el servicio, aceptas los presentes términos y condiciones establecidos bajo el marco legal vigente en España y la Unión Europea.</p>
         </section>
 
@@ -126,7 +127,7 @@
     
     <!-- Bottom Navigation Bar -->
         <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:hidden">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
