@@ -10,27 +10,63 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    
     <link rel="stylesheet" href="engine/global.css">
-    <!-- Router cargado en head con defer: disponible antes del primer clic -->
+    
     <script src="engine/router.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+    <script src="engine/i18n.js" defer></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
             --cyan: #13ecd6;
             --cyan-dark: #0fbfaf;
-            --purple: #8b5cf6;
-            --orange: #f97316;
-            --bg: #080808;
-            --surface: #111111;
-            --surface2: #1a1a1a;
-            --border: rgba(255,255,255,0.08);
+            --purple: #a855f7; /* Corregido a Púrpura Deep */
+            --orange: #FF9D42; /* Corregido a Naranja Socio */
+            --bg: #000000;     /* Corregido a fondo puro #000 para contraste glassmorphism */
+            --surface: rgba(17, 17, 17, 0.6);
+            --surface2: rgba(26, 26, 26, 0.8);
+            --border: rgba(255,255,255,0.05); /* Corregido a bordes sutiles 0.05 */
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.5; 
+            touch-action: manipulation; 
+        }
+
+        h1, h2, h3, h4, .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* ─── NAVBAR (Glassmorphism Adjustments) ─── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--border);
         }
 
         html { scroll-behavior: smooth; }
