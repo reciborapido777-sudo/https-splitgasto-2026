@@ -22,7 +22,7 @@
         .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
         .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
-        .app-frame { width: 100% !important; }
+        .app-frame { width: 100% !important; overflow-x: hidden; }
         @media (min-width: 1024px) {
             .app-frame { max-width: 1200px !important; margin-left: auto !important; margin-right: auto !important; }
         }
@@ -40,7 +40,7 @@
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/i18n.js" defer></script>
 </head>
-<body class="app-shell pb-32 md:pb-8">
+<body class="app-shell pb-32 md:pb-8 overflow-x-hidden">
 <div class="app-frame">
     <div class="max-w-4xl mx-auto px-6 py-8 space-y-16">
 
@@ -59,7 +59,6 @@
             <div class="glass-panel inline-block px-6 py-2 rounded-full border-[#FF9D42]/20">
                 <p class="text-[9px] font-black text-[#FF9D42] uppercase tracking-[0.5em]">Serie A — Ronda Abierta</p>
             </div>
-            <!-- Corrección Aplicada: Escala md:text-7xl y eliminación del inline-block rígido -->
             <h2 class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1.05] break-words w-full">
                 El futuro del <br>
                 <span class="text-gradient-orange money-display">dinero compartido</span>
@@ -70,32 +69,32 @@
         </section>
 
         <!-- Métricas clave -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-6 reveal-node" style="animation-delay:0.1s">
-            <div class="metric-card glass-panel p-8 rounded-[2.5rem] border-[#13ecd6]/10 text-center space-y-3">
-                <p class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">48K</p>
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 reveal-node" style="animation-delay:0.1s">
+            <div class="metric-card glass-panel p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-[#13ecd6]/10 text-center space-y-3">
+                <p class="text-3xl md:text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#13ecd6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">48K</p>
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Usuarios activos</p>
             </div>
-            <div class="metric-card glass-panel p-8 rounded-[2.5rem] border-[#a855f7]/10 text-center space-y-3">
-                <p class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#a855f7,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">2.1M€</p>
+            <div class="metric-card glass-panel p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-[#a855f7]/10 text-center space-y-3">
+                <p class="text-3xl md:text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#a855f7,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">2.1M€</p>
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Gestionados</p>
             </div>
-            <div class="metric-card glass-panel p-8 rounded-[2.5rem] border-[#FF9D42]/10 text-center space-y-3">
-                <p class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#FF9D42,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">+340%</p>
+            <div class="metric-card glass-panel p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-[#FF9D42]/10 text-center space-y-3">
+                <p class="text-3xl md:text-4xl font-black font-['Space_Grotesk'] tracking-tighter" style="background:linear-gradient(135deg,#FF9D42,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">+340%</p>
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Crecimiento anual</p>
             </div>
-            <div class="metric-card glass-panel p-8 rounded-[2.5rem] border-white/5 text-center space-y-3">
-                <p class="text-4xl font-black font-['Space_Grotesk'] tracking-tighter text-white">4.9★</p>
+            <div class="metric-card glass-panel p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-white/5 text-center space-y-3">
+                <p class="text-3xl md:text-4xl font-black font-['Space_Grotesk'] tracking-tighter text-white">4.9★</p>
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Valoración media</p>
             </div>
         </section>
 
         <!-- Gráfico de crecimiento -->
-        <section class="glass-panel p-12 rounded-[3.5rem] border-[#FF9D42]/10 space-y-12 reveal-node" style="animation-delay:0.2s">
+        <section class="glass-panel p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-[#FF9D42]/10 space-y-8 md:space-y-12 reveal-node" style="animation-delay:0.2s">
             <div class="space-y-2">
                 <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Trayectoria de usuarios 2024–2026</p>
                 <h3 class="text-3xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic">Crecimiento Auditado</h3>
             </div>
-            <div class="flex items-end justify-around gap-4" style="height:200px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div class="flex items-end justify-around gap-1 md:gap-4" style="height:200px; border-bottom:1px solid rgba(255,255,255,0.05);">
                 <div class="flex flex-col items-center gap-3 flex-1">
                     <div class="bar w-full rounded-t-xl bg-gradient-to-t from-[#FF9D42]/30 to-transparent" style="height:40%; animation-delay:0.1s"></div>
                     <span class="text-[9px] font-black text-zinc-600 uppercase">Q1 24</span>
@@ -133,7 +132,7 @@
 
         <!-- Oportunidad de inversión -->
         <section class="grid md:grid-cols-2 gap-8 reveal-node" style="animation-delay:0.3s">
-            <div class="glass-panel p-12 rounded-[3.5rem] border-[#13ecd6]/15 space-y-8">
+            <div class="glass-panel p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-[#13ecd6]/15 space-y-8">
                 <div class="flex items-center gap-4 text-[#13ecd6]">
                     <span class="material-icons-round text-3xl">rocket_launch</span>
                     <h3 class="text-sm font-black font-['Space_Grotesk'] uppercase italic tracking-tight">La Oportunidad</h3>
@@ -155,7 +154,7 @@
                 </div>
             </div>
 
-            <div class="glass-panel p-12 rounded-[3.5rem] border-[#FF9D42]/15 space-y-8" style="background:linear-gradient(135deg,rgba(255,157,66,0.04),transparent)">
+            <div class="glass-panel p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-[#FF9D42]/15 space-y-8" style="background:linear-gradient(135deg,rgba(255,157,66,0.04),transparent)">
                 <div class="flex items-center gap-4 text-[#FF9D42]">
                     <span class="material-icons-round text-3xl">workspace_premium</span>
                     <h3 class="text-sm font-black font-['Space_Grotesk'] uppercase italic tracking-tight">Serie A — Condiciones</h3>
@@ -194,8 +193,7 @@
     </div>
     
     <!-- Bottom Navigation Bar -->
-        <!-- Bottom Nav -->
-        <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:hidden">
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 md:hidden">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
             <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
@@ -220,8 +218,7 @@
         </div>
     </nav>
 
-
-        <script>
+    <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
