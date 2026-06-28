@@ -58,13 +58,32 @@ export default {
 // ═══════════════════════════════════════════════════════════════════════
 async function checkRateLimit(request, env) {
     if (!env.SPLITGASTO_RATE_LIMITER) return null;
-    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const key = clientIP;
+
+    // FIX GOOGLE PLAY: Rate limit por userId si está autenticado, por IP si no
+    let key = null;
+    const authHeader = request.headers.get('Authorization') || '';
+    if (authHeader.startsWith('Bearer ')) {
+        // Extraer userId del JWT sin verificar firma completa (solo payload)
+        try {
+            const payloadB64 = authHeader.substring(7).split('.')[1];
+            if (payloadB64) {
+                const padded = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+                const pad = padded.length % 4;
+                const payload = JSON.parse(atob(pad ? padded + '='.repeat(4 - pad) : padded));
+                if (payload.userId) key = `user:${payload.userId}`;
+            }
+        } catch { /* fallback a IP */ }
+    }
+    
+    if (!key) {
+        key = request.headers.get('CF-Connecting-IP') || 'unknown';
+    }
+
     try {
         const { success } = await env.SPLITGASTO_RATE_LIMITER.limit({ key });
         if (!success) {
             return jsonResponse(
-                { error: 'Demasiadas peticiones', message: 'Límite 100 req/min excedido.', retry_after: 60 },
+                { error: 'Demasiadas peticiones', message: 'Límite excedido. Reduce la frecuencia.', retry_after: 60 },
                 429,
                 request
             );
@@ -101,6 +120,7 @@ async function handleAPI(request, env, ctx, path) {
     if (path === '/api/payments/checkout' && method === 'POST') return handleStripeCheckout(request, env);
     if (path === '/api/payments/webhook' && method === 'POST') return handleStripeWebhook(request, env);
     if (path === '/api/payments/portal' && method === 'POST') return handleStripePortal(request, env);
+    if (path === '/api/payments/google-play' && method === 'POST') return handleGooglePlayBilling(request, env);
     if (path.startsWith('/api/auth/')) return handleAuth(request, env, path);
     if (path === '/api/db/balances') return handleBalances(request, env);
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
@@ -141,6 +161,23 @@ async function hashString(str) {
 // ═══════════════════════════════════════════════════════════════════════
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Money Helpers — Trabaja en centavos para evitar errores de punto flotante
+// ═══════════════════════════════════════════════════════════════════════
+function toCents(amount) {
+    const num = Number(amount);
+    if (isNaN(num) || !isFinite(num)) return null;
+    return Math.round(num * 100);
+}
+
+function fromCents(cents) {
+    return Math.round(cents) / 100;
+}
+
+function isValidAmount(cents, maxCents = 99999999) {
+    return typeof cents === 'number' && !isNaN(cents) && cents > 0 && cents <= maxCents;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1456,10 +1493,11 @@ async function handleDatabase(request, env, path) {
         if (!groupId || amount === undefined || amount === null) {
             return jsonResponse({ error: 'Campos "groupId" y "amount" requeridos' }, 400, request);
         }
-        const parsedAmount = parseFloat(amount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 999999.99) {
-            return jsonResponse({ error: 'Importe inválido (debe ser > 0 y < 1.000.000)' }, 400, request);
+        const amountCents = toCents(amount);
+        if (amountCents === null || !isValidAmount(amountCents)) {
+            return jsonResponse({ error: 'El importe debe ser mayor que 0' }, 400, request);
         }
+        const parsedAmount = fromCents(amountCents);
         if (description && description.length > 500) return jsonResponse({ error: 'Descripción máximo 500 caracteres' }, 400, request);
         const ALLOWED_CATEGORIES = ['comida','transporte','entretenimiento','alojamiento','compras','salud','servicios','otro'];
         const safeCategory = ALLOWED_CATEGORIES.includes(category) ? category : 'otro';
@@ -1540,16 +1578,17 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, settlements: settlements.results }, 200, request);
     }
 
-    else if (path === '/api/db/settlements' && method === 'POST') {
+        else if (path === '/api/db/settlements' && method === 'POST') {
         const { groupId, fromUserId, toUserId, amount, currency } = body;
         if (!groupId || !fromUserId || !toUserId || amount === undefined || amount === null) {
             return jsonResponse({ error: 'Campos "groupId", "fromUserId", "toUserId", "amount" requeridos' }, 400, request);
         }
         
-        const parsedAmount = parseFloat(amount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-            return jsonResponse({ error: 'El importe debe ser mayor que 0' }, 400, request);
+        const amountCents = toCents(amount);
+        if (amountCents === null || !isValidAmount(amountCents)) {
+            return jsonResponse({ error: 'Importe inválido (debe ser > 0 y < 1.000.000)' }, 400, request);
         }
+        const parsedAmount = fromCents(amountCents);
         if (fromUserId === toUserId) {
             return jsonResponse({ error: 'El pagador y el receptor deben ser distintos' }, 400, request);
         }
@@ -1560,7 +1599,7 @@ async function handleDatabase(request, env, path) {
         if (!membership) return jsonResponse({ error: 'No perteneces a este grupo' }, 403, request);
         
         if (fromUserId !== authUser.userId && membership.role !== 'admin') {
-            return jsonResponse({ error: 'Solo puedes register tus propias liquidaciones' }, 403, request);
+            return jsonResponse({ error: 'Solo puedes registrar tus propias liquidaciones' }, 403, request);
         }
         
         const usersInGroup = await env.SPLITGASTO_DB.prepare(
@@ -1798,6 +1837,15 @@ function getOrigin(request) {
     if (origin.match(/^https:\/\/[a-z0-9-]+\.reciborapido777\.workers\.dev$/)) return origin;
     if (origin.match(/^https:\/\/[a-z0-9-]+\.splitgasto-2026\.pages\.dev$/)) return origin;
     if (origin.match(/^http:\/\/localhost:\d+$/)) return origin;
+    // FIX GOOGLE PLAY: WebView móvil
+    if (origin === 'capacitor://localhost') return origin;
+    if (origin === 'ionic://localhost') return origin;
+    if (origin === 'file://') return origin;
+    if (origin === '' || origin === 'null') {
+        // Las apps WebView a veces envían Origin vacío o 'null'
+        const appPlatform = request.headers.get('X-App-Platform') || '';
+        if (appPlatform === 'android' || appPlatform === 'ios') return '*';
+    }
     return null;
 }
 
@@ -1825,7 +1873,7 @@ function corsResponse(request) {
         headers: {
             'Access-Control-Allow-Origin': origin,
             'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-App-Platform',
             'Access-Control-Max-Age': '86400',
         },
     });
@@ -2037,7 +2085,7 @@ async function handleStripeCheckout(request, env) {
             customerId = custData.id;
         }
 
-        // Crear Checkout Session
+        // Crear Checkout Session (versión pulida)
         const sessionRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
             method: 'POST',
             headers: {
@@ -2049,9 +2097,13 @@ async function handleStripeCheckout(request, env) {
                 'line_items[0][price]': priceId,
                 'line_items[0][quantity]': '1',
                 'mode': 'subscription',
+                'payment_behavior': 'default_incomplete',
+                'automatic_tax[enabled]': 'true',
+                'expand[]': 'latest_invoice',
                 'subscription_data[trial_period_days]': '7',
                 'success_url': successUrl,
                 'cancel_url': cancelUrl,
+
                 'subscription_data[metadata][user_id]': authUser.userId,
                 'client_reference_id': authUser.userId
             })
@@ -2059,7 +2111,10 @@ async function handleStripeCheckout(request, env) {
 
         const sessionData = await sessionRes.json();
         if (!sessionRes.ok) {
-            return jsonResponse({ error: 'Error creando checkout', detail: sessionData.error?.message }, 502, request);
+            return jsonResponse({
+                error: 'Error creando checkout',
+                detail: sessionData.error?.message || 'Error desconocido'
+            }, 502, request);
         }
 
         return jsonResponse({
@@ -2087,7 +2142,17 @@ async function handleStripeWebhook(request, env) {
         }
 
         const event = JSON.parse(body);
-        console.log(`[Stripe Webhook] Evento: ${event.type}`);
+        console.log('[Stripe Webhook] Evento recibido');
+
+        // Idempotencia: evitar procesar el mismo evento 2 veces
+        const eventId = event.id;
+        const alreadyProcessed = await env.SPLITGASTO_CACHE?.get(`stripe:event:${eventId}`);
+        if (alreadyProcessed) {
+            return jsonResponse({ received: true, status: 'already_processed' }, 200, request);
+        }
+        await env.SPLITGASTO_CACHE?.put(`stripe:event:${eventId}`, '1', {
+            expirationTtl: 60 * 60 * 24 // 24h
+        });
 
         if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
             const sub = event.data.object;
@@ -2096,8 +2161,8 @@ async function handleStripeWebhook(request, env) {
 
             const status = (sub.status === 'active' || sub.status === 'trialing') ? 'active' : sub.status;
             const now = Date.now();
-            const periodStart = (sub.current_period_start || sub.start_date || Math.floor(now / 1000)) * 1000;
-            const periodEnd = (sub.current_period_end || sub.trial_end || sub.current_period_start || Math.floor(now / 1000) + 7 * 24 * 60 * 60) * 1000;
+            const periodStart = (sub.current_period_start ?? sub.start_date ?? Math.floor(now / 1000)) * 1000;
+            const periodEnd = (sub.current_period_end ?? sub.trial_end ?? (Math.floor(now / 1000) + 7 * 24 * 60 * 60)) * 1000;
 
             await env.SPLITGASTO_DB.prepare(`
                 INSERT INTO user_subscriptions 
@@ -2231,5 +2296,96 @@ async function verifyStripeSignature(payload, signature, secret) {
         return false;
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Google Play Billing — Verificación server-side de compras
+// ═══════════════════════════════════════════════════════════════════════
+async function handleGooglePlayBilling(request, env) {
+    const { error: authError, user: authUser } = await requireAuth(request, env);
+    if (authError) return authError;
+
+    if (!env.GOOGLE_PLAY_ACCESS_TOKEN) {
+        return jsonResponse({ error: 'Google Play Billing no configurado' }, 503, request);
+    }
+
+    try {
+        const body = await request.json();
+        const { packageName, productId, purchaseToken, subscription = true } = body;
+
+        if (!packageName || !productId || !purchaseToken) {
+            return jsonResponse({ error: 'Campos packageName, productId y purchaseToken requeridos' }, 400, request);
+        }
+
+        // NOTA: GOOGLE_PLAY_ACCESS_TOKEN debe rotarse cada ~50 minutos vía CI/script externo
+        // ya que Workers no pueden firmar RS256 directamente sin la private key en formato raw.
+        const accessToken = env.GOOGLE_PLAY_ACCESS_TOKEN;
+        if (!accessToken) {
+            return jsonResponse({ error: 'Token de Google Play no disponible. Configura GOOGLE_PLAY_ACCESS_TOKEN en secrets.' }, 503, request);
+        }
+
+        const apiUrl = subscription
+            ? `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`
+            : `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
+
+        const verifyRes = await fetch(apiUrl, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!verifyRes.ok) {
+            const errData = await verifyRes.json().catch(() => ({}));
+            return jsonResponse({ error: 'Compra no válida en Google Play', detail: errData.error?.message }, 400, request);
+        }
+
+        const purchaseData = await verifyRes.json();
+        // Validación opcional recomendada por Google
+        if (purchaseData.acknowledged !== true) {
+            console.log('Compra recibida pero no reconocida aún');
+        }
+
+        if (subscription && purchaseData.autoRenewing === false) {
+            console.log('El usuario ha desactivado la renovación automática');
+        }
+
+        if (purchaseData.purchaseState !== 0) {
+            return jsonResponse({ error: 'Compra no completada o cancelada' }, 400, request);
+        }
+
+        // Guardar/actualizar suscripción en D1
+        const nowMs = Date.now();
+        const expiryMs = subscription && purchaseData.expiryTimeMillis
+            ? parseInt(purchaseData.expiryTimeMillis, 10)
+            : nowMs + (365 * 24 * 60 * 60 * 1000);
+
+        await env.SPLITGASTO_DB.prepare(`
+            INSERT INTO user_subscriptions 
+            (id, user_id, provider, subscription_id, order_id, status, plan_name, current_period_start, current_period_end)
+            VALUES (?, ?, 'google_play', ?, ?, 'active', 'pro', ?, ?)
+            ON CONFLICT(subscription_id) DO UPDATE SET
+                status = excluded.status,
+                current_period_end = excluded.current_period_end,
+                updated_at = excluded.updated_at
+        `).bind(
+            crypto.randomUUID(),
+            authUser.userId,
+            purchaseToken,
+            purchaseData.orderId || '',
+            nowMs,
+            expiryMs,
+            nowMs
+        ).run();
+
+        await env.SPLITGASTO_CACHE?.delete(`membership:${authUser.userId}`);
+
+        return jsonResponse({
+            success: true,
+            message: 'Suscripción Google Play verificada y activada',
+            expiryTime: new Date(expiryMs).toISOString(),
+        }, 200, request);
+
+    } catch (err) {
+        return jsonResponse({ error: 'Error verificando compra', detail: err.message }, 500, request);
+    }
+}
+
 
    
