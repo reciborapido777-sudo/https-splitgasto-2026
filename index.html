@@ -69,23 +69,15 @@
             border-bottom: 1px solid var(--border);
         }
 
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; overflow-x: clip; overflow-y: auto; }
 
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg);
             color: #fff;
-            overflow-x: hidden;
-            line-height: 1.5; touch-action: manipulation; }
-
-        /* ─── NAVBAR ─── */
-        nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            padding: 16px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(8,8,8,0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            overflow-x: clip;
+            line-height: 1.5; 
+            touch-action: pan-y; 
         }
 
         .nav-logo {
