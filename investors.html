@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="background-color: #000 !important; overflow-x: clip;">
+<html lang="es" style="background-color: #000 !important; overflow-x: hidden;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space_Grotesk:wght@500;700;900&display=swap');
-        html { background: #000; overflow-x: clip; overflow-y: auto; }
-        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: clip; margin: 0; padding: 0; touch-action: pan-y; }
+        html { background: #000; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; margin: 0; padding: 0; -webkit-overflow-scrolling: touch; }
         .glass-panel { background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
         .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes revealUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -59,7 +59,7 @@
             </div>
             <h2 class="text-6xl md:text-8xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-[1.05]">
                 El futuro del <br>
-                <span style="background:linear-gradient(135deg,#FF9D42,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent; padding-right: 0.15em;">dinero compartido</span>
+                <span style="background:linear-gradient(135deg,#FF9D42,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent; display: inline-block; padding-right: 0.2em;">dinero compartido</span>
             </h2>
             <p class="text-zinc-500 text-sm font-bold uppercase tracking-widest max-w-2xl mx-auto leading-relaxed">
                 SplitGasto está redefiniendo cómo millones de personas gestionan sus gastos colectivos. Únete a nuestra ronda de inversión.
