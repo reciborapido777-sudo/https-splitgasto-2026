@@ -52,6 +52,7 @@ APP_ENV     = "production"
 AI_GATEWAY  = "splitgasto-ai"
 STRIPE_PRICE_ID = "price_1TkXVc9V7TZ4NU3DR9twDWzM"
 STRIPE_PRICE_ID_MONTHLY = "price_1TjvZo9V7TZ4NU3DigZuGdfF"
+GOOGLE_PLAY_PACKAGE_NAME = "com.splitgasto.app"
 
 # ── Observabilidad ────────────────────────────────────────────────────
 [observability]
