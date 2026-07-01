@@ -494,15 +494,22 @@ async function handleAuth(request, env, path) {
         );
 
         try {
-            const emailRes = await env.EMAIL.send({
-                to: normalizedForgotEmail,
-                from: { email: 'noreply@splitgasto.com', name: 'SplitGasto' },
-                subject: 'Código de recuperación — SplitGasto',
-                text: `Tu código de recuperación es: ${code}\n\nExpira en 15 minutos.\n\nSi no solicitaste esto, ignora este email.`
+            const emailRes = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from: 'SplitGasto <noreply@splitgasto.com>',
+                    to: [normalizedForgotEmail],
+                    subject: 'Código de recuperación — SplitGasto',
+                    text: `Tu código de recuperación es: ${code}\n\nExpira en 15 minutos.\n\nSi no solicitaste esto, ignora este email.`
+                }),
             });
+            if (!emailRes.ok) throw new Error(`Resend HTTP ${emailRes.status}`);
         } catch (emailErr) {
             console.error('Error enviando email:', emailErr.message);
-            // Invalidar código huérfano para evitar que quede en KV sin entregar
             await env.SPLITGASTO_CACHE.delete(`recovery:${user.id}`);
             return jsonResponse({ 
                 success: false, 
@@ -2378,4 +2385,3 @@ async function handleGooglePlayBilling(request, env) {
         return jsonResponse({ error: 'Error verificando compra', detail: err.message }, 500, request);
     }
 }
-
