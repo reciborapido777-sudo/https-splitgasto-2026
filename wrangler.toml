@@ -44,10 +44,6 @@ binding = "SPLITGASTO_DB"
 database_name = "splitgasto-db"
 database_id = "ac0401b5-1e3a-4c02-8c36-01025169eb1a"
 
-# ── Email Service ──────────────────────────────────────────────────────
-[[send_email]]
-name = "EMAIL"
-
 # ── Variables de entorno ───────────────────────────────────────────────
 [vars]
 APP_NAME    = "SplitGasto 2026"
