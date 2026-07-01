@@ -494,20 +494,12 @@ async function handleAuth(request, env, path) {
         );
 
         try {
-            const emailRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    personalizations: [{ to: [{ email: normalizedForgotEmail }] }],
-                    from: { email: 'noreply@splitgasto.com', name: 'SplitGasto' },
-                    subject: 'Código de recuperación — SplitGasto',
-                    content: [{
-                        type: 'text/plain',
-                        value: `Tu código de recuperación es: ${code}\n\nExpira en 15 minutos.\n\nSi no solicitaste esto, ignora este email.`
-                    }],
-                }),
+            const emailRes = await env.EMAIL.send({
+                to: normalizedForgotEmail,
+                from: { email: 'noreply@splitgasto.com', name: 'SplitGasto' },
+                subject: 'Código de recuperación — SplitGasto',
+                text: `Tu código de recuperación es: ${code}\n\nExpira en 15 minutos.\n\nSi no solicitaste esto, ignora este email.`
             });
-            if (!emailRes.ok) throw new Error(`MailChannels HTTP ${emailRes.status}`);
         } catch (emailErr) {
             console.error('Error enviando email:', emailErr.message);
             // Invalidar código huérfano para evitar que quede en KV sin entregar
@@ -517,7 +509,7 @@ async function handleAuth(request, env, path) {
                 error: "No se pudo enviar el email de recuperación. Intenta más tarde o contacta soporte." 
             }, 503, request);
         }
-
+ 
         return jsonResponse({ success: true, message: 'Si el email existe, recibirás un código' }, 200, request);
     }
 
@@ -2387,5 +2379,3 @@ async function handleGooglePlayBilling(request, env) {
     }
 }
 
-
-   
