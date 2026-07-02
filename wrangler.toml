@@ -67,3 +67,7 @@ invocation_logs = true
 enabled = true
 head_sampling_rate = 1
 
+# ── Cron Trigger (renovar token Google Play) ──────────────────────────
+[triggers]
+crons = ["*/30 * * * *"]
+
