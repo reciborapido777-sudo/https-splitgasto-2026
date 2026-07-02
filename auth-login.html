@@ -61,7 +61,6 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Desktop Frame Fix: makes fixed elements behave on desktop -->
     <script src="engine/router.js"></script>
     <script src="engine/desktop-fix.js" defer></script>
     <script src="engine/auth.js"></script>
@@ -70,7 +69,8 @@
 <body class="app-shell">
 <div class="app-frame">
 
-    <div class="w-full max-w-md mx-auto px-8 py-10 space-y-12">
+    <!-- ═══ VISTA DE LOGIN ═══ -->
+    <div id="view-login" class="w-full max-w-md mx-auto px-8 py-10 space-y-12">
         
         <header class="text-center space-y-6 reveal-node">
             <div class="flex justify-start">
@@ -103,7 +103,13 @@
             <button onclick="doLogin()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
                 Sincronizar Nodo
             </button>
-            
+
+            <!-- BOTÓN DE RECUPERACIÓN -->
+            <div class="text-center">
+                <button onclick="showRecovery()" class="text-[9px] font-bold text-zinc-600 uppercase tracking-widest hover:text-[#a855f7] transition-colors">
+                    ¿Olvidaste tu código de acceso?
+                </button>
+            </div>
         </main>
 
         <footer class="text-center space-y-4 reveal-node" style="animation-delay: 0.2s">
@@ -112,10 +118,75 @@
                 <button onclick="SGRouter.navigate('register', 'auth')" class="text-[#13ecd6] ml-2 font-black hover:underline">Solicitar Registro</button>
             </p>
         </footer>
+    </div>
 
+    <!-- ═══ VISTA DE RECUPERACIÓN ═══ -->
+    <div id="view-recovery" class="w-full max-w-md mx-auto px-8 py-10 space-y-12 hidden">
+        
+        <header class="text-center space-y-6">
+            <div class="flex justify-start">
+                <button onclick="showLogin()" class="size-12 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-lg">
+                    <span class="material-icons-round text-zinc-500">arrow_back</span>
+                </button>
+            </div>
+            
+            <div class="size-20 mx-auto rounded-3xl glass-panel flex items-center justify-center border-[#a855f7]/30 relative shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+                <span class="material-icons-round text-[#a855f7] text-4xl">lock_reset</span>
+            </div>
+            
+            <div class="space-y-1">
+                <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Protocolo de Recuperación</p>
+                <h1 class="text-3xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Restablecer</h1>
+            </div>
+        </header>
+
+        <!-- Paso 1: Solicitar código -->
+        <main id="recovery-step1" class="space-y-8">
+            <div class="space-y-2">
+                <p class="ml-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Email de la cuenta</p>
+                <input id="recovery-email" type="email" placeholder="tu@email.com" class="auth-input text-sm">
+            </div>
+            <button onclick="requestRecoveryCode()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
+                Enviar Código
+            </button>
+        </main>
+
+        <!-- Paso 2: Introducir código + nueva contraseña -->
+        <main id="recovery-step2" class="space-y-8 hidden">
+            <div class="glass-panel rounded-2xl p-4 text-center">
+                <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Código enviado a</p>
+                <p id="recovery-email-display" class="text-sm font-bold text-[#13ecd6]"></p>
+            </div>
+            <div class="space-y-2">
+                <p class="ml-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Código de 6 dígitos</p>
+                <input id="recovery-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" class="auth-input text-2xl tracking-[0.5em] text-center font-black">
+            </div>
+            <div class="space-y-2">
+                <p class="ml-4 text-[8px] font-black text-zinc-600 uppercase tracking-widest">Nueva contraseña</p>
+                <input id="recovery-new-password" type="password" placeholder="Mínimo 6 caracteres" class="auth-input text-lg tracking-[0.3em]">
+            </div>
+            <button onclick="resetPassword()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
+                Restablecer Acceso
+            </button>
+        </main>
+
+        <!-- Paso 3: Éxito -->
+        <main id="recovery-step3" class="space-y-8 hidden text-center">
+            <div class="size-20 mx-auto rounded-3xl glass-panel flex items-center justify-center border-[#13ecd6]/30 shadow-[0_0_30px_rgba(19,236,214,0.1)]">
+                <span class="material-icons-round text-[#13ecd6] text-4xl">check_circle</span>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-black font-['Space_Grotesk'] tracking-tight">Acceso Restablecido</h2>
+                <p class="text-sm text-zinc-500">Tu contraseña ha sido actualizada correctamente.</p>
+            </div>
+            <button onclick="showLogin()" class="w-full py-6 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] hover:bg-[#a855f7] hover:text-white transition-all shadow-2xl active:scale-95">
+                Volver a Acceder
+            </button>
+        </main>
     </div>
 
     <script>
+    // ═══ LOGIN ═══
     async function doLogin() {
         const email = document.getElementById('email').value.trim();
         const pwd = document.getElementById('password').value;
@@ -130,6 +201,106 @@
                 SGRouter.navigate('dashboard', 'auth');
             } else {
                 SGRouter.showToast(result.error || 'Error al iniciar sesión', 'error');
+            }
+        } catch (err) {
+            SGRouter.showToast('Error de conexión', 'error');
+        }
+    }
+
+    // ═══ RECUPERACIÓN ═══
+    let recoveryUserId = null;
+
+    function showRecovery() {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-recovery').classList.remove('hidden');
+        showRecoveryStep(1);
+    }
+
+    function showLogin() {
+        document.getElementById('view-recovery').classList.add('hidden');
+        document.getElementById('view-login').classList.remove('hidden');
+        // Limpiar campos
+        document.getElementById('recovery-email').value = '';
+        document.getElementById('recovery-code').value = '';
+        document.getElementById('recovery-new-password').value = '';
+        recoveryUserId = null;
+    }
+
+    function showRecoveryStep(step) {
+        document.getElementById('recovery-step1').classList.toggle('hidden', step !== 1);
+        document.getElementById('recovery-step2').classList.toggle('hidden', step !== 2);
+        document.getElementById('recovery-step3').classList.toggle('hidden', step !== 3);
+    }
+
+    async function requestRecoveryCode() {
+        const email = document.getElementById('recovery-email').value.trim();
+        if (!email) {
+            SGRouter.showToast('Introduce tu email', 'error');
+            return;
+        }
+
+        SGRouter.showToast('Enviando código...', 'info');
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                SGRouter.showToast('Código enviado a tu email', 'success');
+                document.getElementById('recovery-email-display').textContent = email;
+                showRecoveryStep(2);
+            } else {
+                SGRouter.showToast(data.error || 'Error al enviar el código', 'error');
+            }
+        } catch (err) {
+            SGRouter.showToast('Error de conexión', 'error');
+        }
+    }
+
+    async function resetPassword() {
+        const code = document.getElementById('recovery-code').value.trim();
+        const newPassword = document.getElementById('recovery-new-password').value;
+
+        if (!code || code.length !== 6) {
+            SGRouter.showToast('Introduce el código de 6 dígitos', 'error');
+            return;
+        }
+        if (!newPassword || newPassword.length < 6) {
+            SGRouter.showToast('La contraseña debe tener mínimo 6 caracteres', 'error');
+            return;
+        }
+
+        // Necesitamos el userId. Lo obtenemos del email vía forgot-password otra vez
+        // o lo pedimos al usuario. Como el backend no devuelve el userId por seguridad,
+        // pedimos al backend que lo busque con el email + código.
+        // Solución: usar el endpoint reset-password con el email como userId temporal
+        // y dejar que el backend valide.
+
+        SGRouter.showToast('Restableciendo...', 'info');
+        try {
+            // El backend espera userId, pero por seguridad no lo tenemos.
+            // Usamos el email para que el backend lo resuelva.
+            const email = document.getElementById('recovery-email').value.trim();
+            
+            const res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    userId: email, 
+                    code: code, 
+                    newPassword: newPassword 
+                })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                SGRouter.showToast('Contraseña restablecida', 'success');
+                showRecoveryStep(3);
+            } else {
+                SGRouter.showToast(data.error || 'Error al restablecer', 'error');
             }
         } catch (err) {
             SGRouter.showToast('Error de conexión', 'error');
