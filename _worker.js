@@ -51,6 +51,10 @@ export default {
             }
         }
     },
+
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil(refreshGooglePlayToken(env));
+    },
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -2297,16 +2301,125 @@ async function verifyStripeSignature(payload, signature, secret) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// Google Play — Renovación automática del Access Token
+// ═══════════════════════════════════════════════════════════════════════
+async function refreshGooglePlayToken(env) {
+    if (!env.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY) {
+        console.log('[Google Play] Service Account Key no configurada — omitiendo');
+        return;
+    }
+
+    try {
+        const serviceAccount = JSON.parse(env.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY);
+        const now = Math.floor(Date.now() / 1000);
+
+        // 1. Crear JWT firmado con RS256
+        const header = { alg: 'RS256', typ: 'JWT' };
+        const payload = {
+            iss: serviceAccount.client_email,
+            scope: 'https://www.googleapis.com/auth/androidpublisher',
+            aud: 'https://oauth2.googleapis.com/token',
+            exp: now + 3600,
+            iat: now,
+        };
+
+        const encodedHeader = b64UrlEncode(JSON.stringify(header));
+        const encodedPayload = b64UrlEncode(JSON.stringify(payload));
+        const message = `${encodedHeader}.${encodedPayload}`;
+
+        // 2. Importar private key en formato PKCS8
+        const pemContents = serviceAccount.private_key
+            .replace('-----BEGIN PRIVATE KEY-----', '')
+            .replace('-----END PRIVATE KEY-----', '')
+            .replace(/\s/g, '');
+
+        const binaryDer = atob(pemContents);
+        const derBytes = new Uint8Array(binaryDer.length);
+        for (let i = 0; i < binaryDer.length; i++) {
+            derBytes[i] = binaryDer.charCodeAt(i);
+        }
+
+        const privateKey = await crypto.subtle.importKey(
+            'pkcs8',
+            derBytes,
+            { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+            false,
+            ['sign']
+        );
+
+        // 3. Firmar el JWT
+        const signature = await crypto.subtle.sign(
+            { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+            privateKey,
+            new TextEncoder().encode(message)
+        );
+
+        const sigBytes = new Uint8Array(signature);
+        let sigBinary = '';
+        sigBytes.forEach(b => sigBinary += String.fromCharCode(b));
+        const encodedSignature = btoa(sigBinary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+        const jwt = `${message}.${encodedSignature}`;
+
+        // 4. Intercambiar JWT por access token
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                assertion: jwt,
+            }),
+        });
+
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok) {
+            throw new Error(`Google OAuth error: ${tokenData.error} — ${tokenData.error_description || ''}`);
+        }
+
+        // 5. Guardar en KV con TTL de 45 minutos (el token dura 1 hora)
+        if (env.SPLITGASTO_CACHE) {
+            await env.SPLITGASTO_CACHE.put(
+                'google_play:access_token',
+                tokenData.access_token,
+                { expirationTtl: 2700 }
+            );
+        }
+
+        console.log('[Google Play] Token renovado correctamente');
+    } catch (err) {
+        console.error('[Google Play] Error renovando token:', err.message);
+    }
+}
+
+async function getGooglePlayAccessToken(env) {
+    // 1. Verificar KV primero
+    if (env.SPLITGASTO_CACHE) {
+        const cached = await env.SPLITGASTO_CACHE.get('google_play:access_token');
+        if (cached) return cached;
+    }
+
+    // 2. Si no hay token en KV, renovar on-demand
+    await refreshGooglePlayToken(env);
+
+    if (env.SPLITGASTO_CACHE) {
+        return await env.SPLITGASTO_CACHE.get('google_play:access_token');
+    }
+
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // Google Play Billing — Verificación server-side de compras
 // ═══════════════════════════════════════════════════════════════════════
 async function handleGooglePlayBilling(request, env) {
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
 
-    if (!env.GOOGLE_PLAY_ACCESS_TOKEN) {
-        return jsonResponse({ error: 'Google Play Billing no configurado' }, 503, request);
+ const accessToken = await getGooglePlayAccessToken(env);
+    if (!accessToken) {
+        return jsonResponse({ error: 'Google Play Billing no configurado. Verifica GOOGLE_PLAY_SERVICE_ACCOUNT_KEY.' }, 503, request);
     }
-
+    
     try {
         const body = await request.json();
         const { packageName, productId, purchaseToken, subscription = true } = body;
@@ -2314,14 +2427,7 @@ async function handleGooglePlayBilling(request, env) {
         if (!packageName || !productId || !purchaseToken) {
             return jsonResponse({ error: 'Campos packageName, productId y purchaseToken requeridos' }, 400, request);
         }
-
-        // NOTA: GOOGLE_PLAY_ACCESS_TOKEN debe rotarse cada ~50 minutos vía CI/script externo
-        // ya que Workers no pueden firmar RS256 directamente sin la private key en formato raw.
-        const accessToken = env.GOOGLE_PLAY_ACCESS_TOKEN;
-        if (!accessToken) {
-            return jsonResponse({ error: 'Token de Google Play no disponible. Configura GOOGLE_PLAY_ACCESS_TOKEN en secrets.' }, 503, request);
-        }
-
+        
         const apiUrl = subscription
             ? `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`
             : `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
@@ -2362,15 +2468,14 @@ async function handleGooglePlayBilling(request, env) {
             ON CONFLICT(subscription_id) DO UPDATE SET
                 status = excluded.status,
                 current_period_end = excluded.current_period_end,
-                updated_at = excluded.updated_at
+                updated_at = strftime('%s', 'now') * 1000
         `).bind(
             crypto.randomUUID(),
             authUser.userId,
             purchaseToken,
             purchaseData.orderId || '',
             nowMs,
-            expiryMs,
-            nowMs
+            expiryMs
         ).run();
 
         await env.SPLITGASTO_CACHE?.delete(`membership:${authUser.userId}`);
