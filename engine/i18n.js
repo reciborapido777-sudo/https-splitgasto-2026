@@ -159,7 +159,7 @@ const translations = {
     'settings.selectCurrency': 'Selecciona moneda',
     'error.system': 'Error al cargar',
     'index.heroTitleHtml': 'Divide gastos,<br><em>multiplica momentos.</em>',
-    'index.heroSub': 'SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket, elige quién paga con un juego, y liquida sin drama.',
+   'index.heroSub': 'SplitGasto hace que compartir gastos sea tan fácil como salir con amigos. Escanea el ticket, ponle un toque divertido a la gestión y liquida al instante. Cuentas claras sin discusiones.', 
     'index.ctaPrimary': 'Crear cuenta — es gratis',
     'index.ctaSecondary': 'Ya tengo cuenta →',
     
@@ -611,7 +611,7 @@ const translations = {
     'settings.selectCurrency': 'Select currency',
     'error.system': 'Failed to load',
     'index.heroTitleHtml': 'Split expenses,<br><em>multiply moments.</em>',
-    'index.heroSub': 'SplitGasto splits bills between friends in seconds. Scan the receipt, choose who pays with a game, and settle without drama.',
+    'index.heroSub': 'SplitGasto makes splitting expenses as easy as going out with friends. Scan the receipt, add a fun twist to managing, and settle up instantly. Clear accounts, no arguments.',
     'index.ctaPrimary': 'Create account — it\'s free',
     'index.ctaSecondary': 'I already have an account →',
 
@@ -1063,7 +1063,7 @@ const translations = {
     'settings.selectCurrency': 'Sélectionner la devise',
     'error.system': 'Échec du chargement',
     'index.heroTitleHtml': 'Divisez les dépenses,<br><em>multipliez les moments.</em>',
-    'index.heroSub': 'SplitGasto divise les factures entre amis en quelques secondes. Scannez le ticket, choisissez qui paie avec un jeu, et réglez sans drame.',
+    'index.heroSub': 'SplitGasto rend le partage de dépenses aussi simple que de sortir entre amis. Scannez le ticket, ajoutez une touche ludique à la gestion et soldez instantanément. Des comptes clairs, sans disputes.',
     'index.ctaPrimary': 'Créer un compte — c\'est gratuit',
     'index.ctaSecondary': "J'ai déjà un compte →",
 
@@ -1517,7 +1517,7 @@ const translations = {
     'settings.selectCurrency': 'Währung auswählen',
     'error.system': 'Ladefehler',
     'index.heroTitleHtml': 'Ausgaben teilen,<br><em>Momente vervielfachen.</em>',
-    'index.heroSub': 'SplitGasto teilt Rechnungen zwischen Freunden in Sekunden. Scanne den Beleg, wähle wer zahlt mit einem Spiel, und kläre ohne Drama.',
+    'index.heroSub': 'SplitGasto macht Ausgaben teilen so einfach wie mit Freunden auszugehen. Scanne den Bon, gib der Verwaltung einen spielerischen Touch und begleiche sofort. Klarer Abschluss ohne Streit.',
     'index.ctaPrimary': 'Konto erstellen — kostenlos',
     'index.ctaSecondary': 'Ich habe bereits ein Konto →',
 
@@ -1971,7 +1971,7 @@ const translations = {
     'settings.selectCurrency': '选择货币',
     'error.system': '加载失败',
     'index.heroTitleHtml': '分摊支出，<br><em>倍增时光。</em>',
-    'index.heroSub': 'SplitGasto 几秒钟内在朋友之间分摊账单。扫描收据，用游戏决定谁付款，轻松结清。',
+    'index.heroSub': 'SplitGasto 让分摊账单像和朋友出门一样简单。扫描小票，给管理增添一点乐趣，即时结算。账目清晰，没有争执。',
     'index.ctaPrimary': '创建账户 — 免费',
     'index.ctaSecondary': '我已有账户 →',
 
@@ -2425,7 +2425,7 @@ const translations = {
     'settings.selectCurrency': '通貨を選択',
     'error.system': '読み込みエラー',
     'index.heroTitleHtml': '費用を分割し、<br><em>思い出を増やそう。</em>',
-    'index.heroSub': 'SplitGastoは数秒で友人間の請求を分割します。レシートをスキャンして、ゲームで誰が支払うか決め、面倒なくきれいに精算。',
+   'index.heroSub': 'SplitGastoは、友人との出費の割り勘を、一緒に遊びに行くのと同じくらい簡単にします。レシートをスキャンし、楽しいひねりを加えて、即座に精算。明確な会計、トラブルなし。',
     'index.ctaPrimary': 'アカウント作成 — 無料',
     'index.ctaSecondary': 'すでにアカウントをお持ちの方 →',
 
