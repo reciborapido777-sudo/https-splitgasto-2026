@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SplitGasto — La app que arregla las cuentas entre amigos</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
-    <meta name="description" content="Divide gastos al instante con IA. Escanea tickets, crea grupos y liquida deudas en segundos. Gratis para siempre.">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#a855f7">
+    <meta name="description" content="¿Quién paga? SplitGasto lo resuelve. Escanea tickets, divide gastos entre amigos y liquida deudas al instante. Con juegos 3D y análisis inteligente. Gratis.">
+    <meta name="apple-mobile-web-app-capable" content="yes">                                  
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
+    <meta property="og:title" content="SplitGasto — La app que arregla las cuentas entre amigos">
+    <meta property="og:description" content="Escanea el ticket, ponle un toque divertido a la gestión y liquida al instante. Cuentas claras sin discusiones.">
+    <meta property="og:image" content="https://splitgasto.com/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://splitgasto.com">
+    <meta name="twitter:card" content="summary_large_image">
     
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -21,10 +27,9 @@
     <script src="engine/router.js"></script>
     <script src="engine/i18n.js" defer></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://api.stripe.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -104,8 +109,6 @@
             border-radius: 8px;
             display: block;
         }
-      
-        .nav-logo-icon span { font-size: 18px; color: #000; font-weight: 900; }
 
         .nav-cta {
             display: flex; align-items: center; gap: 12px;
@@ -670,6 +673,11 @@
 </div>
 
 <script>
+    /* Ocultar botón "Volver" si no hay historial */
+    if (window.history.length <= 1) {
+        document.querySelector('.btn-back').style.display = 'none';
+    }
+
     /* Service Worker Registration v4.31
      * - updateViaCache:'none' ensures sw.js is never cached by the browser
      * - Silently activates new SW when found (no forced reload = no blank flash)
