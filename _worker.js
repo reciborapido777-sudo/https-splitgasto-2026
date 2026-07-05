@@ -2187,6 +2187,7 @@ async function handleStripeWebhook(request, env) {
                     status = excluded.status,
                     current_period_start = excluded.current_period_start,
                     current_period_end = excluded.current_period_end,
+                    order_id = excluded.order_id,
                     updated_at = strftime('%s', 'now') * 1000
             `).bind(
                 crypto.randomUUID(), userId, sub.id, sub.latest_invoice || '', status, periodStart, periodEnd
