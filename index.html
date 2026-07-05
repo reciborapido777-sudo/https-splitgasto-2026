@@ -90,19 +90,21 @@
             color: var(--cyan);
         }
 
-        .nav-logo {
-            display: flex; align-items: center; gap: 10px;
-            font-weight: 800; font-size: 18px; color: #fff;
-            text-decoration: none;
-        }
-
         .nav-logo-icon {
-            width: 32px; height: 32px;
-            background: var(--cyan);
-            border-radius: 8px;
+            height: 40px; /* h-10 */
+            width: auto;
             display: flex; align-items: center; justify-content: center;
+            border: none;
+            background: transparent;
         }
 
+        .nav-logo-icon img {
+            height: 40px;
+            width: auto;
+            border-radius: 8px;
+            display: block;
+        }
+      
         .nav-logo-icon span { font-size: 18px; color: #000; font-weight: 900; }
 
         .nav-cta {
@@ -462,7 +464,9 @@
             <span class="material-icons-round" style="font-size: 20px;">arrow_back</span>
         </button>
         <a class="nav-logo" href="#">
-            <div class="nav-logo-icon"><span>S</span></div>
+            <div class="nav-logo-icon">
+                <img src="favicon-32.png" alt="SplitGasto" height="40">
+            </div>
             SplitGasto
         </a>
     </div>
@@ -488,10 +492,11 @@
     </h1>
 
     <p class="fade-up delay-2" data-i18n="index.heroSub">
-        SplitGasto divide cuentas entre amigos en segundos. Escanea el ticket,
-        elige quién paga con un juego, y liquida sin drama.
+        SplitGasto hace que compartir gastos sea tan fácil como salir con amigos.
+        Escanea el ticket, ponle un toque divertido a la gestión y liquida al instante.
+        Cuentas claras sin discusiones.
     </p>
-
+    
     <div class="hero-buttons fade-up delay-3">
         <button class="btn-primary" onclick="SGRouter.navigate('register','landing')">
             <span class="material-icons-round" style="font-size:18px">rocket_launch</span>
@@ -649,7 +654,9 @@
 <div style="border-top:1px solid var(--border);padding:40px 24px">
     <div style="max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
         <div style="display:flex;align-items:center;gap:10px">
-            <div class="nav-logo-icon"><span>S</span></div>
+            <div class="nav-logo-icon">
+                <img src="favicon-32.png" alt="SplitGasto" height="40">
+            </div>
             <span style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.6)">SplitGasto 2026</span>
         </div>
         <div style="display:flex;gap:24px;flex-wrap:wrap">
