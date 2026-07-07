@@ -31,7 +31,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
         .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
 </style>
 <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#13ecd6">
+    <meta name="theme-color" content="#a855f7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SplitGasto">
@@ -87,7 +87,7 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <section class="space-y-4 reveal-node" style="animation-delay:.1s">
     <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Contacto Directo</p>
     <div class="grid sm:grid-cols-3 gap-3">
-      <div class="channel-card" onclick="SGRouter.showToast('Chat Alpha: Conectando con soporte...', 'success')">
+      <div class="channel-card" onclick="Tawk_API.toggle()">
         <div class="size-10 bg-[#13ecd6]/10 rounded-xl flex items-center justify-center shrink-0">
           <span class="material-icons-round text-[#13ecd6]">chat</span>
         </div>
@@ -304,5 +304,17 @@ function filterFAQ(query) {
     }
     </script>
 </div>
+<!-- Tawk.to Chat Widget -->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/6a4c4afcb421971d40b1c2da/1jst09qte';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
 </body>
 </html>
