@@ -78,9 +78,8 @@ body{ background:#000;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;marg
   <!-- Buscador -->
   <div class="glass-panel search-field px-5 py-4 rounded-2xl flex items-center gap-3 border-white/5 transition-all reveal-node" style="animation-delay:.05s">
     <span class="material-icons-round text-zinc-500">search</span>
-    <input type="text" placeholder="Buscar en la base de conocimientos..." 
-      class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700"
-      oninput="filterFAQ(this.value)">
+    <input type="text" id="faqSearch" placeholder="Buscar en la base de conocimientos..." 
+      class="bg-transparent border-none outline-none text-xs font-bold w-full text-zinc-300 placeholder:text-zinc-700">
   </div>
 
   <!-- Canales de contacto -->
@@ -249,6 +248,14 @@ function filterFAQ(query) {
   });
   document.getElementById('noResults').classList.toggle('hidden', visible > 0);
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('faqSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterFAQ(this.value);
+        });
+    }
+});
 </script>
 
     <!-- Bottom Navigation Bar -->
@@ -306,3 +313,4 @@ function filterFAQ(query) {
 </div>
 </body>
 </html>
+
