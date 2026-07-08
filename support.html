@@ -242,7 +242,7 @@ function filterFAQ(query) {
   let visible = 0;
   items.forEach(item => {
     const tags = item.dataset.tags || '';
-    const text = item.querySelector('p').textContent.toLowerCase();
+    const text = item.textContent.toLowerCase();
     const match = !query || tags.includes(query.toLowerCase()) || text.includes(query.toLowerCase());
     item.style.display = match ? '' : 'none';
     if (match) visible++;
