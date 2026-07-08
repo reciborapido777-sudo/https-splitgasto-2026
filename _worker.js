@@ -1903,8 +1903,8 @@ function setSecurityHeaders(headers) {
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com https://embed.tawk.to; " +
         "worker-src 'self' blob:; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com https://embed.tawk.to; " +
+        "font-src 'self' https://fonts.gstatic.com https://embed.tawk.to; " +
         "img-src 'self' data: blob: https:; " +
         "connect-src 'self' blob: https://splitgasto.com https://*.splitgasto-2026.pages.dev https://*.reciborapido777.workers.dev https://api.dicebear.com https://*.tawk.to wss://*.tawk.to; " +
         "frame-ancestors 'none';"
