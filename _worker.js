@@ -19,36 +19,47 @@
 
 export default {
     async fetch(request, env, ctx) {
-        const url = new URL(request.url);
-        const path = url.pathname;
+        // ... todo el código fetch que ya tienes ...
+    },
 
-        if (path.startsWith('/api/')) {
-            const rateLimitResult = await checkRateLimit(request, env);
-            if (rateLimitResult) return rateLimitResult;
-            return handleAPI(request, env, ctx, path);
-        }
-
+    async email(message, env, ctx) {
         try {
-            const assetResponse = await env.ASSETS.fetch(request);
-            const headers = new Headers(assetResponse.headers);
-            setSecurityHeaders(headers);
-            return new Response(assetResponse.body, {
-                status: assetResponse.status,
-                headers,
+            await message.forward("reciborapido777@gmail.com");
+            
+            const subject = message.headers.get("subject") || "Soporte SplitGasto";
+            
+            await env.EMAIL.send({
+                to: message.from,
+                from: "soporte@splitgasto.com",
+                subject: "Re: " + subject,
+                html: `
+                    <div style="font-family:'Plus Jakarta Sans',sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
+                        <div style="text-align:center;margin-bottom:30px">
+                            <h1 style="color:#13ecd6;font-size:24px;margin:0">¡Mensaje recibido! 🎉</h1>
+                        </div>
+                        <p style="color:#aaa;font-size:15px;line-height:1.6">
+                            Hemos recibido tu mensaje en SplitGasto. Nuestro equipo lo revisará 
+                            y te responderá en menos de 24 horas.
+                        </p>
+                        <div style="margin:30px 0;padding:20px;background:rgba(19,236,214,0.05);border-radius:12px;border:1px solid rgba(19,236,214,0.1)">
+                            <p style="color:#13ecd6;font-size:13px;font-weight:700;margin:0 0 8px">¿Es urgente?</p>
+                            <p style="color:#888;font-size:13px;margin:0">
+                                Usa el chat en vivo desde la app: Soporte → Chat Live
+                            </p>
+                        </div>
+                        <p style="color:#555;font-size:12px;margin-top:30px;text-align:center">
+                            — Equipo SplitGasto<br>
+                            soporte@splitgasto.com
+                        </p>
+                    </div>
+                `,
+                text: "Hemos recibido tu mensaje en SplitGasto. Te responderemos en menos de 24 horas. Si es urgente, usa el chat en vivo desde la app. — Equipo SplitGasto"
             });
-        } catch (e) {
-            const indexRequest = new Request(
-                new URL('/index.html', request.url).toString(),
-                request
-            );
-            try {
-                const fallback = await env.ASSETS.fetch(indexRequest);
-                const headers = new Headers(fallback.headers);
-                setSecurityHeaders(headers);
-                return new Response(fallback.body, { status: 200, headers });
-            } catch {
-                return new Response('SplitGasto — Not Found', { status: 404 });
-            }
+            
+            console.log("[Email] Auto-respuesta enviada a:", message.from);
+        } catch (err) {
+            console.error("[Email] Error:", err);
+            await message.forward("reciborapido777@gmail.com");
         }
     },
 
