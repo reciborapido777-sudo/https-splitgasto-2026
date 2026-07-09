@@ -71,3 +71,8 @@ head_sampling_rate = 1
 [triggers]
 crons = ["*/30 * * * *"]
 
+# Email Routing — auto-respuesta de soporte
+[[send_email]]
+name = "EMAIL"
+
+
