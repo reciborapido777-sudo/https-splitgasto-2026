@@ -30,7 +30,7 @@ export default {
             
             await env.EMAIL.send({
                 to: message.from,
-                from: "soporte@splitgasto.com",
+                from: "SplitGasto <soporte@splitgasto.com>",
                 subject: "Re: " + subject,
                 html: `
                     <div style="font-family:'Plus Jakarta Sans',sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
