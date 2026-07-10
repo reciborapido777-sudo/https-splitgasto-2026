@@ -62,35 +62,47 @@ export default {
 
         try {
             const subject = message.headers.get("subject") || "Soporte SplitGasto";
-            
-            await env.EMAIL.send({
-                to: message.from,
-                from: "soporte@splitgasto.com",
-                subject: "Re: " + subject,
-                html: `
-                    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
-                        <div style="text-align:center;margin-bottom:30px">
-                            <h1 style="color:#13ecd6;font-size:24px;margin:0">¡Mensaje recibido! 🎉</h1>
-                        </div>
-                        <p style="color:#aaa;font-size:15px;line-height:1.6">
-                            Hemos recibido tu mensaje en SplitGasto. Nuestro equipo lo revisará 
-                            y te responderá en menos de 24 horas.
-                        </p>
-                        <div style="margin:30px 0;padding:20px;background:rgba(19,236,214,0.05);border-radius:12px;border:1px solid rgba(19,236,214,0.1)">
-                            <p style="color:#13ecd6;font-size:13px;font-weight:700;margin:0 0 8px">¿Es urgente?</p>
-                            <p style="color:#888;font-size:13px;margin:0">
-                                Usa el chat en vivo desde la app: Soporte → Chat Live
+        
+            const emailRes = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                   from: 'SplitGasto <soporte@splitgasto.com>',
+                    to: [message.from],
+                    subject: "Re: " + subject,
+                    html: `
+                        <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
+                            <div style="text-align:center;margin-bottom:30px">
+                                <h1 style="color:#13ecd6;font-size:24px;margin:0">¡Mensaje recibido! 🎉</h1>
+                            </div>
+                            <p style="color:#aaa;font-size:15px;line-height:1.6">
+                                Hemos recibido tu mensaje en SplitGasto. Nuestro equipo lo revisará 
+                                y te responderá en menos de 24 horas.
+                            </p>
+                            <div style="margin:30px 0;padding:20px;background:rgba(19,236,214,0.05);border-radius:12px;border:1px solid rgba(19,236,214,0.1)">
+                                <p style="color:#13ecd6;font-size:13px;font-weight:700;margin:0 0 8px">¿Es urgente?</p>
+                                <p style="color:#888;font-size:13px;margin:0">
+                                    Usa el chat en vivo desde la app: Soporte → Chat Live
+                                </p>
+                            </div>
+                            <p style="color:#555;font-size:12px;margin-top:30px;text-align:center">
+                                — Equipo SplitGasto<br>
+                                soporte@splitgasto.com
                             </p>
                         </div>
-                        <p style="color:#555;font-size:12px;margin-top:30px;text-align:center">
-                            — Equipo SplitGasto<br>
-                            soporte@splitgasto.com
-                        </p>
-                    </div>
-                `,
-                text: "Hemos recibido tu mensaje en SplitGasto. Te responderemos en menos de 24 horas. Si es urgente, usa el chat en vivo desde la app. — Equipo SplitGasto"
+                    `,
+                    text: "Hemos recibido tu mensaje en SplitGasto. Te responderemos en menos de 24 horas. Si es urgente, usa el chat en vivo desde la app. — Equipo SplitGasto"
+                }),
             });
-            
+        
+            if (!emailRes.ok) {
+                const errData = await emailRes.json().catch(() => ({}));
+                throw new Error(`Resend HTTP ${emailRes.status}: ${errData.message || ''}`);
+            }
+        
             console.log("[Email] Auto-respuesta enviada a:", message.from);
         } catch (err) {
             console.error("[Email] Error auto-respuesta:", err);
