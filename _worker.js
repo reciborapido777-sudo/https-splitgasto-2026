@@ -19,60 +19,89 @@
 
 export default {
     async fetch(request, env, ctx) {
-        // ... todo el código fetch que ya tienes ...
-    },
-    
-async email(message, env, ctx) {
-    // 1. Reenviar SIEMPRE (independiente del auto-reply)
-    try {
-        await message.forward("reciborapido777@gmail.com");
-        console.log("[Email] Reenviado a Gmail");
-    } catch (err) {
-        console.error("[Email] Error reenviando:", err);
-    }
+        const url = new URL(request.url);
+        const path = url.pathname;
 
-    // 2. Auto-respuesta (si falla, no afecta al forward)
-    try {
-        const subject = message.headers.get("subject") || "Soporte SplitGasto";
-        
-        await env.EMAIL.send({
-            to: message.from,
-            from: "soporte@splitgasto.com",
-            subject: "Re: " + subject,
-            html: `
-                <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
-                    <div style="text-align:center;margin-bottom:30px">
-                        <h1 style="color:#13ecd6;font-size:24px;margin:0">¡Mensaje recibido! 🎉</h1>
-                    </div>
-                    <p style="color:#aaa;font-size:15px;line-height:1.6">
-                        Hemos recibido tu mensaje en SplitGasto. Nuestro equipo lo revisará 
-                        y te responderá en menos de 24 horas.
-                    </p>
-                    <div style="margin:30px 0;padding:20px;background:rgba(19,236,214,0.05);border-radius:12px;border:1px solid rgba(19,236,214,0.1)">
-                        <p style="color:#13ecd6;font-size:13px;font-weight:700;margin:0 0 8px">¿Es urgente?</p>
-                        <p style="color:#888;font-size:13px;margin:0">
-                            Usa el chat en vivo desde la app: Soporte → Chat Live
+        if (path.startsWith('/api/')) {
+            const rateLimitResult = await checkRateLimit(request, env);
+            if (rateLimitResult) return rateLimitResult;
+            return handleAPI(request, env, ctx, path);
+        }
+
+        try {
+            const assetResponse = await env.ASSETS.fetch(request);
+            const headers = new Headers(assetResponse.headers);
+            setSecurityHeaders(headers);
+            return new Response(assetResponse.body, {
+                status: assetResponse.status,
+                headers,
+            });
+        } catch (e) {
+            const indexRequest = new Request(
+                new URL('/index.html', request.url).toString(),
+                request
+            );
+            try {
+                const fallback = await env.ASSETS.fetch(indexRequest);
+                const headers = new Headers(fallback.headers);
+                setSecurityHeaders(headers);
+                return new Response(fallback.body, { status: 200, headers });
+            } catch {
+                return new Response('SplitGasto — Not Found', { status: 404 });
+            }
+        }
+    },
+
+    async email(message, env, ctx) {
+        try {
+            await message.forward("reciborapido777@gmail.com");
+            console.log("[Email] Reenviado a Gmail");
+        } catch (err) {
+            console.error("[Email] Error reenviando:", err);
+        }
+
+        try {
+            const subject = message.headers.get("subject") || "Soporte SplitGasto";
+            
+            await env.EMAIL.send({
+                to: message.from,
+                from: "soporte@splitgasto.com",
+                subject: "Re: " + subject,
+                html: `
+                    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)">
+                        <div style="text-align:center;margin-bottom:30px">
+                            <h1 style="color:#13ecd6;font-size:24px;margin:0">¡Mensaje recibido! 🎉</h1>
+                        </div>
+                        <p style="color:#aaa;font-size:15px;line-height:1.6">
+                            Hemos recibido tu mensaje en SplitGasto. Nuestro equipo lo revisará 
+                            y te responderá en menos de 24 horas.
+                        </p>
+                        <div style="margin:30px 0;padding:20px;background:rgba(19,236,214,0.05);border-radius:12px;border:1px solid rgba(19,236,214,0.1)">
+                            <p style="color:#13ecd6;font-size:13px;font-weight:700;margin:0 0 8px">¿Es urgente?</p>
+                            <p style="color:#888;font-size:13px;margin:0">
+                                Usa el chat en vivo desde la app: Soporte → Chat Live
+                            </p>
+                        </div>
+                        <p style="color:#555;font-size:12px;margin-top:30px;text-align:center">
+                            — Equipo SplitGasto<br>
+                            soporte@splitgasto.com
                         </p>
                     </div>
-                    <p style="color:#555;font-size:12px;margin-top:30px;text-align:center">
-                        — Equipo SplitGasto<br>
-                        soporte@splitgasto.com
-                    </p>
-                </div>
-            `,
-            text: "Hemos recibido tu mensaje en SplitGasto. Te responderemos en menos de 24 horas. Si es urgente, usa el chat en vivo desde la app. — Equipo SplitGasto"
-        });
-        
-        console.log("[Email] Auto-respuesta enviada a:", message.from);
-    } catch (err) {
-        console.error("[Email] Error auto-respuesta:", err);
-    }
-},
+                `,
+                text: "Hemos recibido tu mensaje en SplitGasto. Te responderemos en menos de 24 horas. Si es urgente, usa el chat en vivo desde la app. — Equipo SplitGasto"
+            });
+            
+            console.log("[Email] Auto-respuesta enviada a:", message.from);
+        } catch (err) {
+            console.error("[Email] Error auto-respuesta:", err);
+        }
+    },
 
     async scheduled(event, env, ctx) {
         ctx.waitUntil(refreshGooglePlayToken(env));
     },
-};
+
+   };
 
 // ═══════════════════════════════════════════════════════════════════════
 // Rate Limiting
@@ -545,49 +574,37 @@ async function handleAuth(request, env, path) {
         let body = {};
         try { body = await request.json(); } catch { return jsonResponse({ error: 'Body JSON inválido' }, 400, request); }
         const { userId, code, newPassword } = body;
-        
-        // Validar campos requeridos primero
         if (!userId || !code || !newPassword) return jsonResponse({ error: 'Campos "userId", "code", "newPassword" requeridos' }, 400, request);
         if (newPassword.length < 6) return jsonResponse({ error: 'Contraseña mínimo 6 caracteres' }, 400, request);
         if (newPassword.length > 128) return jsonResponse({ error: 'Contraseña máximo 128 caracteres' }, 400, request);
 
-        // Resolver userId si recibimos email
-        let resolvedUserId = userId;
-        if (userId.includes('@')) {
-            const userByEmail = await env.SPLITGASTO_DB.prepare(
-                'SELECT id FROM users WHERE LOWER(email) = ?'
-            ).bind(userId.toLowerCase().trim()).first();
-            if (!userByEmail) return jsonResponse({ error: 'Usuario no encontrado' }, 404, request);
-            resolvedUserId = userByEmail.id;
-        }
-
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503, request);
 
-        const stored = await env.SPLITGASTO_CACHE.get(`recovery:${resolvedUserId}`, 'json');
+        const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400, request);
 
         const targetUser = await env.SPLITGASTO_DB.prepare(
             'SELECT id FROM users WHERE id = ? AND LOWER(email) = ?'
-        ).bind(resolvedUserId, stored.email?.toLowerCase()).first();
+        ).bind(userId, stored.email?.toLowerCase()).first();
         if (!targetUser) return jsonResponse({ error: 'Código inválido para este usuario' }, 400, request);
 
         const validCode = await verifyRecoveryCode(code, stored.codeHash, env);
         if (!validCode) return jsonResponse({ error: 'Código incorrecto' }, 400, request);
 
         if (stored.createdAt && Date.now() - stored.createdAt > 900000) {
-            await env.SPLITGASTO_CACHE.delete(`recovery:${resolvedUserId}`);
+            await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
             return jsonResponse({ error: 'Código expirado' }, 400, request);
         }
 
         const hashedPassword = await hashPassword(newPassword);
         await env.SPLITGASTO_DB.prepare(
             'UPDATE users SET password_hash = ? WHERE id = ?'
-        ).bind(hashedPassword, resolvedUserId).run();
+        ).bind(hashedPassword, userId).run();
 
-        await env.SPLITGASTO_CACHE.delete(`recovery:${resolvedUserId}`);
+        await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
 
         // PARCHE 4: Revocar tokens activos tras reajuste por recuperación exitosa
-        await revokeUserTokens(env, resolvedUserId);
+        await revokeUserTokens(env, userId);
 
         return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' }, 200, request);
     }
@@ -2204,7 +2221,6 @@ async function handleStripeWebhook(request, env) {
                     status = excluded.status,
                     current_period_start = excluded.current_period_start,
                     current_period_end = excluded.current_period_end,
-                    order_id = excluded.order_id,
                     updated_at = strftime('%s', 'now') * 1000
             `).bind(
                 crypto.randomUUID(), userId, sub.id, sub.latest_invoice || '', status, periodStart, periodEnd
