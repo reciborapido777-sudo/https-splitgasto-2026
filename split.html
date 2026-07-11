@@ -85,7 +85,7 @@
         </header>
 
         <section class="space-y-6 reveal" style="animation-delay: 0.1s">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div onclick="selectGame(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:rotate-180 transition-transform duration-700">autorenew</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameRoulette">Ruleta Alpha</span>
@@ -101,6 +101,10 @@
                 <div onclick="selectGame(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:animate-bounce">monetization_on</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameCoin">Moneda</span>
+                </div>
+                <div onclick="selectGame(this, 'Directo')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                    <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-110 transition-transform">balance</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.directSplit">Reparto Directo</span>
                 </div>
             </div>
 
@@ -296,7 +300,7 @@ async function loadGroupData(groupId) {
       const safeAmount = Math.abs(bal).toFixed(2);
 
       return `
-        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4">
+        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4" ${canLiquidate ? `onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"` : ''}>
           <div class="flex items-center gap-4 min-w-0">
             <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0"
                  style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
@@ -436,17 +440,29 @@ window.addEventListener('pageshow', (e) => {
         'Ruleta': 'game-roulette',
         'Carta Alta': 'game-cards',
         'Dardos': 'game-darts',
-        'Moneda': 'game-coin'
+        'Moneda': 'game-coin',
+        'Directo': 'equal' 
     };
 
-    function executeSplit() {
-        if (!selectedGame) {
-            SGRouter.showToast(t('split.selectGameFirst', null, 'Seleccione un protocolo de azar'), 'error');
+function executeSplit() {
+    if (!selectedGame) {
+        SGRouter.showToast(t('split.selectGameFirst', null, 'Seleccione un protocolo de azar'), 'error');
+        return;
+    }
+    if (selectedGame === 'Directo') {
+        // Reparto equitativo directo
+        const groupId = _currentGroupId;
+        if (!groupId) {
+            SGRouter.showToast('Selecciona un grupo primero', 'error');
             return;
         }
-        const route = gameRoutes[selectedGame];
-        SGRouter.requirePremium('Juegos', route);
+        // Crear gasto con split equal
+        SGRouter.navigate('add-expense', `split&groupId=${encodeURIComponent(groupId)}`);
+        return;
     }
+    const route = gameRoutes[selectedGame];
+    SGRouter.requirePremium('Juegos', route);
+}
 
     function goToLiquidation(groupId, toId, amount) {
         const url = 'liquidation.html?groupId=' + encodeURIComponent(groupId) 
