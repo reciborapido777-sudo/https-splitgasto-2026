@@ -415,10 +415,62 @@
                 <p>Perfil</p>
             </button>
         </div>
-    </nav>
+        </nav>
 
-    <script>
-    if ('serviceWorker' in navigator) {
+        <script>
+        function downloadTicketPDF() {
+            const ticket = JSON.parse(sessionStorage.getItem('sg_success_ticket') || '{}');
+        
+            const w = window.open('', '_blank');
+            if (!w) {
+                SGRouter.showToast('Permite popups para descargar', 'warning');
+                return;
+            }
+        
+            const amount = parseFloat(ticket.amount || 0).toFixed(2);
+            const currency = ticket.currency || 'EUR';
+            const symbols = { EUR: '€', USD: '$', GBP: '£' };
+            const sym = symbols[currency] || '€';
+        
+            w.document.write(`
+                <!DOCTYPE html><html><head><title>SplitGasto — Ticket</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Helvetica Neue', sans-serif; padding: 40px; color: #000; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #13ecd6; padding-bottom: 20px; }
+                    .header h1 { font-size: 28px; font-weight: 900; }
+                    .header p { font-size: 12px; color: #666; margin-top: 5px; }
+                    .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+                    .label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #666; }
+                    .value { font-size: 14px; font-weight: 700; }
+                    .total { font-size: 24px; color: #13ecd6; font-weight: 900; }
+                    .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #999; }
+                </style></head><body>
+                <div class="header">
+                    <h1>SplitGasto 2026</h1>
+                    <p>Ticket Auditado · ${new Date().toLocaleString('es-ES')}</p>
+                </div>
+                <div class="row"><span class="label">Operación</span><span class="value">${ticket.type === 'settlement' ? 'Liquidación' : 'Gasto'}</span></div>
+                <div class="row"><span class="label">ID</span><span class="value">${ticket.txid || '—'}</span></div>
+                <div class="row"><span class="label">Fecha</span><span class="value">${ticket.timestamp ? new Date(ticket.timestamp).toLocaleString('es-ES') : '—'}</span>    </div>
+                <div class="row"><span class="label">Grupo</span><span class="value">${ticket.groupName || '—'}</span></div>
+                ${ticket.description ? `<div class="row"><span class="label">Concepto</span><span class="value">${ticket.description}</span></div>` : ''}
+                <div class="row"><span class="label">Importe</span><span class="value total">${amount}${sym}</span></div>
+                ${ticket.toUserName ? `<div class="row"><span class="label">Liquidación</span><span class="value">${ticket.fromUser || ''} → ${ticket.toUserName}</span></div>` : ''}
+                ${ticket.balanceAfter !== undefined ? `<div class="row"><span class="label">Balance Resultante</span><span class="value">${parseFloat(ticket.balanceAfter).toFixed(2)}${sym}</span></div>` : ''}
+                <div class="footer">
+                    SplitGasto 2026 · Ticket generado electrónicamente<br>
+                    Verificable en D1 · splitgasto.com
+                </div>
+                </body></html>
+            `);
+            w.document.close();
+            setTimeout(() => { w.print(); }, 500);
+        }
+        </script>
+
+        <script>
+        if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
                 .then(reg => {
