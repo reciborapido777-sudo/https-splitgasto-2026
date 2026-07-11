@@ -248,8 +248,20 @@
         try {
             const result = await SGApi.addExpense(groupId, amount, currency, category, desc, 'equal');
             if (result && result.success) {
+                sessionStorage.setItem('sg_success_ticket', JSON.stringify({
+                    type: 'expense',
+                    txid: result.id || crypto.randomUUID(),
+                    timestamp: new Date().toISOString(),
+                    groupId: groupId,
+                    groupName: 'Grupo',
+                    description: desc,
+                    amount: amount,
+                    currency: currency,
+                    splitMethod: 'equal',
+                    receiptKey: result.receiptKey || null
+                }));
                 SGRouter.showToast('Gasto guardado ✓', 'success');
-                setTimeout(() => SGRouter.navigate('activity', 'receipt'), 1200);
+                setTimeout(() => SGRouter.navigate('success', 'receipt'), 1200);
             } else {
                 SGRouter.showToast(result?.error || 'Error al guardar', 'error');
                 if (btn) btn.disabled = false;
