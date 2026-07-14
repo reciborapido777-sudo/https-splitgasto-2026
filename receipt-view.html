@@ -248,18 +248,32 @@
         try {
             const result = await SGApi.addExpense(groupId, amount, currency, category, desc, 'equal');
             if (result && result.success) {
+                let groupName = 'Grupo';
+                try {
+                    const groupsRes = await SGApi.getGroups();
+                    if (groupsRes?.success && groupsRes.groups) {
+                        const found = groupsRes.groups.find(g => g.id === groupId);
+                        if (found) groupName = found.name;
+                    }
+                } catch {}
+    
                 sessionStorage.setItem('sg_success_ticket', JSON.stringify({
                     type: 'expense',
                     txid: result.id || crypto.randomUUID(),
                     timestamp: new Date().toISOString(),
                     groupId: groupId,
-                    groupName: 'Grupo',
+                    groupName: groupName,
                     description: desc,
                     amount: amount,
                     currency: currency,
                     splitMethod: 'equal',
                     receiptKey: result.receiptKey || null
                 }));
+                sessionStorage.setItem('sg_expense_added', Date.now());
+                fetch('/api/db/purge-cache', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` }
+                }).catch(() => {});
                 SGRouter.showToast('Gasto guardado ✓', 'success');
                 setTimeout(() => SGRouter.navigate('success', 'receipt'), 1200);
             } else {
