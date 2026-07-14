@@ -1676,6 +1676,8 @@ async function handleDatabase(request, env, path) {
         ).bind(id, groupId, fromUserId, toUserId, parsedAmount, currency || 'EUR').run();
         
         await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${fromUserId}`);
+        await env.SPLITGASTO_CACHE?.delete(`db:groups:${toUserId}`);
         return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201, request);
     }
 
