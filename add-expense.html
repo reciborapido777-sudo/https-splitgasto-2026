@@ -261,9 +261,7 @@ document.getElementById('date-input').value = today;
 async function loadGroups() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
   try {
-    // Purgar cache antes de cargar para evitar datos obsoletos que causan 403
-    try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
-    const result = await SGApi.getGroups();
+    const result = await SGApi.getGroups(); 
     if (result && result.success && result.groups) {
       groups = result.groups;
       const sel = document.getElementById('group-input');
@@ -527,7 +525,13 @@ async function init() {
 
 // bfcache: recargar grupos al volver atrás
 window.addEventListener('pageshow', (e) => {
-  if (e.persisted) { loadGroups(); }
+  if (e.persisted) {
+    fetch('/api/db/purge-cache', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` }
+    }).catch(() => {});
+    loadGroups();
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
