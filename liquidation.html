@@ -212,12 +212,14 @@ async function executeLiquidation() {
         
         if (data.success) {
             const recipientName = document.getElementById('recipient-name').textContent || 'Usuario';
+            const groupName = document.querySelector('#badges-container span')?.textContent || 'Grupo';
+    
             sessionStorage.setItem('sg_success_ticket', JSON.stringify({
                 type: 'settlement',
                 txid: data.id || crypto.randomUUID(),
                 timestamp: new Date().toISOString(),
                 groupId: groupId,
-                groupName: document.querySelector('#badges-container span')?.textContent || t('expense.group', null, 'Grupo'),
+                groupName: groupName,
                 amount: amount,
                 currency: currency,
                 fromUser: SGAuth.getUserId(),
@@ -226,6 +228,11 @@ async function executeLiquidation() {
                 balanceAfter: 0.00,
                 description: document.getElementById('liquidation-note')?.value || t('liquidation.settlementNote', null, 'Liquidación de deuda')
             }));
+            sessionStorage.setItem('sg_expense_added', Date.now());
+            fetch('/api/db/purge-cache', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` }
+            }).catch(() => {});
             SGRouter.navigate('success', 'liquidation');
         } else {
             SGRouter.showToast(data.error || t('liquidation.settlementError', null, 'Error al liquidar'), 'error');
