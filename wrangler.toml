@@ -60,12 +60,12 @@ enabled = true
 
 [observability.logs]
 enabled = true
-head_sampling_rate = 1
+head_sampling_rate = 0.1
 invocation_logs = true
 
 [observability.traces]
 enabled = true
-head_sampling_rate = 1
+head_sampling_rate = 0.1
 
 # ── Cron Trigger (renovar token Google Play) ──────────────────────────
 [triggers]
