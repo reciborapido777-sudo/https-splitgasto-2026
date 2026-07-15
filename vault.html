@@ -477,6 +477,22 @@
             });
         });
     }
+
+ .catch(e => console.warn('[SW] Failed:', e));
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
+        });
+    }
+
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) location.reload();
+});
+    </script>
+</div>
+</body>
+</html>        
     </script>
 </div>
 </body>
