@@ -305,6 +305,10 @@
     </script>
     <script>
     if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});r.addEventListener('updatefound',()=>{const s=r.installing;if(!s)return;s.addEventListener('statechange',()=>{if(s.state==='installed'&&navigator.serviceWorker.controller)s.postMessage({type:'SKIP_WAITING'});});});}).catch(e=>console.warn('[SW] Failed:',e));let ref=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!ref){ref=true;window.location.reload();}});});}
+
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) location.reload();
+});        
     </script>
 </div>
 </body>
