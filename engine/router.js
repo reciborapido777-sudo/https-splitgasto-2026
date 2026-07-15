@@ -146,13 +146,18 @@ const SGRouter = {
         }
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
             const res = await fetch('/api/membership/status', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${token}` },
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
+
             const data = await res.json();
 
             if (data.success && data.hasAccess) {
-                // ✅ Tiene prueba activa (o premium real): navegar al juego
                 if (targetRoute && this.routes[targetRoute]) {
                     this.navigate(targetRoute, 'games');
                 } else {
@@ -164,7 +169,6 @@ const SGRouter = {
             console.error('[SG Router] Error verificando membresía:', err);
         }
 
-        // ❌ Sin acceso: mostrar toast y redirigir a membresía
         this.showToast(feature ? `${feature} es Premium 👑` : '¡Función Premium! Desbloquea todo por 2,99€/mes', 'premium');
         setTimeout(() => {
             this.navigate('membership', 'dashboard');
