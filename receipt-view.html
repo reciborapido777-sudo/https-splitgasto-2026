@@ -274,7 +274,7 @@
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` }
                 }).catch(() => {});
-                SGRouter.showToast('Gasto guardado ✓', 'success');
+                SGRouter.showToast(t('expense.saved', null, 'Gasto guardado ✓'), 'success');
                 setTimeout(() => SGRouter.navigate('success', 'receipt'), 1200);
             } else {
                 SGRouter.showToast(result?.error || 'Error al guardar', 'error');
