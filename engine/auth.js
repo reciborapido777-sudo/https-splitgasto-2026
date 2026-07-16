@@ -127,5 +127,5 @@ const SGAuth = (function(){
     };
 })();
 
-// CRÍTICO: Exponer a window para que el HTML inline y la consela puedan acceder
+// CRÍTICO: Exponer a window para que el HTML inline y la consola puedan acceder
 window.SGAuth = SGAuth;
