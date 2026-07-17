@@ -278,7 +278,7 @@ async function loadGroups() {
       });
       // Auto-select if groupId in URL
       const params = new URLSearchParams(window.location.search);
-      const preGroup = params.get('groupId');
+      const preGroup = params.get('groupId') || sessionStorage.getItem('sg_selected_group');
       if (preGroup) {
         sel.value = preGroup;
         loadGroupMembers(preGroup);
