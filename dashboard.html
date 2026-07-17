@@ -339,7 +339,7 @@ async function loadDashboardData() {
     }
     const gastoBtn = document.querySelector('[onclick*="add-expense"]');
     if (gastoBtn) {
-      gastoBtn.onclick = () => { window.location.href = 'add-expense.html?groupId=' + activeGroup.id + '&from=dashboard'; };
+      gastoBtn.onclick = () => { sessionStorage.setItem('sg_selected_group', activeGroup.id); SGRouter.navigate('add-expense', 'dashboard'); };
     }
 
     const balRes0 = allBalResults[0];
