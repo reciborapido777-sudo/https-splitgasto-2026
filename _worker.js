@@ -1096,7 +1096,7 @@ async function handleBalances(request, env) {
         if (balances[paidBy] !== undefined) balances[paidBy] += amount;
 
         if (splitType === 'equal') {
-            const share = amount / memberCount;
+            const share = Math.round((amount / memberCount) * 100) / 100;
             members.forEach(m => {
                 if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
             });
@@ -1252,6 +1252,11 @@ async function handleDatabase(request, env, path) {
         const url = new URL(request.url);
         const userId = url.searchParams.get('userId') || authUser.userId;
         if (userId !== authUser.userId) return jsonResponse({ error: 'Solo puedes ver tus propios grupos' }, 403, request);
+    
+        const cacheKey = `db:groups:${userId}`;
+        const cached = await getCached(env, cacheKey);
+        if (cached) return jsonResponse({ ...cached, cached: true }, 200, request);
+    
         const groups = await env.SPLITGASTO_DB.prepare(
             `SELECT g.*,
                 (SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id = g.id) AS member_count
@@ -1260,7 +1265,9 @@ async function handleDatabase(request, env, path) {
              WHERE gm.user_id = ?
              ORDER BY COALESCE(g.updated_at, g.created_at, g.id) DESC`
         ).bind(userId).all();
-        return jsonResponse({ success: true, groups: groups.results }, 200, request);
+        const response = { success: true, groups: groups.results };
+        await setCache(env, cacheKey, response, 30);
+        return jsonResponse(response, 200, request);
     }
 
     else if (path === '/api/db/groups' && method === 'POST') {
