@@ -43,6 +43,22 @@ const SGAuth = (function(){
             return decoded.exp > Date.now() / 1000;
         } catch { return false; }
     }
+
+    async function verifySession() {
+        const token = getToken();
+        if (!token) return false;
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
+            });
+            if (res.status === 401) {
+                logout();
+                return false;
+            }
+            return true;
+        } catch { return false; }
+    }
   
     function getUserId() {
         const user = getUser();
@@ -120,7 +136,7 @@ const SGAuth = (function(){
 
     return {
         getToken, getUser, setSession, logout,
-        isLoggedIn, getUserId,
+        isLoggedIn, getUserId, verifySession,
         register, login,
         joinGroup,
         registerAndJoin
