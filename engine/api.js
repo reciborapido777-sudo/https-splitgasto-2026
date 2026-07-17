@@ -43,13 +43,6 @@ const SGApi = (function(){
     // ── Auth ──────────────────────────────────────────────────────────
     // register() eliminado — usar SGAuth.register() que además guarda la sesión
 
-    async function login(email, password) {
-        return request('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email: email.toLowerCase().trim(), password })
-        });
-    }
-
     async function addGroupMemberByEmail(groupId, email, role) {
         return request('/api/db/group-members', {
             method: 'POST',
@@ -268,7 +261,6 @@ const SGApi = (function(){
     }
 
     return {
-        login,
         getGroups, createGroup, deleteGroup, getGroupMembers, addGroupMember, addGroupMemberByEmail, removeGroupMember, getUserByEmail,
         getExpenses, addExpense, deleteExpense,
         getBalances,
