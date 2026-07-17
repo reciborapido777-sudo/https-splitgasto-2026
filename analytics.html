@@ -220,9 +220,15 @@
             return CATEGORY_MAP[cat] || CATEGORY_MAP['otro'];
         }
 
+        function getUserLocale() {
+            var lang = (typeof getSavedLanguage === 'function' ? getSavedLanguage() : null) || 'es';
+            var LOCALE_MAP = { es: 'es-ES', en: 'en-US', fr: 'fr-FR', de: 'de-DE', it: 'it-IT', pt: 'pt-PT' };
+            return LOCALE_MAP[lang] || 'es-ES';
+        }
+
         function formatMoney(val) {
             var abs = Math.abs(val);
-            var formatted = abs.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            var formatted = abs.toLocaleString(getUserLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             return (val < 0 ? '-' : '+') + formatted + '€';
         }
 
@@ -259,7 +265,7 @@
                     '<div class="flex-1">' +
                         '<div class="flex justify-between mb-2">' +
                             '<p class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">' + meta.label + '</p>' +
-                            '<p class="text-[10px] font-black text-white money-display">' + total.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + '€</p>' +
+                            '<p class="text-[10px] font-black text-white money-display">' + total.toLocaleString(getUserLocale(), {minimumFractionDigits:2, maximumFractionDigits:2}) + '€</p>' +
                         '</div>' +
                         '<div class="h-1.5 bg-white/5 rounded-full overflow-hidden">' +
                             '<div class="h-full rounded-full" style="width:' + pct + '%;background:' + meta.color + '"></div>' +
@@ -452,7 +458,7 @@
                     var totalExp = allExpenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
                     var uniqueMonths = new Set(allExpenses.map(function(e) { return (e.created_at || e.date || '').substring(0,7); }));
                     var saving = Math.round((totalExp / Math.max(1, uniqueMonths.size)) * 0.12);
-                    forecastEl.innerHTML = t('analytics.estimatedSaving', null, 'El sistema estima un ahorro de <span class="text-white">{amount}€</span> mensuales basado en su flujo de liquidación actual.').replace('{amount}', saving.toLocaleString('es-ES'));
+                    forecastEl.innerHTML = t('analytics.estimatedSaving', null, 'El sistema estima un ahorro de <span class="text-white">{amount}€</span> mensuales basado en su flujo de liquidación actual.').replace('{amount}', saving.toLocaleString(getUserLocale()));
                 } else if (forecastEl) {
                     forecastEl.textContent = t('analytics.insufficientDataForecast', null, 'Datos insuficientes para generar previsión.');
                 }
