@@ -241,7 +241,7 @@ async function subscribe() {
     };
     
     if (!token) {
-        SGRouter.showToast('Debes iniciar sesión primero', 'error');
+        SGRouter.showToast(t('auth.loginRequired', null, 'Debes iniciar sesión primero'), 'error');
         setTimeout(() => SGRouter.navigate('auth-login', 'membership'), 1500);
         return;
     }
@@ -262,10 +262,10 @@ async function subscribe() {
             return;
         }
         
-        SGRouter.showToast(result.error || 'Error iniciando pago', 'error');
+        SGRouter.showToast(result.error || t('payment.errorStarting', null, 'Error iniciando pago'), 'error');
         resetBtn();
     } catch (err) {
-        SGRouter.showToast('Error de conexión', 'error');
+        SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
         resetBtn();
     }
 }
@@ -300,10 +300,10 @@ async function goToPortal() {
         if (result.success && result.portalUrl) {
             window.location.href = result.portalUrl;
         } else {
-            SGRouter.showToast('Error abriendo portal', 'error');
+            SGRouter.showToast(t('payment.errorPortal', null, 'Error abriendo portal'), 'error');
         }
     } catch (err) {
-        SGRouter.showToast('Error de conexión', 'error');
+        SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
     }
 }
 
