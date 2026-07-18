@@ -1105,11 +1105,11 @@ async function handleBalances(request, env) {
             if (splits && splits.length > 0) {
                 splits.forEach(s => {
                     if (balances[s.user_id] !== undefined) {
-                        balances[s.user_id] -= parseFloat(s.share_amount) || 0;
+                        balances[s.user_id] -= Math.round((parseFloat(s.share_amount) || 0) * 100) / 100;
                     }
                 });
             } else {
-                const share = amount / memberCount;
+                const share = Math.round((amount / memberCount) * 100) / 100;
                 members.forEach(m => {
                     if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                 });
@@ -1119,11 +1119,11 @@ async function handleBalances(request, env) {
             if (splits && splits.length > 0) {
                 splits.forEach(s => {
                     if (balances[s.user_id] !== undefined) {
-                        balances[s.user_id] -= (amount * (parseFloat(s.share_amount) || 0) / 100);
+                        balances[s.user_id] -= Math.round((amount * (parseFloat(s.share_amount) || 0) / 100) * 100) / 100;
                     }
                 });
             } else {
-                const share = amount / memberCount;
+                const share = Math.round((amount / memberCount) * 100) / 100;
                 members.forEach(m => {
                     if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                 });
@@ -1135,17 +1135,17 @@ async function handleBalances(request, env) {
                 if (totalShares > 0) {
                     splits.forEach(s => {
                         if (balances[s.user_id] !== undefined) {
-                            balances[s.user_id] -= (amount * (parseFloat(s.share_amount) || 0) / totalShares);
+                            balances[s.user_id] -= Math.round((amount * (parseFloat(s.share_amount) || 0) / totalShares) * 100) / 100;
                         }
                     });
                 } else {
-                    const share = amount / memberCount;
+                    const share = Math.round((amount / memberCount) * 100) / 100;
                     members.forEach(m => {
                         if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                     });
                 }
             } else {
-                const share = amount / memberCount;
+                const share = Math.round((amount / memberCount) * 100) / 100;
                 members.forEach(m => {
                     if (balances[m.user_id] !== undefined) balances[m.user_id] -= share;
                 });
