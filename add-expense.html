@@ -511,6 +511,15 @@ function storeExpenseTicket(apiResult, groupId, amount, desc) {
 
 // ── Initialize ──
 async function init() {
+  // MED-2: Verificación proactiva contra servidor
+  if (SGAuth.isLoggedIn()) {
+    SGAuth.verifySession().then(valid => {
+      if (!valid) {
+        SGRouter.showToast(t('auth.sessionExpired', null, 'Sesión expirada'), 'error');
+        setTimeout(() => SGRouter.navigate('auth-login'), 1200);
+      }
+    });
+  }
   // Reparar membresías huérfanas al cargar la página
   try {
     await fetch('/api/db/repair-memberships', {
