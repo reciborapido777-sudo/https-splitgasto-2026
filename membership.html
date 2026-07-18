@@ -262,7 +262,7 @@ async function subscribe() {
             return;
         }
         
-        SGRouter.showToast(result.error || t('payment.errorStarting', null, 'Error iniciando pago'), 'error');
+        SGRouter.showToast(result.error || t('membership.paymentError', null, 'Error iniciando pago'), 'error');
         resetBtn();
     } catch (err) {
         SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
@@ -300,7 +300,7 @@ async function goToPortal() {
         if (result.success && result.portalUrl) {
             window.location.href = result.portalUrl;
         } else {
-            SGRouter.showToast(t('payment.errorPortal', null, 'Error abriendo portal'), 'error');
+            SGRouter.showToast(t('membership.paymentError', null, 'Error abriendo portal'), 'error');
         }
     } catch (err) {
         SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
