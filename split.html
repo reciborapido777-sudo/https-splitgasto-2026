@@ -86,23 +86,23 @@
 
         <section class="space-y-6 reveal" style="animation-delay: 0.1s">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div onclick="selectGame(this, 'Ruleta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'roulette')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:rotate-180 transition-transform duration-700">autorenew</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameRoulette">Ruleta Alpha</span>
                 </div>
-                <div onclick="selectGame(this, 'Carta Alta')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'cards')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:-translate-y-1 transition-transform">style</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameCards">Carta Alta</span>
                 </div>
-                <div onclick="selectGame(this, 'Dardos')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'darts')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-125 transition-transform">ads_click</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameDarts">Dardos</span>
                 </div>
-                <div onclick="selectGame(this, 'Moneda')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'coin')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:animate-bounce">monetization_on</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.gameCoin">Moneda</span>
                 </div>
-                <div onclick="selectGame(this, 'Directo')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
+                <div onclick="selectGame(this, 'direct')" class="game-btn glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer group">
                     <span class="material-icons-round text-[#a855f7] text-2xl group-hover:scale-110 transition-transform">balance</span>
                     <span class="text-[9px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors" data-i18n="split.directSplit">Reparto Directo</span>
                 </div>
@@ -414,34 +414,42 @@ window.addEventListener('pageshow', (e) => {
 <script>
     let selectedGame = null;
 
+    const GAME_NAMES = {
+        roulette: { label: 'split.gameRoulette', fallback: 'Ruleta Alpha', icon: 'autorenew' },
+        cards:    { label: 'split.gameCards',    fallback: 'Carta Alta',  icon: 'style' },
+        darts:    { label: 'split.gameDarts',     fallback: 'Dardos',      icon: 'ads_click' },
+        coin:     { label: 'split.gameCoin',      fallback: 'Moneda',      icon: 'monetization_on' },
+        direct:   { label: 'split.directSplit',   fallback: 'Reparto Directo', icon: 'balance' }
+    };
+
     function selectGame(element, game) {
         document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active-glow'));
         selectedGame = game;
         element.classList.add('active-glow');
         
+        const meta = GAME_NAMES[game] || { label: 'split.selectGame', fallback: game, icon: 'psychology' };
+        const displayName = t(meta.label, null, meta.fallback);
+        
         const label = document.getElementById('active-game-label');
         const icon = document.getElementById('game-icon');
         const btn = document.getElementById('execute-game-btn');
         
-        label.innerText = game.toUpperCase() + ' — ' + t('split.whoPays', null, '¿Quién paga?');
+        label.innerText = displayName + ' — ' + t('split.whoPays', null, '¿Quién paga?');
         label.style.color = '#a855f7';
         
-        const icons = {
-            'Ruleta': 'autorenew', 'Carta Alta': 'style', 'Dardos': 'ads_click', 'Moneda': 'monetization_on'
-        };
-        icon.innerText = icons[game] || 'psychology';
+        icon.innerText = meta.icon || 'psychology';
         
-        if (btn) btn.innerText = t('split.launchGame', null, 'Lanzar {game}').replace('{game}', game);
+        if (btn) btn.innerText = t('split.launchGame', null, 'Lanzar {game}').replace('{game}', displayName);
         
-        SGRouter.showToast(t('split.gameReady', null, '{game} lista para ejecución').replace('{game}', game), 'info');
+        SGRouter.showToast(t('split.gameReady', null, '{game} lista para ejecución').replace('{game}', displayName), 'info');
     }
 
     const gameRoutes = {
-        'Ruleta': 'game-roulette',
-        'Carta Alta': 'game-cards',
-        'Dardos': 'game-darts',
-        'Moneda': 'game-coin',
-        'Directo': 'equal' 
+        roulette: 'game-roulette',
+        cards: 'game-cards',
+        darts: 'game-darts',
+        coin: 'game-coin',
+        direct: 'equal' 
     };
 
 function executeSplit() {
@@ -449,7 +457,7 @@ function executeSplit() {
         SGRouter.showToast(t('split.selectGameFirst', null, 'Seleccione un protocolo de azar'), 'error');
         return;
     }
-    if (selectedGame === 'Directo') {
+    if (selectedGame === 'direct') {
         // Reparto equitativo directo
         const groupId = _currentGroupId;
         if (!groupId) {
