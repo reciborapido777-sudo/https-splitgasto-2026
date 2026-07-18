@@ -232,6 +232,8 @@ async function loadDashboardData() {
     dashReset('Sesión requerida', true);
     return;
   }
+  // MED-2: Verificación proactiva contra servidor (detecta revocación KV)
+  SGAuth.verifySession().then(valid => { if (!valid) dashReset('Sesión expirada', true); });
   
   try {
     const profile = await SGApi.getProfile().catch(() => null);
