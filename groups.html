@@ -207,6 +207,13 @@ function esc(str) {
 async function loadGroups() {
   if (!SGAuth || !SGAuth.isLoggedIn()) return;
 
+  SGAuth.verifySession().then(valid => {
+      if (!valid) {
+          SGRouter.showToast(t('auth.sessionExpired', null, 'Sesión expirada'), 'error');
+          setTimeout(() => SGRouter.navigate('auth-login'), 1200);
+      }
+  });
+
   const grid     = document.getElementById('groups-grid');
   const ctaCard  = grid.querySelector('.event-placeholder');
   const uid      = SGAuth.getUserId();
@@ -480,5 +487,4 @@ window.addEventListener('pageshow', (e) => {
 </div>
 </body>
 </html>
-
 
