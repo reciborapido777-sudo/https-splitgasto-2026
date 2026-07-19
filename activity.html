@@ -125,6 +125,12 @@ const CAT_COLORS = {
         setTimeout(() => SGRouter.navigate('auth-login'), 1500);
         return;
       }
+        SGAuth.verifySession().then(valid => {
+            if (!valid) {
+                SGRouter.showToast(t('auth.sessionExpired', null, 'Sesión expirada'), 'error');
+                setTimeout(() => SGRouter.navigate('auth-login'), 1200);
+            }
+        });
 
       const container = document.getElementById('activity-content');
       container.innerHTML = `<p class="text-xs text-zinc-600 text-center py-12">${t('activity.loadingMovements', null, 'Cargando movimientos…')}</p>`;
