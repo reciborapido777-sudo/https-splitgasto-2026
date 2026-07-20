@@ -269,11 +269,6 @@
 
     <script>
     let _ticketDataForPDF = {};
-    function getUserLocale() {
-        var lang = (typeof getSavedLanguage === 'function' ? getSavedLanguage() : null) || 'es';
-        var LOCALE_MAP = { es: 'es-ES', en: 'en-US', fr: 'fr-FR', de: 'de-DE', it: 'it-IT', pt: 'pt-PT' };
-        return LOCALE_MAP[lang] || 'es-ES';
-    }
     (function() {
         // Lee el ticket completo desde sessionStorage
         var ticket = null;
