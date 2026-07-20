@@ -220,12 +220,6 @@
             return CATEGORY_MAP[cat] || CATEGORY_MAP['otro'];
         }
 
-        function getUserLocale() {
-            var lang = (typeof getSavedLanguage === 'function' ? getSavedLanguage() : null) || 'es';
-            var LOCALE_MAP = { es: 'es-ES', en: 'en-US', fr: 'fr-FR', de: 'de-DE', it: 'it-IT', pt: 'pt-PT' };
-            return LOCALE_MAP[lang] || 'es-ES';
-        }
-
         function formatMoney(val) {
             var abs = Math.abs(val);
             var formatted = abs.toLocaleString(getUserLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
