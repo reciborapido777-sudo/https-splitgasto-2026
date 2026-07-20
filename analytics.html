@@ -392,49 +392,50 @@
                     return;
                 }
 
-                // 2. Cargar gastos, balances y miembros de TODOS los grupos
+                // 2. Cargar gastos, balances y miembros de TODOS los grupos en paralelo
                 var allExpenses = [];
                 var allBalances = {};
                 var memberNames = {};
                 var netBalance = 0;
 
-                for (var i = 0; i < groups.length; i++) {
-                    var gid = groups[i].id || groups[i].group_id;
+                var groupIds = groups.map(function(g) { return g.id || g.group_id; });
 
-                    try {
-                        var memResult = await SGApi.getGroupMembers(gid);
-                        if (memResult && memResult.success && memResult.members) {
-                            memResult.members.forEach(function(m) {
-                                var mid = m.id || m.user_id || m.userId;
-                                if (mid && m.name) memberNames[mid] = m.name;
+                var [memResults, expResults, balResults] = await Promise.all([
+                    Promise.all(groupIds.map(function(gid) { return SGApi.getGroupMembers(gid).catch(function() { return null; }); })),
+                    Promise.all(groupIds.map(function(gid) { return SGApi.getExpenses(gid).catch(function() { return null; }); })),
+                    Promise.all(groupIds.map(function(gid) { return SGApi.getBalances(gid).catch(function() { return null; }); }))
+                ]);
+
+                memResults.forEach(function(memResult) {
+                    if (memResult && memResult.success && memResult.members) {
+                        memResult.members.forEach(function(m) {
+                            var mid = m.id || m.user_id || m.userId;
+                            if (mid && m.name) memberNames[mid] = m.name;
+                        });
+                    }
+                });
+
+                expResults.forEach(function(expResult) {
+                    if (expResult && expResult.success && expResult.expenses) {
+                        allExpenses = allExpenses.concat(expResult.expenses);
+                    }
+                });
+
+                balResults.forEach(function(balResult) {
+                    if (balResult) {
+                        if (Array.isArray(balResult.balances)) {
+                            balResult.balances.forEach(function(b) {
+                                var key = b.user_id || b.userId || b.name || b.user_name || 'unknown';
+                                allBalances[key] = (allBalances[key] || 0) + parseFloat(b.balance || b.amount || 0);
+                            });
+                        } else if (balResult.balances && typeof balResult.balances === 'object') {
+                            Object.keys(balResult.balances).forEach(function(k) {
+                                var val = parseFloat(balResult.balances[k]);
+                                if (!isNaN(val)) allBalances[k] = (allBalances[k] || 0) + val;
                             });
                         }
-                    } catch(e) {}
-
-                    try {
-                        var expResult = await SGApi.getExpenses(gid);
-                        if (expResult && expResult.success && expResult.expenses) {
-                            allExpenses = allExpenses.concat(expResult.expenses);
-                        }
-                    } catch(e) {}
-
-                    try {
-                        var balResult = await SGApi.getBalances(gid);
-                        if (balResult) {
-                            if (Array.isArray(balResult.balances)) {
-                                balResult.balances.forEach(function(b) {
-                                    var key = b.user_id || b.userId || b.name || b.user_name || 'unknown';
-                                    allBalances[key] = (allBalances[key] || 0) + parseFloat(b.balance || b.amount || 0);
-                                });
-                            } else if (balResult.balances && typeof balResult.balances === 'object') {
-                                Object.keys(balResult.balances).forEach(function(k) {
-                                    var val = parseFloat(balResult.balances[k]);
-                                    if (!isNaN(val)) allBalances[k] = (allBalances[k] || 0) + val;
-                                });
-                            }
-                        }
-                    } catch(e) {}
-                }
+                    }
+                });
 
                 // 3. Calcular balance neto — solo el balance del usuario actual
                 var uid = SGAuth.getUserId();
