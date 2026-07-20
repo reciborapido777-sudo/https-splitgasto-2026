@@ -317,9 +317,9 @@ async function loadDashboardData() {
       }
     });
 
-    document.getElementById('net-worth-value').textContent = (totalReceive - totalOwed).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
-    document.getElementById('settlements-value').textContent = totalOwed.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
-    document.getElementById('to-receive-value').textContent = totalReceive.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    document.getElementById('net-worth-value').textContent = (totalReceive - totalOwed).toLocaleString(getUserLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    document.getElementById('settlements-value').textContent = totalOwed.toLocaleString(getUserLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
+    document.getElementById('to-receive-value').textContent = totalReceive.toLocaleString(getUserLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '€';
 
     // BOTÓN LIQUIDAR INTELIGENTE
     const liqBtn = document.getElementById('dash-liquidation-trigger');
@@ -417,7 +417,7 @@ async function loadDashboardData() {
       ? t('group.member', null, 'Socio') 
       : t('group.members', null, 'Socios');
     document.getElementById('active-group-sub').innerHTML =
-      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> ${t('group.inPlay', null, 'en juego')}`;
+      `${mc0} ${memberLabel} · <span class="text-white font-black money-display">${totalExp.toLocaleString(getUserLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})}€</span> ${t('group.inPlay', null, 'en juego')}`;
       
   } catch (e) {
     console.error('Dashboard load error:', e);
