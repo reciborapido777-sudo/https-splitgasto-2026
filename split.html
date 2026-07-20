@@ -307,7 +307,7 @@ async function loadGroupData(groupId) {
       const safeAmount = Math.abs(bal).toFixed(2);
 
       return `
-        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4" ${canLiquidate ? `onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"` : canAddExpense ? `onclick="SGRouter.navigate('add-expense','split&groupId=${safeGroupId}')"` : ''}>
+        <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4" ${canLiquidate ? `onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"` : canAddExpense ? `onclick="sessionStorage.setItem('sg_selected_group','${safeGroupId}');SGRouter.navigate('add-expense','split')"` : ''}>
           <div class="flex items-center gap-4 min-w-0">
             <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0"
                  style="background:${color}22;color:${color};border-color:${color}33">${initials}</div>
