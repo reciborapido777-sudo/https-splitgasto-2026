@@ -2821,9 +2821,16 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTranslations(savedLang);
 });
 
-/* ── Exports globales (accesibles desde cualquier <script> inline) ── */
+function getUserLocale() {
+    var lang = (typeof getSavedLanguage === 'function' ? getSavedLanguage() : null) || 'es';
+    var LOCALE_MAP = { es: 'es-ES', en: 'en-US', fr: 'fr-FR', de: 'de-DE', it: 'it-IT', pt: 'pt-PT' };
+    return LOCALE_MAP[lang] || 'es-ES';
+}
+
+/* ── Exports globales (accesible desde cualquier <script> inline) ── */
 window.t                 = t;
 window.applyTranslations  = applyTranslations;
 window.getSavedLanguage   = getSavedLanguage;
 window.getSavedCurrency   = getSavedCurrency;
 window.getMonthNames      = getMonthNames;
+window.getUserLocale       = getUserLocale;
