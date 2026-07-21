@@ -1685,7 +1685,78 @@ async function handleDatabase(request, env, path) {
         await env.SPLITGASTO_CACHE?.delete(`db:balances:${groupId}`);
         await env.SPLITGASTO_CACHE?.delete(`db:groups:${fromUserId}`);
         await env.SPLITGASTO_CACHE?.delete(`db:groups:${toUserId}`);
-        return jsonResponse({ success: true, id, message: 'Liquidación registrada' }, 201, request);
+
+    // Recalcular balance del usuario tras la liquidación
+    const newBalances = await env.SPLITGASTO_DB.prepare(
+        'SELECT user_id, role FROM group_members WHERE group_id = ?'
+    ).bind(groupId).all();
+    const balMembers = newBalances.results || [];
+    const balExpenses = await env.SPLITGASTO_DB.prepare('SELECT * FROM expenses WHERE group_id = ?').bind(groupId).all();
+    const balSettlements = await env.SPLITGASTO_DB.prepare('SELECT * FROM settlements WHERE group_id = ?').bind(groupId).all();
+
+    const balMap = {};
+    balMembers.forEach(m => { balMap[m.user_id] = 0; });
+
+    // Obtener splits personalizados para gastos no-equal
+    const nonEqualExpenses = balExpenses.results.filter(e => e.split_type && e.split_type !== 'equal');
+    let splitsMap = {};
+    if (nonEqualExpenses.length > 0) {
+        const expIds = nonEqualExpenses.map(e => e.id);
+        const chunks = [];
+        for (let i = 0; i < expIds.length; i += 50) {
+            const chunk = expIds.slice(i, i + 50);
+            const placeholders = chunk.map(() => '?').join(',');
+            chunks.push(env.SPLITGASTO_DB.prepare(`SELECT expense_id, user_id, share_amount FROM expense_splits WHERE expense_id IN (${placeholders})`).bind(...chunk));
+        }
+        const splitResults = await env.SPLITGASTO_DB.batch(chunks);
+        for (const batch of splitResults) {
+            for (const s of batch.results) {
+                if (!splitsMap[s.expense_id]) splitsMap[s.expense_id] = [];
+                splitsMap[s.expense_id].push(s);
+            }
+        }
+    }
+
+    balExpenses.results.forEach(e => {
+        const amt = parseFloat(e.amount) || 0;
+        if (balMap[e.paid_by] !== undefined) balMap[e.paid_by] += amt;
+        const splitType = e.split_type || 'equal';
+
+        if (splitType === 'equal') {
+            const share = Math.round((amt / balMembers.length) * 100) / 100;
+            balMembers.forEach(m => { if (balMap[m.user_id] !== undefined) balMap[m.user_id] -= share; });
+        } else {
+            const splits = splitsMap[e.id];
+            if (splits && splits.length > 0) {
+                if (splitType === 'exact') {
+                    splits.forEach(s => { if (balMap[s.user_id] !== undefined) balMap[s.user_id] -= Math.round((parseFloat(s.share_amount) || 0) * 100) / 100; });
+                } else if (splitType === 'percentage') {
+                    splits.forEach(s => { if (balMap[s.user_id] !== undefined) balMap[s.user_id] -= Math.round((amt * (parseFloat(s.share_amount) || 0) / 100) * 100) / 100; });
+                } else if (splitType === 'shares') {
+                    const totalShares = splits.reduce((sum, s) => sum + (parseFloat(s.share_amount) || 0), 0);
+                    if (totalShares > 0) {
+                        splits.forEach(s => { if (balMap[s.user_id] !== undefined) balMap[s.user_id] -= Math.round((amt * (parseFloat(s.share_amount) || 0) / totalShares) * 100) / 100; });
+                    } else {
+                        const share = Math.round((amt / balMembers.length) * 100) / 100;
+                        balMembers.forEach(m => { if (balMap[m.user_id] !== undefined) balMap[m.user_id] -= share; });
+                    }
+                }
+            } else {
+                const share = Math.round((amt / balMembers.length) * 100) / 100;
+                balMembers.forEach(m => { if (balMap[m.user_id] !== undefined) balMap[m.user_id] -= share; });
+            }
+        }
+    });
+
+    balSettlements.results.forEach(s => {
+        const amt = parseFloat(s.amount) || 0;
+        if (balMap[s.from_user] !== undefined) balMap[s.from_user] += amt;
+        if (balMap[s.to_user] !== undefined) balMap[s.to_user] -= amt;
+    });
+
+    const myNewBalance = Math.round((balMap[authUser.userId] || 0) * 100) / 100;
+    return jsonResponse({ success: true, id, message: 'Liquidación registrada', balanceAfter: myNewBalance }, 201, request);
+
     }
 
     // ── DELETE EXPENSE ─────────────────────────────────────────────────
