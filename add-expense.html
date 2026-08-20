@@ -339,7 +339,7 @@ function renderPayers() {
   }
   row.innerHTML = members.map((m, i) => `
     <div class="payer-chip ${i === selectedPayer ? 'selected' : ''}" onclick="selectPayer(${i})">
-      <div class="payer-avatar" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.initials}</div>
+      <div class="payer-avatar overflow-hidden" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover" alt="${m.name}" onerror="this.style.display='none'"/>` : m.initials}</div>
       <span class="payer-name">${m.name}</span>
     </div>`).join('');
 }
