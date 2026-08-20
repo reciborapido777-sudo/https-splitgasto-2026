@@ -288,7 +288,7 @@ async function loadGroups() {
           </div>
           <div class="space-y-0.5">
             <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${esc(g.name)}</h3>
-            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
+            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString(getUserLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
           </div>
         </div>`;
     grid.insertBefore(card, ctaCard);
@@ -297,7 +297,7 @@ async function loadGroups() {
   const tSign = totalBalance >= 0 ? '+' : '';
   const tColor = totalBalance >= 0 ? '#13ecd6' : '#ef4444';
   const balEl = document.getElementById('summary-balance');
-  balEl.textContent = `${tSign}${totalBalance.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€`;
+  balEl.textContent = `${tSign}${totalBalance.toLocaleString(getUserLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})}€`;
   balEl.style.color = tColor;
   document.getElementById('summary-members').textContent = totalMembers;
 
@@ -323,7 +323,7 @@ async function loadGroups() {
                 <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
               </div>
             </div>
-            <p class="text-base font-black font-['Space_Grotesk'] money-display" style="color:${ac}">${s}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
+            <p class="text-base font-black font-['Space_Grotesk'] money-display" style="color:${ac}">${s}${amt.toLocaleString(getUserLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
           </div>`;
         }).join('');
       } else {
@@ -487,4 +487,3 @@ window.addEventListener('pageshow', (e) => {
 </div>
 </body>
 </html>
-
