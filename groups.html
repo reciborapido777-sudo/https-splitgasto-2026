@@ -214,7 +214,7 @@
         </div>
     </nav>
     <script>
-async function updateSocioAvatar(event) {
+function updateSocioAvatar(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -241,7 +241,7 @@ async function updateSocioAvatar(event) {
 
     reader.onload = function(e) {
         const img = new Image();
-        img.onload = async function() {
+        img.onload = function() {
             // Resize a 300x300px manteniendo proporción
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -266,45 +266,11 @@ async function updateSocioAvatar(event) {
                 localStorage.setItem(`sg_avatar_${uid}`, compressed);
             } catch (storageErr) {
                 console.warn('[Avatar] localStorage lleno:', storageErr);
+                if (window.SGRouter) SGRouter.showToast('Espacio de almacenamiento lleno.', 'error');
+                return;
             }
-
-            // Subir a R2 y actualizar perfil en D1
-            try {
-                if (window.SGRouter) SGRouter.showToast('Subiendo imagen...', 'info');
-                
-                const base64Data = compressed.split(',')[1];
-                const binaryString = atob(base64Data);
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-                const blob = new Blob([bytes], { type: 'image/jpeg' });
-                const filename = `avatar_${uid}_${Date.now()}.jpg`;
-                
-                const uploadResult = await SGApi.uploadFile(
-                    new File([blob], filename, { type: 'image/jpeg' }),
-                    'avatars'
-                );
-                
-                if (uploadResult && uploadResult.success && uploadResult.key) {
-                    const profileResult = await SGApi.updateProfile(
-                        document.getElementById('profile-name')?.textContent || '',
-                        null,
-                        uploadResult.key
-                    );
-                    
-                    if (profileResult && profileResult.success) {
-                        if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada ✓', 'success');
-                    } else {
-                        console.error('[Avatar] Error actualizando perfil:', profileResult);
-                        if (window.SGRouter) SGRouter.showToast('Imagen subida pero perfil no actualizado', 'warning');
-                    }
-                } else {
-                    console.error('[Avatar] Error subiendo a R2:', uploadResult);
-                    if (window.SGRouter) SGRouter.showToast('Error subiendo imagen', 'error');
-                }
-            } catch (uploadErr) {
-                console.error('[Avatar] Error:', uploadErr);
-                if (window.SGRouter) SGRouter.showToast('Error de conexión al subir', 'error');
-            }
+            
+            if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada ✓', 'success');
         };
         img.onerror = function() {
             if (window.SGRouter) SGRouter.showToast('Imagen corrupta.', 'error');
@@ -313,8 +279,9 @@ async function updateSocioAvatar(event) {
     };
     
     reader.readAsDataURL(file);
-    event.target.value = '';
+    event.target.value = ''; // Permitir re-seleccionar el mismo archivo
 }
+
     async function loadProfileData() {
       if (!SGAuth || !SGAuth.isLoggedIn()) {
         SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
