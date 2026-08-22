@@ -3,40 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil Alpha | SplitGasto 2026</title>
+    <title>Mis Grupos | SplitGasto 2026</title>
+    
     <link rel="stylesheet" href="engine/global.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+
     <style>
-        .elite-card {
-            background: linear-gradient(135deg, rgba(255, 157, 66, 0.05) 0%, rgba(0,0,0,1) 100%);
-            border: 1px solid rgba(255, 157, 66, 0.15);
-            position: relative;
-            overflow: hidden;
-            border-radius: 3.5rem;
+       
+        body {  
+            background: #000; color: #fff; 
+            font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             transform: translateZ(0);
         }
 
-        .status-tag {
-            padding: 6px 14px;
-            background: rgba(255, 157, 66, 0.1);
-            border: 1px solid rgba(255, 157, 66, 0.2);
-            color: #FF9D42;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2.5px;
-            border-radius: 20px;
+        .group-card { 
+            position: relative; height: 260px; border-radius: 3rem; 
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.05); 
+            cursor: pointer; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateZ(0);
         }
-        .text-gradient-orange {
-            background: linear-gradient(135deg, #FF9D42 0%, #D4AF37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .group-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
         }
-    </style>
-    <link rel="manifest" href="manifest.json">
+        .group-overlay { background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.3) 100%); }
+
+        .money-display { 
+            padding-right: 0.55em !important; 
+            white-space: nowrap; 
+            font-family: 'Space Grotesk', sans-serif;
+            display: inline-block;
+        }
+
+        .summary-pill {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 1.5rem;
+            padding: 0.9rem 1.4rem;
+        }
+
+        .reveal-node { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes revealUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .event-placeholder {
+            border: 2px dashed rgba(255, 255, 255, 0.05);
+            background: transparent;
+        }
+        .event-placeholder:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.02);
+            transform: translateY(-6px);
+        }
+    
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;cursor:pointer;transition:all .2s}
+        .nav-item span.material-icons-round,.nav-item .mat-icon{font-size:20px;color:#4a4a4a;transition:color .2s}
+        .nav-item p{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#4a4a4a;transition:color .2s}
+        .nav-item.active span.material-icons-round,.nav-item.active p{color:#13ecd6}
+        .nav-item:hover span.material-icons-round,.nav-item:hover p{color:#fff}
+</style>
+<link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#13ecd6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -51,288 +87,397 @@
     <script src="engine/api.js"></script>
     <script src="engine/i18n.js" defer></script>
 </head>
-<body class="app-shell pb-40">
+<body class="app-shell pb-28">
 <div class="app-frame">
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
         
-        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/60 backdrop-blur-xl z-50">
-             <div class="flex items-center gap-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4 sticky top-0 bg-black/80 backdrop-blur-xl z-50">
+            <div class="flex items-center gap-5">
                 <button onclick="SGRouter.back()" class="size-14 rounded-2xl glass-panel flex items-center justify-center hover:bg-white/5 active:scale-90 transition-all shadow-xl">
-                    <span class="material-icons-round text-zinc-500 text-2xl">arrow_back</span>
+                    <span class="material-icons-round text-zinc-400 text-2xl">arrow_back</span>
                 </button>
                 <div class="space-y-0.5">
-                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]" data-i18n="profile.protocol">Protocolo de Identidad</p>
-                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none" data-i18n="profile.title">Perfil</h1>
+                    <p class="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em]">Nodos de Activos</p>
+                    <h1 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">Mis Grupos</h1>
                 </div>
             </div>
-            <button onclick="SGAuth.logout(); SGRouter.navigate('auth-login')" class="size-14 glass-panel rounded-2xl flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-90">
-                <span class="material-icons-round">logout</span>
-            </button>
+            <div class="flex items-center gap-3">
+                <button onclick="SGRouter.navigate('create-group','groups')" 
+                        class="px-5 py-3 rounded-2xl bg-[#13ecd6]/10 border border-[#13ecd6]/20 flex items-center gap-2 hover:bg-[#13ecd6]/15 transition-all active:scale-95">
+                    <span class="material-icons-round text-[#13ecd6] text-sm">add</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-[#13ecd6] hidden sm:inline">Nuevo</span>
+                </button>
+            </div>
         </header>
 
-        <section class="elite-card p-12 md:p-16 reveal-node shadow-2xl">
-            <div class="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
-                <span class="material-icons-round text-[14rem] text-[#FF9D42]">military_tech</span>
+        <!-- Resumen rápido -->
+        <section class="grid grid-cols-3 gap-3 sm:gap-5 reveal-node">
+            <div class="summary-pill flex flex-col gap-1">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Grupos Activos</p>
+                <p class="text-2xl font-black font-['Space_Grotesk'] text-white" id="summary-groups">0</p>
             </div>
-            
-            <div class="flex flex-col md:flex-row items-center gap-12 relative z-10">
-                <div class="relative group cursor-pointer" onclick="document.getElementById('avatarUpload').click()">
-                    <div class="absolute -inset-2 bg-[#FF9D42] rounded-[3.8rem] blur-xl opacity-10 group-hover:opacity-30 transition-all"></div>
-                    <img id="profile-avatar" src="https://api.dicebear.com/9.x/initials/svg?seed=Cmd&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40" class="relative size-40 md:size-52 rounded-[3.5rem] border-2 border-[#FF9D42]/30 object-cover shadow-2xl transition-all group-hover:opacity-60" alt="">    
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 pointer-events-none">
-                        <div class="bg-black/60 p-3 rounded-full border border-[#13ecd6]/50 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(19,236,214,0.4)]">
-                            <span class="material-icons-round text-[#13ecd6] text-3xl">edit</span>
-                        </div>
-                    </div>
-                    <input type="file" id="avatarUpload" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="updateSocioAvatar(event)">
-                </div>                
-                <div class="text-center md:text-left space-y-8">
-                    <div class="space-y-4">
-                        <span class="status-tag" data-i18n="role.founder">Socio Fundador Élite</span>
-                        <h2 id="profile-name" class="text-5xl md:text-7xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic text-gradient-orange leading-none" data-i18n="profile.defaultName">Comandante</h2>
-                    </div>
-                    <p class="text-zinc-500 text-[11px] font-bold max-w-lg uppercase tracking-widest leading-relaxed" data-i18n="profile.auditProtocol">
-                        Protocolo de Auditoría Alpha activo. Acceso total a nodos de capital y herramientas de digitalización de Grado Militar.
-                    </p>
-                    
-                    <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                        <div class="glass-panel px-6 py-2.5 rounded-xl flex items-center gap-3">
-                            <span class="material-icons-round text-[#13ecd6] text-sm">verified_user</span>
-                            <span class="text-[10px] font-black tracking-widest uppercase text-zinc-400" data-i18n="profile.idLabel">ID: SG-2026-ALPHA</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="summary-pill flex flex-col gap-1">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Balance Neto</p>
+                <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6]" id="summary-balance">0,00€</p>
+            </div>
+            <div class="summary-pill flex flex-col gap-1">
+                <p class="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Socios</p>
+                <p class="text-2xl font-black font-['Space_Grotesk'] text-white" id="summary-members">0</p>
             </div>
         </section>
 
-        <main class="grid lg:grid-cols-3 gap-10 reveal-node" style="animation-delay: 0.1s">
-            
-            <div class="lg:col-span-1 glass-panel p-10 rounded-[3.5rem] border-[#a855f7]/15 space-y-10">
-                <div class="flex items-center gap-4 text-[#a855f7]">
-                    <span class="material-icons-round">security</span>
-                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase tracking-[0.4em]" data-i18n="profile.security">Seguridad</h3>
-                </div>
+        <!-- Grid de grupos -->
+        <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" id="groups-grid">
 
-                <div class="space-y-5">
-                    <div onclick="SGRouter.navigate('security', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#13ecd6]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.biometry">Biometría Alpha</span>
-                        <div class="size-6 rounded-full bg-[#13ecd6]/10 border border-[#13ecd6]/30 flex items-center justify-center">
-                            <div class="size-2.5 bg-[#13ecd6] rounded-full shadow-[0_0_15px_#13ecd6]"></div>
-                        </div>
-                    </div>
-    
-                    <div class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 opacity-50">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest" data-i18n="profile.encryption">Cifrado AES-256</span>
-                        <span class="text-[10px] font-black text-[#a855f7] uppercase tracking-[0.2em]" data-i18n="profile.blindado">Blindado</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('manual', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#13ecd6]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.manual">Manual Alpha</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#13ecd6] transition-colors text-sm">menu_book</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('rankings', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#D4AF37]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.rankings">Rankings Alpha</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#D4AF37] transition-colors text-sm">emoji_events</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('settings', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#a855f7]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.settings">Configuración</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#a855f7] transition-colors text-sm">settings</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('friends', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#13ecd6]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.myFriends">Mis Amigos</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#13ecd6] transition-colors text-sm">group</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('invite', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#D4AF37]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.inviteFriends">Invitar Amigos</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#D4AF37] transition-colors text-sm">person_add</span>
-                    </div>
-    
-                    <div onclick="SGRouter.navigate('support', 'profile')" class="flex justify-between items-center p-6 rounded-[2.2rem] bg-white/[0.03] border border-white/5 hover:border-[#13ecd6]/20 transition-all cursor-pointer group">
-                        <span class="text-[11px] font-black uppercase text-zinc-500 tracking-widest group-hover:text-white transition-colors" data-i18n="profile.support">Soporte</span>
-                        <span class="material-icons-round text-zinc-600 group-hover:text-[#13ecd6] transition-colors text-sm">support_agent</span>
-                    </div>
-                </div>    
-            </div> <div class="lg:col-span-2 glass-panel p-10 rounded-[3.5rem] border-[#13ecd6]/15 space-y-12 flex flex-col justify-between">
-                <div class="flex items-center gap-4 text-[#13ecd6]">
-                    <span class="material-icons-round">stars</span>
-                    <h3 class="text-xs font-black font-['Space_Grotesk'] uppercase tracking-[0.4em]" data-i18n="profile.privileges">Privilegios de Nodo</h3>
+            <!-- Crear grupo CTA -->
+            <div class="group-card event-placeholder group reveal-node flex flex-col items-center justify-center gap-5 transition-all" 
+                 onclick="SGRouter.navigate('create-group','groups')">
+                <div class="size-16 rounded-full glass-panel flex items-center justify-center group-hover:border-[#a855f7]/50 transition-all">
+                    <span class="material-icons-round text-zinc-700 group-hover:text-[#a855f7] text-3xl transition-colors">add</span>
                 </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    <div class="space-y-2">
-                        <p class="text-2xl font-black font-['Space_Grotesk'] text-white tracking-tighter" data-i18n="profile.statGroups">12</p>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="profile.proGroups">Grupos Pro</p>
-                    </div>
-                    <div class="space-y-2">
-                        <p class="text-2xl font-black font-['Space_Grotesk'] text-[#13ecd6] tracking-tighter" data-i18n="profile.statAudits">1.2k</p>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="profile.audits">Auditorías</p>
-                    </div>
-                    <div class="space-y-2">
-                        <p class="text-2xl font-black font-['Space_Grotesk'] text-white tracking-tighter" data-i18n="profile.statEfficiency">Top 1%</p>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="profile.efficiency">Eficiencia</p>
-                    </div>
-                    <div class="space-y-2">
-                        <p class="text-2xl font-black font-['Space_Grotesk'] text-[#FF9D42] tracking-tighter" data-i18n="profile.statLevel">FUNDADOR</p>
-                        <p class="text-[9px] font-black text-zinc-600 uppercase tracking-widest" data-i18n="profile.eliteLevel">Nivel Élite</p>
-                    </div>
+                <div class="text-center">
+                    <h4 class="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 group-hover:text-zinc-400 transition-colors">Nuevo Grupo</h4>
+                    <p class="text-[8px] font-bold uppercase text-zinc-800 tracking-widest mt-1">Añadir Nodo</p>
                 </div>
-
-                <button onclick="SGRouter.navigate('membership', 'profile')" class="w-full py-6 bg-white/5 border border-white/10 rounded-[2.2rem] text-[10px] font-black uppercase tracking-[0.6em] hover:bg-[#FF9D42]/10 hover:border-[#FF9D42]/30 transition-all text-white active:scale-95 shadow-xl" data-i18n="profile.manageMembership">
-                    Gestionar Membresía Élite
-                </button>
             </div>
-        </main>
-    </div>
 
+        </main>
+
+        <!-- Actividad reciente del grupo -->
+        <section class="glass-panel p-6 sm:p-10 rounded-[3rem] space-y-6 reveal-node" style="animation-delay: 0.35s">
+            <div class="flex items-center justify-between">
+                <div class="space-y-0.5">
+                    <p class="text-[8px] font-black text-zinc-600 uppercase tracking-[0.5em]">Últimos Movimientos</p>
+                    <h3 class="text-lg font-black font-['Space_Grotesk'] uppercase italic">Actividad Reciente</h3>
+                </div>
+                <button onclick="SGRouter.navigate('activity', 'groups')" class="text-[9px] font-black text-[#13ecd6] uppercase tracking-widest hover:underline">Ver todo</button>
+            </div>
+            <div class="space-y-1" id="groups-activity">
+                <p class="text-xs text-zinc-600 text-center py-6">Cargando actividad…</p>
+            </div>
+        </section>
+
+            </div>
+
+    <!-- Bottom Navigation Bar -->
+        <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5">
         <div class="max-w-7xl mx-auto flex justify-around items-center py-3 pb-5">
-            <button class="nav-item" onclick="SGRouter.navigate('dashboard')">
+            <button class="nav-item " onclick="SGRouter.navigate('dashboard')">
                 <span class="material-icons-round">grid_view</span>
                 <p data-i18n="nav.dashboard">Mando</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('groups')">
+            <button class="nav-item active" onclick="SGRouter.navigate('groups')">
                 <span class="material-icons-round">groups_3</span>
                 <p data-i18n="nav.groups">Grupos</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('activity')">
+            <button class="nav-item " onclick="SGRouter.navigate('activity')">
                 <span class="material-icons-round">receipt_long</span>
                 <p data-i18n="nav.expenses">Gastos</p>
             </button>
-            <button class="nav-item" onclick="SGRouter.navigate('analytics')">
+            <button class="nav-item " onclick="SGRouter.navigate('analytics')">
                 <span class="material-icons-round">query_stats</span>
                 <p data-i18n="nav.metrics">Métricas</p>
             </button>
-            <button class="nav-item active" onclick="SGRouter.navigate('profile')">
+            <button class="nav-item " onclick="SGRouter.navigate('profile')">
                 <span class="material-icons-round">person</span>
                 <p data-i18n="nav.profile">Perfil</p>
             </button>
         </div>
     </nav>
-    <script>
-function updateSocioAvatar(event) {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    // Validación estricta MIME
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!ALLOWED_TYPES.includes(file.type)) {
-        if (window.SGRouter) SGRouter.showToast('Formato no válido. Usa JPG, PNG o WebP.', 'warning');
-        event.target.value = '';
-        return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-        if (window.SGRouter) SGRouter.showToast('El archivo excede los 2MB.', 'error');
-        event.target.value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    
-    reader.onerror = function() {
-        if (window.SGRouter) SGRouter.showToast('Error al leer el archivo.', 'error');
-        event.target.value = '';
-    };
-
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            // Resize a 300x300px manteniendo proporción
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const size = 300;
-            canvas.width = size;
-            canvas.height = size;
-
-            // Cover crop centrado
-            const scale = Math.max(size / img.width, size / img.height);
-            const x = (size - img.width * scale) / 2;
-            const y = (size - img.height * scale) / 2;
-            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-
-            // Exportar como JPEG 80% calidad (~20-40KB típico)
-            const compressed = canvas.toDataURL('image/jpeg', 0.8);
-            
-            const avatarEl = document.getElementById('profile-avatar');
-            if (avatarEl) avatarEl.src = compressed;
-            
-            const uid = SGAuth && SGAuth.getUserId() ? SGAuth.getUserId() : 'alpha_user';
-            try {
-                localStorage.setItem(`sg_avatar_${uid}`, compressed);
-            } catch (storageErr) {
-                console.warn('[Avatar] localStorage lleno:', storageErr);
-                if (window.SGRouter) SGRouter.showToast('Espacio de almacenamiento lleno.', 'error');
-                return;
-            }
-            
-            if (window.SGRouter) SGRouter.showToast('Identidad visual actualizada ✓', 'success');
-        };
-        img.onerror = function() {
-            if (window.SGRouter) SGRouter.showToast('Imagen corrupta.', 'error');
-        };
-        img.src = e.target.result;
-    };
-    
-    reader.readAsDataURL(file);
-    event.target.value = ''; // Permitir re-seleccionar el mismo archivo
+<script>
+const GROUP_BGS = [
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23FF6B35'/><stop offset='1' stop-color='%23C0392B'/></linearGradient><radialGradient id='b' cx='75%25' cy='25%25' r='55%25'><stop offset='0' stop-color='%23FF9D42' stop-opacity='.3'/><stop offset='1' stop-color='%230d0500' stop-opacity='0'/></radialGradient></defs><rect width='800' height='400' fill='%230d0500'/><rect width='800' height='400' fill='url(%23b)'/><ellipse cx='600' cy='110' rx='200' ry='200' fill='url(%23a)' opacity='.15'/><polygon points='0,400 250,200 420,280 620,160 800,240 800,400' fill='%231a0800'/><circle cx='600' cy='115' r='50' fill='%23FF6B35' opacity='.28'/><circle cx='600' cy='115' r='25' fill='%23FF9D42' opacity='.35'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%2313ecd6' stop-opacity='.35'/><stop offset='1' stop-color='%230a3a5a' stop-opacity='.8'/></linearGradient></defs><rect width='800' height='400' fill='%23020c18'/><polygon points='0,400 100,200 250,290 400,130 560,250 700,110 800,190 800,400' fill='url(%23a)'/><polygon points='400,130 560,250 300,280' fill='%23ffffff' opacity='.07'/><circle cx='680' cy='85' r='45' fill='%23ffffff' opacity='.07'/><ellipse cx='400' cy='65' rx='220' ry='28' fill='%2313ecd6' opacity='.05'/><circle cx='100' cy='320' r='80' fill='%230a3a5a' opacity='.4'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23a855f7' stop-opacity='.45'/><stop offset='1' stop-color='%234c1d95' stop-opacity='.65'/></linearGradient><radialGradient id='b' cx='30%25' cy='70%25' r='60%25'><stop offset='0' stop-color='%23a855f7' stop-opacity='.15'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%230a0012'/><rect width='800' height='400' fill='url(%23b)'/><rect x='80' y='80' width='200' height='280' fill='url(%23a)' rx='4'/><rect x='300' y='120' width='160' height='240' fill='url(%23a)' rx='4' opacity='.7'/><rect x='485' y='100' width='190' height='260' fill='url(%23a)' rx='4' opacity='.55'/><rect x='700' y='140' width='60' height='220' fill='url(%23a)' rx='4' opacity='.4'/><rect x='100' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/><rect x='145' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/><rect x='190' y='210' width='28' height='36' fill='%23a855f7' opacity='.6' rx='2'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2322c55e' stop-opacity='.35'/><stop offset='1' stop-color='%23059669' stop-opacity='.2'/></linearGradient><radialGradient id='b' cx='70%25' cy='25%25' r='55%25'><stop offset='0' stop-color='%2313ecd6' stop-opacity='.22'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%23010f0d'/><rect width='800' height='400' fill='url(%23b)'/><rect x='50' y='50' width='210' height='130' rx='16' fill='url(%23a)'/><rect x='280' y='50' width='210' height='130' rx='16' fill='url(%23a)' opacity='.7'/><rect x='510' y='50' width='240' height='130' rx='16' fill='url(%23a)' opacity='.55'/><rect x='50' y='200' width='700' height='160' rx='16' fill='url(%23a)' opacity='.4'/><circle cx='680' cy='280' r='55' fill='%2313ecd6' opacity='.08'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f59e0b' stop-opacity='.4'/><stop offset='1' stop-color='%2392400e' stop-opacity='.5'/></linearGradient><radialGradient id='b' cx='50%25' cy='30%25' r='50%25'><stop offset='0' stop-color='%23f59e0b' stop-opacity='.2'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%230a0700'/><rect width='800' height='400' fill='url(%23b)'/><circle cx='200' cy='150' r='80' fill='url(%23a)' opacity='.3'/><circle cx='500' cy='100' r='60' fill='url(%23a)' opacity='.25'/><circle cx='650' cy='250' r='90' fill='url(%23a)' opacity='.2'/><circle cx='350' cy='300' r='50' fill='%23f59e0b' opacity='.1'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><defs><linearGradient id='a' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%233b82f6' stop-opacity='.35'/><stop offset='1' stop-color='%231e3a5f' stop-opacity='.6'/></linearGradient><radialGradient id='b' cx='40%25' cy='60%25' r='55%25'><stop offset='0' stop-color='%233b82f6' stop-opacity='.15'/><stop offset='1' stop-color='transparent'/></radialGradient></defs><rect width='800' height='400' fill='%23050a18'/><rect width='800' height='400' fill='url(%23b)'/><rect x='100' y='80' width='250' height='180' rx='20' fill='url(%23a)' opacity='.5'/><rect x='400' y='120' width='280' height='200' rx='20' fill='url(%23a)' opacity='.35'/><circle cx='650' cy='100' r='70' fill='%233b82f6' opacity='.1'/></svg>`
+];
+const GROUP_ACCENTS = ['#FF9D42', '#13ecd6', '#a855f7', '#22c55e', '#f59e0b', '#3b82f6'];
+const CAT_ICONS = { food:'restaurant', transport:'directions_car', leisure:'movie', home:'home', travel:'flight', health:'medical_services', other:'receipt' };
+const CAT_COLORS = { food:'#13ecd6', transport:'#a855f7', leisure:'#FF9D42', home:'#ec4899', travel:'#3b82f6', health:'#22c55e', other:'#6b7280' };
+function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-    async function loadProfileData() {
-      if (!SGAuth || !SGAuth.isLoggedIn()) {
-        SGRouter.showToast(t('activity.loginRequired', null, 'Inicia sesión primero'), 'error');
-        setTimeout(() => SGRouter.navigate('auth-login'), 1500);
-        return;
+async function loadGroups() {
+  if (!SGAuth || !SGAuth.isLoggedIn()) return;
+
+  const grid     = document.getElementById('groups-grid');
+  const ctaCard  = grid.querySelector('.event-placeholder');
+  const uid      = SGAuth.getUserId();
+
+  // ── FIX: limpiar cards previas para evitar duplicados en bfcache/reload ──
+  Array.from(grid.children).forEach(child => {
+    if (child !== ctaCard) child.remove();
+  });
+
+  // Reparar membresías huérfanas antes de cargar (silencioso)
+  try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+
+  // --- Fetch groups ---
+  let groups = [];
+  try {
+    const result = await SGApi.getGroups();
+    if (!result || !result.success || !result.groups) {
+      document.getElementById('groups-activity').innerHTML =
+        '<p class="text-xs text-zinc-600 text-center py-6">No se pudieron cargar los grupos.</p>';
+      return;
+    }
+    groups = result.groups;
+  } catch (e) {
+    console.error('Groups fetch error:', e);
+    return;
+  }
+
+  document.getElementById('summary-groups').textContent = groups.length;
+
+  // --- Fetch all balances in parallel (safe — no getGroupMembers in the critical path) ---
+  const balancePromises = groups.map(g => SGApi.getBalances(g.id).catch(() => null));
+  const allBalResults   = await Promise.all(balancePromises);
+
+  let totalBalance = 0;
+  let totalMembers = 0;
+
+  // --- Build cards ---
+  groups.forEach((g, i) => {
+    const balRes = allBalResults[i];
+    const myBal  = (balRes?.success && balRes.balances) ? (parseFloat(balRes.balances[uid]) || 0) : 0;
+    totalBalance += myBal;
+
+    // Use member_count from group object if available, else count from balances, else 1
+    const mc = g.member_count || (balRes?.success && balRes.balances ? Object.keys(balRes.balances).length : 1) || 1;
+    totalMembers += mc;
+
+    const accent = GROUP_ACCENTS[i % GROUP_ACCENTS.length];
+    const bg     = encodeURIComponent(GROUP_BGS[i % GROUP_BGS.length]);
+    const bSign  = myBal >= 0 ? '+' : '';
+    const bColor = myBal >= 0 ? '#13ecd6' : '#ef4444';
+
+    const card = document.createElement('div');
+    card.className = 'group-card group reveal-node';
+    card.style.animationDelay = `${i * 0.1}s`;
+    // IMPORTANT: pass groupId via URL — SGRouter.navigate() only accepts 2 params
+    // Click en la card navega al grupo; el botón de eliminar tiene stopPropagation
+    card.onclick = () => { window.location.href = 'split.html?groupId=' + g.id + '&from=groups'; };
+    card.innerHTML = `
+        <img src="data:image/svg+xml,${bg}" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-75 group-hover:scale-110 transition-transform duration-1000" alt="">
+        <div class="absolute inset-0 group-overlay flex flex-col justify-end p-8 space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="px-3 py-1 text-[8px] font-black uppercase rounded-full border tracking-widest" style="background:${accent}15;color:${accent};border-color:${accent}25">Activo</span>
+            <div class="flex items-center gap-2">
+              <p class="text-[8px] text-zinc-600 uppercase">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')}</p>
+              <button
+                data-gid="${g.id}" data-gname="${g.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
+                onclick="event.stopPropagation(); inviteMember(this.dataset.gid, this.dataset.gname)"
+                class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-[#13ecd6]/20 transition-all"
+                title="Invitar participante" style="background:rgba(19,236,214,0.1);border:1px solid rgba(19,236,214,0.2)">
+                <span class="material-icons-round text-[#13ecd6] text-xs">person_add</span>
+              </button>
+              <button
+                data-gid="${g.id}" data-gname="${g.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
+                onclick="event.stopPropagation(); deleteGroup(this.dataset.gid, this.dataset.gname)"
+                class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/20 transition-all"
+                title="Eliminar grupo" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)">
+                <span class="material-icons-round text-red-400 text-xs">delete</span>
+              </button>
+            </div>
+          </div>
+          <div class="space-y-0.5">
+            <h3 class="text-2xl font-black font-['Space_Grotesk'] tracking-tighter uppercase italic leading-none">${esc(g.name)}</h3>
+            <p class="text-xs text-zinc-400 font-bold uppercase tracking-widest">${mc} ${mc===1?t('group.member',null,'Socio'):t('group.members',null,'Socios')} · <span class="money-display" style="color:${bColor}">${bSign}${myBal.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</span></p>
+          </div>
+        </div>`;
+    grid.insertBefore(card, ctaCard);
+  });
+
+  // --- Update summary pills ---
+  const tSign = totalBalance >= 0 ? '+' : '';
+  const tColor = totalBalance >= 0 ? '#13ecd6' : '#ef4444';
+  const balEl = document.getElementById('summary-balance');
+  balEl.textContent = `${tSign}${totalBalance.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€`;
+  balEl.style.color = tColor;
+  document.getElementById('summary-members').textContent = totalMembers;
+
+  // --- Recent activity (first group, safe) ---
+  if (groups.length > 0) {
+    const actEl = document.getElementById('groups-activity');
+    try {
+      const expRes = await SGApi.getExpenses(groups[0].id).catch(() => null);
+      if (expRes?.success && expRes.expenses?.length > 0) {
+        const recent = expRes.expenses.slice(0, 3);
+        actEl.innerHTML = recent.map((exp, idx) => {
+          const icon  = CAT_ICONS[exp.category]  || 'receipt';
+          const color = CAT_COLORS[exp.category] || '#6b7280';
+          const amt   = parseFloat(exp.amount) || 0;
+          const s     = amt >= 0 ? '+' : '';
+          const ac    = amt >= 0 ? '#13ecd6' : '#ef4444';
+          return `<div class="flex justify-between items-center py-3.5 ${idx<recent.length-1?'border-b border-white/5':''}">
+            <div class="flex items-center gap-4">
+              <div class="size-9 rounded-xl border flex items-center justify-center" style="background:${color}10;border-color:${color}15">
+                <span class="material-icons-round text-sm" style="color:${color}">${icon}</span>
+              </div>
+              <div>
+                <p class="text-xs font-black uppercase">${esc(exp.description || exp.category || 'Gasto')}</p>
+                <p class="text-[8px] text-zinc-600 uppercase tracking-widest">${groups[0].name}</p>
+              </div>
+            </div>
+            <p class="text-base font-black font-['Space_Grotesk'] money-display" style="color:${ac}">${s}${amt.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})}€</p>
+          </div>`;
+        }).join('');
+      } else {
+        actEl.innerHTML = '<p class="text-xs text-zinc-600 text-center py-6">Sin actividad reciente</p>';
       }
+    } catch (e) {
+      console.error('Activity fetch error:', e);
+    }
+  }
+}
+// ── Modal helper genérico ─────────────────────────────────────────────
+function _closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
 
-      try {
-        const result = await SGApi.getProfile();
-        if (result && result.success && result.profile) {
-          const p = result.profile;
-
-          // Update name
-          const nameEl = document.getElementById('profile-name');
-          if (nameEl) nameEl.textContent = p.name || 'Comandante';
-
-          // Update avatar (Check localStorage first, then DB, then dicebear fallback)
-          const avatarEl = document.getElementById('profile-avatar');
-          const uid = SGAuth.getUserId() || 'alpha_user';
-          const localAvatar = localStorage.getItem(`sg_avatar_${uid}`);
-
-          if (localAvatar && avatarEl) {
-              avatarEl.src = localAvatar;
-          } else if (avatarEl && p.avatar_url) {
-            avatarEl.src = p.avatar_url;
-          } else if (avatarEl) {
-            const initials = (p.name || 'SG')[0].toUpperCase();
-            avatarEl.src = `https://api.dicebear.com/9.x/initials/svg?seed=${initials}&backgroundColor=2a1a0a&fontFamily=Arial&fontSize=40`;
-          }
+// ── Eliminar grupo — modal nativo (compatible con PWA/Android) ───────
+async function deleteGroup(groupId, groupName) {
+    const modalId = 'delete-group-modal';
+    _closeModal(modalId);
+    const safeName = String(groupName).replace(/</g, '&lt;');
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)';
+    modal.innerHTML = `
+      <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:360px;width:90%;text-align:center">
+        <span class="material-icons-round" style="font-size:40px;color:#ef4444;margin-bottom:12px;display:block">delete_forever</span>
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">Eliminar grupo</h3>
+        <p style="font-size:13px;color:#aaa;margin-bottom:6px">${safeName}</p>
+        <p style="font-size:11px;color:#666;margin-bottom:20px">Se eliminarán TODOS los gastos y liquidaciones. Esta acción no se puede deshacer.</p>
+        <div style="display:flex;gap:10px">
+          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+          <button id="confirm-delete-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-weight:800;font-size:13px;cursor:pointer">Eliminar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+        _closeModal(modalId);
+        try {
+            // Reparar membresías ANTES de eliminar (D1 Read Replication — eventual consistency)
+            try { await fetch('/api/db/repair-memberships', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+            const res = await SGApi.deleteGroup(groupId);
+            if (res && res.success) {
+                SGRouter.showToast(`Grupo eliminado`, 'success');
+                setTimeout(() => loadGroups(), 400);
+            } else if (res?.error && (res.error.includes('admin') || res.error.includes('perteneces'))) {
+                // Segundo intento tras purgar cache
+                try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+                await new Promise(r => setTimeout(r, 300));
+                const retry = await SGApi.deleteGroup(groupId);
+                if (retry && retry.success) {
+                    SGRouter.showToast(`Grupo eliminado`, 'success');
+                    setTimeout(() => loadGroups(), 400);
+                } else {
+                    SGRouter.showToast(retry?.error || 'Error al eliminar el grupo', 'error');
+                }
+            } else {
+                SGRouter.showToast(res?.error || 'Error al eliminar el grupo', 'error');
+            }
+        } catch (e) {
+            console.error('deleteGroup error:', e);
+            SGRouter.showToast('Error de conexión', 'error');
         }
+    });
+    // Cerrar al hacer clic fuera del panel
+    modal.addEventListener('click', (e) => { if (e.target === modal) _closeModal(modalId); });
+}
 
-        // Load groups count
-        const groupsResult = await SGApi.getGroups();
-        const groups = (groupsResult?.success && groupsResult?.groups) ? groupsResult.groups : [];
-        const statsEls = document.querySelectorAll('.grid.grid-cols-2 .space-y-2');
-        if (statsEls[0]) {
-          const countEl = statsEls[0].querySelector('.font-black');
-          if (countEl) countEl.textContent = groups.length;
+// ── Invitar participante — modal nativo (compatible con PWA/Android) ──
+function inviteMember(groupId, groupName) {
+    const modalId = 'invite-modal';
+    _closeModal(modalId);
+    const safeName = String(groupName).replace(/</g, '&lt;');
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px)';
+    modal.innerHTML = `
+      <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;max-width:360px;width:90%;text-align:center">
+        <span class="material-icons-round" style="font-size:40px;color:#13ecd6;margin-bottom:12px;display:block">person_add</span>
+        <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">Invitar participante</h3>
+        <p style="font-size:12px;color:#666;margin-bottom:16px">${safeName}</p>
+        <input id="invite-email-input" type="email" autocomplete="email" placeholder="email@ejemplo.com"
+          style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:white;padding:14px 16px;width:100%;font-size:0.9rem;font-weight:600;outline:none;margin-bottom:16px;box-sizing:border-box"/>
+        <div style="display:flex;gap:10px">
+          <button onclick="_closeModal('${modalId}')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#999;font-weight:700;font-size:13px;cursor:pointer">Cancelar</button>
+          <button id="invite-submit-btn" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#13ecd6,#0fbfaf);color:#000;font-weight:800;font-size:13px;cursor:pointer">Invitar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    // Focus automático en el input (con pequeño delay para la animación)
+    setTimeout(() => document.getElementById('invite-email-input')?.focus(), 80);
+
+    async function doInvite() {
+        const input = document.getElementById('invite-email-input');
+        const email = input?.value?.trim().toLowerCase();
+        if (!email) { input?.focus(); return; }
+        // Deshabilitar botón para evitar doble envío
+        const btn = document.getElementById('invite-submit-btn');
+        if (btn) btn.disabled = true;
+        try {
+            const res = await SGApi.addGroupMemberByEmail(groupId, email);
+            _closeModal(modalId);
+            if (res && res.success) {
+                SGRouter.showToast('Participante añadido ✓', 'success');
+                // FIX D1 Read Replication: purgar cache ANTES de recargar
+                try { await fetch('/api/db/purge-cache', { method: 'POST', headers: { 'Authorization': `Bearer ${SGAuth.getToken()}` } }); } catch {}
+                // Marcar para que split.html sepa que debe recargar miembros
+                try { sessionStorage.setItem('sg_member_added', Date.now()); } catch {}
+                // Delay mayor para que D1 propague el cambio (replicación eventual ~800ms)
+                setTimeout(() => loadGroups(), 900);
+            } else if (res && res.exists === false) {
+                // CORREGIDO: Usuario no registrado → redirigir a invite con parámetros
+                window.location.href = 'invite.html?email=' + encodeURIComponent(res.email) + '&groupId=' + encodeURIComponent(groupId);
+            } else {
+                SGRouter.showToast(res?.error || 'Error al invitar', 'error');
+            }
+        } catch (e) {
+            _closeModal(modalId);
+            SGRouter.showToast('Error de conexión', 'error');
         }
-
-      } catch (e) {
-        console.error('Profile load error:', e);
-      }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadProfileData();
+    document.getElementById('invite-submit-btn').addEventListener('click', doInvite);
+    // Enter en el input también invita
+    document.getElementById('invite-email-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doInvite();
     });
-    </script>
-  
-    <script>
+    // Cerrar al hacer clic fuera del panel
+    modal.addEventListener('click', (e) => { if (e.target === modal) _closeModal(modalId); });
+}
+loadGroups();
+
+// FIX bfcache: cuando el navegador restaura la página desde caché, recargar datos
+// También detecta flag sg_group_added para recargar tras crear un grupo nuevo
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) {
+    loadGroups();
+  } else {
+    try {
+      const flag = sessionStorage.getItem('sg_group_added');
+      if (flag) {
+        sessionStorage.removeItem('sg_group_added');
+        // Pequeño delay para que D1 propague el nuevo grupo antes de leer
+        setTimeout(() => loadGroups(), 400);
+      }
+    } catch {}
+  }
+});
+</script>
+
+        <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
