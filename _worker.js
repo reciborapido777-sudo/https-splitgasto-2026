@@ -859,6 +859,10 @@ async function handleStorage(request, env, path) {
         return handleStorageDelete(request, env, key, authUser);
     }
     if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env, authUser);
+    if (path.startsWith('/api/storage/public-avatar/') && method === 'GET') {
+        const key = decodeURIComponent(path.replace('/api/storage/public-avatar/', ''));
+        return handlePublicAvatar(request, env, key);
+    }
     return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404, request);
 }
 
@@ -1025,6 +1029,23 @@ async function handleStorageList(request, env, authUser) {
         }, 200, request);
     } catch (err) {
         return jsonResponse({ error: 'Error listando', detail: err.message }, 500, request);
+    }
+}
+
+async function handlePublicAvatar(request, env, key) {
+    try {
+        if (!key.startsWith('usuarios/')) {
+            return new Response('Forbidden', { status: 403 });
+        }
+        const object = await env.SPLITGASTO_BUCKET.get(key);
+        if (!object) return new Response('Not found', { status: 404 });
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set('Content-Type', object.httpMetadata?.contentType || 'image/jpeg');
+        headers.set('Cache-Control', 'public, max-age=3600');
+        return new Response(object.body, { headers });
+    } catch {
+        return new Response('Error', { status: 500 });
     }
 }
 
@@ -1431,6 +1452,14 @@ async function handleDatabase(request, env, path) {
         if (!name) return jsonResponse({ error: 'Campo "name" requerido' }, 400, request);
         const userId = authUser.userId;
         
+        // Convertir clave R2 a URL pública si es un avatar
+        let avatarUrl = '';
+        if (avatar && avatar.startsWith('usuarios/')) {
+            avatarUrl = `${new URL(request.url).origin}/api/storage/public-avatar/${encodeURIComponent(avatar)}`;
+        } else if (avatar) {
+            avatarUrl = avatar;
+        } 
+        
         let emailToStore = undefined;
         if (email !== undefined && email !== null && email !== '') {
             emailToStore = email.toLowerCase().trim();
@@ -1448,11 +1477,11 @@ async function handleDatabase(request, env, path) {
         if (emailToStore !== undefined) {
             await env.SPLITGASTO_DB.prepare(
                 'UPDATE users SET name = ?, email = ?, avatar_url = ? WHERE id = ?'
-            ).bind(name.trim(), emailToStore, avatar || '', userId).run();
+            ).bind(name.trim(), emailToStore, avatarUrl, userId).run();
         } else {
             await env.SPLITGASTO_DB.prepare(
                 'UPDATE users SET name = ?, avatar_url = ? WHERE id = ?'
-            ).bind(name.trim(), avatar || '', userId).run();
+            ).bind(name.trim(), avatarUrl, userId).run();
         }
         
         await env.SPLITGASTO_CACHE?.delete(`db:profile:${userId}`);
