@@ -841,9 +841,18 @@ async function handleAI(request, env, path) {
 // ═══════════════════════════════════════════════════════════════════════
 async function handleStorage(request, env, path) {
     if (!env.SPLITGASTO_BUCKET) return jsonResponse({ error: 'R2 no disponible' }, 503, request);
+    const method = request.method;
+
+    // Endpoint público de avatares — sin autenticación
+    if (path.startsWith('/api/storage/public-avatar/') && method === 'GET') {
+        const key = decodeURIComponent(path.replace('/api/storage/public-avatar/', ''));
+        return handlePublicAvatar(request, env, key);
+    }
+
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
-    const method = request.method;
+
+    if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
 
     if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
     if (path.startsWith('/api/storage/download/') && method === 'GET') {
@@ -858,12 +867,8 @@ async function handleStorage(request, env, path) {
         const key = decodeURIComponent(path.replace('/api/storage/delete/', ''));
         return handleStorageDelete(request, env, key, authUser);
     }
-    if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env, authUser);
-    if (path.startsWith('/api/storage/public-avatar/') && method === 'GET') {
-        const key = decodeURIComponent(path.replace('/api/storage/public-avatar/', ''));
-        return handlePublicAvatar(request, env, key);
-    }
-    return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404, request);
+    if (path === '/api/storage/list' && method === 'GET') return handleStorageList(request, env, authUser);    
+        return jsonResponse({ error: 'Ruta de storage no encontrada', path }, 404, request);
 }
 
 async function handleStorageUpload(request, env, authUser) {
