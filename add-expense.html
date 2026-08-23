@@ -315,7 +315,7 @@ async function loadGroupMembers(groupId) {
         const isMe = m.id === uid;
         const displayName = isMe ? t('expense.you', null, 'Tú') : (m.name || `Socio ${i + 1}`);
         const initials = displayName.slice(0, 2).toUpperCase();
-        return { id: m.id, name: displayName, initials, color: colors[i % colors.length] };
+        return { id: m.id, name: displayName, initials, color: colors[i % colors.length], avatar_url: m.avatar_url || '' };
       });
       // «Tú» siempre primero
       members.sort((a, b) => (a.id === uid ? -1 : b.id === uid ? 1 : 0));
@@ -339,7 +339,7 @@ function renderPayers() {
   }
   row.innerHTML = members.map((m, i) => `
     <div class="payer-chip ${i === selectedPayer ? 'selected' : ''}" onclick="selectPayer(${i})">
-      <div class="payer-avatar overflow-hidden" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover" alt="${m.name}" onerror="this.style.display='none'"/>` : m.initials}</div>
+      <div class="payer-avatar overflow-hidden relative" style="background:${m.color}22;color:${m.color};border-color:${i===selectedPayer?m.color:'rgba(255,255,255,0.1)'}">${m.initials}${m.avatar_url ? `<img src="${m.avatar_url}" class="absolute inset-0 w-full h-full object-cover" alt="${m.name}" onerror="this.style.display='none'"/>` : ''}</div>
       <span class="payer-name">${m.name}</span>
     </div>`).join('');
 }
