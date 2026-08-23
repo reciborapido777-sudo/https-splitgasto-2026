@@ -309,8 +309,8 @@ async function loadGroupData(groupId) {
       return `
         <div class="participant-row flex flex-col sm:flex-row sm:items-center justify-between p-5 glass-panel rounded-2xl border-white/5 gap-4" ${canLiquidate ? `onclick="goToLiquidation('${safeGroupId}','${safeMemberId}','${safeAmount}')"` : canAddExpense ? `onclick="sessionStorage.setItem('sg_selected_group','${safeGroupId}');SGRouter.navigate('add-expense','split')"` : ''}>
           <div class="flex items-center gap-4 min-w-0">
-            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0 overflow-hidden"
-                 style="background:${color}22;color:${color};border-color:${color}33">${m.avatar_url ? `<img src="${m.avatar_url}" class="w-full h-full object-cover" alt="${name}" onerror="this.style.display='none'"/>` : initials}</div>
+            <div class="avatar-img size-10 rounded-xl border flex items-center justify-center font-black text-sm transition-all flex-shrink-0 overflow-hidden relative"
+                 style="background:${color}22;color:${color};border-color:${color}33">${initials}${m.avatar_url ? `<img src="${m.avatar_url}" class="absolute inset-0 w-full h-full object-cover" alt="${name}" onerror="this.style.display='none'"/>` : ''}</div>
             <div class="min-w-0">
               <p class="text-[8px] font-black text-zinc-500 uppercase tracking-widest leading-none">${roleLabel}</p>
               <p class="text-xs font-black uppercase text-white truncate">${name}</p>
