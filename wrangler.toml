@@ -69,7 +69,7 @@ head_sampling_rate = 0.1
 
 # ── Cron Trigger (renovar token Google Play) ──────────────────────────
 [triggers]
-crons = ["*/30 * * * *"]
+crons = ["*/30 * * * *", "0 6 * * *"]
 
 # Email Routing — auto-respuesta de soporte
 [[send_email]]
