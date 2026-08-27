@@ -2039,6 +2039,70 @@ async function handleDatabase(request, env, path) {
         return jsonResponse({ success: true, message: 'Gasto recurrente desactivado' }, 200, request);
     }
 
+    // ── EXPORT CSV ────────────────────────────────────────────────────
+    else if (path === '/api/db/export/csv' && method === 'GET') {
+        const url = new URL(request.url);
+        const groupId = url.searchParams.get('groupId');
+        if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400, request);
+        
+        const expenses = await env.SPLITGASTO_DB.prepare(
+            `SELECT e.description, e.amount, e.currency, e.category, e.split_type, e.created_at, u.name as paid_by_name
+             FROM expenses e
+             LEFT JOIN users u ON u.id = e.paid_by
+             WHERE e.group_id = ?
+             ORDER BY e.created_at DESC`
+        ).bind(groupId).all();
+        
+        const settlements = await env.SPLITGASTO_DB.prepare(
+            `SELECT s.amount, s.currency, s.created_at, 
+                    fu.name as from_name, tu.name as to_name
+             FROM settlements s
+             LEFT JOIN users fu ON fu.id = s.from_user
+             LEFT JOIN users tu ON tu.id = s.to_user
+             WHERE s.group_id = ?
+             ORDER BY s.created_at DESC`
+        ).bind(groupId).all();
+        
+        const group = await env.SPLITGASTO_DB.prepare(
+            'SELECT name FROM groups WHERE id = ?'
+        ).bind(groupId).first();
+        
+        const groupName = group?.name || 'grupo';
+        const date = new Date().toISOString().slice(0, 10);
+        
+        let csv = '\uFEFF'; // BOM para Excel
+        csv += 'SplitGasto 2026 — Exportacion de datos\n';
+        csv += `Grupo: ${groupName} | Fecha: ${date}\n\n`;
+        csv += 'Tipo,Descripcion,Importe,Moneda,Categoria,Persona,Fecha\n';
+        
+        (expenses.results || []).forEach(e => {
+            const desc = (e.description || '').replace(/,/g, ';').replace(/\n/g, ' ');
+            const name = (e.paid_by_name || '—').replace(/,/g, ' ');
+            const cat = (e.category || 'otro').replace(/,/g, ' ');
+            csv += `Gasto,${desc},${e.amount || 0},${e.currency || 'EUR'},${cat},${name},${e.created_at || ''}\n`;
+        });
+        
+        (settlements.results || []).forEach(s => {
+            const fromName = (s.from_name || '—').replace(/,/g, ' ');
+            const toName = (s.to_name || '—').replace(/,/g, ' ');
+            csv += `Liquidacion,${fromName} → ${toName},${s.amount || 0},${s.currency || 'EUR'},—,${fromName},${s.created_at || ''}\n`;
+        });
+        
+        const totalExpenses = (expenses.results || []).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+        const totalSettlements = (settlements.results || []).reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+        csv += `\nTotal Gastos,${totalExpenses.toFixed(2)},EUR\n`;
+        csv += `Total Liquidaciones,${totalSettlements.toFixed(2)},EUR\n`;
+        
+        return new Response(csv, {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv; charset=utf-8',
+                'Content-Disposition': `attachment; filename="splitgasto_${groupName}_${date}.csv"`,
+                'Access-Control-Allow-Origin': '*',
+            }
+        });
+    }
+
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404, request);
 }
 
