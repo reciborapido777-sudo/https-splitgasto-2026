@@ -260,6 +260,21 @@ const SGApi = (function(){
         });
     }
 
+    async function getRecurring(groupId) {
+        return request(`/api/db/recurring?groupId=${groupId}`);
+    }
+
+    async function createRecurring(groupId, description, amount, currency, category, splitType, frequency, dayOfMonth, endDate) {
+        return request('/api/db/recurring', {
+            method: 'POST',
+            body: JSON.stringify({ groupId, description, amount, currency, category, splitType, frequency, dayOfMonth, endDate })
+        });
+    }
+
+    async function deleteRecurring(recurringId) {
+        return request(`/api/db/recurring/${recurringId}`, { method: 'DELETE' });
+    }
+
     return {
         getGroups, createGroup, deleteGroup, getGroupMembers, addGroupMember, addGroupMemberByEmail, removeGroupMember, getUserByEmail,
         getExpenses, addExpense, deleteExpense,
@@ -267,6 +282,7 @@ const SGApi = (function(){
         getSettlements, createSettlement,
         getProfile, updateProfile,
         getNotifications, markNotificationsRead,
+        getRecurring, createRecurring, deleteRecurring,
         uploadFile, getSignedUrl, listFiles, deleteFile,
         aiChat, aiClassify, aiScanTicket, aiSummary,
         health,
