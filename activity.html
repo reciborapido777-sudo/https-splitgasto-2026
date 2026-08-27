@@ -96,7 +96,22 @@
             <button class="filter-btn active px-7 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest flex-shrink-0" onclick="filterTx('all', this)" data-i18n="activity.filterAll">Todos</button>
             <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('income', this)" data-i18n="activity.filterIncome">A cobrar</button>
             <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-zinc-500 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:text-white transition-colors" onclick="filterTx('expense', this)" data-i18n="activity.filterExpense">A pagar</button>
+            <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-[#a855f7] border-[#a855f7]/20 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:bg-[#a855f7]/10 transition-colors flex items-center gap-2" onclick="openRecurringModal()">
+                <span class="material-icons-round text-xs">autorenew</span>
+                <span data-i18n="activity.filterRecurring">Recurrentes</span>
+            </button>
         </nav>
+
+        <!-- Gastos Recurrentes -->
+        <section id="recurring-section" class="space-y-3 reveal-node" style="display:none">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xs font-black uppercase tracking-widest text-[#a855f7]" data-i18n="recurring.title">Gastos Recurrentes</h3>
+                <button onclick="openRecurringModal()" class="px-3 py-1.5 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/20 text-[#a855f7] text-[9px] font-black uppercase tracking-widest hover:bg-[#a855f7]/20 transition-all">
+                    + <span data-i18n="recurring.add">Nuevo</span>
+                </button>
+            </div>
+            <div id="recurring-list" class="space-y-2"></div>
+        </section>
 
         <main class="space-y-12" id="activity-content">
             <p class="text-xs text-zinc-600 text-center py-12" data-i18n="activity.loadingMovements">Cargando movimientos…</p>
@@ -150,6 +165,7 @@ const CAT_COLORS = {
         }
 
         const uid = SGAuth.getUserId();
+        if (groups[0]) loadRecurringExpenses(groups[0].id);
 
         // Cargar gastos, miembros Y balances de TODOS los grupos en paralelo
         const expPromises = groups.map(g => SGApi.getExpenses(g.id).catch(() => null));
@@ -475,6 +491,119 @@ const CAT_COLORS = {
       });
     }
 
+    let selectedFrequency = 'monthly';
+    let currentRecurringGroupId = null;
+
+    async function loadRecurringExpenses(groupId) {
+        currentRecurringGroupId = groupId;
+        const section = document.getElementById('recurring-section');
+        const list = document.getElementById('recurring-list');
+        if (!section || !list) return;
+        try {
+            const result = await SGApi.getRecurring(groupId);
+            if (result?.success && result.recurring && result.recurring.length > 0) {
+                section.style.display = 'block';
+                const cur = localStorage.getItem('sg_currency') || 'EUR';
+                const sym = { EUR: '€', USD: '$', GBP: '£' }[cur] || '€';
+                list.innerHTML = result.recurring.map(r => {
+                    const freqLabel = { weekly: t('recurring.weekly', null, 'Semanal'), monthly: t('recurring.monthly', null, 'Mensual'), yearly: t('recurring.yearly', null, 'Anual') }[r.frequency] || r.frequency;
+                    const nextDate = new Date(r.next_run).toLocaleDateString(getUserLocale());
+                    return `
+                        <div class="glass-panel p-4 rounded-2xl flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="size-10 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/20 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-round text-[#a855f7] text-sm">repeat</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-black uppercase truncate">${r.description}</p>
+                                    <p class="text-[9px] text-zinc-500 uppercase tracking-wider">${freqLabel} · ${nextDate}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                <span class="text-sm font-black font-['Space_Grotesk'] money-display text-[#a855f7]">${parseFloat(r.amount).toLocaleString(getUserLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})}${sym}</span>
+                                <button onclick="deleteRecurring('${r.id}')" class="size-8 flex items-center justify-center rounded-lg hover:bg-red-500/20 transition-all">
+                                    <span class="material-icons-round text-red-400 text-sm">delete</span>
+                                </button>
+                            </div>
+                        </div>`;
+                }).join('');
+            } else {
+                section.style.display = 'block';
+                list.innerHTML = `<p class="text-[10px] text-zinc-600 text-center py-4 uppercase tracking-widest" data-i18n="recurring.empty">Sin gastos recurrentes</p>`;
+            }
+        } catch (e) {
+            console.error('[Recurring] Error:', e);
+        }
+    }
+
+    function openRecurringModal() {
+        if (!currentRecurringGroupId) {
+            SGRouter.showToast(t('recurring.selectGroup', null, 'Selecciona un grupo primero'), 'warning');
+            return;
+        }
+        document.getElementById('recurring-modal').style.display = 'flex';
+    }
+
+    function closeRecurringModal() {
+        document.getElementById('recurring-modal').style.display = 'none';
+        document.getElementById('recurring-desc').value = '';
+        document.getElementById('recurring-amount').value = '';
+        document.getElementById('recurring-end').value = '';
+    }
+
+    function selectFrequency(btn, freq) {
+        selectedFrequency = freq;
+        document.querySelectorAll('.freq-btn').forEach(b => {
+            b.classList.remove('border-[#a855f7]', 'bg-[#a855f7]/15', 'text-[#a855f7]');
+            b.classList.add('border-white/10', 'bg-white/5');
+        });
+        btn.classList.remove('border-white/10', 'bg-white/5');
+        btn.classList.add('border-[#a855f7]', 'bg-[#a855f7]/15', 'text-[#a855f7]');
+        const dayWrapper = document.getElementById('day-of-month-wrapper');
+        dayWrapper.style.display = freq === 'monthly' ? 'block' : 'none';
+    }
+
+    async function saveRecurring() {
+        const desc = document.getElementById('recurring-desc').value.trim();
+        const amount = parseFloat(document.getElementById('recurring-amount').value);
+        const category = document.getElementById('recurring-category').value;
+        const dayOfMonth = parseInt(document.getElementById('recurring-day').value) || 1;
+        const endDate = document.getElementById('recurring-end').value || null;
+        if (!desc || !amount || amount <= 0) {
+            SGRouter.showToast(t('recurring.fillFields', null, 'Completa descripción e importe'), 'error');
+            return;
+        }
+        const btn = document.getElementById('recurring-save-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ ' + t('recurring.creating', null, 'Creando...');
+        try {
+            const result = await SGApi.createRecurring(currentRecurringGroupId, desc, amount, null, category, 'equal', selectedFrequency, dayOfMonth, endDate);
+            if (result?.success) {
+                SGRouter.showToast(t('recurring.created', null, 'Gasto recurrente creado ✓'), 'success');
+                closeRecurringModal();
+                await loadRecurringExpenses(currentRecurringGroupId);
+            } else {
+                SGRouter.showToast(result?.error || t('error.connection', null, 'Error de conexión'), 'error');
+            }
+        } catch (e) {
+            SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
+        }
+        btn.disabled = false;
+        btn.innerHTML = `<span data-i18n="recurring.create">Crear Gasto Recurrente</span>`;
+    }
+
+    async function deleteRecurring(id) {
+        try {
+            const result = await SGApi.deleteRecurring(id);
+            if (result?.success) {
+                SGRouter.showToast(t('recurring.deleted', null, 'Gasto recurrente eliminado'), 'success');
+                if (currentRecurringGroupId) await loadRecurringExpenses(currentRecurringGroupId);
+            }
+        } catch (e) {
+            SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadActivityData();
     });
@@ -550,6 +679,64 @@ const CAT_COLORS = {
         });
     }
     </script>
+
+<!-- Modal Gasto Recurrente -->
+<div id="recurring-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4" style="display:none">
+    <div class="glass-panel rounded-[2.5rem] p-8 w-full max-w-md space-y-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-black uppercase tracking-tight" data-i18n="recurring.newTitle">Nuevo Gasto Recurrente</h2>
+            <button onclick="closeRecurringModal()" class="size-10 rounded-full bg-white/5 flex items-center justify-center">
+                <span class="material-icons-round text-zinc-400">close</span>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="expense.description">Descripción</label>
+                <input type="text" id="recurring-desc" class="sg-input mt-1" placeholder="Alquiler, Netflix..." />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="expense.amount">Importe</label>
+                    <input type="number" id="recurring-amount" class="sg-input mt-1" placeholder="0,00" step="0.01" inputmode="decimal" />
+                </div>
+                <div>
+                    <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="expense.category">Categoría</label>
+                    <select id="recurring-category" class="sg-input mt-1" style="appearance:none;cursor:pointer">
+                        <option value="comida" data-i18n="category.comida">Comida</option>
+                        <option value="transporte" data-i18n="category.transporte">Transporte</option>
+                        <option value="entretenimiento" data-i18n="category.entretenimiento">Ocio</option>
+                        <option value="alojamiento" data-i18n="category.alojamiento">Hogar</option>
+                        <option value="compras" data-i18n="category.compras">Compras</option>
+                        <option value="salud" data-i18n="category.salud">Salud</option>
+                        <option value="otro" data-i18n="category.otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="recurring.frequency">Frecuencia</label>
+                <div class="grid grid-cols-3 gap-2 mt-1">
+                    <button onclick="selectFrequency(this,'weekly')" class="freq-btn py-3 rounded-xl text-xs font-black uppercase border border-white/10 bg-white/5" data-i18n="recurring.weekly">Semanal</button>
+                    <button onclick="selectFrequency(this,'monthly')" class="freq-btn py-3 rounded-xl text-xs font-black uppercase border border-[#a855f7] bg-[#a855f7]/15 text-[#a855f7]" data-i18n="recurring.monthly">Mensual</button>
+                    <button onclick="selectFrequency(this,'yearly')" class="freq-btn py-3 rounded-xl text-xs font-black uppercase border border-white/10 bg-white/5" data-i18n="recurring.yearly">Anual</button>
+                </div>
+            </div>
+            <div id="day-of-month-wrapper">
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="recurring.dayOfMonth">Día del mes</label>
+                <input type="number" id="recurring-day" class="sg-input mt-1" placeholder="1" min="1" max="28" value="1" />
+            </div>
+            <div>
+                <label class="text-[9px] font-black uppercase tracking-widest text-zinc-500" data-i18n="recurring.endDate">Fecha fin (opcional)</label>
+                <input type="date" id="recurring-end" class="sg-input mt-1" />
+            </div>
+        </div>
+        <button onclick="saveRecurring()" id="recurring-save-btn" class="w-full py-4 rounded-2xl bg-[#a855f7] text-white font-black text-xs uppercase tracking-widest hover:bg-[#9333ea] transition-all active:scale-95">
+            <span data-i18n="recurring.create">Crear Gasto Recurrente</span>
+        </button>
+    </div>
+</div>
+
 </div>
 </body>
 </html>
+
+        
