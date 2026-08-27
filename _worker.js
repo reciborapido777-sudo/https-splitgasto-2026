@@ -189,54 +189,7 @@ async function handleAPI(request, env, ctx, path) {
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
     if (path.startsWith('/api/storage/')) return handleStorage(request, env, path);
     if (path.startsWith('/api/db/')) return handleDatabase(request, env, path);
-
-// ── RECURRING EXPENSES ────────────────────────────────────────────
-else if (path === '/api/db/recurring' && method === 'GET') {
-    const url = new URL(request.url);
-    const groupId = url.searchParams.get('groupId');
-    if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400, request);
-        
-    const recurring = await env.SPLITGASTO_DB.prepare(
-        'SELECT * FROM recurring_expenses WHERE group_id = ? AND active = 1 ORDER BY next_run ASC'
-    ).bind(groupId).all();
-    return jsonResponse({ success: true, recurring: recurring.results }, 200, request);
-}
-
-else if (path === '/api/db/recurring' && method === 'POST') {
-    const { groupId, description, amount, currency, category, splitType, frequency, dayOfMonth, endDate, startDate } = body;
-    if (!groupId || !description || !amount) return jsonResponse({ error: 'Faltan campos requeridos' }, 400, request);
-        
-    const id = crypto.randomUUID();
-    const start = startDate || new Date().toISOString().slice(0, 10);
-    const nextRun = new Date();
-    if (frequency === 'monthly') {
-        nextRun.setDate(dayOfMonth || 1);
-        if (nextRun <= new Date()) nextRun.setMonth(nextRun.getMonth() + 1);
-    } else if (frequency === 'weekly') {
-        nextRun.setDate(nextRun.getDate() + 7);
-    } else if (frequency === 'yearly') {
-        nextRun.setFullYear(nextRun.getFullYear() + 1);
-    }
-    const nextRunStr = nextRun.toISOString().slice(0, 19).replace('T', ' ');
-        
-    await env.SPLITGASTO_DB.prepare(
-        `INSERT INTO recurring_expenses (id, group_id, paid_by, description, amount, currency, category, split_type, frequency, day_of_month, start_date, end_date, next_run, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(id, groupId, authUser.userId, description, amount, currency || 'EUR', category || 'otro', splitType || 'equal', frequency || 'monthly', dayOfMonth || 1, start, endDate || null, nextRunStr, authUser.userId).run();
-        
-    return jsonResponse({ success: true, id, message: 'Gasto recurrente creado' }, 201, request);
-}
-
-else if (path.startsWith('/api/db/recurring/') && method === 'DELETE') {
-    const recurringId = path.replace('/api/db/recurring/', '');
-    if (!recurringId) return jsonResponse({ error: 'ID requerido' }, 400, request);
-        
-    await env.SPLITGASTO_DB.prepare(
-        'UPDATE recurring_expenses SET active = 0 WHERE id = ?'
-    ).bind(recurringId).run();
-    return jsonResponse({ success: true, message: 'Gasto recurrente desactivado' }, 200, request);
-}
-
+       
     return jsonResponse({ error: 'Endpoint no encontrado', path }, 404, request);
 }
 
@@ -899,8 +852,6 @@ async function handleStorage(request, env, path) {
 
     const { error: authError, user: authUser } = await requireAuth(request, env);
     if (authError) return authError;
-
-    if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
 
     if (path === '/api/storage/upload' && method === 'POST') return handleStorageUpload(request, env, authUser);
     if (path.startsWith('/api/storage/download/') && method === 'GET') {
@@ -2039,6 +1990,53 @@ async function handleDatabase(request, env, path) {
             ).bind(userId).run();
         } catch {}
         return jsonResponse({ success: true, message: 'Notificaciones marcadas como leídas' }, 200, request);
+    }
+
+    // ── RECURRING EXPENSES ────────────────────────────────────────────
+    else if (path === '/api/db/recurring' && method === 'GET') {
+        const url = new URL(request.url);
+        const groupId = url.searchParams.get('groupId');
+        if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400, request);
+        
+        const recurring = await env.SPLITGASTO_DB.prepare(
+            'SELECT * FROM recurring_expenses WHERE group_id = ? AND active = 1 ORDER BY next_run ASC'
+        ).bind(groupId).all();
+        return jsonResponse({ success: true, recurring: recurring.results }, 200, request);
+    }
+
+    else if (path === '/api/db/recurring' && method === 'POST') {
+        const { groupId, description, amount, currency, category, splitType, frequency, dayOfMonth, endDate, startDate } = body;
+        if (!groupId || !description || !amount) return jsonResponse({ error: 'Faltan campos requeridos' }, 400, request);
+        
+        const id = crypto.randomUUID();
+        const start = startDate || new Date().toISOString().slice(0, 10);
+        const nextRun = new Date();
+        if (frequency === 'monthly') {
+            nextRun.setDate(dayOfMonth || 1);
+            if (nextRun <= new Date()) nextRun.setMonth(nextRun.getMonth() + 1);
+        } else if (frequency === 'weekly') {
+            nextRun.setDate(nextRun.getDate() + 7);
+        } else if (frequency === 'yearly') {
+            nextRun.setFullYear(nextRun.getFullYear() + 1);
+        }
+        const nextRunStr = nextRun.toISOString().slice(0, 19).replace('T', ' ');
+        
+        await env.SPLITGASTO_DB.prepare(
+            `INSERT INTO recurring_expenses (id, group_id, paid_by, description, amount, currency, category, split_type, frequency, day_of_month, start_date, end_date, next_run, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(id, groupId, authUser.userId, description, amount, currency || 'EUR', category || 'otro', splitType || 'equal', frequency || 'monthly', dayOfMonth || 1, start, endDate || null, nextRunStr, authUser.userId).run();
+        
+        return jsonResponse({ success: true, id, message: 'Gasto recurrente creado' }, 201, request);
+    }
+
+    else if (path.startsWith('/api/db/recurring/') && method === 'DELETE') {
+        const recurringId = path.replace('/api/db/recurring/', '');
+        if (!recurringId) return jsonResponse({ error: 'ID requerido' }, 400, request);
+        
+        await env.SPLITGASTO_DB.prepare(
+            'UPDATE recurring_expenses SET active = 0 WHERE id = ?'
+        ).bind(recurringId).run();
+        return jsonResponse({ success: true, message: 'Gasto recurrente desactivado' }, 200, request);
     }
 
     return jsonResponse({ error: 'Ruta de base de datos no encontrada', path }, 404, request);
