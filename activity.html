@@ -115,6 +115,10 @@
                 <span class="material-icons-round text-xs">autorenew</span>
                 <span data-i18n="activity.filterRecurring">Recurrentes</span>
             </button>
+            <button class="filter-btn glass-panel px-7 py-3.5 rounded-2xl text-[#13ecd6] border-[#13ecd6]/20 text-[10px] font-black uppercase tracking-widest flex-shrink-0 hover:bg-[#13ecd6]/10 transition-colors flex items-center gap-2" onclick="exportCSV()">
+                <span class="material-icons-round text-xs">download</span>
+                <span data-i18n="activity.exportCSV">Exportar CSV</span>
+            </button>
         </nav>
 
         <!-- Gastos Recurrentes -->
@@ -615,6 +619,34 @@ const CAT_COLORS = {
                 if (currentRecurringGroupId) await loadRecurringExpenses(currentRecurringGroupId);
             }
         } catch (e) {
+            SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
+        }
+    }
+
+    async function exportCSV() {
+        if (!currentRecurringGroupId) {
+            SGRouter.showToast(t('recurring.selectGroup', null, 'Selecciona un grupo primero'), 'warning');
+            return;
+        }
+        SGRouter.showToast(t('activity.exporting', null, 'Exportando...'), 'info');
+        try {
+            const token = SGAuth.getToken();
+            const res = await fetch(`/api/db/export/csv?groupId=${currentRecurringGroupId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Export failed');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'splitgasto_export.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            SGRouter.showToast(t('activity.exported', null, 'CSV descargado ✓'), 'success');
+        } catch (e) {
+            console.error('[Export] Error:', e);
             SGRouter.showToast(t('error.connection', null, 'Error de conexión'), 'error');
         }
     }
