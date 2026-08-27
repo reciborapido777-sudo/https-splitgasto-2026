@@ -111,6 +111,7 @@ export default {
 
     async scheduled(event, env, ctx) {
         ctx.waitUntil(refreshGooglePlayToken(env));
+        ctx.waitUntil(processRecurringExpenses(env));
     },
 
    };
@@ -188,6 +189,53 @@ async function handleAPI(request, env, ctx, path) {
     if (path.startsWith('/api/ai/')) return handleAI(request, env, path);
     if (path.startsWith('/api/storage/')) return handleStorage(request, env, path);
     if (path.startsWith('/api/db/')) return handleDatabase(request, env, path);
+
+// ── RECURRING EXPENSES ────────────────────────────────────────────
+else if (path === '/api/db/recurring' && method === 'GET') {
+    const url = new URL(request.url);
+    const groupId = url.searchParams.get('groupId');
+    if (!groupId) return jsonResponse({ error: 'Parámetro "groupId" requerido' }, 400, request);
+        
+    const recurring = await env.SPLITGASTO_DB.prepare(
+        'SELECT * FROM recurring_expenses WHERE group_id = ? AND active = 1 ORDER BY next_run ASC'
+    ).bind(groupId).all();
+    return jsonResponse({ success: true, recurring: recurring.results }, 200, request);
+}
+
+else if (path === '/api/db/recurring' && method === 'POST') {
+    const { groupId, description, amount, currency, category, splitType, frequency, dayOfMonth, endDate, startDate } = body;
+    if (!groupId || !description || !amount) return jsonResponse({ error: 'Faltan campos requeridos' }, 400, request);
+        
+    const id = crypto.randomUUID();
+    const start = startDate || new Date().toISOString().slice(0, 10);
+    const nextRun = new Date();
+    if (frequency === 'monthly') {
+        nextRun.setDate(dayOfMonth || 1);
+        if (nextRun <= new Date()) nextRun.setMonth(nextRun.getMonth() + 1);
+    } else if (frequency === 'weekly') {
+        nextRun.setDate(nextRun.getDate() + 7);
+    } else if (frequency === 'yearly') {
+        nextRun.setFullYear(nextRun.getFullYear() + 1);
+    }
+    const nextRunStr = nextRun.toISOString().slice(0, 19).replace('T', ' ');
+        
+    await env.SPLITGASTO_DB.prepare(
+        `INSERT INTO recurring_expenses (id, group_id, paid_by, description, amount, currency, category, split_type, frequency, day_of_month, start_date, end_date, next_run, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, groupId, authUser.userId, description, amount, currency || 'EUR', category || 'otro', splitType || 'equal', frequency || 'monthly', dayOfMonth || 1, start, endDate || null, nextRunStr, authUser.userId).run();
+        
+    return jsonResponse({ success: true, id, message: 'Gasto recurrente creado' }, 201, request);
+}
+
+else if (path.startsWith('/api/db/recurring/') && method === 'DELETE') {
+    const recurringId = path.replace('/api/db/recurring/', '');
+    if (!recurringId) return jsonResponse({ error: 'ID requerido' }, 400, request);
+        
+    await env.SPLITGASTO_DB.prepare(
+        'UPDATE recurring_expenses SET active = 0 WHERE id = ?'
+    ).bind(recurringId).run();
+    return jsonResponse({ success: true, message: 'Gasto recurrente desactivado' }, 200, request);
+}
 
     return jsonResponse({ error: 'Endpoint no encontrado', path }, 404, request);
 }
@@ -2560,6 +2608,56 @@ async function refreshGooglePlayToken(env) {
         console.log('[Google Play] Token renovado correctamente');
     } catch (err) {
         console.error('[Google Play] Error renovando token:', err.message);
+    }
+}
+
+async function processRecurringExpenses(env) {
+    if (!env.SPLITGASTO_DB) return;
+    try {
+        const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const due = await env.SPLITGASTO_DB.prepare(
+            'SELECT * FROM recurring_expenses WHERE active = 1 AND next_run <= ?'
+        ).bind(now).all();
+
+        if (!due.results || due.results.length === 0) return;
+
+        for (const r of due.results) {
+            const expenseId = crypto.randomUUID();
+            await env.SPLITGASTO_DB.prepare(
+                `INSERT INTO expenses (id, group_id, paid_by, description, amount, currency, category, split_type)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            ).bind(expenseId, r.group_id, r.paid_by, r.description, r.amount, r.currency, r.category, r.split_type).run();
+
+            await env.SPLITGASTO_CACHE?.delete(`db:balances:${r.group_id}`);
+            await env.SPLITGASTO_CACHE?.delete(`db:expenses:${r.group_id}`);
+
+            const nextRun = calculateNextRun(r.frequency, r.day_of_month);
+            const nextRunStr = nextRun.toISOString().slice(0, 19).replace('T', ' ');
+
+            if (r.end_date && nextRun > new Date(r.end_date)) {
+                await env.SPLITGASTO_DB.prepare(
+                    'UPDATE recurring_expenses SET active = 0, last_run = ? WHERE id = ?'
+                ).bind(now, r.id).run();
+            } else {
+                await env.SPLITGASTO_DB.prepare(
+                    'UPDATE recurring_expenses SET last_run = ?, next_run = ? WHERE id = ?'
+                ).bind(now, nextRunStr, r.id).run();
+            }
+        }
+        console.log(`[Cron] ${due.results.length} gastos recurrentes procesados`);
+    } catch (err) {
+        console.error('[Cron] Error procesando recurrentes:', err);
+    }
+}
+
+function calculateNextRun(frequency, dayOfMonth) {
+    const now = new Date();
+    if (frequency === 'weekly') {
+        return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    } else if (frequency === 'yearly') {
+        return new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    } else {
+        return new Date(now.getFullYear(), now.getMonth() + 1, dayOfMonth || 1);
     }
 }
 
