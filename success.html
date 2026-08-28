@@ -361,7 +361,7 @@
             if (ticket.balanceAfter !== undefined && ticket.balanceAfter !== null) {
                 var b = parseFloat(ticket.balanceAfter) || 0;
                 var balEl = document.getElementById('ticket-balance');
-                if (ticket.type === 'settlement' && b === 0) {
+                if (ticket.type === 'settlement' && Math.abs(b) < 0.01) {
                     balEl.textContent = t('success.debtSettled', null, 'Deuda saldada');
                     balEl.classList.add('balance-zero');
                 } else {
