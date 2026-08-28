@@ -173,6 +173,8 @@ function selectMethod(el) {
   icon.classList.add('text-[#13ecd6]');
 }
 
+let _resolvedRecipientName = '';
+
 async function executeLiquidation() {
     const btn = document.getElementById('btn-confirm-liquidation');
     if (!btn) return;
@@ -211,7 +213,7 @@ async function executeLiquidation() {
         const data = await res.json();
         
         if (data.success) {
-            const recipientName = document.getElementById('recipient-name').textContent || 'Usuario';
+            const recipientName = _resolvedRecipientName || document.getElementById('recipient-name').textContent || 'Usuario';
             const groupName = document.querySelector('#badges-container span')?.textContent || 'Grupo';
     
             sessionStorage.setItem('sg_success_ticket', JSON.stringify({
@@ -285,6 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (member?.name) recipientName = member.name;
         }
         
+        _resolvedRecipientName = recipientName;
         document.getElementById('recipient-name').textContent = recipientName;
 
         const badgesHtml = `
