@@ -360,9 +360,13 @@
             // Balance resultante (crucial para liquidaciones)
             if (ticket.balanceAfter !== undefined && ticket.balanceAfter !== null) {
                 var b = parseFloat(ticket.balanceAfter) || 0;
-                setText('ticket-balance', fmtMoney(b, ticket.currency));
-                if (b === 0) {
-                    document.getElementById('ticket-balance').classList.add('balance-zero');
+                var balEl = document.getElementById('ticket-balance');
+                if (ticket.type === 'settlement' && b === 0) {
+                    balEl.textContent = t('success.debtSettled', null, 'Deuda saldada');
+                    balEl.classList.add('balance-zero');
+                } else {
+                    balEl.textContent = fmtMoney(b, ticket.currency);
+                    if (b === 0) balEl.classList.add('balance-zero');
                 }
                 showRow('row-balance');
             }
