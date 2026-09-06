@@ -593,31 +593,41 @@ async function handleAuth(request, env, path) {
 
         if (!env.SPLITGASTO_CACHE) return jsonResponse({ error: 'Sistema de recuperación no disponible' }, 503, request);
 
-        const stored = await env.SPLITGASTO_CACHE.get(`recovery:${userId}`, 'json');
+        // Resolver userId: si es email, buscar el UUID en D1
+        let resolvedUserId = userId;
+        if (userId.includes('@')) {
+            const userByEmail = await env.SPLITGASTO_DB.prepare(
+                'SELECT id FROM users WHERE LOWER(email) = ?'
+            ).bind(userId.toLowerCase().trim()).first();
+            if (!userByEmail) return jsonResponse({ error: 'Usuario no encontrado' }, 404, request);
+            resolvedUserId = userByEmail.id;
+        }
+
+        const stored = await env.SPLITGASTO_CACHE.get(`recovery:${resolvedUserId}`, 'json');
         if (!stored) return jsonResponse({ error: 'Código expirado o inválido' }, 400, request);
 
         const targetUser = await env.SPLITGASTO_DB.prepare(
             'SELECT id FROM users WHERE id = ? AND LOWER(email) = ?'
-        ).bind(userId, stored.email?.toLowerCase()).first();
+        ).bind(resolvedUserId, stored.email?.toLowerCase()).first();
         if (!targetUser) return jsonResponse({ error: 'Código inválido para este usuario' }, 400, request);
 
         const validCode = await verifyRecoveryCode(code, stored.codeHash, env);
         if (!validCode) return jsonResponse({ error: 'Código incorrecto' }, 400, request);
 
         if (stored.createdAt && Date.now() - stored.createdAt > 900000) {
-            await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
+            await env.SPLITGASTO_CACHE.delete(`recovery:${resolvedUserId}`);
             return jsonResponse({ error: 'Código expirado' }, 400, request);
         }
 
         const hashedPassword = await hashPassword(newPassword);
         await env.SPLITGASTO_DB.prepare(
             'UPDATE users SET password_hash = ? WHERE id = ?'
-        ).bind(hashedPassword, userId).run();
+        ).bind(hashedPassword, resolvedUserId).run();
 
-        await env.SPLITGASTO_CACHE.delete(`recovery:${userId}`);
+        await env.SPLITGASTO_CACHE.delete(`recovery:${resolvedUserId}`);
 
         // PARCHE 4: Revocar tokens activos tras reajuste por recuperación exitosa
-        await revokeUserTokens(env, userId);
+        await revokeUserTokens(env, resolvedUserId);
 
         return jsonResponse({ success: true, message: 'Contraseña restablecida correctamente' }, 200, request);
     }
