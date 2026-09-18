@@ -462,7 +462,23 @@ const translations = {
     'vault.demoDate1': '12 Mar',
     'vault.demoDate2': '10 Mar',
     'vault.demoDate3': '9 Mar',
-    'vault.demoDate4': '5 Mar'
+    'vault.demoDate4': '5 Mar',
+    'recurring.title': 'Gastos Recurrentes',
+    'recurring.add': 'Nuevo',
+    'recurring.newTitle': 'Nuevo Gasto Recurrente',
+    'recurring.frequency': 'Frecuencia',
+    'recurring.weekly': 'Semanal',
+    'recurring.monthly': 'Mensual',
+    'recurring.yearly': 'Anual',
+    'recurring.dayOfMonth': 'Día del mes',
+    'recurring.endDate': 'Fecha fin (opcional)',
+    'recurring.create': 'Crear Gasto Recurrente',
+    'recurring.empty': 'Sin gastos recurrentes',
+    'recurring.selectGroup': 'Selecciona un grupo primero',
+    'recurring.fillFields': 'Completa descripción e importe',
+    'recurring.creating': 'Creando...',
+    'recurring.created': 'Gasto recurrente creado ✓',
+    'recurring.deleted': 'Gasto recurrente eliminado'
   },
   en: {
     'settings.title': 'Settings',
@@ -917,8 +933,24 @@ const translations = {
     'vault.demoDate1': 'Mar 12',
     'vault.demoDate2': 'Mar 10',
     'vault.demoDate3': 'Mar 9',
-    'vault.demoDate4': 'Mar 5'
-  },
+    'vault.demoDate4': 'Mar 5',
+    'recurring.title': 'Recurring Expenses',
+    'recurring.add': 'New',
+    'recurring.newTitle': 'New Recurring Expense',
+    'recurring.frequency': 'Frequency',
+    'recurring.weekly': 'Weekly',
+    'recurring.monthly': 'Monthly',
+    'recurring.yearly': 'Yearly',
+    'recurring.dayOfMonth': 'Day of the month',
+    'recurring.endDate': 'End date (optional)',
+    'recurring.create': 'Create Recurring Expense',
+    'recurring.empty': 'No recurring expenses',
+    'recurring.selectGroup': 'Select a group first',
+    'recurring.fillFields': 'Fill in description and amount',
+    'recurring.creating': 'Creating...',
+    'recurring.created': 'Recurring expense created ✓',
+    'recurring.deleted': 'Recurring expense deleted'
+  }
   fr: {
     'settings.title': 'Paramètres',
     'settings.edit': 'Modifier',
@@ -1374,8 +1406,24 @@ const translations = {
     'vault.demoDate1': '12 Mar',
     'vault.demoDate2': '10 Mar',
     'vault.demoDate3': '9 Mar',
-    'vault.demoDate4': '5 Mar'
-  },
+    'vault.demoDate4': '5 Mar',
+    'recurring.title': 'Dépenses Récurrentes',
+    'recurring.add': 'Nouveau',
+    'recurring.newTitle': 'Nouvelle Dépense Récurrente',
+    'recurring.frequency': 'Fréquence',
+    'recurring.weekly': 'Hebdomadaire',
+    'recurring.monthly': 'Mensuel',
+    'recurring.yearly': 'Annuel',
+    'recurring.dayOfMonth': 'Jour du mois',
+    'recurring.endDate': 'Date de fin (optionnel)',
+    'recurring.create': 'Créer une Dépense Récurrente',
+    'recurring.empty': 'Aucune dépense récurrente',
+    'recurring.selectGroup': 'Sélectionnez d\'abord un groupe',
+    'recurring.fillFields': 'Remplissez la description et le montant',
+    'recurring.creating': 'Création en cours...',
+    'recurring.created': 'Dépense récurrente créée ✓',
+    'recurring.deleted': 'Dépense récurrente supprimée'
+  } 
   de: {
     'settings.title': 'Einstellungen',
     'settings.edit': 'Bearbeiten',
@@ -1831,8 +1879,24 @@ const translations = {
     'vault.demoDate1': '12. Mär',
     'vault.demoDate2': '10. Mär',
     'vault.demoDate3': '9. Mär',
-    'vault.demoDate4': '5. Mär'
-  },
+    'vault.demoDate4': '5. Mär',
+    'recurring.title': 'Wiederkehrende Ausgaben',
+    'recurring.add': 'Neu',
+    'recurring.newTitle': 'Neue wiederkehrende Ausgabe',
+    'recurring.frequency': 'Häufigkeit',
+    'recurring.weekly': 'Wöchentlich',
+    'recurring.monthly': 'Monatlich',
+    'recurring.yearly': 'Jährlich',
+    'recurring.dayOfMonth': 'Tag des Monats',
+    'recurring.endDate': 'Enddatum (optional)',
+    'recurring.create': 'Wiederkehrende Ausgabe erstellen',
+    'recurring.empty': 'Keine wiederkehrenden Ausgaben',
+    'recurring.selectGroup': 'Zuerst eine Gruppe auswählen',
+    'recurring.fillFields': 'Beschreibung und Betrag eingeben',
+    'recurring.creating': 'Wird erstellt...',
+    'recurring.created': 'Wiederkehrende Ausgabe erstellt ✓',
+    'recurring.deleted': 'Wiederkehrende Ausgabe gelöscht',
+  }
   zh: {
     'settings.title': '设置',
     'settings.edit': '编辑',
@@ -1988,8 +2052,6 @@ const translations = {
     'index.heroSub': 'SplitGasto 让分摊账单像和朋友出门一样简单。扫描小票，给管理增添一点乐趣，即时结算。账目清晰，没有争执。',
     'index.ctaPrimary': '创建账户 — 免费',
     'index.ctaSecondary': '我已有账户 →',
-
-    // profile
     'profile.protocol': '身份协议',
     'profile.title': '个人资料',
     'profile.auditProtocol': 'Alpha审计协议已激活。完全访问资本节点和军用级数字化工具。',
@@ -2015,12 +2077,8 @@ const translations = {
     'profile.statAudits': '1.2k',
     'profile.statEfficiency': 'Top 1%',
     'profile.statLevel': '创始人',
-
-    // settings extended
     'settings.legalDocs': '法律文件',
     'settings.loadingProfile': '加载中...',
-
-    // friends
     'friends.title': '我的朋友',
     'friends.loading': '加载中...',
     'friends.searchPlaceholder': '搜索好友...',
@@ -2043,8 +2101,6 @@ const translations = {
     'friends.noDebts': '无债务',
     'friends.noOtherMembers': '你的群组中没有其他成员',
     'friends.errorLoading': '加载好友出错',
-
-    // analytics
     'analytics.capitalIntelligence': '资本智能 (Capital Intelligence)',
     'analytics.title': '指标',
     'analytics.commandCenter': '指挥中心',
@@ -2069,8 +2125,6 @@ const translations = {
     'analytics.pending': ' 待处理',
     'analytics.insufficientDataForecast': '数据不足以生成预测。',
     'analytics.estimatedSaving': '根据您当前的结算流，系统估计每月可节省 <span class="text-white">{amount}€</span>。',
-
-    // categories
     'category.food': '餐饮',
     'category.transport': '交通',
     'category.travel': '旅行',
@@ -2082,8 +2136,6 @@ const translations = {
     'category.other': '其他',
     'category.lodging': '住宿',
     'category.services': '服务',
-
-    // add-expense
     'expense.title': '新增支出',
     'expense.scanTicket': '使用AI扫描票据',
     'expense.scanTicketSub': '自动提取数据',
@@ -2119,8 +2171,6 @@ const translations = {
     'expense.partner': '伙伴',
     'expense.selectGroupFirst': '请先选择群组',
     'expense.part': '份',
-
-    // create-group
     'createGroup.title': '新建群组',
     'createGroup.name': '群组名称',
     'createGroup.namePlaceholder': '例如: 圣诞大餐 🎄',
@@ -2151,8 +2201,6 @@ const translations = {
     'createGroup.added': '已添加',
     'createGroup.addedPending': '已添加 (邀请待处理)',
     'createGroup.startsToday': '今天开始',
-
-    // liquidation
     'liquidation.operation': 'Tactical Operation',
     'liquidation.title': 'Settle',
     'liquidation.secureTransfer': 'Secure Transfer',
@@ -2177,8 +2225,6 @@ const translations = {
     'liquidation.settlementError': 'Error settling',
     'liquidation.breakdownTitle': 'Consolidated Breakdown',
     'liquidation.settlementNote': 'Debt settlement',
-
-    // scanner
     'scanner.aiVision': 'AI Vision Alpha',
     'scanner.encryption': 'AES-256加密',
     'scanner.alignmentRequired': '需要对齐',
@@ -2190,8 +2236,6 @@ const translations = {
     'scanner.gallery': '相册',
     'scanner.digitalization': '数字化',
     'scanner.militaryGrade': '军用级',
-
-    // notifications
     'notifications.alertSystem': '警报系统',
     'notifications.title': '通知',
     'notifications.markAllRead': '全部标记为已读',
@@ -2206,8 +2250,6 @@ const translations = {
     'notifications.timeAgo.hours': '{n} 小时前',
     'notifications.timeAgo.days': '{n} 天前',
     'notifications.timeAgo.yesterday': '昨天',
-
-    // Fallback EN Block
     'dashboard.founderMember': 'Founding Member',
     'dashboard.proBadge': 'PRO',
     'dashboard.activeMembership': 'Active Membership',
@@ -2225,8 +2267,6 @@ const translations = {
     'category.compras': 'Shopping',
     'category.salud': 'Health',
     'category.otro': 'Other',
-
-    // Nouvelles intégrations
     'split.founderPartner': '创始合伙人',
     'split.alphaProfile': 'Alpha档案',
     'split.gameRoulette': '阿尔法轮盘',
@@ -2288,8 +2328,24 @@ const translations = {
     'vault.demoDate1': '3月12日',
     'vault.demoDate2': '3月10日',
     'vault.demoDate3': '3月9日',
-    'vault.demoDate4': '3月5日'
-  },
+    'vault.demoDate4': '3月5日',
+    'recurring.title': '定期支出',
+    'recurring.add': '新增',
+    'recurring.newTitle': '新增定期支出',
+    'recurring.frequency': '频率',
+    'recurring.weekly': '每周',
+    'recurring.monthly': '每月',
+    'recurring.yearly': '每年',
+    'recurring.dayOfMonth': '每月日期',
+    'recurring.endDate': '结束日期 (可选)',
+    'recurring.create': '创建定期支出',
+    'recurring.empty': '暂无定期支出',
+    'recurring.selectGroup': '请先选择一个群组',
+    'recurring.fillFields': '请填写描述和金额',
+    'recurring.creating': '创建中...',
+    'recurring.created': '定期支出已创建 ✓',
+    'recurring.deleted': '定期支出已删除'
+  }
   ja: {
     'settings.title': '設定',
     'settings.edit': '編集',
@@ -2745,7 +2801,23 @@ const translations = {
     'vault.demoDate1': '3月12日',
     'vault.demoDate2': '3月10日',
     'vault.demoDate3': '3月9日',
-    'vault.demoDate4': '3月5日'
+    'vault.demoDate4': '3月5日',
+    'recurring.title': '定期的な支出',
+    'recurring.add': '新規',
+    'recurring.newTitle': '新規の定期的な支出',
+    'recurring.frequency': '頻度',
+    'recurring.weekly': '毎週',
+    'recurring.monthly': '毎月',
+    'recurring.yearly': '毎年',
+    'recurring.dayOfMonth': '毎月の日付',
+    'recurring.endDate': '終了日 (任意)',
+    'recurring.create': '定期的な支出を作成',
+    'recurring.empty': '定期的な支出はありません',
+    'recurring.selectGroup': '最初にグループを選択してください',
+    'recurring.fillFields': '説明と金額を入力してください',
+    'recurring.creating': '作成中...',
+    'recurring.created': '定期的な支出を作成しました ✓',
+    'recurring.deleted': '定期的な支出を削除しました'
   }
 };
 
